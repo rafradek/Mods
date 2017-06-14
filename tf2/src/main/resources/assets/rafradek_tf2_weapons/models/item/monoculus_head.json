@@ -1,0 +1,81 @@
+{
+	"__comment": "Designed by Rafał with Cubik Studio - https://cubik.studio",
+	"textures": {
+		"texture": "rafradek_tf2_weapons:entity/tf2/Monoculus"
+	},
+	"elements": [
+		{
+			"__comment": "Cube1",
+			"from": [ 1.5, 1.5, 0 ],
+			"to": [ 14.5, 14.5, 16 ],
+			"faces": {
+				"down": { "uv": [ 0, 0, 4, 3.75 ], "tintindex": 0, "texture": "#texture" },
+				"up": { "uv": [ 0, 0, 4, 3.75 ], "tintindex": 0, "texture": "#texture" },
+				"north": { "uv": [ 3.625, 11.75, 7.625, 15.5 ], "tintindex": 0, "texture": "#texture" },
+				"south": { "uv": [ 11, 11.75, 15, 15.5 ], "tintindex": 0, "texture": "#texture" },
+				"west": { "uv": [ 0, 0, 4, 3.75 ], "tintindex": 0, "texture": "#texture" },
+				"east": { "uv": [ 0, 0, 4, 3.75 ], "tintindex": 0, "texture": "#texture" }
+			}
+		},
+		{
+			"__comment": "Cube1",
+			"from": [ 1.5, 0, 1.5 ],
+			"to": [ 14.5, 16, 14.5 ],
+			"faces": {
+				"down": { "uv": [ 3, 11, 7.5, 15 ], "tintindex": 0, "texture": "#texture" },
+				"up": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"north": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"south": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"west": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"east": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" }
+			}
+		},
+		{
+			"__comment": "Cube1",
+			"from": [ 0, 1.5, 1.5 ],
+			"to": [ 16, 14.5, 14.5 ],
+			"faces": {
+				"down": { "uv": [ 3, 11, 7.5, 15 ], "tintindex": 0, "texture": "#texture" },
+				"up": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"north": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"south": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"west": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" },
+				"east": { "uv": [ 0, 0, 4.5, 4.5 ], "tintindex": 0, "texture": "#texture" }
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation":  [ 75, 45, 0 ],
+			"translation":  [ 0, 2.5, 0 ],
+			"scale":  [ 0.375, 0.375, 0.375 ]
+		},
+		"thirdperson_lefthand": {
+			"rotation":  [ 75, 45, 0 ],
+			"translation":  [ 0, 2.5, 0 ],
+			"scale":  [ 0.375, 0.375, 0.375 ]
+		},
+		"firstperson_righthand": {
+			"rotation":  [ 0, 45, 0 ],
+			"scale":  [ 0.4, 0.4, 0.4 ]
+		},
+		"firstperson_lefthand": {
+			"rotation":  [ 0, 45, 0 ],
+			"scale":  [ 0.4, 0.4, 0.4 ]
+		},
+		"gui": {
+			"rotation":  [ 30, 225, 0 ],
+			"scale":  [ 0.625, 0.625, 0.625 ]
+		},
+		"head": {
+			"scale":  [ 1.17, 1.17, 1.17 ]
+		},
+		"ground": {
+			"translation":  [ 0, 3, 0 ],
+			"scale":  [ 0.25, 0.25, 0.25 ]
+		},
+		"fixed": {
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		}
+	}
+}

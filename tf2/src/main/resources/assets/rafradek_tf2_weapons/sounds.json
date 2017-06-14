@@ -1,0 +1,1231 @@
+{
+	"misc.pain": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/pain"
+    ]
+  },
+  "misc.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/crit_hit",
+    	"rafradek_tf2_weapons:misc/crit_hit2",
+    	"rafradek_tf2_weapons:misc/crit_hit3",
+    	"rafradek_tf2_weapons:misc/crit_hit4",
+    	"rafradek_tf2_weapons:misc/crit_hit5"
+    ]
+  },
+  "misc.crit.mini": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/crit_hit_mini",
+    	"rafradek_tf2_weapons:misc/crit_hit_mini2",
+    	"rafradek_tf2_weapons:misc/crit_hit_mini3",
+    	"rafradek_tf2_weapons:misc/crit_hit_mini4",
+    	"rafradek_tf2_weapons:misc/crit_hit_mini5"
+    ]
+  },
+  "weapon.fire.shotgun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/shotgun_shoot"
+    ]
+  },
+  "weapon.fire.shotgun.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/shotgun_shoot_crit"
+    ]
+  },
+  "weapon.reload.shotgun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/shotgun_reload"
+    ]
+  },
+  "weapon.fire.scattergun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/scatter_gun_shoot"
+    ]
+  },
+  "weapon.fire.scattergun.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/scatter_gun_shoot_crit"
+    ]
+  },
+  "weapon.reload.scattergun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/scatter_gun_reload"
+    ]
+  },
+  "weapon.fire.revolver": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/revolver_shoot"
+    ]
+  },
+  "weapon.fire.revolver.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/revolver_shoot_crit"
+    ]
+  },
+  "weapon.reload.revolver": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/revolver_worldreload"
+    ]
+  },
+  "weapon.fire.pistol": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pistol_shoot"
+    ]
+  },
+  "weapon.fire.pistol.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pistol_shoot_crit"
+    ]
+  },
+  "weapon.reload.pistol": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pistol_worldreload"
+    ]
+  },
+  "weapon.fire.smg": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/smg_shoot"
+    ]
+  },
+  "weapon.fire.smg.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/smg_shoot_crit"
+    ]
+  },
+  "weapon.reload.smg": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/smg_worldreload"
+    ]
+  },
+   "weapon.fire.sniper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_shoot"
+    ]
+  },
+  "weapon.fire.sniper.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_shoot_crit"
+    ]
+  },
+  "weapon.reload.sniper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_worldreload"
+    ]
+  },
+  "weapon.fire.grenadelauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/grenade_launcher_shoot"
+    ]
+  },
+  "weapon.fire.grenadelauncher.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/grenade_launcher_shoot_crit"
+    ]
+  },
+  "weapon.reload.grenadelauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/grenade_launcher_worldreload"
+    ]
+  },
+  "weapon.fire.rocketlauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_shoot"
+    ]
+  },
+  "weapon.fire.rocketlauncher.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_shoot_crit"
+    ]
+  },
+  "weapon.reload.rocketlauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_reload"
+    ]
+  },
+  "weapon.fire.syringegun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/syringegun_shoot"
+    ]
+  },
+  "weapon.fire.syringegun.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/syringegun_shoot_crit"
+    ]
+  },
+  "weapon.reload.syringegun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/syringegun_worldreload"
+    ]
+  },
+  "weapon.fire.stickylauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/stickybomblauncher_shoot"
+    ]
+  },
+  "weapon.fire.stickylauncher.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/stickybomblauncher_shoot_crit"
+    ]
+  },
+  "weapon.reload.stickylauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/stickybomblauncher_worldreload"
+    ]
+  },
+  "weapon.charge.stickylauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/stickybomblauncher_charge_up"
+    ]
+  },
+  "weapon.detonate.stickylauncher": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/stickybomblauncher_det"
+    ]
+  },
+  "weapon.fire.minigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/minigun_shoot"
+    ]
+  },
+  "weapon.fire.minigun.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/minigun_shoot_crit"
+    ]
+  },
+  "weapon.spin.minigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/minigun_spin"
+    ]
+  },
+  "weapon.wind.up.minigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/minigun_wind_up"
+    ]
+  },
+  "weapon.wind.down.minigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/minigun_wind_down"
+    ]
+  },
+  "weapon.fire.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_loop"
+    ]
+  },
+  "weapon.fire.flamethrower.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_loop_crit"
+    ]
+  },
+  "weapon.start.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_start"
+    ]
+  },
+  "weapon.end.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_end"
+    ]
+  },
+  "weapon.hit.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_fire_hit"
+    ]
+  },
+  "weapon.airblast.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_airblast"
+    ]
+  },
+  "weapon.airblast.rocket.flamethrower": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_airblast_rocket_redirect"
+    ]
+  },
+  "weapon.heal.medigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/medigun_heal"
+    ]
+  },
+  "weapon.notarget.medigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/medigun_no_target"
+    ]
+  },
+  "weapon.charged.medigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/medigun_charged"
+    ]
+  },
+  "weapon.invulnerable.on.medigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/invulnerable_on"
+    ]
+  },
+  "weapon.invulnerable.off.medigun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/invulnerable_off"
+    ]
+  },
+  "weapon.fire.knife": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/knife_swing"
+    ]
+  },
+  "weapon.fire.knife.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/knife_swing_crit"
+    ]
+  },
+  "weapon.fire.wrench": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/wrench_swing"
+    ]
+  },
+  "weapon.fire.wrench.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/wrench_swing_crit"
+    ]
+  },
+  "weapon.hit.wrench.success": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/wrench_hit_build_success1",
+    	"rafradek_tf2_weapons:weapon/wrench_hit_build_success2"
+    ]
+  },
+  "weapon.hit.wrench.fail": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/wrench_hit_build_fail"
+    ]
+  },
+  "weapon.on.cloak": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/spy_cloak"
+    ]
+  },
+  "weapon.off.cloak": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/spy_uncloak"
+    ]
+  },
+  "weapon.turntogold": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/saxxy_turntogold_05"
+    ]
+  },
+  "weapon.horn.banner.red": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/buff_banner_horn_red"
+    ]
+  },
+  "weapon.horn.banner.blu": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/buff_banner_horn_blue"
+    ]
+  },
+  "weapon.horn.backup.red": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/battalions_backup_red"
+    ]
+  },
+  "weapon.horn.backup.blu": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/battalions_backup_blue"
+    ]
+  },
+  "weapon.horn.conch": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tf_conch"
+    ]
+  },
+  "weapon.fire.shovel": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/shovel_swing"
+    ]
+  },
+  "weapon.fire.shovel.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/shovel_swing_crit"
+    ]
+  },
+  "weapon.fire.kukri": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/machete_swing"
+    ]
+  },
+  "weapon.fire.kukri.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/machete_swing_crit"
+    ]
+  },
+  
+  "weapon.fire.flaregun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flaregun_shoot"
+    ]
+  },
+  "weapon.fire.flaregun.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flaregun_shoot_crit"
+    ]
+  },
+  "weapon.hit.flaregun": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pl_impact_flare1",
+    	"rafradek_tf2_weapons:weapon/pl_impact_flare2",
+    	"rafradek_tf2_weapons:weapon/pl_impact_flare3"
+    ]
+  },
+  "weapon.hit.fryingpan": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/melee_frying_pan_01",
+    	"rafradek_tf2_weapons:weapon/melee_frying_pan_02",
+    	"rafradek_tf2_weapons:weapon/melee_frying_pan_03"
+    ]
+  },
+  "weapon.hit.ubersaw": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/ubersaw_hit1",
+    	"rafradek_tf2_weapons:weapon/ubersaw_hit2",
+    	"rafradek_tf2_weapons:weapon/ubersaw_hit3"
+    ]
+  },
+  "weapon.hit.axe": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/axe_hit_flesh1",
+    	"rafradek_tf2_weapons:weapon/axe_hit_flesh2",
+    	"rafradek_tf2_weapons:weapon/axe_hit_flesh3"
+    ]
+  },
+  "weapon.hit.baseball": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bat_baseball_hit_flesh"
+    ]
+  },
+  "weapon.hit.baseball.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bat_baseball_hit_world1",
+    	"rafradek_tf2_weapons:weapon/bat_baseball_hit_world2"
+    ]
+  },
+  "weapon.fire.ball": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bat_baseball_hit1",
+    	"rafradek_tf2_weapons:weapon/bat_baseball_hit2"
+    ]
+  },
+  "weapon.stun.ball": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pl_impact_stun"
+    ]
+  },
+  "weapon.stun.max.ball": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pl_impact_stun_range"
+    ]
+  },
+  "weapon.mantreads": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/mantreads"
+    ]
+  },
+  "weapon.fire.gloves": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_swing1",
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_swing2"
+    ]
+  },
+  "weapon.fire.gloves.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_swing1",
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_swing2"
+    ]
+  },
+  "weapon.hit.gloves": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_hit1",
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_hit2",
+    	"rafradek_tf2_weapons:weapon/boxing_gloves_hit3"
+    ]
+  },
+  "weapon.hit.bottle": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bottle_intact_hit_flesh1",
+    	"rafradek_tf2_weapons:weapon/bottle_intact_hit_flesh2"
+    ]
+  },
+  "weapon.hit.bottle.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bottle_intact_hit_world1",
+    	"rafradek_tf2_weapons:weapon/bottle_intact_hit_world2"
+    ]
+  },
+  "weapon.jar.explode": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/jar_explode"
+    ]
+  },
+  "weapon.fire.sword": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_sword_swing1",
+    	"rafradek_tf2_weapons:weapon/demo_sword_swing2"
+    ]
+  },
+  "weapon.fire.sword.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_sword_swing_crit"
+    ]
+  },
+  "weapon.hit.sword.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_sword_hit_world1",
+    	"rafradek_tf2_weapons:weapon/demo_sword_hit_world2"
+    ]
+  },
+  "weapon.hit.sword": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/blade_slice_2",
+    	"rafradek_tf2_weapons:weapon/blade_slice_3",
+    	"rafradek_tf2_weapons:weapon/blade_slice_4"
+    ]
+  },
+  "weapon.shield.charge": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_charge_windup1",
+    	"rafradek_tf2_weapons:weapon/demo_charge_windup2"
+    ]
+  },
+  "weapon.shield.hit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh1",
+    	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh2"
+    ]
+  },
+  "weapon.shield.hit.range": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh_range1",
+    	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh_range2"
+    ]
+  },
+  "mob.engineer.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsharp01",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsharp02",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsharp03",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsharp04"
+    ]
+  },
+  "mob.engineer.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsevere01",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsevere02",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsevere03",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_painsevere04"
+    ]
+  },
+  "mob.engineer.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/engineer/engineer_battlecry01",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_battlecry03",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_battlecry04",
+    	"rafradek_tf2_weapons:mob/engineer/engineer_battlecry05"
+    ]
+  },
+  "mob.demoman.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsharp01",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsharp02",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsharp03",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsharp04"
+    ]
+  },
+  "mob.demoman.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsevere01",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsevere02",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsevere03",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_painsevere04"
+    ]
+  },
+  "mob.demoman.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/demoman/demoman_battlecry01",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_battlecry02",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_battlecry03",
+    	"rafradek_tf2_weapons:mob/demoman/demoman_battlecry04"
+    ]
+  },
+  "mob.heavy.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsharp01",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsharp02",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsharp03",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsharp04"
+    ]
+  },
+  "mob.heavy.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsevere01",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsevere02",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_painsevere03"
+    ]
+  },
+  "mob.heavy.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/heavy/heavy_battlecry01",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_battlecry02",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_battlecry03",
+    	"rafradek_tf2_weapons:mob/heavy/heavy_battlecry04"
+    ]
+  },
+  "mob.medic.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/medic/medic_painsharp01",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsharp02",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsharp03",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsharp04"
+    ]
+  },
+  "mob.medic.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/medic/medic_painsevere01",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsevere02",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsevere03",
+    	"rafradek_tf2_weapons:mob/medic/medic_painsevere04"
+    ]
+  },
+  "mob.medic.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/medic/medic_battlecry01",
+    	"rafradek_tf2_weapons:mob/medic/medic_battlecry02",
+    	"rafradek_tf2_weapons:mob/medic/medic_battlecry03",
+    	"rafradek_tf2_weapons:mob/medic/medic_battlecry04"
+    ]
+  },
+  "mob.pyro.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsharp01",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsharp02",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsharp03",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsharp04"
+    ]
+  },
+  "mob.pyro.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsevere01",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsevere02",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsevere03",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_painsevere04"
+    ]
+  },
+  "mob.pyro.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/pyro/pyro_battlecry01",
+    	"rafradek_tf2_weapons:mob/pyro/pyro_battlecry02"
+    ]
+  },
+  "mob.scout.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/scout/scout_painsharp01",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsharp02",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsharp03",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsharp04"
+    ]
+  },
+  "mob.scout.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/scout/scout_painsevere01",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsevere02",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsevere03",
+    	"rafradek_tf2_weapons:mob/scout/scout_painsevere04"
+    ]
+  },
+  "mob.scout.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/scout/scout_battlecry01",
+    	"rafradek_tf2_weapons:mob/scout/scout_battlecry02",
+    	"rafradek_tf2_weapons:mob/scout/scout_battlecry03",
+    	"rafradek_tf2_weapons:mob/scout/scout_battlecry04"
+    ]
+  },
+  "mob.sniper.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsharp01",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsharp02",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsharp03",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsharp04"
+    ]
+  },
+  "mob.sniper.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsevere01",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsevere02",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsevere03",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_painsevere04"
+    ]
+  },
+  "mob.sniper.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sniper/sniper_battlecry01",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_battlecry02",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_battlecry03",
+    	"rafradek_tf2_weapons:mob/sniper/sniper_battlecry04"
+    ]
+  },
+  "mob.soldier.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsharp01",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsharp02",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsharp03",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsharp04"
+    ]
+  },
+  "mob.soldier.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsevere01",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsevere02",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsevere03",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_painsevere04"
+    ]
+  },
+  "mob.soldier.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/soldier/soldier_battlecry01",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_battlecry02",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_battlecry03",
+    	"rafradek_tf2_weapons:mob/soldier/soldier_battlecry04"
+    ]
+  },
+  "mob.spy.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/spy/spy_painsharp01",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsharp02",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsharp03",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsharp04"
+    ]
+  },
+  "mob.spy.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/spy/spy_painsevere01",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsevere02",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsevere03",
+    	"rafradek_tf2_weapons:mob/spy/spy_painsevere04"
+    ]
+  },
+  "mob.spy.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/spy/spy_laughshort01",
+    	"rafradek_tf2_weapons:mob/spy/spy_laughshort02",
+    	"rafradek_tf2_weapons:mob/spy/spy_laughshort03",
+    	"rafradek_tf2_weapons:mob/spy/spy_laughshort04"
+    ]
+  },
+  "mob.sentry.hurt": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_damage1",
+    	"rafradek_tf2_weapons:mob/sentry/sentry_damage2",
+    	"rafradek_tf2_weapons:mob/sentry/sentry_damage3",
+    	"rafradek_tf2_weapons:mob/sentry/sentry_damage4"
+    ]
+  },
+  "mob.sentry.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_explode"
+    ]
+  },
+  "mob.sentry.shoot.1": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_shoot"
+    ]
+  },
+  "mob.sentry.shoot.2": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_shoot2"
+    ]
+  },
+  "mob.sentry.shoot.3": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_shoot3"
+    ]
+  },
+  "mob.sentry.rocket": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_rocket"
+    ]
+  },
+  "mob.sentry.spot": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_spot"
+    ]
+  },
+  "mob.sentry.empty": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_empty"
+    ]
+  },
+  "mob.sentry.scan.1": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_scan"
+    ]
+  },
+  "mob.sentry.scan.2": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_scan2"
+    ]
+  },
+  "mob.sentry.scan.3": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sentry/sentry_scan3"
+    ]
+  },
+  "mob.dispenser.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/dispenser/dispenser_explode"
+    ]
+  },
+  "mob.dispenser.idle": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/dispenser/dispenser_idle"
+    ]
+  },
+  "mob.dispenser.heal": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/dispenser/dispenser_heal"
+    ]
+  },
+  "mob.dispenser.generatemetal": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/dispenser/dispenser_generate_metal"
+    ]
+  },
+  "mob.teleporter.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_explode"
+    ]
+  },
+  "mob.teleporter.spin.1": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_spin"
+    ]
+  },
+  "mob.teleporter.spin.2": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_spin2"
+    ]
+  },
+  "mob.teleporter.spin.3": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_spin3"
+    ]
+  },
+  "mob.teleporter.ready": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_ready"
+    ]
+  },
+  "mob.teleporter.receive": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_receive"
+    ]
+  },
+  "mob.teleporter.send": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/teleporter/teleporter_send"
+    ]
+  },
+  "mob.sapper.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sapper/sapper_removed"
+    ]
+  },
+  "mob.sapper.idle": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sapper/sapper_timer"
+    ]
+  },
+  "mob.sapper.plant": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/sapper/sapper_plant"
+    ]
+  },
+  "mob.saxton.death": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_saxtondead01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_saxtondead03"
+    ]
+  },
+  "mob.saxton.jump": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_jump01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_jump02",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_jump03",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_jump04"
+    ]
+  },
+  "mob.saxton.stab": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_stub01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_stub02",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_stub03",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_stub04"
+    ]
+  },
+  "mob.saxton.rage": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_rage01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_rage02",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_rage03"
+    ]
+  },
+  "mob.saxton.start": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_battlecry03",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_battlecry05",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_battlecry08",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_battlecry09"
+    ]
+  },
+  "mob.saxton.destroy": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingbuilding01"
+    ]
+  },
+  "mob.saxton.kill": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingsomeone01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingsomeone02",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingsomeone03",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingsomeone04",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingsomeone05",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingspree01",
+    	"rafradek_tf2_weapons:mob/saxton/Saxton_Hale_killingspree02"
+    ]
+  },
+  "mob.hhh.start": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_summoned_fx"
+    ]
+  },
+  "mob.monoculus.start": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_summoned_monoculus"
+    ]
+  },
+  "mob.merasmus.start": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_summoned"
+    ]
+  },
+  "mob.merasmus.starttalk": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_appears01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_appears02",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_appears03",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_appears04"
+    ]
+  },
+  "mob.merasmus.appear": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/merasmus_appear"
+    ]
+  },
+  "mob.merasmus.disappear": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/merasmus_disappear"
+    ]
+  },
+  "mob.merasmus.spell": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/merasmus_spell"
+    ]
+  },
+  "mob.merasmus.stun": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/merasmus_stun"
+    ]
+  },
+  "mob.merasmus.headbomb": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bcon_headbomb01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bcon_headbomb02",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bcon_headbomb03"
+    ]
+  },
+  "mob.merasmus.hideheal": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_hide_heal01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_hide_heal02",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_hide_heal03"
+    ]
+  },
+  "mob.merasmus.bombinomicon": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bombinomicon01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bombinomicon03",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_bombinomicon05"
+    ]
+  },
+  "mob.merasmus.defeat": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_defeated01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_defeated02",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_defeated03"
+    ]
+  },
+  "mob.merasmus.leave": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_leaving01",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_leaving02",
+    	"rafradek_tf2_weapons:mob/merasmus/sf12_leaving03"
+    ]
+  },
+  "mob.boss.escape": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_escape"
+    ]
+  },
+  "mob.boss.escape60": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_escape_sixty"
+    ]
+  },
+  "mob.boss.escape10": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_escape_ten"
+    ]
+  },
+  "mob.monoculus.defeat": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_defeated_monoculus"
+    ]
+  },
+  "mob.hhh.defeat": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/halloween_boss_defeated_fx"
+    ]
+  },
+  "mob.monoculus.shoot": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball01",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball02",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball03",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball04",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball05"
+    ]
+  },
+  "mob.monoculus.shoot.mad": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball_mad01",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball_mad02",
+    	"rafradek_tf2_weapons:mob/monoculus/eyeball_mad03"
+    ]
+  },
+  "mob.hhh.alert": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/hhh/knight_alert"
+    ]
+  },
+  "mob.hhh.attack": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/hhh/knight_attack01",
+    	"rafradek_tf2_weapons:mob/hhh/knight_attack02",
+    	"rafradek_tf2_weapons:mob/hhh/knight_attack03"
+    ]
+  },
+  "mob.hhh.hit": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/hhh/knight_axe_hit"
+    ]
+  },
+  "mob.hhh.miss": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/hhh/knight_axe_miss"
+    ]
+  },
+  "mob.hhh.say": {
+    "category": "hostile",
+    "sounds": [
+    	"rafradek_tf2_weapons:mob/hhh/knight_laugh01",
+    	"rafradek_tf2_weapons:mob/hhh/knight_laugh02",
+    	"rafradek_tf2_weapons:mob/hhh/knight_laugh03"
+    ]
+  }
+}

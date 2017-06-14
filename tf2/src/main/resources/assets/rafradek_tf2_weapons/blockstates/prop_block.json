@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "type=diamond": { "model": "diamond_block" },
+        "type=iron": { "model": "iron_block" },
+        "type=gold": { "model": "gold_block" },
+        "type=obsidian": { "model": "obsidian" }
+    }
+}

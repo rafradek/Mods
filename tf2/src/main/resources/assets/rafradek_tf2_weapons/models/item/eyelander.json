@@ -1,0 +1,19 @@
+{
+	"parent": "item/handheld",
+	"textures": 
+	{
+		"layer0": "rafradek_tf2_weapons:items/eyelander"
+	},
+    "display": {
+        "thirdperson_righthand": {
+            "rotation": [ 0, -90, 55 ],
+            "translation": [ 0, 4.0, 0.5 ],
+            "scale": [ 1.1, 1.1, 1.1 ]
+        },
+        "thirdperson_lefthand": {
+            "rotation": [ 0, 90, -55 ],
+            "translation": [ 0, 4.0, 0.5 ],
+            "scale": [ 1.1, 1.1, 1.1 ]
+        }
+    }
+}

@@ -1,0 +1,68 @@
+{
+	"monoculus": {
+		"Name": "MONOCULUS!",
+		"Class": "cosmetic",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:monoculus_head",
+		"Cost": 30,
+		"Wear flags": 1,
+		"Roll hidden": true
+	},
+	"merasmushat": {
+		"Name": "Skull Island Topper",
+		"Class": "cosmetic",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:merasmus_hat",
+		"Cost": 30,
+		"Wear flags": 1,
+		"Roll hidden": true
+	},
+	"billhat": {
+		"Name": "Bill's Hat",
+		"Class": "cosmetic",
+		"Mobs": "scout,pyro,sniper",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:bill_hat",
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"teamcaptain": {
+		"Name": "Team Captain",
+		"Class": "cosmetic",
+		"Mobs": "soldier,heavy,medic",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:team_captain",
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"texashat": {
+		"Name": "Texas Ten Gallon",
+		"Class": "cosmetic",
+		"Mobs": "engineer",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:texas_hat",
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"allfather": {
+		"Name": "All-Father",
+		"Class": "cosmetic",
+		"Slot": 9,
+		"Mobs": "heavy,spy,demoman",
+		"Render": "rafradek_tf2_weapons:all_father",
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"bombinomicon": {
+		"Name": "Bombinomicon",
+		"Class": "cosmetic",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:bombinomicon",
+		"Cost": 30,
+		"Wear flags": 2,
+		"Roll hidden": true,
+		"Attributes":{
+			"ExplodeDeath": 1
+		}
+	}
+}

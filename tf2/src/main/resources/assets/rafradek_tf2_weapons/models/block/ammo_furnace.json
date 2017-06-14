@@ -1,0 +1,9 @@
+{
+    "parent": "block/orientable",
+    "textures": {
+        "top": "rafradek_tf2_weapons:blocks/tf2_workbench_bottom",
+        "front": "rafradek_tf2_weapons:blocks/ammo_furnace",
+        "side": "rafradek_tf2_weapons:blocks/tf2_workbench_side"
+    }
+    
+}

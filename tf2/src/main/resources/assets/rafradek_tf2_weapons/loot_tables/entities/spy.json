@@ -1,0 +1,71 @@
+{
+    "pools": [
+        {
+        	"name": "metal_spy_raf",	
+            "rolls": 1,
+             "conditions": [
+             	{
+                    "condition": "killed_by_player_team"
+                },
+                {
+                    "condition": "random_chance_with_looting",
+                    "chance": 0.6,
+                    "looting_multiplier": 0.2
+                }
+            ],
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:itemTF2",
+                    "weight": 2,
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 3
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:crate",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "set_weapon_class",
+                            "weaponClass": "crate"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+        	"name": "disguise_kit",	
+            "rolls": 1,
+            "conditions": [
+                {
+                    "condition": "random_chance_with_looting",
+                    "chance": 0.06,
+                    "looting_multiplier": 0.03
+                }
+            ],
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:disguise_kit",
+                    "weight": 1
+                }
+            ]
+        },
+        {
+        	"name": "ammo_spy_raf",	
+            "rolls": 1,
+            "entries": [
+                {
+                    "type": "loot_table",
+                    "name": "rafradek_tf2_weapons:ammo/revolver",
+                    "weight": 1
+                }
+            ]
+        }
+    ]
+}

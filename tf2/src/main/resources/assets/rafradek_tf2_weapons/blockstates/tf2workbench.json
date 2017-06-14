@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "rafradek_tf2_weapons:tf2workbench" },
+        "facing=south": { "model": "rafradek_tf2_weapons:tf2workbench", "y": 180 },
+        "facing=west":  { "model": "rafradek_tf2_weapons:tf2workbench", "y": 270 },
+        "facing=east":  { "model": "rafradek_tf2_weapons:tf2workbench", "y": 90 }
+    }
+}

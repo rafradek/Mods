@@ -1,0 +1,64 @@
+{
+	"Techne": {
+		"@Version": "2.2",
+		"Author": "NotZeux",
+		"Name": "Hat",
+		"PreviewImage": "",
+		"ProjectName": "Hat",
+		"ProjectType": "Minecraft",
+		"Description": "",
+		"DateCreated": "",
+		"Models": [{
+			"Model": {
+				"GlScale": "1,1,1",
+				"Name": "Hat",
+				"TextureSize": "64,32",
+				"@texture": "Hattexture.png",
+				"BaseClass": "ModelBase",
+				"Geometry": {
+					"Circular": [],
+					"Shape": [{
+						"Id": 1,
+						"@Type": "d9e621f7-957f-4b77-b1ae-20dcd0da7751",
+						"@Name": "Shape1",
+						"IsDecorative": "False",
+						"IsFixed": "False",
+						"IsMirrored": "False",
+						"Position": "-4.5,15,-4.5",
+						"Offset": "0,0,0",
+						"Rotation": "0,0,0",
+						"Size": "9,1,9",
+						"TextureOffset": "0,0"
+					}, {
+						"Id": 2,
+						"@Type": "d9e621f7-957f-4b77-b1ae-20dcd0da7751",
+						"@Name": "Shape2",
+						"IsDecorative": "False",
+						"IsFixed": "False",
+						"IsMirrored": "False",
+						"Position": "-3.5,8,-3.46666666666667",
+						"Offset": "0,0,0",
+						"Rotation": "0,0,0",
+						"Size": "7,7,7",
+						"TextureOffset": "0,18"
+					}, {
+						"Id": 3,
+						"@Type": "d9e621f7-957f-4b77-b1ae-20dcd0da7751",
+						"@Name": "Shape3",
+						"IsDecorative": "False",
+						"IsFixed": "False",
+						"IsMirrored": "False",
+						"Position": "-3.46666666666666,8,-3.53333333333335",
+						"Offset": "0,0,0",
+						"Rotation": "0,0,-0.10471976",
+						"Size": "7,0,7",
+						"TextureOffset": "0,11"
+					}],
+					"Linear": [],
+					"Null": []
+				}
+			}
+		}],
+		"_comment": ""
+	}
+}

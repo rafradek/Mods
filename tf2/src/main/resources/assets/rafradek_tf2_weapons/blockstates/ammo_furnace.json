@@ -1,0 +1,12 @@
+{
+    "variants": {
+        "burning=true,facing=north": { "model": "rafradek_tf2_weapons:ammo_furnace_burning" },
+        "burning=true,facing=south": { "model": "rafradek_tf2_weapons:ammo_furnace_burning", "y": 180 },
+        "burning=true,facing=west":  { "model": "rafradek_tf2_weapons:ammo_furnace_burning", "y": 270 },
+        "burning=true,facing=east":  { "model": "rafradek_tf2_weapons:ammo_furnace_burning", "y": 90 },
+        "burning=false,facing=north": { "model": "rafradek_tf2_weapons:ammo_furnace" },
+        "burning=false,facing=south": { "model": "rafradek_tf2_weapons:ammo_furnace", "y": 180 },
+        "burning=false,facing=west":  { "model": "rafradek_tf2_weapons:ammo_furnace", "y": 270 },
+        "burning=false,facing=east":  { "model": "rafradek_tf2_weapons:ammo_furnace", "y": 90 }
+    }
+}

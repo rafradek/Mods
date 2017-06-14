@@ -1,0 +1,53 @@
+{
+	"textures": {
+		"ammo_box": "rafradek_tf2_weapons:items/ammo_box"
+	},
+	"elements": [
+		{
+			"__comment": "Cube1",
+			"from": [ 0, 0, 3 ],
+			"to": [ 16, 5, 13 ],
+			"faces": {
+				"down": { "uv": [ 0, 11, 8, 16 ], "tintindex": 0, "texture": "#ammo_box" },
+				"up": { "uv": [ 8, 11, 16, 16 ], "tintindex": 0, "texture": "#ammo_box" },
+				"north": { "uv": [ 0, 8.5, 8, 11 ], "tintindex": 0, "texture": "#ammo_box" },
+				"south": { "uv": [ 0, 8.5, 8, 11 ], "tintindex": 0, "texture": "#ammo_box" },
+				"west": { "uv": [ 0, 6, 5, 8.5 ], "tintindex": 0, "texture": "#ammo_box" },
+				"east": { "uv": [ 0, 6, 5, 8.5 ], "tintindex": 0, "texture": "#ammo_box" }
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation":  [ 90, 0, 0 ],
+			"translation":  [ 0, 2.7826, 0 ],
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		},
+		"thirdperson_lefthand": {
+			"rotation":  [ 90, 0, 0 ],
+			"translation":  [ 0, 2.7826, 0 ],
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		},
+		"firstperson_righthand": {
+			"translation":  [ 0, 5.5652, -2.086 ],
+			"scale":  [ 0.8, 0.8, 0.8 ]
+		},
+		"firstperson_lefthand": {
+			"translation":  [ 0, 5.5652, -2.086 ],
+			"scale":  [ 0.8, 0.8, 0.8 ]
+		},
+		"gui": {
+			"rotation":  [ 33, -34, 0 ],
+			"translation":  [ 0, 3.4782, 0 ],
+			"scale":  [ 0.7, 0.7, 0.7 ]
+		},
+		"ground": {
+			"translation":  [ 0, 2.7826, 0 ],
+			"scale":  [ 0.6, 0.6, 0.6 ]
+		},
+		"fixed": {
+			"rotation":  [ -90, -180, 0 ],
+			"translation":  [ 0, 0, -5.565 ]
+		}
+	}
+}

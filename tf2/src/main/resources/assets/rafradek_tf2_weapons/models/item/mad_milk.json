@@ -1,0 +1,14 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "rafradek_tf2_weapons:items/mad_milk"
+    },
+    "overrides": [
+        {
+            "predicate": {
+                "empty": 1
+            },
+            "model": "rafradek_tf2_weapons:item/mad_milk_empty"
+        }
+    ]
+}
