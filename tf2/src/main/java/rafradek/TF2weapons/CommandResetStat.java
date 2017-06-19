@@ -45,7 +45,7 @@ public class CommandResetStat extends CommandBase {
 					}
 				}
 			}
-			sender.sendMessage(new TextComponentString("found: "+australium));
+			notifyCommandListener(sender, this, "command.resetbossstat.success",entityplayermp.getName());
 		} catch (Exception e) {
 			throw new WrongUsageException("commands.resetbossstat.usage", new Object[0]);
 		}

@@ -632,8 +632,8 @@ public class ClientProxy extends CommonProxy {
 	public void registerTicks() {
 	}
 
-	public static void spawnFlameParticle(World world, EntityLivingBase ent, float step) {
-		Particle entity = EntityFlameEffect.createNewEffect(world, ent, step);
+	public static void spawnFlameParticle(World world, EntityLivingBase ent, float step, boolean heater) {
+		Particle entity = EntityFlameEffect.createNewEffect(world, ent, step, heater);
 		spawnParticle(world, entity);
 	}
 

@@ -115,7 +115,7 @@
     	"rafradek_tf2_weapons:weapon/smg_worldreload"
     ]
   },
-   "weapon.fire.sniper": {
+  "weapon.fire.sniper": {
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/sniper_shoot"
@@ -600,6 +600,198 @@
     "sounds": [
     	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh_range1",
     	"rafradek_tf2_weapons:weapon/demo_charge_hit_flesh_range2"
+    ]
+  },
+  "weapon.fire.phlog": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/phlog_loop"
+    ]
+  },
+  "weapon.fire.phlog.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/phlog_loop_crit"
+    ]
+  },
+  "weapon.start.phlog": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flame_thrower_start"
+    ]
+  },
+  "weapon.end.phlog": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/phlog_end"
+    ]
+  },
+  "weapon.fire.heater": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragon_gun_motor_loop"
+    ]
+  },
+  "weapon.fire.heater.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragon_gun_motor_loop_crit"
+    ]
+  },
+  "weapon.spin.heater": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragon_gun_motor_loop_dry"
+    ]
+  },
+  "weapon.wind.up.heater": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragon_gun_motor_start"
+    ]
+  },
+  "weapon.wind.down.heater": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragon_gun_motor_stop"
+    ]
+  },
+  "weapon.fire.ambassador": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/ambassador_shoot"
+    ]
+  },
+  "weapon.fire.ambassador.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/ambassador_shoot_crit"
+    ]
+  },
+  "weapon.fire.crossbow": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/crusaders_crossbow_shoot"
+    ]
+  },
+  "weapon.fire.crossbow.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/crusaders_crossbow_shoot_crit"
+    ]
+  },
+  "weapon.fire.directhit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_directhit_shoot"
+    ]
+  },
+  "weapon.fire.directhit.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_directhit_shoot_crit"
+    ]
+  },
+  "weapon.fire.rocketjumper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_jumper_shoot"
+    ]
+  },
+  "weapon.fire.rocketjumper.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_shot_crit"
+    ]
+  },
+  "weapon.fire.stickyjumper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sticky_jumper_shoot"
+    ]
+  },
+  "weapon.fire.stickyjumper.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_shot_crit"
+    ]
+  },
+   "weapon.fire.tomislav": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tomislav_shoot"
+    ]
+  },
+  "weapon.fire.tomislav.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tomislav_shoot_crit"
+    ]
+  },
+  "weapon.wind.up.tomislav": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tomislav_wind_up"
+    ]
+  },
+  "weapon.wind.down.tomislav": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tomislav_wind_down"
+    ]
+  },
+  "weapon.fire.machina": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_railgun_single_01"
+    ]
+  },
+  "weapon.fire.machina.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_railgun_single_crit"
+    ]
+  },
+  "weapon.nofire.machina": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_railgun_no_fire"
+    ]
+  },
+  "weapon.fire.machina.charged": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_railgun_charged_shot_01"
+    ]
+  },
+  "weapon.fire.machina.charged.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_railgun_charged_shot_crit_01"
+    ]
+  },
+  "weapon.fire.rescueranger": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rescue_ranger_fire"
+    ]
+  },
+  "weapon.fire.rescueranger.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rescue_ranger_fire_crit"
+    ]
+  },
+  "weapon.fire.fan": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/scatter_gun_double_shoot"
+    ]
+  },
+  "weapon.fire.fan.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/scatter_gun_double_shoot_crit"
     ]
   },
   "mob.engineer.hurt": {

@@ -155,6 +155,7 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSavedData;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.storage.loot.LootEntry;
 import net.minecraft.world.storage.loot.LootEntryTable;
@@ -1170,6 +1171,8 @@ public class TF2EventsCommon {
 			event.getWorld().getPerWorldStorage().setData(TF2weapons.MOD_ID, new TF2WorldStorage());
 			
 		}*/
+		if(!event.getWorld().getGameRules().hasRule("doTF2AI"))
+			event.getWorld().getGameRules().addGameRule("doTF2AI", "true", ValueType.BOOLEAN_VALUE);
 		if (!event.getWorld().isRemote && event.getWorld().getScoreboard().getTeam("RED") == null) {
 			ScorePlayerTeam teamRed = event.getWorld().getScoreboard().createTeam("RED");
 			ScorePlayerTeam teamBlu = event.getWorld().getScoreboard().createTeam("BLU");

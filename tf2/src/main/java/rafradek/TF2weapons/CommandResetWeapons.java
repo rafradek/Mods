@@ -31,9 +31,9 @@ public class CommandResetWeapons extends CommandBase {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		TF2weapons.loadWeapons();
-		if(!server.isDedicatedServer())
-		TF2weapons.network.sendToAll(new TF2Message.WeaponDataMessage(TF2weapons.itemDataCompressed));
-		
+		if(server.isDedicatedServer())
+			TF2weapons.network.sendToAll(new TF2Message.WeaponDataMessage(TF2weapons.itemDataCompressed));
+		notifyCommandListener(sender, this, "command.resetitemdata.success");
 	}
 
 }

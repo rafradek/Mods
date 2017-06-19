@@ -64,7 +64,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@Mod(modid = "rafradek_spin", name = "Spin To Win", version = "1.3", guiFactory = "rafradek.spin.SpinGuiFactory")
+@Mod(modid = "rafradek_spin", name = "Spin To Win", version = "1.4", guiFactory = "rafradek.spin.SpinGuiFactory")
 public class SpinToWin {
 	
 	public static DataParameter<Boolean> SPIN_TIME;
@@ -86,7 +86,7 @@ public class SpinToWin {
 	public static int cooldownAxe;
 	public static int cooldownSword;
 	public static int duration;
-	public static boolean requireSneak;
+	public static boolean offhandBlock;
 	public static ResourceLocation[] blacklistItems;
 	public static ResourceLocation[] swordItems;
 	public static ResourceLocation[] toolItems;
@@ -110,7 +110,8 @@ public class SpinToWin {
 		cooldownAxe=conf.getInt("Axe spin cooldown", "config", 220, 0, 1000, "");
 		cooldownSword=conf.getInt("Sword spin cooldown", "config", 280, 0, 1000, "");
 		duration=conf.getInt("Sword spin duration", "config", 90, 0, 1000, "");
-		requireSneak=conf.getBoolean("Require sneaking", "config", false, "If true, the player must hold the sneak key before using the ability");
+		offhandBlock=conf.getBoolean("Offhand item blocks", "config", false, "If true, an offhand item will always be activated before the spin");
+		//requireSneak=conf.getBoolean("Sneaking stop", "config", false, "If true, the player must hold the sneak key before using the ability");
 		conf.get("config", "Spin data parameter ID", 173).setRequiresMcRestart(true);
 		String[] listbl=conf.getStringList("Blacklist items", "config", new String[0], "Registry names of items which should not be spinnable");
 		String[] listsw=conf.getStringList("Swords", "config", new String[0], "Registry names of items that spin multiple times");
@@ -162,11 +163,15 @@ public class SpinToWin {
 		}
 		return false;
 	}
+	public boolean allowAttack(EntityPlayer player,ItemStack stack) {
+		return player.getCooldownTracker().getCooldown(stack.getItem(), 0)==0 && ((!offhandBlock && player.isSneaking()) || player.getHeldItemOffhand().isEmpty());
+	}
 	@SubscribeEvent
 	public void stopUsing(PlayerInteractEvent.RightClickItem event) {
+		
 		if(event.getHand()==EnumHand.MAIN_HAND){
 			ItemStack stack=event.getEntityPlayer().getHeldItemMainhand();
-			if(!stack.isEmpty() && isValid(stack.getItem()) && (!requireSneak || event.getEntityPlayer().isSneaking()) && event.getEntityPlayer().getCooldownTracker().getCooldown(stack.getItem(), 0)==0){
+			if(!stack.isEmpty() && isValid(stack.getItem()) && allowAttack(event.getEntityPlayer(),stack)){
 				event.getEntityPlayer().getEntityData().setInteger("SpinTime", (int) (getDuration(stack,event.getEntityPlayer())*(isTool(stack.getItem())?(1-0.075*EnchantmentHelper.getEnchantmentLevel(ench, stack)):1)));
 				if(!event.getEntity().world.isRemote){
 					int cooldown=isSword(stack.getItem())?cooldownSword:cooldownAxe-EnchantmentHelper.getEnchantmentLevel(ench, stack)*13;
@@ -204,6 +209,11 @@ public class SpinToWin {
 					}
 				}
 			}
+		}
+		else{
+			ItemStack stack=event.getEntityPlayer().getHeldItemMainhand();
+			if(event.getEntityPlayer().getDataManager().get(SPIN_TIME) || (event.getEntity().world.isRemote && this.isValid(stack.getItem()) && allowAttack(event.getEntityPlayer(),stack)))
+				event.setCanceled(true);
 		}
 	}
 	

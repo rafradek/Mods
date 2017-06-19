@@ -200,6 +200,7 @@ import rafradek.TF2weapons.message.TF2ProjectileHandler;
 import rafradek.TF2weapons.message.TF2PropertyHandler;
 import rafradek.TF2weapons.message.TF2ShowGuiHandler;
 import rafradek.TF2weapons.message.TF2UseHandler;
+import rafradek.TF2weapons.message.TF2VelocityAddHandler;
 import rafradek.TF2weapons.message.TF2WeaponDataHandler;
 import rafradek.TF2weapons.message.TF2WeaponDropHandler;
 import rafradek.TF2weapons.message.TF2WearableChangeHandler;
@@ -237,7 +238,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -365,7 +366,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 16;
+		return 18;
 	}
 
 	@Mod.EventHandler
@@ -910,6 +911,7 @@ public class TF2weapons {
 		network.registerMessage(TF2WearableChangeHandler.class, TF2Message.WearableChangeMessage.class, 10, Side.CLIENT);
 		network.registerMessage(TF2WeaponDropHandler.class, TF2Message.WeaponDroppedMessage.class, 12, Side.CLIENT);
 		network.registerMessage(TF2ContractHandler.class, TF2Message.ContractMessage.class, 13, Side.CLIENT);
+		network.registerMessage(TF2VelocityAddHandler.class, TF2Message.VelocityAddMessage.class, 14, Side.CLIENT);
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new IGuiHandler() {
 
 			@Override
@@ -1091,7 +1093,7 @@ public class TF2weapons {
 				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
 				if (!registry.containsKey(soundLocation)) {
 					SoundEvent.REGISTRY.register(0,soundLocation,new SoundEvent(soundLocation));
-					if (propType.name.equals("Fire sound") || propType.name.equals("Fire loop sound"))
+					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
 						SoundEvent.REGISTRY.register(0,new ResourceLocation(propType.getString(weapon) + ".crit"),new SoundEvent(new ResourceLocation(propType.getString(weapon) + ".crit")));
 				}
 			}
@@ -1152,6 +1154,7 @@ public class TF2weapons {
 		event.registerServerCommand(new CommandGiveWeapon());
 		event.registerServerCommand(new CommandResetWeapons());
 		event.registerServerCommand(new CommandResetStat());
+		event.registerServerCommand(new CommandGenerateReferences());
 		try {
 			server = event.getServer();
 			File input = new File(((AnvilSaveConverter) server.getActiveAnvilConverter()).savesDirectory, server.getFolderName() + "/teleports.dat");

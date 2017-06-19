@@ -57,6 +57,7 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import rafradek.TF2weapons.ClientProxy;
@@ -352,6 +353,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		}
 		this.addWeapons();
 		this.switchSlot(this.getDefaultSlot());
+		if(!this.world.getGameRules().getBoolean("doTF2AI")) {
+			this.tasks.taskEntries.clear();
+			this.targetTasks.taskEntries.clear();
+		}
+			
 		return p_110161_1_;
 	}
 
@@ -427,6 +433,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if(par1NBTTagCompound.hasKey("FollowTrader")){
 			this.followID=par1NBTTagCompound.getUniqueId("FollowTrader");
 			this.traderFollowTicks=par1NBTTagCompound.getInteger("FollowTraderTicks");
+		}
+		
+		if(!this.world.getGameRules().getBoolean("doTF2AI")) {
+			this.tasks.taskEntries.clear();
+			this.targetTasks.taskEntries.clear();
 		}
 	}
 

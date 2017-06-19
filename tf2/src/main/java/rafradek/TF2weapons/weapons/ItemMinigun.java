@@ -150,9 +150,16 @@ public class ItemMinigun extends ItemBulletWeapon {
 				if ((living.ticksExisted % (20/ammo)) == 0) {
 					ItemAmmo.consumeAmmoGlobal(living, stack, 1);
 				}
-				if(living.ticksExisted % 10 == 0) {
-					float flamedmg=TF2Attribute.getModifier("Ring Fire", stack, 0, living);
-					if(flamedmg > 0) {
+			}
+			if(living.ticksExisted % 10 == 0 && cap.chargeTicks >= TF2Attribute.getModifier("Minigun Spinup", stack, 18, living)) {
+				
+				float flamedmg=TF2Attribute.getModifier("Ring Fire", stack, 0, living);
+				if(flamedmg > 0) {
+					if(world.isRemote ) {
+						for(int i=0;i<50;i++)
+							ClientProxy.spawnFlameParticle(world, living, 0, true);
+					}
+					else {
 						for(EntityLivingBase target:world.getEntitiesWithinAABB(EntityLivingBase.class, living.getEntityBoundingBox().expand(4, -0.5, 4).offset(0, -0.5, 0), new Predicate<EntityLivingBase>() {
 	
 							@Override
@@ -168,6 +175,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 						}
 					}
 				}
+				
 			}
 			if (living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(slowdownUUID) == null)
 				living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(slowdown);

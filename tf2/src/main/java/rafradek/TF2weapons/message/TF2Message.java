@@ -14,6 +14,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import rafradek.TF2weapons.TF2Attribute;
@@ -608,6 +609,43 @@ public abstract class TF2Message implements IMessage {
 			buf.writeByte(contract.rewards);
 			
 				
+		}
+
+	}
+	public static class VelocityAddMessage extends TF2Message {
+		// public int shooter;
+
+		public float x;
+		public float y;
+		public float z;
+		public boolean airborne;
+
+		public VelocityAddMessage() {
+
+		}
+
+		public VelocityAddMessage(Vec3d vec, boolean airborne) {
+			// this.shooter=shooter.getEntityId();
+			this.x=(float) vec.xCoord;
+			this.y=(float) vec.yCoord;
+			this.z=(float) vec.zCoord;
+			this.airborne=airborne;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.x=buf.readFloat();
+			this.y=buf.readFloat();
+			this.z=buf.readFloat();
+			this.airborne=buf.readBoolean();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeFloat(x);
+			buf.writeFloat(y);
+			buf.writeFloat(z);
+			buf.writeBoolean(airborne);
 		}
 
 	}

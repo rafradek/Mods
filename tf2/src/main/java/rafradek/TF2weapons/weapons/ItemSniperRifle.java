@@ -12,11 +12,16 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntitySniper;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
@@ -153,8 +158,14 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	
 	@Override
 	public boolean canFire(World worldObj, EntityLivingBase player, ItemStack item) {
-		return super.canFire(worldObj, player, item)
-				&& !(player instanceof EntityPlayer && TF2Attribute.getModifier("Weapon Mode", item, 0, player) == 1 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).charging);
+		if(super.canFire(worldObj, player, item)) {
+			if(player instanceof EntityPlayer && TF2Attribute.getModifier("Weapon Mode", item, 0, player) == 1 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+				TF2weapons.playSound(player,getSound(item, PropertyType.NO_FIRE_SOUND),0.7f,1);
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
@@ -171,6 +182,20 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 			}
 			else
 				attacker.getCapability(TF2weapons.PLAYER_CAP, null).headshotsRow=0;
+		}
+	}
+	public void doFireSound(ItemStack stack, EntityLivingBase living, World world, int critical) {
+		if (ItemFromData.getData(stack).hasProperty(PropertyType.CHARGED_FIRE_SOUND) 
+				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks >= getChargeTime(stack, living)) {
+			SoundEvent soundToPlay = SoundEvent.REGISTRY
+					.getObject(new ResourceLocation(ItemFromData.getData(stack).getString(PropertyType.CHARGED_FIRE_SOUND)
+							+ (critical == 2 ? ".crit" : "")));
+			living.playSound(soundToPlay, 4f, 1f);
+			if (world.isRemote)
+				ClientProxy.removeReloadSound(living);
+		}
+		else {
+			super.doFireSound(stack, living, world, critical);
 		}
 	}
 }

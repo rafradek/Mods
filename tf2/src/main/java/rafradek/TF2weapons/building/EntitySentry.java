@@ -12,6 +12,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -36,6 +37,7 @@ import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAISentryAttack;
 import rafradek.TF2weapons.characters.ai.EntityAISentryIdle;
 import rafradek.TF2weapons.characters.ai.EntityAISentryOwnerHurt;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 
@@ -247,9 +249,16 @@ public class EntitySentry extends EntityBuilding {
 							TF2weapons.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), 1.6f, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();
+						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
+						if(this.isControlled())
+							dist=dist.scale(0.25);
 						if(!(bullet.entityHit instanceof EntityLivingBase 
 								&& ((EntityLivingBase) bullet.entityHit).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue()>=1))
-						bullet.entityHit.addVelocity(dist.xCoord * 0.35, dist.yCoord * 0.35, dist.zCoord * 0.35);
+						bullet.entityHit.addVelocity(dist.xCoord, dist.yCoord, dist.zCoord);
+						bullet.entityHit.isAirBorne=bullet.entityHit.motionY>0.05;
+						if (bullet.entityHit instanceof EntityPlayerMP)
+							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(dist, bullet.entityHit.isAirBorne), (EntityPlayerMP) bullet.entityHit);
+						
 						if (bullet.entityHit instanceof EntityLivingBase) {
 							((EntityLivingBase) bullet.entityHit).setLastAttacker(this);
 							((EntityLivingBase) bullet.entityHit).setRevengeTarget(this);

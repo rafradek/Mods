@@ -95,8 +95,8 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 						living.posY + living.getEyeHeight() - 0.1, living.posZ, living.motionX, 0.2D + living.motionY,
 						living.motionZ, new int[0]);
 			else {
-				ClientProxy.spawnFlameParticle(world, living, 0f);
-				ClientProxy.spawnFlameParticle(world, living, 0.5f);
+				ClientProxy.spawnFlameParticle(world, living, 0f, false);
+				ClientProxy.spawnFlameParticle(world, living, 0.5f, false);
 			}
 			// System.out.println("to:
 			// "+ClientProxy.fireSounds.containsKey(living));

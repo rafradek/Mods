@@ -29,6 +29,7 @@ import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemBulletWeapon extends ItemWeapon {
@@ -73,9 +74,12 @@ public class ItemBulletWeapon extends ItemWeapon {
 
 					if (knockbackAmount > 0){
 						boolean flag=map.get(entity)[1] >= 3.75 && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0&&TF2Attribute.getModifier("KnockbackFAN", stack, 0, living) != 0;
-						entity.addVelocity(pushvec.xCoord * knockbackAmount * (flag?2.8:1), (pushvec.yCoord+(flag?1:0)) * knockbackAmount,
+						pushvec=new Vec3d(pushvec.xCoord * knockbackAmount * (flag?2.8:1), (pushvec.yCoord+(flag?1:0)) * knockbackAmount,
 								pushvec.zCoord * knockbackAmount * (flag?2.8:1));
-						entity.isAirBorne = -(pushvec.yCoord * knockbackAmount) > 0.01D;
+						entity.addVelocity(pushvec.xCoord,pushvec.yCoord,pushvec.zCoord);
+						entity.isAirBorne = entity.isAirBorne || -(pushvec.yCoord * knockbackAmount) > 0.01D;
+						if(entity instanceof EntityPlayerMP)
+							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,entity.isAirBorne), (EntityPlayerMP) entity);
 					}
 				}
 			}
@@ -94,7 +98,6 @@ public class ItemBulletWeapon extends ItemWeapon {
 			ClientProxy.getLocalPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).recoil += getData(stack)
 					.getFloat(PropertyType.RECOIL);
 			message.target = lastShotClient;
-			return true;
 		} else if (!world.isRemote)
 			if (living instanceof EntityPlayer) {
 				// System.out.println("Shoot: "+message.readData);
@@ -125,6 +128,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 					values[0]++;
 					values[1] += TF2weapons.calculateDamage(target, world, living, stack, critical, (Float) obj[2]);
 				}
+				
 				// living.getCapability(TF2weapons.WEAPONS_CAP,
 				// null).predictionList.add(message);
 				handleShoot(living, stack, world, shotInfo, totalCrit,flags);
@@ -132,6 +136,9 @@ public class ItemBulletWeapon extends ItemWeapon {
 				handleShoot(living, stack, world, lastShot, critical,0);
 				lastShot.clear();
 			}
+		if (living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0 && TF2Attribute.getModifier("KnockbackFAN", stack, 0, living)!=0){
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool=30;
+		}
 		return true;
 		// if(world.isRemote) return false;
 		/*

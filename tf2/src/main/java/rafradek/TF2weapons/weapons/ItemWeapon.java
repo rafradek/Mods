@@ -169,22 +169,17 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
 			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,!this.hasClip(stack)?ItemAmmo.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
-		if (ItemFromData.getData(stack).hasProperty(PropertyType.FIRE_SOUND)) {
-			SoundEvent soundToPlay = SoundEvent.REGISTRY
-					.getObject(new ResourceLocation(ItemFromData.getData(stack).getString(PropertyType.FIRE_SOUND)
-							+ (thisCritical == 2 ? ".crit" : "")));
-			living.playSound(soundToPlay, 2f, 1f);
-			if (world.isRemote)
-				ClientProxy.removeReloadSound(living);
-		}
+		
+		this.doFireSound(stack, living, world, thisCritical);
+		
 		if (world.isRemote)
 			this.doMuzzleFlash(stack, living, hand);
 
 		if (!living.onGround && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0 && TF2Attribute.getModifier("KnockbackFAN", stack, 0, living)!=0){
 			Vec3d look=living.getLookVec();
-			cap.fanCool=30;
 			living.addVelocity(-look.xCoord*0.66, -look.yCoord*0.58, -look.zCoord*0.66);
 		}
+		
 		if (!world.isRemote && world.getDifficulty().getDifficultyId()>1 && living instanceof EntityPlayer
 				&& !((EntityPlayer)living).capabilities.isCreativeMode
 				&& living.getCapability(TF2weapons.PLAYER_CAP, null).zombieHuntTicks <= 0
@@ -233,6 +228,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			 * world.spawnEntity(bullet);
 			 */
 			this.shoot(stack, living, world, thisCritical, hand);
+		
 		return true;
 	}
 
@@ -245,6 +241,17 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	public abstract void shoot(ItemStack stack, EntityLivingBase living, World world, int thisCritical, EnumHand hand);
 
+	public void doFireSound(ItemStack stack, EntityLivingBase living, World world, int critical) {
+		if (ItemFromData.getData(stack).hasProperty(PropertyType.FIRE_SOUND)) {
+			SoundEvent soundToPlay = SoundEvent.REGISTRY
+					.getObject(new ResourceLocation(ItemFromData.getData(stack).getString(PropertyType.FIRE_SOUND)
+							+ (critical == 2 ? ".crit" : "")));
+			living.playSound(soundToPlay, 2f, 1f);
+			if (world.isRemote)
+				ClientProxy.removeReloadSound(living);
+		}
+	}
+	
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		/*
