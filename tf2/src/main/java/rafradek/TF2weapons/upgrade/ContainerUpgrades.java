@@ -172,10 +172,10 @@ public class ContainerUpgrades extends Container {
 			if (!tag.hasKey(key))
 				return false;
 			tag.setFloat(key, tag.getFloat(key) - attr.perLevel * count);
-			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") - attr.cost);
+			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") - attr.cost * count);
 			TF2weapons.setExperiencePoints(playerIn, expPoints + cost);
-			this.transactions[idEnch]--;
-			this.transactionsCost[idEnch]-=cost;
+			this.transactions[idEnch]=0;
+			this.transactionsCost[idEnch]=0;
 		}
 		return true;
 	}

@@ -128,13 +128,13 @@ item.tf2ammo.medigun.name=Medicine
 item.tf2ammo.flare.name=Flare
 item.tf2ammo.ball.name=Ball
 
-command.resetbossstat.usage=/resetbossstat <player>
-command.resetbossstat.success=Boss level progress reset for %s
-command.resetitemdata.usage=/resetitemdata
-command.resetitemdata.success=Reloading item data
-command.giveweapon.usage=/giveweapon <item> [player] [attributes ...]
-command.giveweapon.success=Given %s to %s
-command.giveweapon.notfound=Cannot find weapon: %s
+commands.resetbossstat.usage=/resetbossstat <player>
+commands.resetbossstat.success=Boss level progress reset for %s
+commands.resetitemdata.usage=/resetitemdata
+commands.resetitemdata.success=Reloading item data
+commands.giveweapon.usage=/giveweapon <item> [player] [attribute index:attribute value ...] 
+commands.giveweapon.success=Given %s to %s
+commands.giveweapon.notfound=Cannot find weapon: %s
 
 gui.teleporter.info=Teleporter channel
 gui.teleporter.drop=Grab

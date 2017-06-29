@@ -238,7 +238,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.6", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -366,7 +366,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 18;
+		return 19;
 	}
 
 	@Mod.EventHandler
@@ -594,9 +594,9 @@ public class TF2weapons {
 		GameRegistry.register(itemAmmoFire = new ItemFireAmmo(10, 350).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_fire"));
 		GameRegistry.register(itemAmmoMedigun = new ItemFireAmmo(12, 1400).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_medigun"));
 		GameRegistry.register(itemAmmoBelt = new ItemAmmoBelt().setUnlocalizedName("ammoBelt").setRegistryName(TF2weapons.MOD_ID + ":ammo_belt").setCreativeTab(tabsurvivaltf2));
-		GameRegistry.register(itemScoutBoots = new ItemArmorTF2(ArmorMaterial.LEATHER, 0, EntityEquipmentSlot.FEET,"Allows double jumping")
+		GameRegistry.register(itemScoutBoots = new ItemArmorTF2(ArmorMaterial.LEATHER, 0, EntityEquipmentSlot.FEET,"Allows double jumping",0f)
 				.setUnlocalizedName("scoutBoots").setRegistryName(TF2weapons.MOD_ID + ":scout_shoes").setCreativeTab(tabutilitytf2));
-		GameRegistry.register(itemMantreads = new ItemArmorTF2(ArmorMaterial.IRON, 0, EntityEquipmentSlot.FEET,"Deals 1.8x falling damage to the player you land on")
+		GameRegistry.register(itemMantreads = new ItemArmorTF2(ArmorMaterial.IRON, 0, EntityEquipmentSlot.FEET,"Deals 1.8x falling damage to the player you land on",0.75f)
 				.setUnlocalizedName("mantreads").setRegistryName(TF2weapons.MOD_ID + ":mantreads").setCreativeTab(tabutilitytf2));
 		// GameRegistry.register(itemCopperIngot=new
 		// Item().setUnlocalizedName("ingotCopper").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotCopper"));
@@ -1270,12 +1270,13 @@ public class TF2weapons {
 	}
 
 	public static Vec3d radiusRandom3D(float radius, Random random) {
-		double x = Double.MAX_VALUE, y = Double.MAX_VALUE, z = Double.MAX_VALUE;
-		while (Math.sqrt(x * x + y * y + z * z) > radius) {
+		double x, y, z;
+		double radius2 = radius * radius;
+		do{ 
 			x = random.nextDouble() * radius * 2 - radius;
 			y = random.nextDouble() * radius * 2 - radius;
 			z = random.nextDouble() * radius * 2 - radius;
-		}
+		} while (x * x + y * y + z * z > radius2);
 		return new Vec3d(x, y, z);
 
 	}
@@ -1292,8 +1293,8 @@ public class TF2weapons {
 		 * raddddddddius); double r = u>1?2-u:u;
 		 */
 		float a = random.nextFloat(), b = random.nextFloat();
-		return new Vec3d(Math.max(a, b) * radius * Math.cos(2 * Math.PI * Math.min(a, b) / Math.max(a, b)),
-				Math.max(a, b) * radius * Math.sin(2 * Math.PI * Math.min(a, b) / Math.max(a, b)), 0);
+		return new Vec3d(Math.max(a, b) * radius * MathHelper.cos((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b))),
+				Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b))), 0);
 	}
 
 	public static List<RayTraceResult> pierce(World world, EntityLivingBase living, double startX, double startY, double startZ, double endX, double endY, double endZ,
@@ -1351,7 +1352,7 @@ public class TF2weapons {
 	public static RayTraceResult getTraceResult(Entity target, Vec3d hitVec, boolean headshot, Vec3d start, Vec3d end) {
 		RayTraceResult result = new RayTraceResult(target, hitVec);
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding) && headshot) {
-			RayTraceResult var13 = getHead((EntityLivingBase)target).calculateIntercept(start, end);
+			Boolean var13 = getHead((EntityLivingBase)target).isVecInside(hitVec);
 			result.hitInfo = var13;
 		}
 		return result;
@@ -1378,17 +1379,18 @@ public class TF2weapons {
 		}
 		return head;
 	}
-	public static boolean isUsingShield(Entity shielded, EntityLivingBase shooter) {
+	public static boolean isUsingShield(Entity shielded, DamageSource source) {
 		if (shielded instanceof EntityLivingBase && ((EntityLivingBase) shielded).isActiveItemStackBlocking()) {
-			Vec3d vec3d = shooter.getPositionVector();
-			if (vec3d != null) {
+			Vec3d location = source.getDamageLocation();
+			if(location == null)
+				location = source.getSourceOfDamage().getPositionVector();
+			if(location != null) {
 				Vec3d vec3d1 = shielded.getLook(1.0F);
-				Vec3d vec3d2 = vec3d.subtractReverse(shielded.getPositionVector()).normalize();
+				Vec3d vec3d2 = location.subtractReverse(shielded.getPositionVector()).normalize();
 				vec3d2 = new Vec3d(vec3d2.xCoord, 0.0D, vec3d2.zCoord);
-
+	
 				if (vec3d2.dotProduct(vec3d1) < 0.0D)
 					return true;
-
 			}
 		}
 		return false;
@@ -1431,12 +1433,13 @@ public class TF2weapons {
 			calculateddamage *= 1.35f;
 		if (target == dummyEnt)
 			distance *= 0.5f;
-		if (!(target instanceof EntityTF2Boss) && weapon.getWeaponDamageFalloff(stack) > 0 && (critical < 2 || target == living))
-			if (distance <= weapon.getWeaponDamageFalloff(stack))
+		float falloff=weapon.getWeaponDamageFalloff(stack);
+		if (!(target instanceof EntityTF2Boss) &&  falloff> 0 && (critical < 2 || target == living))
+			if (distance <= falloff)
 				// calculateddamage *=weapon.maxDamage - ((distance /
 				// (float)weapon.damageFalloff) *
 				// (weapon.maxDamage-weapon.damage));
-				calculateddamage *= lerp(weapon.getWeaponMaxDamage(stack, living), 1f, (distance / weapon.getWeaponDamageFalloff(stack)));
+				calculateddamage *= lerp(weapon.getWeaponMaxDamage(stack, living), 1f, (distance / falloff));
 			else if (critical == 0)
 				// calculateddamage
 				// *=Math.max(weapon.getWeaponMinDamage(stack,living)/weapon.getWeaponDamage(stack,living),
@@ -1444,9 +1447,10 @@ public class TF2weapons {
 				// (((distance-weapon.getWeaponDamageFalloff(stack)) /
 				// ((float)weapon.getWeaponDamageFalloff(stack)*2)) *
 				// (weapon.getWeaponDamage(stack,living)-weapon.getWeaponMinDamage(stack,living))))/weapon.getWeaponDamage(stack,living));
-				calculateddamage *= lerp(1f, weapon.getWeaponMinDamage(stack, living),
-						(Math.min(distance / weapon.getWeaponDamageFalloff(stack), TF2Attribute.getModifier("Accuracy", stack, 2, living)) - 1)
-								/ (TF2Attribute.getModifier("Accuracy", stack, 2, living) - 1));
+				calculateddamage *= lerp(1f, weapon.getWeaponMinDamage(stack, living), 
+						Math.min(1,(distance-falloff)/(TF2Attribute.getModifier("Accuracy", stack, falloff*2f, living)-falloff)));
+						/*(Math.min(distance / weapon.getWeaponDamageFalloff(stack), TF2Attribute.getModifier("Accuracy", stack, 2, living)) - 1)
+								/ (TF2Attribute.getModifier("Accuracy", stack, 2, living) - 1));*/
 		// calculateddamage *= 1 -
 		// (1-weapon.getWeaponMinDamage(stack,living))*(Math.min(distance/weapon.getWeaponDamageFalloff(stack),2*TF2Attribute.getModifier("Accuracy",
 		// stack, 1,living))-1*TF2Attribute.getModifier("Accuracy", stack,
@@ -1454,8 +1458,7 @@ public class TF2weapons {
 		// System.out.println((distance-weapon.getWeaponDamageFalloff(stack))-(weapon.getWeaponDamageFalloff(stack)*2));
 		if (target instanceof EntityEnderman && !(stack.getItem() instanceof ItemMeleeWeapon))
 			calculateddamage *= 0.4f;
-		if (isUsingShield(target, living))
-			calculateddamage *= 0.45f;
+		
 		/*
 		 * if (living instanceof IRangedWeaponAttackMob)
 		 * calculateddamage*=((IRangedWeaponAttackMob)living).
@@ -1580,18 +1583,9 @@ public class TF2weapons {
 		double lvelocityZ = entity.motionZ;
 		entity.hurtResistantTime = 0;
 
-		if (!(living instanceof EntityPlayer) && entity instanceof EntityPlayer)
-			if (world.getDifficulty() == EnumDifficulty.EASY)
-				damage *= 0.45f;
-			else if (world.getDifficulty() == EnumDifficulty.NORMAL)
-				damage *= 0.6f;
-			else if (world.getDifficulty() == EnumDifficulty.HARD)
-				damage *= 0.8f;
 		
-		if(!(entity instanceof IEntityTF2))
-			damage *=damageMultiplier;
 		
-		boolean usingShield = isUsingShield(entity, living);
+		damage *=damageMultiplier;
 
 		if (entity == living && source instanceof TF2DamageSource && living instanceof EntityPlayer && living.getTeam() != null) {
 			((TF2DamageSource) source).setAttackSelf();
@@ -1602,6 +1596,10 @@ public class TF2weapons {
 			TF2weapons.playSound(entity, ItemFromData.getSound(stack, PropertyType.HIT_SOUND), ItemFromData.getData(stack).getName().equals("fryingpan") ? 2F : 0.7F, 1F);
 		//System.out.println("dealt: " + damage);
 		boolean knockback = canHit(living, entity);
+		if (knockback && isUsingShield(entity, source)) {
+			((EntityLivingBase)entity).getActiveItemStack().damageItem((int) (damage*(source.isExplosion()?4f:2f)), (EntityLivingBase) entity);
+			damage*=0.45f;
+		}
 		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth():0f;
 		if (knockback && entity.attackEntityFrom(source, damage)) {
 			//System.out.println("realD");
@@ -1618,8 +1616,6 @@ public class TF2weapons {
 
 				EntityLivingBase livingTarget = (EntityLivingBase) entity;
 				
-				if (usingShield)
-					livingTarget.getActiveItemStack().damageItem((int) Math.max(damage * (source.isExplosion()?4:2), 1), livingTarget);
 				// System.out.println(livingTarget.getHealth());
 				// System.out.println("Scaled"+source.isDifficultyScaled()+"
 				// "+damage);
@@ -1655,7 +1651,8 @@ public class TF2weapons {
 	public static float damageBlock(BlockPos pos, EntityLivingBase living, World world, ItemStack stack, int critical, float damage, Vec3d forwardVec, Explosion explosion) {
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
-		if (block.isAir(state, world, pos) || TF2weapons.destTerrain == 0 || state.getBlockHardness(world, pos) < 0 || (!(living instanceof EntityPlayer) && !world.getGameRules().getBoolean("mobGriefing")))
+		if (block.isAir(state, world, pos) || TF2weapons.destTerrain == 0 || state.getBlockHardness(world, pos) < 0 ||
+				(!(living instanceof EntityPlayer) && !world.getGameRules().getBoolean("mobGriefing")) || (living instanceof EntityPlayer && !world.isBlockModifiable((EntityPlayer) living, pos)))
 			return 0;
 
 		DestroyBlockEntry finalEntry = null;
@@ -1833,7 +1830,10 @@ public class TF2weapons {
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
 			if(vec != null) {
 				boolean expJump=ent == shooter && explosion.affectedEntities.size() == 1;
-				vec=vec.scale(dmg/(expJump?6f:9f));	
+				vec=vec.scale(dmg/(expJump?6f:9f) * 
+						(ent instanceof EntityLivingBase && !expJump? 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue():1));	
+				if(ent.motionY!=0)
+					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.yCoord)/ent.motionY));
 				if(vec.yCoord>0) {
 					if(expJump) {
 						//ent.fallDistance -= vec.yCoord * 8 - 1;

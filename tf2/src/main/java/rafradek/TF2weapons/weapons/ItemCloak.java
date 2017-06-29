@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2EventsCommon;
@@ -69,28 +70,30 @@ public class ItemCloak extends ItemFromData {
 		return super.onDroppedByPlayer(item, player);
 	}
 
-	public static ItemStack searchForWatches(EntityLivingBase living) {
+	public static Tuple<Integer, ItemStack> searchForWatches(EntityLivingBase living) {
 		if (living instanceof EntitySpy)
-			return ((EntitySpy) living).loadout.get(3);
+			return new Tuple<>(3, ((EntitySpy)living).loadout.get(3));
 		if (living instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) living;
 			if (!player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem() instanceof ItemCloak
 					&& player.getHeldItemOffhand().getTagCompound().getBoolean("Active"))
 				// System.out.println("Found offhand");
-				return player.getHeldItemOffhand();
-			for (ItemStack stack : player.inventory.mainInventory)
+				return new Tuple<>(40,player.getHeldItemOffhand());
+			for (int i=0;i<player.inventory.mainInventory.size();i++) {
+				ItemStack stack=player.inventory.mainInventory.get(i);
 				if (!stack.isEmpty() && stack.getItem() instanceof ItemCloak
 						&& stack.getTagCompound().getBoolean("Active"))
 					// System.out.println("Found hand");
-					return stack;
+					return new Tuple<>(i,stack);
+			}
 
 		}
-		return ItemStack.EMPTY;
+		return new Tuple<>(-1, ItemStack.EMPTY);
 	}
 
 	public void setCloak(boolean active, ItemStack stack, EntityLivingBase living, World world) {
 		// System.out.println("set active: "+active);
-		if (!active || !(living instanceof EntityPlayer) || searchForWatches(living).isEmpty()) {
+		if (!active || !(living instanceof EntityPlayer) || searchForWatches(living).getSecond().isEmpty()) {
 			if (!active) {
 				living.setInvisible(false);
 				living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks = 20;

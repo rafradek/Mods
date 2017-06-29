@@ -1,9 +1,13 @@
 package rafradek.TF2weapons.weapons;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
@@ -21,6 +25,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.SkinManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -31,10 +36,17 @@ import net.minecraft.entity.passive.EntityChicken;
 import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.EntitySpy;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 
 public class GuiDisguiseKit extends GuiScreen {
@@ -42,9 +54,17 @@ public class GuiDisguiseKit extends GuiScreen {
 	public GuiButton playerDisguise;
 	private GuiTextField playerNameField;
 	public EntityPlayer player;
-	public EntityLivingBase[] mobs = new EntityLivingBase[7];
+	public ArrayList<EntityLivingBase> mobList = new ArrayList<>();
 	public boolean needUpdating;
 	public int ticksUpdate;
+	public int firstIndex;
+	public float scroll;
+	private boolean isScrolling;
+	private boolean wasClicking;
+	
+	private static final ResourceLocation CRAFTING_TABLE_GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/gui/container/cabinet.png");
+	
 	public GuiDisguiseKit() {
 		
 	}
@@ -52,20 +72,35 @@ public class GuiDisguiseKit extends GuiScreen {
 	@Override
 	public void initGui() {
 		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(null, "name"));
-		mobs[0] = new EntityZombie(this.mc.world);
-		mobs[1] = new EntityCreeper(this.mc.world);
-		mobs[2] = new EntityEnderman(this.mc.world);
-		mobs[3] = new EntitySpider(this.mc.world);
-		mobs[4] = new EntityCow(this.mc.world);
-		mobs[5] = new EntityPig(this.mc.world);
-		mobs[6] = new EntityChicken(this.mc.world);
+		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
+			Entity entity=EntityList.createEntityByIDFromName(entry, this.mc.world);
+			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss())||this.mc.player.capabilities.isCreativeMode)) {
+				mobList.add((EntityLivingBase) entity);
+				if(entity instanceof EntitySpy) {
+					entity.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
+				}
+			}
+		}
+		Collections.sort(mobList, new Comparator<EntityLivingBase>() {
+
+			@Override
+			public int compare(EntityLivingBase o1, EntityLivingBase o2) {
+				// TODO Auto-generated method stub
+				return EntityList.getKey(o2).toString().compareTo(EntityList.getKey(o1).toString());
+			}
+			
+		});
 		Keyboard.enableRepeatEvents(true);
-		this.playerNameField = new GuiTextField(6, this.fontRendererObj, this.width / 2 + 76, this.height / 2 + 70, 58,
+		this.playerNameField = new GuiTextField(6, this.fontRendererObj, this.width / 2 + 26, this.height / 2 + 60, 108,
 				19);
 		this.playerNameField.setMaxStringLength(64);
 		this.playerNameField.setFocused(true);
 		this.buttonList.clear();
-		this.buttonList.add(new GuiButton(0, this.width / 2 - 135, this.height / 2 - 20, 60, 20,
+		for(int i=0;i<16;i++) {
+			this.buttonList.add(new GuiButton(i, this.width / 2 - 135 + (i%2) * 70, this.height / 2 - 60+i/2*20, 70, 20,
+					I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityZombie.class)), new Object[0])));
+		}
+		/*this.buttonList.add(new GuiButton(0, this.width / 2 - 135, this.height / 2 - 20, 60, 20,
 				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityZombie.class)), new Object[0])));
 		this.buttonList.add(new GuiButton(1, this.width / 2 - 65, this.height / 2 - 20, 60, 20,
 				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityCreeper.class)), new Object[0])));
@@ -78,40 +113,54 @@ public class GuiDisguiseKit extends GuiScreen {
 		this.buttonList.add(new GuiButton(4, this.width / 2 - 65, this.height / 2 + 90, 60, 20,
 				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityPig.class)), new Object[0])));
 		this.buttonList.add(new GuiButton(8, this.width / 2 + 5, this.height / 2 + 90, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityChicken.class)), new Object[0])));
+				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityChicken.class)), new Object[0])));*/
 		this.buttonList
-				.add(playerDisguise = new GuiButton(5, this.width / 2 + 75, this.height / 2 + 90, 60, 20, "Player"));
+				.add(playerDisguise = new GuiButton(30, this.width / 2 + 25, this.height / 2 + 80, 110, 20, "Player"));
+		this.setButtons();
 
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.enabled) {
-			if (button.id == 0)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Zombie"));
+			/*if (button.id == 0)
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:zombie"));
 			if (button.id == 1)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Creeper"));
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:creeper"));
 			if (button.id == 2)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Enderman"));
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:enderman"));
 			if (button.id == 3)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Cow"));
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:cow"));
 			if (button.id == 4)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Pig"));
-			if (button.id == 5)
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:pig"));*/
+			if (button.id == 30)
 				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("P:" + playerNameField.getText()));
-			if (button.id == 7)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Spider"));
+			if (button.id < 16) {
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:"+ EntityList.getKey(mobList.get(button.id+this.firstIndex)).toString()));
+			}
+			/*if (button.id == 7)
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:spider"));
 			if (button.id == 8)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:Chicken"));
+				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:" + playerNameField.getText()));*/
 			this.mc.displayGuiScreen(null);
 		}
 	}
-
+	
+	public void setButtons() {
+		
+		for (int i = 0; i < 16; i++) {
+			if(i+firstIndex<mobList.size()) {
+				this.buttonList.get(i).displayString=mobList.get(i+firstIndex).getName();
+				this.buttonList.get(i).visible=true;
+			}
+			else
+				this.buttonList.get(i).visible=false;
+		}
+	}
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		this.playerNameField.mouseClicked(mouseX, mouseY, mouseButton);
-
 	}
 
 	@Override
@@ -125,14 +174,61 @@ public class GuiDisguiseKit extends GuiScreen {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		
 		this.drawDefaultBackground();
 		this.drawCenteredString(this.fontRendererObj, I18n.format("gui.disguise.info", new Object[0]),
 				this.width / 2 - 5, 20, 16777215);
-		for (int i = 0; i < this.mobs.length; i++)
+		/*for (int i = 0; i < this.mobs.length; i++)
 			drawEntityOnScreen(this.width / 2 - 105 + (i % 4) * 70, this.height / 2 - 26 + 110 * (i / 4), 35, mobs[i]);
-		drawEntityOnScreen(this.width / 2 + 105, this.height / 2 + 66, 35, player);
-		this.playerNameField.drawTextBox();
+			
+		drawEntityOnScreen(this.width / 2 + 105, this.height / 2 + 66, 35, player);*/
+		int entdraw= -1;
+		for(int i=0;i<16;i++) {
+			if(i+firstIndex<this.mobList.size() && this.buttonList.get(i).isMouseOver()) {
+				entdraw=i+this.firstIndex;
+				break;
+			}
+		}
+		if (entdraw == -1)
+			drawEntityOnScreen(this.width / 2 + 75, this.height / 2 + 40, 35, player);
+		else
+			drawEntityOnScreen(this.width / 2 + 75, this.height / 2 + 40, 35, this.mobList.get(entdraw));
+		boolean flag = Mouse.isButtonDown(0);
+		int i = this.width / 2;
+		int j = this.height / 2;
+		int k = i + 5;
+		int l = j - 60;
+		int i1 = k + 14;
+		int j1 = l + 160;
+		
+		if (!this.wasClicking && flag && mouseX >= k && mouseY >= l && mouseX < i1 && mouseY < j1)
+			this.isScrolling = true;
+
+		if (!flag)
+			this.isScrolling = false;
+
+		this.wasClicking = flag;
+
+		if (this.isScrolling) {
+			int size = this.mobList.size();
+			this.scroll = (mouseY - l - 7.5F) / (j1 - l - 15.0F);
+			this.scroll = MathHelper.clamp(this.scroll, 0.0F, 1.0F);
+			int rows=-(-this.mobList.size()/2)-7;
+			this.firstIndex = Math.round(this.scroll * rows) * 2;
+			this.setButtons();
+		}
+		this.mc.getTextureManager().bindTexture(CRAFTING_TABLE_GUI_TEXTURES);
+		
+		k = this.width / 2 + 6;
+		l = this.height / 2 - 59;
+		i = l + 160;
+
+		this.drawTexturedModalRect(k, l + (int) ((i - l - 17) * this.scroll), 232, 0, 12, 15);
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		this.playerNameField.drawTextBox();
+		
+		
 
 	}
 

@@ -99,6 +99,7 @@ import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -219,6 +220,9 @@ public class TF2EventsCommon {
 	public static final DataParameter<Integer> ENTITY_HEAL_TARGET = new DataParameter<Integer>(172, DataSerializers.VARINT);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
+	public static long[] tickTimeLiving=new long[20];
+	public static long[] tickTimeMercUpdate=new long[20];
+	public static long[] tickTimeOther=new long[20];
 	/*
 	 * @SubscribeEvent public void spawn(WorldEvent.PotentialSpawns event){ int
 	 * time=(int) (event.getWorld().getWorldInfo().getWorldTotalTime()/24000);
@@ -240,8 +244,8 @@ public class TF2EventsCommon {
 			}
 		}
 		if (event.getTarget() != null
-				&& (event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
-						&& ItemDisguiseKit.isDisguised(event.getTarget()) && event.getEntityLiving().getAttackingEntity() != event.getTarget()))
+				&& (event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && 
+						ItemDisguiseKit.isDisguised(event.getTarget(),event.getEntityLiving()) && event.getEntityLiving().getAttackingEntity() != event.getTarget()))
 			if (event.getEntityLiving() instanceof EntityLiving) {
 				((EntityLiving) event.getEntity()).setAttackTarget(null);
 			}
@@ -278,10 +282,30 @@ public class TF2EventsCommon {
 			}
 	}
 
+	public static double avg(long[] values) {
+		long totalticktime=0L;
+		for(long val : values) {
+			totalticktime+=val;
+		}
+		totalticktime/=values.length;
+		return (double)totalticktime* 1.0E-6D;
+	}
+	
 	@SubscribeEvent
 	public void worldTick(TickEvent.WorldTickEvent event) {
 		if (event.phase == TickEvent.Phase.START && event.side == Side.SERVER) {
+			
+			/*if(TF2weapons.server.getTickCounter()%20 == 0) {
+				System.out.println("TickTimeLiving: "+avg(tickTimeLiving));
+				System.out.println("TickTimeTF2Mob: "+avg(tickTimeMercUpdate));
+				System.out.println("TickTimeOther: "+avg(tickTimeOther));
+				System.out.println("TickTimeTotal: "+avg(TF2weapons.server.tickTimeArray));
+			}*/
+			tickTimeOther[TF2weapons.server.getTickCounter()%20]=0;
+			tickTimeLiving[TF2weapons.server.getTickCounter()%20]=0;
+			tickTimeMercUpdate[TF2weapons.server.getTickCounter()%20]=0;
 			long worldTime=event.world.getWorldTime();
+			long nanoTickStart=System.nanoTime();
 			if(worldTime%4==0){
 				for (int i = 0; i < destroyProgress.size(); i++) {
 					DestroyBlockEntry entry = destroyProgress.get(i);
@@ -350,6 +374,7 @@ public class TF2EventsCommon {
 						}
 				}
 			}
+			tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTickStart;
 		}
 	}
 
@@ -492,23 +517,21 @@ public class TF2EventsCommon {
 
 	@SubscribeEvent
 	public void clonePlayer(final PlayerEvent.Clone event) {
-		if (event.isWasDeath()) {
-			InventoryWearables oldInv = event.getOriginal().getCapability(TF2weapons.INVENTORY_CAP, null);
-			InventoryWearables newInv = event.getEntityPlayer().getCapability(TF2weapons.INVENTORY_CAP, null);
-			for (int i = 0; i < 3; i++) {
-				newInv.setInventorySlotContents(i, oldInv.getStackInSlot(i));
-			}
-			for (Entry<Class<? extends Entity>, Short> entry : event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.entrySet()) {
-				event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.put(entry.getKey(), entry.getValue());
-			}
+		InventoryWearables oldInv = event.getOriginal().getCapability(TF2weapons.INVENTORY_CAP, null);
+		InventoryWearables newInv = event.getEntityPlayer().getCapability(TF2weapons.INVENTORY_CAP, null);
+		for (int i = 0; i < 3; i++) {
+			newInv.setInventorySlotContents(i, oldInv.getStackInSlot(i));
+		}
+		for (Entry<Class<? extends Entity>, Short> entry : event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.entrySet()) {
+			event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.put(entry.getKey(), entry.getValue());
+		}
 
-			event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).contracts=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).contracts;
-			event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).newContracts=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).newContracts;
-			event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).nextContractDay=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).nextContractDay;
-			if(event.getEntityPlayer() != null)
-				if(event.getEntityPlayer() instanceof EntityPlayerMP) {
-					event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).sendContractsNextTick=true;
-			}
+		event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).contracts=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).contracts;
+		event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).newContracts=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).newContracts;
+		event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).nextContractDay=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).nextContractDay;
+		if(event.getEntityPlayer() != null)
+			if(event.getEntityPlayer() instanceof EntityPlayerMP) {
+				event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).sendContractsNextTick=true;
 		}
 	}
 
@@ -905,6 +928,7 @@ public class TF2EventsCommon {
 		}
 		if (living.isEntityAlive() && (living.hasCapability(TF2weapons.WEAPONS_CAP, null))) {
 
+			long nanoTickStart=System.nanoTime();
 			final WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 			cap.tick();
 			
@@ -986,40 +1010,54 @@ public class TF2EventsCommon {
 
 				}
 			}
-			if (living.world.isRemote && !living.getDataManager().get(ENTITY_DISGUISE_TYPE).equals(cap.lastDisguiseValue)
-					&& living.getDataManager().get(ENTITY_DISGUISE_TYPE).startsWith("P:")) {
-				cap.lastDisguiseValue = living.getDataManager().get(ENTITY_DISGUISE_TYPE);
-				cap.skinDisguise = null;
-				cap.skinType = DefaultPlayerSkin.getSkinType(living.getUniqueID());
+			if (living.world.isRemote && living.getDataManager().get(ENTITY_DISGUISED) != cap.lastDisgused) {
+				cap.lastDisgused=living.getDataManager().get(ENTITY_DISGUISED);
+				if(living instanceof EntityPlayer)
+					((EntityPlayer)living).refreshDisplayName();
+			}
+			String disguisetype=living.getDataManager().get(ENTITY_DISGUISE_TYPE);
+			
+			if (living.world.isRemote && !disguisetype.equals(cap.lastDisguiseValue)){
+				if(living instanceof EntityPlayer) {
+					((EntityPlayer)living).refreshDisplayName();
+				}
+				
+				cap.lastDisguiseValue = disguisetype;
+				if(living.getDataManager().get(ENTITY_DISGUISE_TYPE).startsWith("P:")) {
+					cap.skinDisguise = null;
+					cap.skinType = DefaultPlayerSkin.getSkinType(living.getUniqueID());
+					THREAD_POOL.submit(new Runnable() {
 
-				THREAD_POOL.submit(new Runnable() {
-
-					@Override
-					public void run() {
-						GameProfile profile = TileEntitySkull
-								.updateGameprofile(new GameProfile(null, living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2)));
-						if (profile.getId() != null) {
-							cap.skinType = DefaultPlayerSkin.getSkinType(profile.getId());
-							cap.skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
-						}
-						Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile, new SkinManager.SkinAvailableCallback() {
-							@Override
-							public void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture) {
-								if (typeIn == Type.SKIN) {
+						@Override
+						public void run() {
+							GameProfile profile = TileEntitySkull
+									.updateGameprofile(new GameProfile(null, living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2)));
+							if (profile.getId() != null) {
+								cap.skinType = DefaultPlayerSkin.getSkinType(profile.getId());
+								cap.skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
+							}
+							Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile, new SkinManager.SkinAvailableCallback() {
+								@Override
+								public void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture) {
 									if (typeIn == Type.SKIN) {
-										cap.skinDisguise = location;
-									}
-									cap.skinType = profileTexture.getMetadata("model");
+										if (typeIn == Type.SKIN) {
+											cap.skinDisguise = location;
+										}
+										cap.skinType = profileTexture.getMetadata("model");
 
-									if (cap.skinType == null) {
-										cap.skinType = "default";
+										if (cap.skinType == null) {
+											cap.skinType = "default";
+										}
 									}
 								}
-							}
-						}, false);
-					}
+							}, false);
+						}
 
-				});
+					});
+					
+				}
+			}
+				
 
 				/*
 				 * Minecraft.getMinecraft().getSkinManager().loadSkin(new
@@ -1037,7 +1075,6 @@ public class TF2EventsCommon {
 				 * 
 				 * });
 				 */
-			}
 			if (living.world.isRemote && living != ClientProxy.getLocalPlayer()){
 				//System.out.println("uber "+living.getActivePotionEffect(TF2weapons.uber).getDuration());
 				Iterator<PotionEffect> iterator=living.getActivePotionEffects().iterator();
@@ -1101,7 +1138,7 @@ public class TF2EventsCommon {
 					// System.out.println("full");
 					living.setInvisible(true);
 				}
-				boolean active = living.world.isRemote || ItemCloak.searchForWatches(living) != null;
+				boolean active = living.world.isRemote || !ItemCloak.searchForWatches(living).getSecond().isEmpty();
 				if (!active) {
 					living.getDataManager().set(ENTITY_INVIS, false);
 					living.setInvisible(false);
@@ -1113,6 +1150,8 @@ public class TF2EventsCommon {
 					living.setInvisible(false);
 				}
 			}
+			if(!living.world.isRemote)
+				tickTimeLiving[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTickStart;
 		}
 
 		if (living.getAITarget() != null && living.getAITarget().hasCapability(TF2weapons.WEAPONS_CAP, null)

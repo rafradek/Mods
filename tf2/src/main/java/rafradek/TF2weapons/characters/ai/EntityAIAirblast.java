@@ -62,7 +62,7 @@ public class EntityAIAirblast extends EntityAIBase {
 				// "+TF2weapons.getTeam(host));
 				airblast = entity.getDistanceSq(host.posX, host.posY + host.getEyeHeight(),
 						host.posZ) < (easier ? 16 : 25)
-						&& TF2weapons.lookingAt(host, (easier ? 30 : 45), entity.posX, entity.posY + entity.height / 2,
+						&& TF2weapons.lookingAt(host, (easier ? 40 : 60), entity.posX, entity.posY + entity.height / 2,
 								entity.posZ);
 				if (airblast)
 					break;

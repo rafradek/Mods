@@ -66,12 +66,13 @@ public class ItemBulletWeapon extends ItemWeapon {
 				/*double distX = (living.posX - entity.posX) * distance;
 				double distY = (living.posY - entity.posY) * distance;
 				double distZ = (living.posZ - entity.posZ) * distance;*/
-				if (!(entity instanceof EntityLivingBase && ((EntityLivingBase) entity)
-						.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
-						.getAttributeValue() >= 1) && !stack.isEmpty()) {
+				if (!stack.isEmpty()) {
 					double knockbackAmount = ((ItemBulletWeapon) stack.getItem()).getWeaponKnockback(stack, living)
 							* map.get(entity)[1] * 0.01625D;
 
+					if(entity instanceof EntityLivingBase)
+						knockbackAmount *= 1-((EntityLivingBase) entity).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
+						.getAttributeValue();
 					if (knockbackAmount > 0){
 						boolean flag=map.get(entity)[1] >= 3.75 && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0&&TF2Attribute.getModifier("KnockbackFAN", stack, 0, living) != 0;
 						pushvec=new Vec3d(pushvec.xCoord * knockbackAmount * (flag?2.8:1), (pushvec.yCoord+(flag?1:0)) * knockbackAmount,
@@ -305,7 +306,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 					if (!lastShot.containsKey(var4.entityHit) || lastShot.get(var4.entityHit) == null)
 						lastShot.put(var4.entityHit, new float[3]);
 					// System.out.println(var4.hitInfo);
-					if (var4.hitInfo != null) {
+					if (var4.hitInfo != null && var4.hitInfo instanceof Boolean && (Boolean)var4.hitInfo) {
 						critical = 2;
 						ItemWeapon.critical = 2;
 					}
@@ -317,7 +318,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 					// values[2]=distance;
 				} else if (world.isRemote) {
 					// System.out.println(var4.hitInfo);
-					var4.hitInfo = new float[] { var4.hitInfo != null ? 1 : 0, distance };
+					var4.hitInfo = new float[] { var4.hitInfo != null && var4.hitInfo instanceof Boolean && (Boolean)var4.hitInfo ? 1 : 0, distance };
 					lastShotClient.add(var4);
 				}
 			} else if (var4.getBlockPos() != null)
@@ -395,7 +396,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 	}
 
 	public float getBulletSize(ItemStack stack, EntityLivingBase living) {
-		return 0.04f;
+		return 0.04f/this.getWeaponPelletCount(stack, living);
 	}
 
 	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old) {

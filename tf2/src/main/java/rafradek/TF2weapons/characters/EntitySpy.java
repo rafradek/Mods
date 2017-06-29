@@ -1,11 +1,17 @@
 package rafradek.TF2weapons.characters;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2Sounds;
@@ -31,9 +37,11 @@ public class EntitySpy extends EntityTF2Character {
 			this.tasks.addTask(4, this.attack);
 		}
 		this.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks = 20;
-		this.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, true);
-		this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, true);
-		this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, "T:Engineer");
+		if(!this.world.isRemote) {
+			this.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, true);
+			this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, true);
+			this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, "T:Engineer");
+		}
 	}
 
 	public float[] getDropChance() {
@@ -115,6 +123,25 @@ public class EntitySpy extends EntityTF2Character {
 		this.loadout.get(1).setCount( 64);
 	}
 
+	public String getName() {
+		if(this.world.isRemote && ClientProxy.getLocalPlayer() != null && this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
+			String username=this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+			
+			if(TF2weapons.isOnSameTeam(ClientProxy.getLocalPlayer(), this)) {
+				return super.getName()+" ["+username+"]";
+			}
+			else {
+				if(this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
+					return TextFormatting.RESET+I18n.format("entity."+username+".name");
+				}
+				else
+					return ScorePlayerTeam.formatPlayerName(Minecraft.getMinecraft().world.getScoreboard().getPlayersTeam(username), username);
+			}
+		}
+		else
+			return super.getName();
+	}
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_SPY_SAY;
@@ -175,7 +202,7 @@ public class EntitySpy extends EntityTF2Character {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.25D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.315D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.0D);
 	}

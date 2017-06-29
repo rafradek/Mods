@@ -27,7 +27,7 @@ public class CommandGenerateReferences extends CommandBase {
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
 		// TODO Auto-generated method stub
-		return "command.generatereferences.usage";
+		return "commands.generatereferences.usage";
 	}
 
 	@Override

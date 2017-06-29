@@ -51,7 +51,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	public float dodgeSpeed = 1f;
 	public int jumprange;
 	public float projSpeed;
-	public int fireAtFeet;
+	public double fireAtFeet;
 
 	private boolean firstTick;
 
@@ -173,7 +173,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 					this.entityHost.posY + this.entityHost.getEyeHeight(), this.entityHost.posZ),
 					new Vec3d(lookX, lookY, lookZ), false, true, false) != null)
 				lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
-			double yFall = this.attackTarget.motionY < 0 ? this.attackTarget.motionY : 0;
+			double yFall = this.attackTarget.motionY < 0 && !this.attackTarget.onGround? -this.attackTarget.motionY : 0;
 			for (int i = 1; !this.attackTarget.isInWater() && i <= (ticksToReach); i++) {
 				lookY += gravity * i;
 				if (!this.attackTarget.onGround && this.attackTarget.motionY < 0)
@@ -193,6 +193,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			// System.out.println("raytracing:"+this.entityHost.world.rayTraceBlocks(new
 			// Vec3d(this.entityHost.posX,this.entityHost.posY+this.entityHost.getEyeHeight(),this.entityHost.posZ),
 			// new Vec3d(lookX,this.attackTarget.posY,lookZ)));
+			lookY -= yFall;
+			
 			if (this.fireAtFeet > 0 && this.entityHost.world.rayTraceBlocks(
 					new Vec3d(this.entityHost.posX, this.entityHost.posY + this.entityHost.getEyeHeight(),
 							this.entityHost.posZ),
@@ -208,7 +210,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				 * lookY=mop.hitVec.yCoord; } else{
 				 * lookY=this.attackTarget.posY-yFall; } } else{
 				 */
-				lookY = this.attackTarget.posY - yFall;
+				lookY -= (this.attackTarget.height/2)*this.fireAtFeet;
 			// }
 
 		}

@@ -60,6 +60,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public ResourceLocation skinDisguise;
 	public boolean skinRetrieved;
 	public String lastDisguiseValue;
+	public boolean lastDisgused;
 	public String skinType;
 	//public int zombieHuntTicks;
 	public int ticksBash;
@@ -77,6 +78,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int focusShotTicks;
 	public int focusShotRemaining;
 	public int fanCool;
+	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
 	

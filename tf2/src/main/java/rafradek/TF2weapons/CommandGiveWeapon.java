@@ -19,7 +19,7 @@ public class CommandGiveWeapon extends CommandBase {
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
 		// TODO Auto-generated method stub
-		return "command.giveweapon.usage";
+		return "commands.giveweapon.usage";
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class CommandGiveWeapon extends CommandBase {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 1)
-			throw new WrongUsageException("commands.giveweapon.usage", new Object[0]);
+			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		try {
 			ItemStack item = ItemFromData.getNewStack(args[0]);
 			NBTTagCompound attributes = item.getTagCompound().getCompoundTag("Attributes");
@@ -88,7 +88,7 @@ public class CommandGiveWeapon extends CommandBase {
 			// new Object[] {item.func_151000_E(),
 			// entityplayermp.getCommandSenderName()});
 		} catch (Exception e) {
-			throw new WrongUsageException(e.getMessage(), new Object[0]);
+			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
 }

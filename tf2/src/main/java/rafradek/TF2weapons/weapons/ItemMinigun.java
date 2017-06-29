@@ -72,6 +72,16 @@ public class ItemMinigun extends ItemBulletWeapon {
 	 * getShort("minigunticks"))); } }
 	 */
 	@Override
+	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
+		return super.getWeaponDamage(stack, living, target)*(living != null?TF2weapons.lerp(0.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+	}
+	
+	@Override
+	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
+		return super.getWeaponSpreadBase(stack, living)*(living != null?TF2weapons.lerp(1.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+	}
+	
+	@Override
 	public boolean startUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
 		if (world.isRemote && oldState == 0
 				&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 3))
@@ -85,12 +95,10 @@ public class ItemMinigun extends ItemBulletWeapon {
 
 	@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int action, int newState) {
-		if (world.isRemote && newState == 0
-				&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 4)
-				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks > 0)
-			// ResourceLocation playSound=new
-			// ResourceLocation(getData(stack).get("Wind Down
-			// Sound").getString());
+		WeaponsCapability cap=living.getCapability(TF2weapons.WEAPONS_CAP, null);
+		if (newState == 0)
+			cap.minigunTicks = 0;
+		if (world.isRemote && newState == 0 && cap.chargeTicks > 0 && (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 4))
 			ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.WIND_DOWN_SOUND), false, 4,
 					stack);
 		return false;
@@ -146,36 +154,43 @@ public class ItemMinigun extends ItemBulletWeapon {
 			WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 			
 			float ammo=TF2Attribute.getModifier("Ammo Spinned", stack, 0, living);
-			if( ammo > 0 && !ItemAmmo.searchForAmmo(living, stack).isEmpty() && cap.chargeTicks >= TF2Attribute.getModifier("Minigun Spinup", stack, 18, living)) {
-				if ((living.ticksExisted % (20/ammo)) == 0) {
-					ItemAmmo.consumeAmmoGlobal(living, stack, 1);
-				}
-			}
-			if(living.ticksExisted % 10 == 0 && cap.chargeTicks >= TF2Attribute.getModifier("Minigun Spinup", stack, 18, living)) {
-				
-				float flamedmg=TF2Attribute.getModifier("Ring Fire", stack, 0, living);
-				if(flamedmg > 0) {
-					if(world.isRemote ) {
-						for(int i=0;i<50;i++)
-							ClientProxy.spawnFlameParticle(world, living, 0, true);
+			int spinuptime=(int) TF2Attribute.getModifier("Minigun Spinup", stack, 18, living);
+			
+			if(cap.chargeTicks >= spinuptime || (living instanceof EntityPlayer && ((EntityPlayer) living).isCreative())) {
+				if(cap.minigunTicks<20)
+					cap.minigunTicks+=1;
+				if( ammo > 0 && !ItemAmmo.searchForAmmo(living, stack).isEmpty()) {
+					if ((living.ticksExisted % (20/ammo)) == 0) {
+						ItemAmmo.consumeAmmoGlobal(living, stack, 1);
 					}
-					else {
-						for(EntityLivingBase target:world.getEntitiesWithinAABB(EntityLivingBase.class, living.getEntityBoundingBox().expand(4, -0.5, 4).offset(0, -0.5, 0), new Predicate<EntityLivingBase>() {
-	
-							@Override
-							public boolean apply(EntityLivingBase input) {
-								// TODO Auto-generated method stub
-								return input != living && TF2weapons.canHit(living, input) && input.getDistanceSqToEntity(living)<16;
+				}
+				
+				if(living.ticksExisted % 10 == 0) {
+					
+					float flamedmg=TF2Attribute.getModifier("Ring Fire", stack, 0, living);
+					if(flamedmg > 0) {
+						if(world.isRemote ) {
+							for(int i=0;i<50;i++)
+								ClientProxy.spawnFlameParticle(world, living, 0, true);
+						}
+						else {
+							for(EntityLivingBase target:world.getEntitiesWithinAABB(EntityLivingBase.class, living.getEntityBoundingBox().expand(4, -0.5, 4).offset(0, -0.5, 0), new Predicate<EntityLivingBase>() {
+		
+								@Override
+								public boolean apply(EntityLivingBase input) {
+									// TODO Auto-generated method stub
+									return input != living && TF2weapons.canHit(living, input) && input.getDistanceSqToEntity(living)<16;
+								}
+								
+							})){
+								
+								TF2weapons.dealDamage(target, world, living, stack, 0, flamedmg, TF2weapons.causeDirectDamage(stack, living, 0).setFireDamage());
+								TF2weapons.igniteAndAchievement(target, living, 7);
 							}
-							
-						})){
-							
-							TF2weapons.dealDamage(target, world, living, stack, 0, flamedmg, TF2weapons.causeDirectDamage(stack, living, 0).setFireDamage());
-							TF2weapons.igniteAndAchievement(target, living, 7);
 						}
 					}
+					
 				}
-				
 			}
 			if (living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(slowdownUUID) == null)
 				living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(slowdown);
@@ -187,7 +202,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 			if(world.isRemote)
 				ClientProxy.removeSprint();
 			
-			if (cap.fire1Cool <= 0 && cap.chargeTicks < TF2Attribute.getModifier("Minigun Spinup", stack, 18, living))
+			if (cap.fire1Cool <= 0 && cap.chargeTicks < spinuptime)
 				cap.chargeTicks += 1;
 		}
 	}
@@ -195,7 +210,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return super.canFire(world, living, stack)
-				&& ((living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks >= TF2Attribute
+				&& ((living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks >= (int)TF2Attribute
 						.getModifier("Minigun Spinup", stack, 18, living))
 						|| (living instanceof EntityPlayer && ((EntityPlayer) living).isCreative()));
 	}

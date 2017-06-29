@@ -19,7 +19,7 @@ public class CommandResetStat extends CommandBase {
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
 		// TODO Auto-generated method stub
-		return "command.resetbossstat.usage";
+		return "commands.resetbossstat.usage";
 	}
 
 	@Override
@@ -45,9 +45,9 @@ public class CommandResetStat extends CommandBase {
 					}
 				}
 			}
-			notifyCommandListener(sender, this, "command.resetbossstat.success",entityplayermp.getName());
+			notifyCommandListener(sender, this, "commands.resetbossstat.success",entityplayermp.getName());
 		} catch (Exception e) {
-			throw new WrongUsageException("commands.resetbossstat.usage", new Object[0]);
+			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
 

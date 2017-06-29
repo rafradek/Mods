@@ -26,6 +26,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.IEntityTF2;
@@ -135,7 +136,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(16D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(16D*TF2weapons.damageMultiplier);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0D);
 	}
@@ -205,6 +206,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 
 	@Override
 	public void onUpdate() {
+		long nanoTimeStart=System.nanoTime();
 		this.motionX = 0;
 		this.motionZ = 0;
 		if (this.motionY > 0)
@@ -215,6 +217,8 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 							: ((ItemSapper) this.sapper.getItem()).getWeaponDamage(sapper, this.sapperOwner, this),
 					TF2weapons.causeDirectDamage(this.sapper, this.sapperOwner, 0));
 		super.onUpdate();
+		if(!this.world.isRemote)
+			TF2EventsCommon.tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTimeStart;
 	}
 
 	public void setSapped(EntityLivingBase owner, ItemStack sapper) {

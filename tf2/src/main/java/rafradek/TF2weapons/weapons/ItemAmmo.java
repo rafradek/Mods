@@ -158,8 +158,8 @@ public class ItemAmmo extends Item {
 	}
 
 	public static int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
-		if (EntityDispenser.isNearDispenser(owner.world, owner))
-			return 900;
+		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
+			return 999;
 
 		if (owner instanceof EntityTF2Character)
 			return ((EntityTF2Character) owner).ammoLeft;
@@ -169,7 +169,7 @@ public class ItemAmmo extends Item {
 		int type = ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE);
 
 		if (type == 0)
-			return 900;
+			return 999;
 
 		int ammoCount = 0;
 

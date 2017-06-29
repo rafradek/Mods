@@ -92,10 +92,10 @@ public class EntityHHH extends EntityTF2Boss {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(125);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(105);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.32D);
-		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(18D);
+		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(16D);
 
 	}
 	@Override
@@ -144,7 +144,9 @@ public class EntityHHH extends EntityTF2Boss {
 				Collections.sort(list, new EntityAINearestAttackableTarget.Sorter(this));
 				if(list.size()>0)
 					list.get(0).addPotionEffect(new PotionEffect(TF2weapons.it,600));
-				
+				else if(this.getAITarget() != null) {
+					this.getAITarget().addPotionEffect(new PotionEffect(TF2weapons.it,600));
+				}
 				if(this.scareTick<=0){
 					boolean one=false;
 					for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(10, 10, 10), new Predicate<EntityLivingBase>(){
@@ -158,7 +160,7 @@ public class EntityHHH extends EntityTF2Boss {
 						
 					})){
 						one=true;
-						TF2weapons.stun(living, 100, false);
+						TF2weapons.stun(living, 80, false);
 					}
 					if(one)
 						this.playSound(TF2Sounds.MOB_HHH_ALERT, 1.75F, 1);

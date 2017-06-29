@@ -16,6 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.building.EntityBuilding;
 
 public class ItemDisguiseKit extends Item {
 
@@ -40,9 +41,17 @@ public class ItemDisguiseKit extends Item {
 		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}
 
-	public static boolean isDisguised(EntityLivingBase living) {
-		return living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)
-				&& living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:");
+	public static boolean isDisguised(EntityLivingBase living, EntityLivingBase view) {
+		if(!living.hasCapability(TF2weapons.WEAPONS_CAP, null) || !living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED) 
+				|| (living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks != 0 && !(view instanceof EntityBuilding)))
+			return false;
+		String disguisetype=living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE);
+		if(disguisetype.startsWith("M:") || disguisetype.startsWith("T:"))
+			return true;
+		if(disguisetype.startsWith("P:")) {
+			return living.world.getScoreboard().getPlayersTeam(disguisetype.substring(2)) == view.getTeam();
+		}
+		return false;
 	}
 
 	@Override

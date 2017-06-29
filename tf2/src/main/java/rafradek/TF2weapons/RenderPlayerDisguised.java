@@ -50,7 +50,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 		return i;
 	}
 
-	@Override
+	/*@Override
 	protected void renderEntityName(AbstractClientPlayer entityIn, double x, double y, double z, String name,
 			double p_188296_9_) {
 		String username = entityIn.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
@@ -71,13 +71,13 @@ public class RenderPlayerDisguised extends RenderPlayer {
 		else
 			super.renderEntityName(entityIn, x, y, z, username, p_188296_9_);
 
-	}
+	}*/
 
 	@Override
 	protected boolean canRenderName(AbstractClientPlayer entity) {
 		EntityPlayerSP entityplayersp = Minecraft.getMinecraft().player;
 		if (TF2weapons.isOnSameTeam(entity, entityplayersp))
-			return super.canRenderName(entityplayersp);
+			return super.canRenderName(entity);
 		else {
 			boolean flag = !entity.isInvisibleToPlayer(entityplayersp);
 

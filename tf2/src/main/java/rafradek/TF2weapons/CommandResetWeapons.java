@@ -19,7 +19,7 @@ public class CommandResetWeapons extends CommandBase {
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
 		// TODO Auto-generated method stub
-		return "command.resetitemdata.usage";
+		return "commands.resetitemdata.usage";
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class CommandResetWeapons extends CommandBase {
 		TF2weapons.loadWeapons();
 		if(server.isDedicatedServer())
 			TF2weapons.network.sendToAll(new TF2Message.WeaponDataMessage(TF2weapons.itemDataCompressed));
-		notifyCommandListener(sender, this, "command.resetitemdata.success");
+		notifyCommandListener(sender, this, "commands.resetitemdata.success");
 	}
 
 }

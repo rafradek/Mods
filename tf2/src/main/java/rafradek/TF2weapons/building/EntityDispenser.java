@@ -17,6 +17,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
@@ -114,17 +115,16 @@ public class EntityDispenser extends EntityBuilding {
 							((EntityPlayerMP) living).updateHeldItem();
 					}
 				}
-				ItemStack cloak = ItemCloak.searchForWatches(living);
-				if (!cloak.isEmpty() || (!living.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
+				Tuple<Integer, ItemStack> cloak = ItemCloak.searchForWatches(living);
+				if (!cloak.getSecond().isEmpty() || (!living.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
 						&& living.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemCloak)) {
-					if (cloak.isEmpty())
-						cloak = living.getHeldItem(EnumHand.MAIN_HAND);
+					if (cloak.getSecond().isEmpty())
+						cloak=new Tuple<>(-1,living.getHeldItemMainhand());
 
-					cloak.setItemDamage(Math.max(cloak.getItemDamage() - (2 + this.getLevel()), 0));
-
+					cloak.getSecond().setItemDamage(Math.max(cloak.getSecond().getItemDamage() - (2 + this.getLevel()), 0));
 					if (living instanceof EntityPlayerMP)
 						((EntityPlayerMP) living).connection.sendPacket(
-								new SPacketSetSlot(-1, ((EntityPlayerMP) living).inventory.getSlotFor(cloak), cloak));
+								new SPacketSetSlot(-2, cloak.getFirst(), cloak.getSecond()));
 				}
 				if (this.dispenserTarget != null && !this.dispenserTarget.contains(living))
 					this.playSound(TF2Sounds.MOB_DISPENSER_HEAL, 0.75f, 1f);

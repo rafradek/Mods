@@ -252,22 +252,24 @@ public class EntitySentry extends EntityBuilding {
 						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
 						if(this.isControlled())
 							dist=dist.scale(0.25);
-						if(!(bullet.entityHit instanceof EntityLivingBase 
-								&& ((EntityLivingBase) bullet.entityHit).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue()>=1))
-						bullet.entityHit.addVelocity(dist.xCoord, dist.yCoord, dist.zCoord);
-						bullet.entityHit.isAirBorne=bullet.entityHit.motionY>0.05;
-						if (bullet.entityHit instanceof EntityPlayerMP)
-							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(dist, bullet.entityHit.isAirBorne), (EntityPlayerMP) bullet.entityHit);
-						
-						if (bullet.entityHit instanceof EntityLivingBase) {
-							((EntityLivingBase) bullet.entityHit).setLastAttacker(this);
-							((EntityLivingBase) bullet.entityHit).setRevengeTarget(this);
-							if (!bullet.entityHit.isEntityAlive()) {
-								this.setKills(this.getKills() + 1);
-								if(owner instanceof EntityPlayer && bullet.entityHit instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
-									owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.sentryBullet);
+						if(bullet.entityHit instanceof EntityLivingBase )
+							dist=dist.scale(1-((EntityLivingBase) bullet.entityHit).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue());
+						if(dist.lengthSquared()>0f) {
+							bullet.entityHit.addVelocity(dist.xCoord, dist.yCoord, dist.zCoord);
+							bullet.entityHit.isAirBorne=bullet.entityHit.motionY>0.05;
+							if (bullet.entityHit instanceof EntityPlayerMP)
+								TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(dist, bullet.entityHit.isAirBorne), (EntityPlayerMP) bullet.entityHit);
+							
+							if (bullet.entityHit instanceof EntityLivingBase) {
+								((EntityLivingBase) bullet.entityHit).setLastAttacker(this);
+								((EntityLivingBase) bullet.entityHit).setRevengeTarget(this);
+								if (!bullet.entityHit.isEntityAlive()) {
+									this.setKills(this.getKills() + 1);
+									if(owner instanceof EntityPlayer && bullet.entityHit instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
+										owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.sentryBullet);
+									}
+										
 								}
-									
 							}
 						}
 					}

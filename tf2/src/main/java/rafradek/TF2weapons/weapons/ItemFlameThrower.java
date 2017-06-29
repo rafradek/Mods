@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.IProjectile;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -170,7 +171,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			// living.posY + (double)living.getEyeHeight(), living.posZ));
 			if (!isPushable(living, entity)
 					|| entity.getDistanceSq(living.posX, living.posY + living.getEyeHeight(), living.posZ) > size * size
-					|| !TF2weapons.lookingAt(living, 45, entity.posX, entity.posY + entity.height / 2, entity.posZ))
+					|| !TF2weapons.lookingAt(living, 60, entity.posX, entity.posY + entity.height / 2, entity.posZ))
 				continue;
 			if (entity instanceof IThrowableEntity && !(entity instanceof EntityStickybomb))
 				((IThrowableEntity) entity).setThrower(living);
@@ -189,14 +190,15 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 				if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
 					// System.out.println("hit: "+mop.hitVec);
 					proj.setThrowableHeading(rayTraces.get(0).hitVec.xCoord - entity.posX,
-							rayTraces.get(0).hitVec.yCoord - entity.posY, rayTraces.get(0).hitVec.zCoord - entity.posZ,
+							rayTraces.get(0).hitVec.yCoord - entity.posY - entity.height/2, rayTraces.get(0).hitVec.zCoord - entity.posZ,
 							speed, 0);
 				else
 					proj.setThrowableHeading(eyeVec.xCoord + lookVec.xCoord * 256 - entity.posX,
 							eyeVec.yCoord + lookVec.yCoord * 256 - entity.posY,
 							eyeVec.zCoord + lookVec.zCoord * 256 - entity.posZ, speed, 0);
 			} else {
-				double mult = (entity instanceof EntityLivingBase ? 1 : 0.2)
+				double mult = (entity instanceof EntityLivingBase ? 
+						1-((EntityLivingBase) entity).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() : 0.2)
 						+ TF2Attribute.getModifier("Flame Range", stack, 0.8f, living);
 				entity.motionX = lookVec.xCoord * 0.6 * mult;
 				entity.motionY = (lookVec.yCoord * 0.2 + 0.36) * mult;

@@ -20,22 +20,26 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -47,6 +51,7 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -58,6 +63,7 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.building.EntityTeleporter;
+import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.decoration.GuiWearables;
@@ -1173,8 +1179,34 @@ public class TF2EventsClient {
 	}
 
 	@SubscribeEvent
+	public void playerName(PlayerEvent.NameFormat event) {
+		if(Minecraft.getMinecraft().player != null && event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
+			String username=event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+			
+			if(TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
+				event.setDisplayname(event.getDisplayname()+" ["+username+"]");
+			}
+			else {
+				if(event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
+					if(event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise != null){
+						event.setDisplayname(TextFormatting.RESET+event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise.getDisplayName().getFormattedText());
+					}
+					else
+						event.setDisplayname(TextFormatting.RESET+I18n.format("entity."+username+".name"));
+					
+				}
+				else
+					event.setDisplayname(ScorePlayerTeam.formatPlayerName(Minecraft.getMinecraft().world.getScoreboard().getPlayersTeam(username), username));
+			}
+		}
+	}
+	
+	@SubscribeEvent
 	public void renderLivingEntity(RenderLivingEvent.Pre<EntityLivingBase> event) {
 
+		if (!event.getEntity().isEntityAlive())
+			return;
+		
 		ClientProxy.renderCritGlow=0;
 		if (event.getRenderer().getRenderManager().isDebugBoundingBox() && !event.getEntity().isInvisible() && !Minecraft.getMinecraft().isReducedDebug()){
 			GlStateManager.depthMask(false);
@@ -1214,6 +1246,7 @@ public class TF2EventsClient {
 				visTick=8;
 			if (visTick >= 20) {
 				event.setCanceled(true);
+				return;
 			} else {
 				// System.out.println("VisTicksRender
 				// "+event.getEntity().getEntityData().getInteger("VisTicks"));
@@ -1246,16 +1279,9 @@ public class TF2EventsClient {
 		if (event.getRenderer() != ClientProxy.disguiseRender && event.getRenderer() != ClientProxy.disguiseRenderPlayer
 				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
 
-			/*
-			 * EntityLivingBase entToRender=fakeEntities.get(event.getEntity());
-			 * entToRender.prevRenderYawOffset=event.getEntity().
-			 * prevRenderYawOffset;
-			 * entToRender.renderYawOffset=event.getEntity().renderYawOffset;
-			 * entToRender.limbSwing=event.getEntity().limbSwing;
-			 * entToRender.limbSwingAmount=event.getEntity().limbSwingAmount;
-			 * entToRender.prevLimbSwingAmount=event.getEntity().
-			 * prevLimbSwingAmount;
-			 */
+			
+			 
+			 
 			// Entity camera=Minecraft.getMinecraft().getRenderViewEntity();
 			float partialTicks = tickTime;/*
 											 * 0;
@@ -1345,10 +1371,39 @@ public class TF2EventsClient {
 			RenderLivingBase<EntityLivingBase> render = null;
 			if (event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
 				String mobType = event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
-				if (ClientProxy.entityModel.containsKey(mobType)) {
+				EntityLivingBase entToRender=event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise;
+				if(entToRender == null || !EntityList.getKey(entToRender).equals(new ResourceLocation(mobType))) {
+					entToRender = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise =
+						(EntityLivingBase) EntityList.createEntityByIDFromName(new ResourceLocation(mobType), event.getEntity().world);
+					if(entToRender instanceof EntityTF2Character) {
+						((EntityTF2Character)entToRender).setEntTeam(1-TF2weapons.getTeamForDisplay(event.getEntity()));
+					}
+					if(entToRender instanceof EntityBuilding)
+						((EntityBuilding)entToRender).setEntTeam(1-TF2weapons.getTeamForDisplay(event.getEntity()));
+					if(entToRender instanceof EntitySpy)
+						entToRender.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
+				}
+				if(entToRender != null) {
+					entToRender.setPositionAndRotationDirect(event.getEntity().posX, event.getEntity().posY, event.getEntity().posZ, event.getEntity().rotationYaw, event.getEntity().rotationPitch, 0, true);
+					entToRender.prevRenderYawOffset=event.getEntity().prevRenderYawOffset;
+					entToRender.rotationPitch=event.getEntity().rotationPitch;
+					entToRender.prevRotationPitch=event.getEntity().prevRotationPitch;
+					entToRender.prevRotationYaw=event.getEntity().prevRotationYaw;
+					entToRender.rotationYawHead=event.getEntity().rotationYawHead;
+					entToRender.prevRotationYawHead=event.getEntity().prevRotationYawHead;
+					entToRender.renderYawOffset=event.getEntity().renderYawOffset;
+					entToRender.limbSwing=event.getEntity().limbSwing;
+					entToRender.limbSwingAmount=event.getEntity().limbSwingAmount;
+					entToRender.prevLimbSwingAmount=event.getEntity().prevLimbSwingAmount;
+					entToRender.ticksExisted=event.getEntity().ticksExisted;
+
+					Minecraft.getMinecraft().getRenderManager().doRenderEntity(entToRender, event.getX(), event.getY(), event.getZ(), event.getEntity().rotationYaw, partialTicks, false);
+					event.setCanceled(true);
+				}
+				/*if (ClientProxy.entityModel.containsKey(mobType)) {
 					ClientProxy.disguiseRender.setRenderOptions(ClientProxy.entityModel.get(mobType), ClientProxy.textureDisguise.get(mobType));
 					render = ClientProxy.disguiseRender;
-				}
+				}*/
 			} else if (event.getEntity() instanceof AbstractClientPlayer && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("P:"))
 				if ("slim".equals(event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).skinType)) {
 					render = ClientProxy.disguiseRenderPlayerSmall;

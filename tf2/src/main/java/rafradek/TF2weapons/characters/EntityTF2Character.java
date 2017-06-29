@@ -25,6 +25,7 @@ import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -261,6 +262,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	@Override
 	public void onLivingUpdate() {
 
+		long nanoTimeStart=System.nanoTime();
 		super.onLivingUpdate();
 		this.updateArmSwingProgress();
 		ItemStack hat=this.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
@@ -312,6 +314,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.lastRotation[0] = (float) Math.sqrt((this.rotationYawHead - this.prevRotationYawHead)
 				* (this.rotationYawHead - this.prevRotationYawHead)
 				+ (this.rotationPitch - this.prevRotationPitch) * (this.rotationPitch - this.prevRotationPitch));
+		if(!this.world.isRemote)
+			TF2EventsCommon.tickTimeMercUpdate[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTimeStart;
 	}
 
 	@Override
@@ -357,7 +361,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.tasks.taskEntries.clear();
 			this.targetTasks.taskEntries.clear();
 		}
-			
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier("damageModifier", TF2weapons.damageMultiplier-1, 2));
+		this.setHealth(this.getMaxHealth());
 		return p_110161_1_;
 	}
 
@@ -827,7 +832,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			WeaponData data=ItemFromData.getData(this.loadout.get(slot));
 			this.attack.explosive=TF2Attribute.EXPLOSIVE.apply(this.loadout.get(slot));
 			this.attack.projSpeed=TF2Attribute.getModifier("Proj Speed", this.loadout.get(slot), data.getFloat(PropertyType.PROJECTILE_SPEED), this);
-			this.attack.fireAtFeet= slot==0 && this instanceof EntitySoldier ?2:0;
+			this.attack.fireAtFeet= slot==0 && this instanceof EntitySoldier ?TF2Attribute.getModifier("Explosion Radius", this.loadout.get(slot), 1, this):0;
 			this.attack.setRange(data.getFloat(PropertyType.EFFICIENT_RANGE));
 			String projName=data.getString(PropertyType.PROJECTILE);
 			if(projName.equals("grenade") || projName.equals("sticky")){

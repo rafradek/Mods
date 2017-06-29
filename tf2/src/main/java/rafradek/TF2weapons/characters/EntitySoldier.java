@@ -22,7 +22,7 @@ public class EntitySoldier extends EntityTF2Character {
 		this.rocketJumper = this.rand.nextBoolean();
 		if (this.attack != null) {
 			attack.setRange(35);
-			attack.fireAtFeet = 2;
+			attack.fireAtFeet = 1;
 			attack.projSpeed = 1.04f;
 			attack.explosive = true;
 			attack.setDodge(true, this.rocketJumper);
@@ -51,7 +51,7 @@ public class EntitySoldier extends EntityTF2Character {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.75D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.35D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.275D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}

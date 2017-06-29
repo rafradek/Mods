@@ -165,8 +165,7 @@ public class TF2Attribute {
 			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemProjectileWeapon && !(input.getItem() instanceof ItemFlameThrower
 					|| (MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null 
-					&& MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE))
-							.isAssignableFrom(EntityProjectileSimple.class)));
+					&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
 		}
 
 	};
@@ -302,7 +301,7 @@ public class TF2Attribute {
 		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE, ITEM_WEAPON, 2.5f, 4, 80,
 				2);
 		new TF2Attribute(34, "AccuracyBonus", "Accuracy", Type.PERCENTAGE, 1f, State.POSITIVE, WITH_SPREAD, 0.25f, 3,
-				120, 2);
+				160, 2);
 		new TF2Attribute(35, "BuffDurationBonus", "Buff Duration", Type.PERCENTAGE, 1f, State.POSITIVE, BANNER, 0.25f,
 				4, 80, 1);
 		new TF2Attribute(36, "FlameRangeBonus", "Flame Range", Type.PERCENTAGE, 1f, State.POSITIVE, FLAMETHROWER, 0.25f,
@@ -490,6 +489,8 @@ public class TF2Attribute {
 			return this.cost;
 		int baseCost = this.cost;
 		if (ItemFromData.getData(stack).getInt(PropertyType.COST) <= 12)
+			baseCost /= 2;
+		if (ItemFromData.getData(stack).getFloat(PropertyType.SPREAD) <= 0.025f)
 			baseCost /= 2;
 		//int additionalCost = 0;
 		int lastUpgradesCost = stack.getTagCompound().getInteger("TotalCost");

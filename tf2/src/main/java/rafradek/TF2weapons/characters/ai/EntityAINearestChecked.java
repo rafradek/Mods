@@ -58,15 +58,13 @@ public class EntityAINearestChecked extends EntityAITarget {
 						}
 						if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
-										|| (ItemDisguiseKit.isDisguised(target)
-												&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
-														|| taskOwner instanceof EntityBuilding))))
+										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = taskOwner instanceof EntityBuilding ? 0 : 1;
 						boolean fastCheck = taskOwner instanceof EntityBuilding || (!(target instanceof EntityPlayer)
 								&& (TF2weapons.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
 										&& ((EntityTF2Character) taskOwner).natural));
-						if (target.getDistanceToEntity(EntityAINearestChecked.this.taskOwner) > d0
-								|| (!fastCheck && !TF2weapons.lookingAtFast(EntityAINearestChecked.this.taskOwner, 105,
+						if (target.getDistanceToEntity(taskOwner) > d0
+								|| (!fastCheck && !TF2weapons.lookingAtFast(taskOwner, 105,
 										target.posX, target.posY + target.getEyeHeight(), target.posZ)))
 							return false;
 
