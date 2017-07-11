@@ -25,11 +25,16 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Achievements;
+import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.building.EntityTeleporter;
+import rafradek.TF2weapons.building.EntityTeleporter.TeleporterData;
 import rafradek.TF2weapons.characters.EntityStatue;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.weapons.ItemUsable;
+import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessage, IMessage> {
@@ -160,7 +165,6 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id).active=true;
-							System.out.println("Activated Contract: "+id);
 						}
 					} else if (message.value >=48 && message.value <64) {
 						int id=message.value-48;
@@ -187,6 +191,41 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
 							player.getStatFile().unlockAchievement(player, TF2Achievements.CONTRACT_DAY, (int) (player.world.getWorldTime()/24000+1));
+						}
+					}
+					else if (message.value >= 100 && message.value<109) {
+						int id=message.value-100;
+						if(player != null && player.getActiveItemStack().getItem() instanceof ItemWrench) {
+							int dimension = 0;
+							BlockPos pos = null;
+							if(id == 8) {
+								dimension = player.dimension;
+								pos=player.getBedLocation(player.dimension);
+								if(pos == null) {
+									pos = player.getBedLocation(0);
+									dimension = 0;
+								}
+								if(pos != null)
+									pos = EntityPlayer.getBedSpawnLocation(TF2weapons.server.worldServerForDimension(dimension), pos, player.isSpawnForced(dimension));
+								else
+									pos = TF2weapons.server.worldServerForDimension(0).provider.getRandomizedSpawnPoint();
+							}
+							else if(EntityTeleporter.teleporters.containsKey(player.getUniqueID())) {
+								TeleporterData[] data=EntityTeleporter.teleporters.get(player.getUniqueID());
+								if(data[id]!=null) {
+									dimension = data[id].dimension;
+									pos = data[id];
+								}
+							}
+							if (pos != null) {
+								if (dimension != player.dimension)
+									player.changeDimension(dimension);
+								player.setPositionAndUpdate(pos.getX()+0.5, pos.getY()+0.23, pos.getZ()+0.5);
+								player.getCooldownTracker().setCooldown(MapList.weaponClasses.get("wrench"), 200);
+								TF2weapons.playSound(player, TF2Sounds.MOB_TELEPORTER_SEND, 1.0F, 1.0F);
+								player.resetActiveHand();
+								player.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-20);
+							}
 						}
 					}
 					

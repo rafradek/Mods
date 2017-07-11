@@ -18,6 +18,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.play.server.SPacketEntity;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
@@ -25,6 +26,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2Sounds;
@@ -209,6 +211,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		long nanoTimeStart=System.nanoTime();
 		this.motionX = 0;
 		this.motionZ = 0;
+		
 		if (this.motionY > 0)
 			this.motionY = 0;
 		if (!this.world.isRemote && this.isSapped())
@@ -353,6 +356,11 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	public boolean canBeHitWithPotion()
     {
         return false;
+    }
+	protected float updateDistance(float p_110146_1_, float p_110146_2_)
+    {
+		this.renderYawOffset=this.rotationYaw;
+		return p_110146_2_;
     }
 	@Override
 	protected void dropFewItems(boolean p_70628_1_, int p_70628_2_) {

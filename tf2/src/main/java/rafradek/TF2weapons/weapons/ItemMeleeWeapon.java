@@ -74,7 +74,7 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 		String[] result=new String[2];
 		if(TF2Attribute.getModifier("Kill Count", stack, 0, player) > 0){
 			result[0]="HEADS";
-			result[1]=Integer.toString(stack.getTagCompound().getInteger("Heads"));
+			result[1]=Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getHeads());
 		}
 		else{
 			result[0]="BALLS";

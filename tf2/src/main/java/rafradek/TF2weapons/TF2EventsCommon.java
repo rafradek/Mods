@@ -1687,6 +1687,13 @@ public class TF2EventsCommon {
 			//ItemHandlerHelper.insertItemStacked(map.get(thrower), stack, false);
 		}
 	}
+	
+	@SubscribeEvent
+	public void startTrack(PlayerEvent.StartTracking event) {
+		if(event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+			TF2weapons.network.sendTo(new TF2Message.CapabilityMessage(event.getTarget(), true), (EntityPlayerMP) event.getEntityPlayer());
+		}
+	}
 	public static LootPool getLootPool(ResourceLocation res){
 		return new LootPool(new LootEntry[]{new LootEntryTable(res, 1, 0, new LootCondition[0], "combined")},
 				new LootCondition[0], new RandomValueRange(1), new RandomValueRange(0), "combined");

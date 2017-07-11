@@ -11,6 +11,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -103,6 +104,9 @@ public class ItemAmmo extends Item {
 			return;
 		if (!(living instanceof EntityPlayer))
 			return;
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-amount);
+		}
 		if (amount > 0) {
 			amount = ((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, amount);
 			// int
@@ -134,6 +138,10 @@ public class ItemAmmo extends Item {
 		if (type == 0)
 			return STACK_FILL;
 
+		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
+		if (metalammo != 0 && owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= metalammo) 
+			return STACK_FILL;
+		
 		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
 			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
 					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
@@ -168,6 +176,10 @@ public class ItemAmmo extends Item {
 			stack=ItemFromData.getNewStack("sandmanball");
 		int type = ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE);
 
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
+			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+		}
+		
 		if (type == 0)
 			return 999;
 

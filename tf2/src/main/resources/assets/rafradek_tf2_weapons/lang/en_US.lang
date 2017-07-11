@@ -77,6 +77,11 @@ weaponAttribute.HealTarget=Fires special bolts that heal teammates
 weaponAttribute.NeedScope=Cannot fire unless zoomed
 weaponAttribute.DamageBonusCharged=On Full Charge: +%1$s damage per shot
 weaponAttribute.SelfDamageReduced=%1$s self damage
+weaponAttribute.SpeedOnHitAlly=On Hit Ally: Boosts both players' speed for several seconds
+weaponAttribute.ChargedGrenades=Cannonballs have a fuse time of 1 second
+weaponAttribute.MetalAsAmmo=Uses metal as ammo
+weaponAttribute.MetalOnHit=Restores damage dealt as metal
+
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
 itemGroup.tf2misc=TF2 Utility
@@ -184,6 +189,7 @@ item.banner.fast_spawn.white=Fast respawn
 
 gui.ok=OK
 gui.markedit=You are it. Attack a mob/player with melee to pass it.
+gui.bombmrs=Take your big bomb head back to Merasmus!
 gui.disguise.info=Select disguise
 gui.sentry.info=Select sentry targets
 gui.sentry.onhurt=Attack on hurt
@@ -239,6 +245,8 @@ objective.destroy_sentry_uber=Assist in destroying a sentry while Ubered
 objective.destroy_building=Destroy a building
 objective.kills=Kill 4 mercenaries in a quick time period
 objective.advanced=(Advanced)
+
+gui.selectlocation=Select teleport location
 
 container.ammofurnace=Ammo Furnace
 

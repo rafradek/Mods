@@ -38,9 +38,11 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -94,18 +96,15 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				if (this.rapidFireCrits(par1ItemStack) && this.hasRandomCrits(par1ItemStack, par3Entity)
 						&& ((EntityLivingBase) par3Entity).getRNG().nextFloat() <= this.critChance(par1ItemStack,
 								par3Entity)) {
-					cap.critTime = 40;
-					
-					TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity),
-							par3Entity);
+					cap.setCritTime(40);
 					// System.out.println("Apply crits rapid");
 				}
 			}
 			if (TF2Attribute.getModifier("Kill Count", par1ItemStack, 0, null)!=0){
-				par1ItemStack.getTagCompound().setInteger("Heads", cap.collectedHeads);
+				par1ItemStack.getTagCompound().setInteger("Heads", cap.getHeads());
 			}
-			if (cap.critTime > 0)
-				cap.critTime -= 1;
+			if (cap.getCritTime() > 0)
+				cap.setCritTime(cap.getCritTime()-1);
 			cap.critTimeCool -= 1;
 			/*
 			 * if(par3Entity instanceof
@@ -124,12 +123,23 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		}
 	}
 
+	public boolean canPenetrate(ItemStack stack, EntityLivingBase shooter) {
+		return getData(stack).getBoolean(PropertyType.PENETRATE) || TF2Attribute.getModifier("Penetration", stack, 0, shooter) != 0;
+	}
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		// boolean mainHand=living instanceof
 		// EntityPlayer&&living.getEntityData().getCompoundTag("TF2").getBoolean("mainhand");
-		
+		WeaponsCapability cap=living.getCapability(TF2weapons.WEAPONS_CAP, null);
+		if (this.holdingMode(stack, living) > 0 && !cap.charging) {
+			cap.charging = true;
+			cap.chargeTicks = 0;
+			if (world.isRemote)
+				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.CHARGE_SOUND), false, 0,
+						stack);
+			return true;
+		}
 		if (stack.getItemDamage() != stack.getMaxDamage())
 			if (this.hasClip(stack)) {
 				stack.damageItem(1, living);
@@ -145,7 +155,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 		critical = thisCritical;
 		
-		WeaponsCapability cap=living.getCapability(TF2weapons.WEAPONS_CAP, null);
+		
 		if(cap.focusShotTicks>0){
 			
 			if(cap.focusedShot(stack))
@@ -161,10 +171,14 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				((EntityTF2Character) living).useAmmo(1);
 			else if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode
 					&& !this.hasClip(stack)) {
-				ItemStack stackAmmo = ItemAmmo.searchForAmmo(living, stack);
-				if (!stackAmmo.isEmpty())
-					((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
-							((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
+				if(TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0)
+					cap.setMetal(cap.getMetal()-((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
+				else {
+					ItemStack stackAmmo = ItemAmmo.searchForAmmo(living, stack);
+					if (!stackAmmo.isEmpty())
+						((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
+								((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
+				}
 			}
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
@@ -259,12 +273,40 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		 * EntityTF2Character&&((EntityTF2Character)living).getAmmo()<=0){
 		 * flag=false; }
 		 */
-		return super.canFire(world, living, stack)
+		return super.canFire(world, living, stack) && !(this.holdingMode(stack, living) > 0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).charging)
 				&& (((this.hasClip(stack) || !ItemAmmo.searchForAmmo(living, stack).isEmpty())
 						&& (!this.hasClip(stack) || stack.getItemDamage() < stack.getMaxDamage()))
 						|| (living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode));
 	}
 
+	@Override
+	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int action, int newState) {
+		/*
+		 * if(!world.isRemote&&(!ClientProxy.fireSounds.containsKey(living)||
+		 * ClientProxy.fireSounds.get(living).type!=3)){ worl }
+		 */
+		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
+		if (this.holdingMode(stack, living) > 0 && (newState & 1) == 0 && cap.charging) {
+			// System.out.println("stop charging "+newState);
+			
+			cap.fire1Cool = this.getFiringSpeed(stack, living);
+
+			if (world.isRemote && ClientProxy.fireSounds.get(living) != null)
+				ClientProxy.fireSounds.get(living).setDone();
+			// Minecraft.getMinecraft().getSoundHandler().stopSound(ClientProxy.fireSounds.get(living));
+			this.use(stack, living, world, EnumHand.MAIN_HAND, null);
+			cap.charging = false;
+			cap.lastFire = 1250;
+			if (world.isRemote)
+				sps++;
+			cap.reloadCool = 0;
+			if ((cap.state & 8) != 0)
+				cap.state -= 8;
+		}
+		return false;
+	}
+	
+	
 	@Override
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
 			boolean par4) {
@@ -318,7 +360,13 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	@Override
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
-		// TODO Auto-generated method stub
+		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
+		if (this.holdingMode(stack, living) > 0 && cap.charging)
+			// System.out.println("charging "+tag.getShort("chargeticks"));
+			if (cap.chargeTicks < this.holdingMode(stack, living))
+				cap.chargeTicks += living instanceof EntityPlayer?1:4;
+			else
+				this.endUse(stack, living, world, 1, 0);
 		return false;
 	}
 
@@ -495,7 +543,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	@Override
 	public void draw(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.reloadCool = 0;
-		cap.critTime = 0;
+		cap.setCritTime(0);
 		cap.state = cap.state & 7;
 		//if (!world.isRemote && living instanceof EntityPlayerMP)
 			//TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,ItemAmmo.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
@@ -507,6 +555,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		super.holster(cap, stack, living, world);
 		cap.focusShotRemaining=0;
 		cap.focusShotTicks=0;
+		cap.chargeTicks = 0;
+		cap.charging = false;
 		float removeHealth=0;
 		for (Entry<String, AttributeModifier> entry : stack.getAttributeModifiers(EntityEquipmentSlot.MAINHAND).entries())
         {
@@ -520,17 +570,24 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {
 		if(target instanceof EntityBuilding && TF2weapons.isOnSameTeam(attacker, target) && !((EntityBuilding)target).isSapped()) {
 			float repair=TF2Attribute.getModifier("Repair Building", stack, 0, attacker);
-			if(repair>0) 
+			if(repair>0) {
 				((EntityBuilding)target).heal(repair);
-			
-			return false;
+				return false;
+			}
 		}
 		else if(target instanceof EntityLivingBase && TF2weapons.isOnSameTeam(attacker, target) && !(target instanceof EntityBuilding)) {
 			float heal=damage*TF2Attribute.getModifier("Heal Target", stack, 0, attacker);
-			if(heal>0)
+			if(heal>0) {
 				((EntityLivingBase) target).heal(heal);
-			
-			return false;
+				return false;
+			}
+		}
+		if(target instanceof EntityLivingBase && !TF2weapons.isEnemy(attacker, (EntityLivingBase) target)) {
+			float speedtime=TF2Attribute.getModifier("Speed Hit", stack, 0, attacker);
+			if(speedtime > 0) {
+				((EntityLivingBase) target).addPotionEffect(new PotionEffect(MobEffects.SPEED,(int) (speedtime*20),1));
+				attacker.addPotionEffect(new PotionEffect(MobEffects.SPEED,(int) (speedtime*36),1));
+			}
 		}
 		return true;
 	}
@@ -542,10 +599,14 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			/*if (attacker instanceof EntityPlayerMP && !target.isEntityAlive() && 
 			if (attacker instanceof EntityPlayerMP && target instanceof EntitySniper && !target.isEntityAlive() && 
 					&& TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
-				
-				
-			}*/
-			
+					*/
+			float metalhit = TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
+			if (metalhit != 0) {
+				int restore=(int) (amount*metalhit/TF2weapons.damageMultiplier);
+				if(!TF2weapons.isEnemy(attacker, (EntityLivingBase) target) && restore > 30)
+					restore=30;
+				attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal((int) (attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()+restore));
+			}
 			if (!target.isEntityAlive() && !(target instanceof EntityBuilding)
 					&& TF2Attribute.getModifier("Kill Count", stack, 0, attacker)!=0){
 				stack.getTagCompound().setInteger("Heads", stack.getTagCompound().getInteger("Heads")+1);
@@ -582,19 +643,39 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		String[] result=new String[2];
-		result[0]="AMMO";
-		int focus=(int) TF2Attribute.getModifier("Focus", stack, 0, player);
-		int progress=0;
-		if(focus!=0){
-			progress=(int) (((float)player.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotTicks/(float)(70-focus*23+((ItemUsable)stack.getItem()).getFiringSpeed(stack, player)/50))*3f);
+		if(TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0) {
+			return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
 		}
-		else if(TF2Attribute.getModifier("Headshot", stack, 0, player)>0) {
-			progress=(1250-player.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire)/416;
+		int holdTickMax=holdingMode(stack, player);
+		
+		if(holdTickMax > 0 && player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+			int chargeTicks=player.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks;
+			int progress= (int) ((float)chargeTicks/(float)holdTickMax*20);
+			result[0]="";
+			if(progress>0) {
+				for(int i=0;i<20;i++){
+					if(i<progress)
+						result[0]=result[0]+"|";
+					else
+						result[0]=result[0]+".";
+				}
+			}
 		}
-		if(progress>0) {
-			result[0]=result[0]+" ";
-			for(int i=0;i<progress && i<3;i++){
-				result[0]=result[0]+"\u2588";
+		else {
+			result[0]="AMMO";
+			int focus=(int) TF2Attribute.getModifier("Focus", stack, 0, player);
+			int progress=0;
+			if(focus!=0){
+				progress=(int) (((float)player.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotTicks/(float)(70-focus*23+((ItemUsable)stack.getItem()).getFiringSpeed(stack, player)/50))*3f);
+			}
+			else if(TF2Attribute.getModifier("Headshot", stack, 0, player)>0) {
+				progress=(1250-player.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire)/416;
+			}
+			if(progress>0) {
+				result[0]=result[0]+" ";
+				for(int i=0;i<progress && i<3;i++){
+					result[0]=result[0]+"\u2588";
+				}
 			}
 		}
 		int ammoLeft=player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[getAmmoType(stack)];
@@ -611,5 +692,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			result[1]=Integer.toString(ammoLeft);
 		}
 		return result;
+	}
+	public int holdingMode(ItemStack stack, EntityLivingBase shooter) {
+		return (int) TF2Attribute.getModifier("Charged Grenades", stack, 0, shooter);
 	}
 }

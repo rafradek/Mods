@@ -76,6 +76,7 @@ import rafradek.TF2weapons.weapons.ItemMinigun;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
+import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.MuzzleFlashLightSource;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
@@ -109,6 +110,17 @@ public class TF2EventsClient {
 			minecraft.player.jump();
 			minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
+		}
+		if(minecraft.currentScreen == null && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
+				&& minecraft.player.getItemInUseCount()<770) {
+			int sel=-1;
+			for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
+				if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
+					sel=i;
+					break;
+				}
+			}
+			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
 		}
 		if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
 			if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
@@ -339,6 +351,32 @@ public class TF2EventsClient {
 		ClientProxy.renderCritGlow=0;
 		GuiIngame gui=Minecraft.getMinecraft().ingameGUI;
 		ItemStack held=player.getHeldItem(EnumHand.MAIN_HAND);
+		int width=event.getResolution().getScaledWidth();
+		int height=event.getResolution().getScaledHeight();
+		if (event.getType() == ElementType.HELMET && player != null && player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770){
+			
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
+			Tessellator tessellator = Tessellator.getInstance();
+			VertexBuffer renderer = tessellator.getBuffer();
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthMask(false);
+			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+			
+			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2-80, height/2-32, 64, 192, 64, 64);
+			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2+16, height/2-32, 0, 192, 64, 64);
+			
+			gui.drawCenteredString(gui.getFontRenderer(), "(1-8)", width/2-48, height/2+40, 0xFFFFFFFF);
+			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.selectlocation"), width/2, height/2-50, 0xFFFFFFFF);
+			gui.drawCenteredString(gui.getFontRenderer(), "(9)", width/2+48, height/2+40, 0xFFFFFFFF);
+			
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		}
 		if (event.getType() == ElementType.HELMET && player != null && (player.getCapability(TF2weapons.PLAYER_CAP, null).newContracts || player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards)){
 			String line1;
 			String line2;
@@ -507,6 +545,17 @@ public class TF2EventsClient {
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GL11.glEnable(GL11.GL_ALPHA_TEST);
 		}
+		if (event.getType() == ElementType.HOTBAR && player != null && player.getActivePotionEffect(TF2weapons.bombmrs) != null) {
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthMask(false);
+			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.bombmrs"),
+					event.getResolution().getScaledWidth()/2, event.getResolution().getScaledHeight()/4, 16777215);
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
+		}
 		if (event.getType() == ElementType.HOTBAR && player != null && held != null
 				&& held.getItem() instanceof ItemMedigun) {
 			
@@ -588,7 +637,7 @@ public class TF2EventsClient {
 				} else {
 					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
 				}
-				int tf2health=Math.round((healTarget instanceof IEntityTF2?living.getHealth():living.getHealth()/TF2weapons.damageMultiplier)*overheal*10);
+				int tf2health=Math.round((living.getHealth()/TF2weapons.damageMultiplier)*overheal*10);
 				
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 				renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.0D, 0.59375D).endVertex();

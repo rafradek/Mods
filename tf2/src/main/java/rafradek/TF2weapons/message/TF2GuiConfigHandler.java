@@ -3,6 +3,7 @@ package rafradek.TF2weapons.message;
 import java.util.HashMap;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -34,7 +35,7 @@ public class TF2GuiConfigHandler implements IMessageHandler<TF2Message.GuiConfig
 
 					if (ent instanceof EntityTeleporter) {
 						if (message.id == 0)
-							((EntityTeleporter) ent).setID(message.value);
+							((EntityTeleporter) ent).setID(MathHelper.clamp(message.value,0,EntityTeleporter.TP_PER_PLAYER-1));
 						else if (message.id == 1)
 							((EntityTeleporter) ent).setExit(message.value == 1);
 					} else if (ent instanceof EntitySentry)

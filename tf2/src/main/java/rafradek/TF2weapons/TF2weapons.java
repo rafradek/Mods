@@ -44,6 +44,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityEnderman;
@@ -238,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.6", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.7", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -366,7 +367,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 19;
+		return 20;
 	}
 
 	@Mod.EventHandler
@@ -572,9 +573,9 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"flare"),EntityFlare.class, "flare", 20, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"jar"),EntityJar.class, "jar", 21, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"ball"),EntityBall.class, "ball", 22, this, 64, 10, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"sentry"),EntitySentry.class, "sentry", 16, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"dispenser"),EntityDispenser.class, "dispenser", 17, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"teleporter"),EntityTeleporter.class, "teleporter", 18, this, 80, 3, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"sentry"),EntitySentry.class, "sentry", 16, this, 80, 2, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"dispenser"),EntityDispenser.class, "dispenser", 17, this, 80, 40, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"teleporter"),EntityTeleporter.class, "teleporter", 18, this, 80, 40, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"hale"),EntitySaxtonHale.class, "hale", 19, this, 80, 3, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"monoculus"),EntityMonoculus.class, "monoculus", 23, this, 80, 3, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"hhh"),EntityHHH.class, "hhh", 24, this, 80, 3, true);
@@ -1121,8 +1122,7 @@ public class TF2weapons {
 		if (!weapon.attributes.isEmpty())
 			for (Entry<TF2Attribute, Float> entry : weapon.attributes.entrySet())
 				tag2.setFloat(String.valueOf(entry.getKey().id), entry.getValue());
-		tag.setTag("Attributes", tag2);
-		MapList.buildInAttributes.put(name, tag);
+		MapList.buildInAttributes.put(name, tag2);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1238,7 +1238,7 @@ public class TF2weapons {
 		if (randomCrits && !stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 			ItemWeapon item = (ItemWeapon) stack.getItem();
 			if ((!item.rapidFireCrits(stack) && item.hasRandomCrits(stack, living) && living.getRNG().nextFloat() <= item.critChance(stack, living))
-					|| living.getCapability(WEAPONS_CAP, null).critTime > 0)
+					|| living.getCapability(WEAPONS_CAP, null).getCritTime() > 0)
 				thisCritical = 2;
 		}
 		if (living.getActivePotionEffect(critBoost) != null)
@@ -1297,7 +1297,7 @@ public class TF2weapons {
 				Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b))), 0);
 	}
 
-	public static List<RayTraceResult> pierce(World world, EntityLivingBase living, double startX, double startY, double startZ, double endX, double endY, double endZ,
+	public static List<RayTraceResult> pierce(World world, Entity living, double startX, double startY, double startZ, double endX, double endY, double endZ,
 			boolean headshot, float size, boolean pierce) {
 		ArrayList<RayTraceResult> targets = new ArrayList<>();
 		Vec3d var17 = new Vec3d(startX, startY, startZ);
@@ -1311,11 +1311,11 @@ public class TF2weapons {
 
 		Entity var5 = null;
 		List<Entity> var6 = world.getEntitiesWithinAABBExcludingEntity(living,
-				living.getEntityBoundingBox().addCoord(endX - startX, endY - startY, endZ - startZ).expand(2D, 2D, 2D));
+				new AxisAlignedBB(startX, startY, startZ, endX, endY, endZ).expand(2D, 2D, 2D));
 		// System.out.println("shoot: "+startX+","+startY+","+startZ+", do:
 		// "+endX+","+endY+","+endZ+" Count: "+var6.size());
 		double var7 = 0.0D;
-		Vec3d collideVec = new Vec3d(0, 0, 0);
+		RayTraceResult collideVec = new RayTraceResult((Entity)null,null);
 		for (Entity target : var6)
 			if (target.canBeCollidedWith() && (!(target instanceof EntityLivingBase) || (target instanceof EntityLivingBase && ((EntityLivingBase) target).deathTime <= 0))) {
 				AxisAlignedBB oldBB = target.getEntityBoundingBox();
@@ -1333,15 +1333,15 @@ public class TF2weapons {
 					if (!pierce && (var14 < var7 || var7 == 0.0D)) {
 						var5 = target;
 						var7 = var14;
-						collideVec = var13.hitVec;
+						collideVec = var13;
 					} else if (pierce)
-						targets.add(getTraceResult(target, var13.hitVec, headshot, var17, var3));
+						targets.add(getTraceResult(target, var13, size, headshot, var17, var3));
 				}
 				target.setEntityBoundingBox(oldBB);
 			}
 		// var4.hitInfo=false;
 		if (!pierce && var5 != null && !(var5 instanceof EntityLivingBase && ((EntityLivingBase) var5).getHealth() <= 0))
-			targets.add(getTraceResult(var5, collideVec, headshot, var17, var3));
+			targets.add(getTraceResult(var5, collideVec, size, headshot, var17, var3));
 		if (targets.isEmpty() && var4 != null && var4.typeOfHit == Type.BLOCK)
 			targets.add(var4);
 		else if (targets.isEmpty())
@@ -1349,12 +1349,13 @@ public class TF2weapons {
 		return targets;
 	}
 
-	public static RayTraceResult getTraceResult(Entity target, Vec3d hitVec, boolean headshot, Vec3d start, Vec3d end) {
-		RayTraceResult result = new RayTraceResult(target, hitVec);
+	public static RayTraceResult getTraceResult(Entity target, RayTraceResult hitVec, float size, boolean headshot, Vec3d start, Vec3d end) {
+		RayTraceResult result = new RayTraceResult(target, hitVec.hitVec);
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding) && headshot) {
-			Boolean var13 = getHead((EntityLivingBase)target).isVecInside(hitVec);
+			Boolean var13 = getHead((EntityLivingBase)target).expandXyz(size).isVecInside(hitVec.hitVec);
 			result.hitInfo = var13;
 		}
+		result.sideHit=hitVec.sideHit;
 		return result;
 	}
 
@@ -1473,7 +1474,7 @@ public class TF2weapons {
 
 	public static boolean isOnSameTeam(Entity entity1, Entity entity2) {
 		return (getTeam(entity1) == getTeam(entity2) && getTeam(entity1) != null) || (entity2 instanceof EntityBuilding && ((EntityBuilding) entity2).getOwner() == entity1)
-				|| (entity1 instanceof EntityBuilding && ((EntityBuilding) entity1).getOwner() == entity2) || entity1 == entity2;
+				|| (entity1 instanceof IEntityOwnable && ((IEntityOwnable) entity1).getOwner() == entity2) || entity1 == entity2;
 
 	}
 
@@ -1504,7 +1505,7 @@ public class TF2weapons {
 		// "+(ent!=shooter)+" "+!(shooter instanceof
 		// EntityBuilding&&((EntityBuilding)shooter).getOwner()==ent));
 		return ent.isEntityAlive() && !(ent instanceof EntityLivingBase && isOnSameTeam(shooter, ent) && !(shooter.getTeam() != null && shooter.getTeam().getAllowFriendlyFire())
-				&& (ent != shooter) && !(shooter instanceof EntityBuilding && ((EntityBuilding) shooter).getOwner() == ent));
+				&& (ent != shooter) && !(shooter instanceof IEntityOwnable && ((IEntityOwnable) shooter).getOwner() == ent));
 	}
 
 	public static boolean lookingAt(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {
@@ -1583,7 +1584,16 @@ public class TF2weapons {
 		double lvelocityZ = entity.motionZ;
 		entity.hurtResistantTime = 0;
 
-		
+		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer)) {
+			if(world.getDifficulty() == EnumDifficulty.NORMAL) {
+				damage *= 0.7f;
+			}
+			else if(world.getDifficulty() == EnumDifficulty.HARD) {
+				damage *= 0.9f;
+			}
+			else
+				damage *= 0.45f;
+		}
 		
 		damage *=damageMultiplier;
 
@@ -1725,21 +1735,6 @@ public class TF2weapons {
 		return state.getBlockHardness(world, pos) * (!state.getMaterial().isToolNotRequired() && !(state.getBlock() instanceof BlockStone) ? 12f : 5.5f);
 	}
 
-	public static int getMetal(EntityLivingBase entity) {
-		if (entity instanceof EntityEngineer)
-			return ((EntityEngineer) entity).metal;
-
-		return entity.getHeldItem(EnumHand.MAIN_HAND) != null && entity.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWrench
-				? 200 - entity.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() : 0;
-	}
-
-	public static void setMetal(EntityLivingBase entity, int amount) {
-		if (entity instanceof EntityEngineer)
-			((EntityEngineer) entity).metal = amount;
-		else if (entity.getHeldItem(EnumHand.MAIN_HAND) != null && entity.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWrench)
-			entity.getHeldItem(EnumHand.MAIN_HAND).setItemDamage(200 - amount);
-	}
-
 	public static class NullStorage<T> implements IStorage<T> {
 
 		@Override
@@ -1819,13 +1814,19 @@ public class TF2weapons {
 		explosion.isSmoking = true;
 		explosion.doExplosionA();
 		explosion.doExplosionB(true);
-		Iterator<Entity> affectedIterator = explosion.affectedEntities.keySet().iterator();
 		int killedInRow = 0;
-		while (affectedIterator.hasNext()) {
-			Entity ent = affectedIterator.next();
+		
+		for(Entry<Entity, Float> entry : explosion.affectedEntities.entrySet()) {
+			Entity ent = entry.getKey();
 			distance = (float) TF2weapons.getDistanceBox(shooter, ent.posX, ent.posY, ent.posZ, ent.width+0.1, ent.height+0.1);
-			critical = TF2weapons.calculateCritPost(ent, shooter, critical, weapon);
-			float dmg = TF2weapons.calculateDamage(ent, world, shooter, weapon, critical, distance) * damageMult;
+			int criticalloc = critical;
+			if(exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).hitEntities.contains(ent)) {
+				criticalloc = Math.max(criticalloc, 1);
+				playSound(ent, TF2Sounds.DOUBLE_DONK, 3f, 1.0f);
+				entry.setValue(1f);
+			}
+			criticalloc = TF2weapons.calculateCritPost(ent, shooter, criticalloc, weapon);
+			float dmg = TF2weapons.calculateDamage(ent, world, shooter, weapon, criticalloc, distance) * damageMult;
 			
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
 			if(vec != null) {
@@ -1847,8 +1848,9 @@ public class TF2weapons {
 			}
 			if(ent==shooter)
 				dmg= TF2Attribute.getModifier("Self Damage", weapon, dmg, shooter);
-			TF2weapons.dealDamage(ent, world, shooter, weapon, critical, explosion.affectedEntities.get(ent) * dmg,
-					TF2weapons.causeBulletDamage(weapon, shooter, critical, exploder).setExplosion());
+			
+			TF2weapons.dealDamage(ent, world, shooter, weapon, criticalloc, entry.getValue() * dmg,
+					TF2weapons.causeBulletDamage(weapon, shooter, criticalloc, exploder).setExplosion());
 			if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
 				killedInRow++;
 				if (killedInRow > 2 && exploder instanceof EntityRocket && shooter instanceof EntityPlayerMP && TF2weapons.isEnemy(shooter, (EntityLivingBase) ent)) {

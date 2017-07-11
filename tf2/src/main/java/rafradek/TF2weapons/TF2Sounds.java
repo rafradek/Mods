@@ -179,7 +179,10 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.hit"));
 	public static final SoundEvent WEAPON_SHIELD_HIT_RANGE = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.hit.range"));
-
+	public static final SoundEvent DISCIPLINARY_SPEED = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "weapon.powerup.disciplinary"));
+	public static final SoundEvent DOUBLE_DONK = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
 	public static void registerSounds() {
 		/*
 		 * IForgeRegistry<SoundEvent>

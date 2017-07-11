@@ -19,7 +19,6 @@ public class EntityEngineer extends EntityTF2Character {
 
 	public EntitySentry sentry;
 	public EntityDispenser dispenser;
-	public int metal = 500;
 
 	public EntityEngineer(World p_i1738_1_) {
 		super(p_i1738_1_);
@@ -29,6 +28,7 @@ public class EntityEngineer extends EntityTF2Character {
 		this.tasks.addTask(3, new EntityAIRepair(this, 1, 2f));
 		this.tasks.addTask(5, new EntityAISetup(this));
 		this.tasks.removeTask(wander);
+		this.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(500);
 		if (this.attack != null)
 			attack.setRange(20);
 	}

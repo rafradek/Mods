@@ -277,6 +277,7 @@ public class GuiDisguiseKit extends GuiScreen {
 
 	@Override
 	public void updateScreen() {
+		this.playerNameField.updateCursorCounter();
 		if(--this.ticksUpdate<0&&this.needUpdating&&!StringUtils.isBlank(playerNameField.getText())){
 			this.needUpdating=false;
 			this.ticksUpdate=12;

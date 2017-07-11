@@ -28,7 +28,7 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 
 	//public static HashMap<EntityLivingBase, ArrayList<EntityStickybomb>> activeBombs = new HashMap<EntityLivingBase, ArrayList<EntityStickybomb>>();
 
-	@Override
+	/*@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
@@ -44,16 +44,16 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 						stack);
 		}
 		return true;
-	}
+	}*/
 
 	public boolean usePrediction() {
 		return false;
 	}
 
-	@Override
+	/*@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return !living.getCapability(TF2weapons.WEAPONS_CAP, null).charging && super.canFire(world, living, stack);
-	}
+	}*/
 
 	@Override
 	public float getProjectileSpeed(ItemStack stack, EntityLivingBase living) {
@@ -76,12 +76,8 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 		}
 	}
 
-	@Override
+	/*@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int action, int newState) {
-		/*
-		 * if(!world.isRemote&&(!ClientProxy.fireSounds.containsKey(living)||
-		 * ClientProxy.fireSounds.get(living).type!=3)){ worl }
-		 */
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		if ((newState & 1) == 0 && cap.charging) {
 			// System.out.println("stop charging "+newState);
@@ -101,9 +97,9 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 				cap.state -= 8;
 		}
 		return false;
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		if (cap.charging)
@@ -113,7 +109,7 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 			else
 				this.endUse(stack, living, world, 1, 0);
 		return false;
-	}
+	}*/
 
 	@Override
 	public boolean altFireTick(ItemStack stack, EntityLivingBase living, World world) {
@@ -163,11 +159,11 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 				cap.dispenserKilled=true;
 		}
 	}
-	@Override
+	/*@Override
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		super.holster(cap, stack, living, world);
-		cap.chargeTicks = 0;
-		cap.charging = false;
+	}*/
+	public int holdingMode(ItemStack stack, EntityLivingBase shooter) {
+		return 80;
 	}
-	
 }

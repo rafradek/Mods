@@ -16,6 +16,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -28,6 +31,7 @@ import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntitySentry;
+import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract;
@@ -35,6 +39,8 @@ import rafradek.TF2weapons.projectiles.EntityStickybomb;
 
 public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 
+	public static final int MAX_METAL=200;
+	public static final int MAX_METAL_ENGINEER=500;
 	
 	public EntityLivingBase owner;
 	public int state;
@@ -43,7 +49,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int fire2Cool;
 	public int reloadCool;
 	public int lastFire;
-	public int critTime;
+	//public int critTime;
 	public int healTarget = -1;
 	public boolean mainHand;
 	public HashMap<String, Integer> effectsCool = new HashMap<String, Integer>();
@@ -65,7 +71,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	//public int zombieHuntTicks;
 	public int ticksBash;
 	public boolean bashCritical;
-	public int collectedHeads;
+	//public int collectedHeads;
 	public int collectedHeadsTime;
 	public boolean wornEye;
 	public int killsSpinning;
@@ -78,10 +84,18 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int focusShotTicks;
 	public int focusShotRemaining;
 	public int fanCool;
+	
+	public EntityDataManager dataManager;
+	
 	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
 	
+	public static final DataParameter<Integer> CRIT_TIME= new DataParameter<Integer>(0, DataSerializers.VARINT);
+	public static final DataParameter<Integer> HEADS= new DataParameter<Integer>(1, DataSerializers.VARINT);
+	public static final DataParameter<Integer> HEAL_TARGET= new DataParameter<Integer>(2, DataSerializers.VARINT);
+	public static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
+	public static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -97,15 +111,46 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	public WeaponsCapability(EntityLivingBase entity) {
 		this.owner = entity;
+		this.dataManager = new EntityDataManager(entity);
+		this.dataManager.register(CRIT_TIME, 0);
+		this.dataManager.register(HEADS, 0);
+		this.dataManager.register(HEAL_TARGET, -1);
+		this.dataManager.register(PHLOG_RAGE, 0f);
+		this.dataManager.register(METAL, MAX_METAL);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
+	public int getCritTime() {
+		return this.dataManager.get(CRIT_TIME);
+	}
+	
+	public void setCritTime(int time) {
+		this.dataManager.set(CRIT_TIME, time);
+	}
+	
+	public int getHeads() {
+		return this.dataManager.get(HEADS);
+	}
+	
+	public int getMetal() {
+		return this.dataManager.get(METAL);
+	}
+	
+	public void setMetal(int metal) {
+		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.owner instanceof EntityEngineer?MAX_METAL_ENGINEER:MAX_METAL));
+	}
+	
+	public float getPhlogRage() {
+		return this.dataManager.get(PHLOG_RAGE);
+	}
+	
+	public void setPhlogRage(float rage) {
+		this.dataManager.set(PHLOG_RAGE, rage);
+	}
 	public void addHead() {
 
 		this.collectedHeadsTime = owner.ticksExisted;
-		this.collectedHeads++;
-		TF2weapons.sendTracking(new TF2Message.CapabilityMessage(this.owner),
-				this.owner);
+		this.dataManager.set(HEADS, this.dataManager.get(HEADS) + 1);
 		/*this.owner.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH)
 				.applyModifier(new AttributeModifier(HEADS_HEALTH, "Heads modifier", collectedHeads, 0));
 		this.owner.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MOVEMENT_SPEED)
@@ -127,11 +172,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				iterator.remove();
 		}
 
-		if (!this.owner.world.isRemote && collectedHeads > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(collectedHeads)*300) ) {
-			collectedHeads--;
+		
+		if (!this.owner.world.isRemote && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
+			this.dataManager.set(HEADS, this.dataManager.get(HEADS) - 1);
 			collectedHeadsTime = this.owner.ticksExisted;
-			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(this.owner),
-					this.owner);
+			
 			/*this.owner.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH)
 					.applyModifier(new AttributeModifier(HEADS_HEALTH, "Heads modifier", collectedHeads, 0));
 			this.owner.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MOVEMENT_SPEED)
@@ -152,6 +197,9 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.lastFire -= 50;
 		if(this.doubleJumped && this.owner.onGround){
 			this.doubleJumped=false;
+		}
+		if (!this.owner.world.isRemote && this.dataManager.isDirty()) {
+			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(this.owner, true), this.owner);
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
 			ItemUsable item = (ItemUsable) stack.getItem();
@@ -523,7 +571,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			cld.setInteger(entry.getKey(), entry.getValue());
 		tag.setTag("Cooldowns", cld);
 		tag.setInteger("HealTarget", this.healTarget);
-		tag.setShort("Heads", (short) this.collectedHeads);
+		tag.setShort("Heads", this.dataManager.get(HEADS).shortValue());
 		tag.setShort("HeadsCool", (short) (this.collectedHeadsTime - this.owner.ticksExisted));
 		tag.setBoolean("Cloaked", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_INVIS));
 		tag.setBoolean("Disguised", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED));
@@ -531,6 +579,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		tag.setInteger("KillsSpinning", this.killsSpinning);
 		tag.setInteger("FocusedShot", this.focusShotTicks);
 		tag.setInteger("KnockbackFANCool", this.fanCool);
+		tag.setInteger("Metal", this.getMetal());
+		tag.setFloat("Phlog", this.getPhlogRage());
 		//tag.setBoolean("Uber", this.owner.getDataManager().get(TF2EventBusListener.ENTITY_UBER));
 		//tag.setFloat("DodgedDmg", this.dodgedDmg);
 		//tag.setInteger("KillsSpinning", this.killsSpinning);
@@ -545,7 +595,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		NBTTagCompound cld = nbt.getCompoundTag("Cooldowns");
 		for (String key : cld.getKeySet())
 			this.effectsCool.put(key, cld.getInteger(key));
-		this.collectedHeads = nbt.getShort("Heads");
+		this.dataManager.set(HEADS, (int) nbt.getShort("Heads"));
 		this.collectedHeadsTime = nbt.getShort("HeadsCool");
 		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, nbt.getBoolean("Cloaked"));
 		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, nbt.getBoolean("Disguised"));
@@ -557,6 +607,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.focusShotTicks=nbt.getInteger("FocusedShot");
 		this.fanCool=nbt.getInteger("KnockbackFANCool");
 		//this.dodgedDmg=nbt.getFloat("DodgedDmg");
+		this.setPhlogRage(nbt.getFloat("Phlog"));
+		this.setMetal(nbt.getInteger("Metal"));
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
 	}
 }

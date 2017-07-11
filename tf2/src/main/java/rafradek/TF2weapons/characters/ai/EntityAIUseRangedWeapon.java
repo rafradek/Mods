@@ -88,7 +88,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			return false;
 		else {
 			this.attackTarget = EntityLivingBase;
-			return this.entityHost.getHeldItemMainhand() != null
+			return !this.entityHost.getHeldItemMainhand().isEmpty()
 					&& (this.entityHost.getHeldItemMainhand().getItem() instanceof ItemWeapon || this.entityHost.getHeldItemMainhand().getItem() instanceof ItemMedigun);
 		}
 	}

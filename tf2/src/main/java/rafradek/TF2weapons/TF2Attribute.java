@@ -387,29 +387,46 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(82, "StickybombPenalty", "Stickybomb Count", Type.ADDITIVE, 0, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(83, "SpeedOnHitAlly", "Speed Hit", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(84, "ChargedGrenades", "Charged Grenades", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(85, "MetalAsAmmo", "Metal Ammo", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(86, "MetalOnHit", "Metal Hit", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
-	public static float getModifier(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
-		float value = initial;
-		if (!stack.isEmpty() && stack.getTagCompound() != null) {
-			NBTTagCompound attributeList = stack.getTagCompound().getCompoundTag("Attributes");
-			Iterator<String> iterator = attributeList.getKeySet().iterator();
-			while (iterator.hasNext()) {
-				String name = iterator.next();
-				NBTBase tag = attributeList.getTag(name);
-				if (tag instanceof NBTTagFloat) {
-					TF2Attribute attribute = attributes[Integer.parseInt(name)];
-					if (attribute != null && attribute.effect.equals(effect))
-						if (attribute.typeOfValue == Type.ADDITIVE)
-							value += ((NBTTagFloat) tag).getFloat();
-						else
-							value *= ((NBTTagFloat) tag).getFloat();
-				}
+	public static float addValue(float value, NBTTagCompound attributelist, String effect) {
+		for(String name : attributelist.getKeySet()) {
+			NBTBase tag = attributelist.getTag(name);
+			if (tag instanceof NBTTagFloat) {
+				TF2Attribute attribute = attributes[Integer.parseInt(name)];
+				if (attribute != null && attribute.effect.equals(effect))
+					if (attribute.typeOfValue == Type.ADDITIVE)
+						value += ((NBTTagFloat) tag).getFloat();
+					else
+						value *= ((NBTTagFloat) tag).getFloat();
 			}
 		}
+		return value;
+	}
+	public static float getModifier(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
+		//long nanoTimeStart=System.nanoTime();
+		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+			return initial;
+		float value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, initial);
+		/*if (!stack.isEmpty() && stack.getTagCompound() != null) {
+			//NBTTagCompound attributeList = stack.getTagCompound().getCompoundTag("Attributes");
+			value=addValue(value,stack.getTagCompound().getCompoundTag("Attributes"),effect);
+			if(MapList.buildInAttributes.get(ItemFromData.getData(stack).getName()) != null)
+				value=addValue(value,MapList.buildInAttributes.get(ItemFromData.getData(stack).getName()),effect);
+		}*/
 		if (entity != null && entity instanceof EntityTF2Character)
 			value *= ((EntityTF2Character) entity).getAttributeModifier(effect);
+		/*if(!Thread.currentThread().getName().equals("Client Thread"))
+			TF2EventsCommon.tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTimeStart;*/
 		return value;
 	}
 

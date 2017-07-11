@@ -21,7 +21,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
@@ -128,6 +131,7 @@ public class WeaponData {
 		public static final PropertyType STOCK = new PropertyType(72, "Stock", Type.BOOLEAN);
 		public static final PropertyType NO_FIRE_SOUND = new PropertyType(73, "No fire sound", Type.STRING);
 		public static final PropertyType CHARGED_FIRE_SOUND = new PropertyType(73, "Charged fire sound", Type.STRING);
+		public static final PropertyType PENETRATE = new PropertyType(74, "Penetrate", Type.BOOLEAN);
 		public Type type;
 		public int id;
 		public String name;
@@ -497,7 +501,9 @@ public class WeaponData {
 	public static class WeaponDataCapability implements ICapabilityProvider, INBTSerializable<NBTTagString>{
 
 		public WeaponData inst=ItemFromData.BLANK_DATA;
-		
+		public HashMap<String, Float> cachedAttrMult = new HashMap<>();
+		public HashMap<String, Float> cachedAttrAdd = new HashMap<>();
+		public boolean cached=false;
 		@Override
 		public NBTTagString serializeNBT() {
 			// TODO Auto-generated method stub
@@ -514,6 +520,56 @@ public class WeaponData {
 				inst=ItemFromData.BLANK_DATA;
 		}
 
+		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
+			if(!cached) {
+				NBTTagCompound attributelist=stack.getTagCompound().getCompoundTag("Attributes");
+				for(String name : attributelist.getKeySet()) {
+					NBTBase tag = attributelist.getTag(name);
+					if (tag instanceof NBTTagFloat) {
+						TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
+						
+						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+							if (!cachedAttrAdd.containsKey(attribute.effect))
+								cachedAttrAdd.put(attribute.effect, 0f);
+							cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
+						}
+						else {
+							if (!cachedAttrMult.containsKey(attribute.effect))
+								cachedAttrMult.put(attribute.effect, 1f);
+							cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
+						}
+							
+					}
+				}
+				attributelist=MapList.buildInAttributes.get(ItemFromData.getData(stack).getName());
+				for(String name : attributelist.getKeySet()) {
+					NBTBase tag = attributelist.getTag(name);
+					if (tag instanceof NBTTagFloat) {
+						TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
+						
+						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+							if (!cachedAttrAdd.containsKey(attribute.effect))
+								cachedAttrAdd.put(attribute.effect, 0f);
+							cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
+						}
+						else {
+							if (!cachedAttrMult.containsKey(attribute.effect))
+								cachedAttrMult.put(attribute.effect, 1f);
+							cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
+						}
+					}
+				}
+				this.cached=true;
+			}
+			Float valueadd=cachedAttrAdd.get(nameattr);
+			Float valuemult=cachedAttrMult.get(nameattr);
+			if(valueadd == null)
+				valueadd=Float.valueOf(0f);
+			if(valuemult == null)
+				valuemult=Float.valueOf(1f);
+			return (initial+valueadd)*valuemult;
+		}
+		
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 			// TODO Auto-generated method stub

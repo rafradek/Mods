@@ -19,7 +19,10 @@ import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntitySentry;
+import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.weapons.ItemBulletWeapon;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.TF2Explosion;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
@@ -33,6 +36,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.MoverType;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -49,6 +53,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Rotations;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.world.World;
 
 @Optional.Interface(iface = "atomicstryker.dynamiclights.client.IDynamicLightSource", modid = "dynamiclights", striprefs = true)
@@ -77,7 +82,9 @@ public abstract class EntityProjectileBase extends Entity
 			DataSerializers.BOOLEAN);
 	private static final DataParameter<Rotations> STICK_POS = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.ROTATIONS);
-
+	private static final DataParameter<Boolean> PENETRATE = EntityDataManager.createKey(EntityProjectileBase.class,
+			DataSerializers.BOOLEAN);
+	
 	public EntityProjectileBase(World p_i1753_1_) {
 		super(p_i1753_1_);
 		this.setSize(0.5F, 0.5F);
@@ -104,6 +111,9 @@ public abstract class EntityProjectileBase extends Entity
 		this.setThrowableHeading(this.motionX, this.motionY, this.motionZ,
 				((ItemProjectileWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
 				((ItemProjectileWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter));
+		if(((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity)){
+			this.setPenetrate();
+		}
 	}
 
 	@Override
@@ -112,6 +122,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.dataManager.register(TYPE, (byte) 0);
 		this.dataManager.register(STICK, false);
 		this.dataManager.register(STICK_POS, new Rotations(0f, 0f, 0f));
+		this.dataManager.register(PENETRATE, false);
 	}
 
 	public float getPitchAddition() {
@@ -245,13 +256,43 @@ public abstract class EntityProjectileBase extends Entity
 		}*/
 	}
 
+	public void attackDirect(Entity target, double pushForce) {
+		if (!this.world.isRemote) {
+			if (!this.hitEntities.contains(target)) {
+				this.hitEntities.add(target);
+				float distance = (float) TF2weapons.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
+				int critical = TF2weapons.calculateCritPost(target, shootingEntity, this.getCritical(),
+						this.usedWeapon);
+				float dmg = TF2weapons.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
+						distance);
+				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical);
+				if(!proceed || TF2weapons.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
+						TF2weapons.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
+					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
+						this.setDead();
+					Vec3d pushvec=new Vec3d(this.motionX,this.motionY,this.motionZ).normalize();
+					pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
+							*  0.01625D*dmg);
+					if(target instanceof EntityLivingBase) {
+						pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
+						.getAttributeValue());
+					}
+					target.addVelocity(pushvec.xCoord, pushvec.yCoord, pushvec.zCoord);
+					target.isAirBorne = target.isAirBorne || -(pushvec.yCoord) > 0.02D;
+					if(target instanceof EntityPlayerMP)
+						TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,target.isAirBorne), (EntityPlayerMP) target);
+				}
+			}
+		}
+	}
+	
 	@Override
 	public Entity changeDimension(int dimensionId) {
 		return null;
 	}
 
 	public float getExplosionSize() {
-		return 2.74f;
+		return 2.8f;
 	}
 
 	/**
@@ -288,73 +329,75 @@ public abstract class EntityProjectileBase extends Entity
 		 * Vec3d(this.posX, this.posY, this.posZ))) { this.inGround = true; } }
 		 */
 
-		Vec3d Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-		Vec3d Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-		RayTraceResult RayTraceResult = this.world.rayTraceBlocks(Vec3d1, Vec3d, false, true, false);
-		Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-		Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-
-		if (RayTraceResult != null)
-			Vec3d = new Vec3d(RayTraceResult.hitVec.xCoord, RayTraceResult.hitVec.yCoord, RayTraceResult.hitVec.zCoord);
-
-		Entity entity = null;
-		Vec3d result = null;
-		List<?> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
-				.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
-		double d0 = 0.0D;
-		int i;
-		float f1;
-
-		for (i = 0; i < list.size(); ++i) {
-			Entity entity1 = (Entity) list.get(i);
-
-			if (entity1.canBeCollidedWith() && entity1.isEntityAlive() && entity1 != this.sentry
-					&& /* TF2weapons.canHit(shootingEntity, entity1) */ entity1 != this.shootingEntity) {
-				f1 = this.getCollisionSize();
-				AxisAlignedBB axisalignedbb1 = entity1.getEntityBoundingBox().expand(f1, f1, f1);
-				RayTraceResult RayTraceResult1 = axisalignedbb1.calculateIntercept(Vec3d1, Vec3d);
-
-				if (RayTraceResult1 != null) {
-					double d1 = Vec3d1.distanceTo(RayTraceResult1.hitVec);
-
-					if (d1 < d0 || d0 == 0.0D) {
-						entity = entity1;
-						d0 = d1;
-						result = RayTraceResult1.hitVec;
+		for(RayTraceResult target : TF2weapons.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
+				this.posY + this.motionY, this.posZ + this.motionZ, false, this.getCollisionSize(), this.canPenetrate()
+				)) {
+			/*Vec3d Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
+			 Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+			RayTraceResult RayTraceResult = this.world.rayTraceBlocks(Vec3d1, Vec3d, false, true, false);
+			Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
+			Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+	
+			if (RayTraceResult != null)
+				Vec3d = new Vec3d(RayTraceResult.hitVec.xCoord, RayTraceResult.hitVec.yCoord, RayTraceResult.hitVec.zCoord);
+	
+			Entity entity = null;
+			Vec3d result = null;
+			List<?> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
+					.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
+			double d0 = 0.0D;
+			int i;
+			float f1;
+	
+			for (i = 0; i < list.size(); ++i) {
+				Entity entity1 = (Entity) list.get(i);
+	
+				if (entity1.canBeCollidedWith() && entity1.isEntityAlive() && entity1 != this.sentry
+						&& entity1 != this.shootingEntity) {
+					f1 = this.getCollisionSize();
+					AxisAlignedBB axisalignedbb1 = entity1.getEntityBoundingBox().expand(f1, f1, f1);
+					RayTraceResult RayTraceResult1 = axisalignedbb1.calculateIntercept(Vec3d1, Vec3d);
+	
+					if (RayTraceResult1 != null) {
+						double d1 = Vec3d1.distanceTo(RayTraceResult1.hitVec);
+	
+						if (d1 < d0 || d0 == 0.0D) {
+							entity = entity1;
+							d0 = d1;
+							result = RayTraceResult1.hitVec;
+						}
 					}
 				}
 			}
-		}
-
-		if (entity != null)
-			RayTraceResult = new RayTraceResult(entity, result);
-
-		if (RayTraceResult != null && RayTraceResult.entityHit != null
-				&& RayTraceResult.entityHit instanceof EntityPlayer) {
-			EntityPlayer entityplayer = (EntityPlayer) RayTraceResult.entityHit;
-
-			if (entityplayer.capabilities.disableDamage || this.shootingEntity instanceof EntityPlayer
-					&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer))
-				RayTraceResult = null;
-		}
-
-		float f2;
-		if (RayTraceResult != null)
-			if (RayTraceResult.entityHit != null)
-				this.onHitMob(RayTraceResult.entityHit, RayTraceResult);
-			else if (!this.useCollisionBox()) {
+	
+			if (entity != null)
+				RayTraceResult = new RayTraceResult(entity, result);*/
+	
+			
+			if (target.entityHit != null
+					&& target.entityHit instanceof EntityPlayer) {
+				EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
+	
+				if (entityplayer.capabilities.disableDamage || this.shootingEntity instanceof EntityPlayer
+						&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer))
+					continue;
+			}
+	
+			if (target.entityHit != null)
+				this.onHitMob(target.entityHit, target);
+			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
 				int attr = this.world.isRemote ? 0
 						: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
 				if (attr == 0) {
-					BlockPos blpos = RayTraceResult.getBlockPos();
-					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), RayTraceResult);
+					BlockPos blpos = target.getBlockPos();
+					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
 				} else if (attr == 2)
-					this.explode(RayTraceResult.hitVec.xCoord, RayTraceResult.hitVec.yCoord,
-							RayTraceResult.hitVec.zCoord, null, 1f);
+					this.explode(target.hitVec.xCoord, target.hitVec.yCoord,
+							target.hitVec.zCoord, null, 1f);
 				else
 					this.setDead();
 			}
-
+		}
 		/*
 		 * if (this.getIsCritical()) { for (i = 0; i < 4; ++i) {
 		 * this.world.spawnParticle("crit", this.posX + this.motionX *
@@ -367,6 +410,7 @@ public abstract class EntityProjectileBase extends Entity
 		 * null||this.world.isAirBlock(this.stickedBlock))){
 		 * this.setSticked(false); this.stickedBlock=null; }
 		 */
+		float f2;
 		if (this.isSticked()) {
 			this.setPosition(this.dataManager.get(STICK_POS).getX(), this.dataManager.get(STICK_POS).getY(),
 					this.dataManager.get(STICK_POS).getZ());
@@ -444,7 +488,6 @@ public abstract class EntityProjectileBase extends Entity
 		 * fentity.prevPosZ=this.prevPosZ; } }
 		 */
 	}
-
 	// @SideOnly(Side.CLIENT)
 	@Override
 	public void setPositionAndRotationDirect(double p_180426_1_, double p_180426_3_, double p_180426_5_,
@@ -696,14 +739,7 @@ public abstract class EntityProjectileBase extends Entity
 	public void readEntityFromNBT(NBTTagCompound p_70037_1_) {
 
 	}
-
-	/**
-	 * Called by a player entity when they collide with an entity
-	 */
-	/**
-	 * returns if this entity triggers Block.onEntityWalking on the blocks they
-	 * walk on. used for spiders and wolves to prevent them from trampling crops
-	 */
+	
 	public abstract void onHitGround(int x, int y, int z, RayTraceResult mop);
 
 	public abstract void onHitMob(Entity entityHit, RayTraceResult mop);
@@ -713,26 +749,8 @@ public abstract class EntityProjectileBase extends Entity
 		return false;
 	}
 
-	// @SideOnly(Side.CLIENT)
-	public float getShadowSize() {
-		return 0.0F;
-	}
-
 	public boolean moveable() {
 		return !this.isSticked();
-	}
-
-	/**
-	 * Sets the amount of knockback the arrow applies when it hits a mob.
-	 */
-	public void setKnockbackStrength(int p_70240_1_) {
-	}
-
-	/**
-	 * If returns false, the item will not inflict any damage against entities.
-	 */
-	public boolean canAttackWithItem() {
-		return false;
 	}
 
 	/**
@@ -771,6 +789,10 @@ public abstract class EntityProjectileBase extends Entity
 		return this.dataManager.get(STICK);
 	}
 
+	public boolean canPenetrate() {
+		return this.dataManager.get(PENETRATE);
+	}
+	
 	protected float getSpeed() {
 		return 3;
 	}
@@ -792,6 +814,10 @@ public abstract class EntityProjectileBase extends Entity
 
 	public void setType(int type){
 		this.dataManager.set(TYPE, (byte)type);
+	}
+	
+	public void setPenetrate(){
+		this.dataManager.set(PENETRATE, true);
 	}
 	
 	public boolean isSticky() {

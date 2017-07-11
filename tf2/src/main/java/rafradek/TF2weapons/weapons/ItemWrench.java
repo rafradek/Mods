@@ -6,8 +6,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -15,12 +22,12 @@ import rafradek.TF2weapons.building.EntitySentry;
 
 public class ItemWrench extends ItemMeleeWeapon {
 
-	@Override
+	/*@Override
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
 			boolean par4) {
 		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
 		par2List.add("Metal: " + Integer.toString(200 - par1ItemStack.getItemDamage()) + "/200");
-	}
+	}*/
 
 	@Override
 	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {
@@ -33,12 +40,12 @@ public class ItemWrench extends ItemMeleeWeapon {
 				building.removeSapper();
 			else {
 				boolean useIgnot = false;
-				int metalLeft = TF2weapons.getMetal(attacker);
+				int metalLeft = attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 				ItemStack ingot = new ItemStack(Items.IRON_INGOT);
 				if (metalLeft == 0 && attacker instanceof EntityPlayer
 						&& ((EntityPlayer) attacker).inventory.hasItemStack(ingot)) {
 					metalLeft = 50;
-					TF2weapons.setMetal(attacker, 50);
+					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(50);
 					useIgnot = true;
 				}
 				int metalUse = 0;
@@ -73,7 +80,7 @@ public class ItemWrench extends ItemMeleeWeapon {
 						building.upgrade();
 				}
 
-				building.playSound(ItemFromData.getSound(stack, metalLeft != TF2weapons.getMetal(attacker)
+				building.playSound(ItemFromData.getSound(stack, metalLeft != attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()
 						? PropertyType.BUILD_HIT_SUCCESS_SOUND : PropertyType.BUILD_HIT_FAIL_SOUND), 1.7f, 1f);
 				// System.out.println("metal: "+TF2weapons.getMetal(attacker)+"
 				// used: "+metalLeft);
@@ -81,7 +88,7 @@ public class ItemWrench extends ItemMeleeWeapon {
 					((EntityPlayer) attacker).inventory.clearMatchingItems(Items.IRON_INGOT, 0, 1, null);
 
 				if (!(attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
-					TF2weapons.setMetal(attacker, metalLeft);
+					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metalLeft);
 			}
 
 			return false;
@@ -89,19 +96,33 @@ public class ItemWrench extends ItemMeleeWeapon {
 		return true;
 	}
 
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
+		ItemStack stack=living.getHeldItem(hand);
+		if(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()>=20 && TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 0) {
+			living.setActiveHand(hand);
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
+		}
+		return super.onItemRightClick(world, living, hand);
+	}
+	@Override
+	public int getMaxItemUseDuration(ItemStack stack) {
+		return 800;
+	}
+
+	@Override
+	public EnumAction getItemUseAction(ItemStack stack) {
+		return EnumAction.BOW;
+	}
 	/*
 	 * public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack
 	 * newStack, boolean slotChanged) { return
 	 * super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged); }
 	 */
-	@Override
-	public int getMaxDamage(ItemStack stack) {
-		return 200;
-	}
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
 		return true;
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
-		return new String[]{"METAL",Integer.toString(200 - stack.getItemDamage())};
+		return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
 	}
 }

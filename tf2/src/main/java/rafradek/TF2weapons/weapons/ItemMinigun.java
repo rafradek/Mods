@@ -108,11 +108,11 @@ public class ItemMinigun extends ItemBulletWeapon {
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
 		if (world.isRemote && this.canFire(world, living, stack)) {
 			WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-			if (cap.critTime <= 0
+			if (cap.getCritTime() <= 0
 					&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 0))
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.FIRE_LOOP_SOUND), true, 0,
 						stack);
-			else if (cap.critTime > 0
+			else if (cap.getCritTime() > 0
 					&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 1)) {
 				ResourceLocation playSoundCrit = new ResourceLocation(
 						ItemFromData.getData(stack).getString(PropertyType.FIRE_LOOP_SOUND) + ".crit");

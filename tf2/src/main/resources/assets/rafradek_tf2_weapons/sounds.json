@@ -15,6 +15,12 @@
     	"rafradek_tf2_weapons:misc/crit_hit5"
     ]
   },
+  "misc.doubledonk": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/doubledonk"
+    ]
+  },
   "misc.crit.mini": {
     "category": "neutral",
     "sounds": [
@@ -792,6 +798,66 @@
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/scatter_gun_double_shoot_crit"
+    ]
+  },
+  "weapon.fire.loosecannon": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loose_cannon_shoot"
+    ]
+  },
+  "weapon.fire.loosecannon.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loose_cannon_shootcrit"
+    ]
+  },
+  "weapon.hit.loosecannon": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loose_cannon_ball_impact"
+    ]
+  },
+  "weapon.fire.disciplinary": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/discipline_device_woosh_01",
+    	"rafradek_tf2_weapons:weapon/discipline_device_woosh_02"
+    ]
+  },
+  "weapon.hit.disciplinary": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/discipline_device_impact_01",
+    	"rafradek_tf2_weapons:weapon/discipline_device_impact_02"
+    ]
+  },
+  "weapon.hit.disciplinary.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/discipline_device_hit_world"
+    ]
+  },
+  "weapon.powerup.disciplinary": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/discipline_device_power_up"
+    ]
+  },
+  "weapon.fire.widowmaker": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_01",
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_02",
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_03"
+    ]
+  },
+  "weapon.fire.widowmaker.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_01",
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_02",
+    	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_03"
     ]
   },
   "mob.engineer.hurt": {

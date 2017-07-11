@@ -68,22 +68,7 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		if (!this.world.isRemote) {
-			if (!this.hitEntities.contains(entityHit)) {
-				this.hitEntities.add(entityHit);
-				float distance = (float) TF2weapons.getDistanceBox(this.shootingEntity, entityHit.posX, entityHit.posY, entityHit.posZ, entityHit.width+0.1, entityHit.height+0.1);
-				int critical = TF2weapons.calculateCritPost(entityHit, shootingEntity, this.getCritical(),
-						this.usedWeapon);
-				float dmg = TF2weapons.calculateDamage(entityHit, world, this.shootingEntity, usedWeapon, critical,
-						distance);
-				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, entityHit, dmg, critical);
-				if(!proceed || TF2weapons.dealDamage(entityHit, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
-						TF2weapons.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
-					if (TF2Attribute.getModifier("Penetration", this.usedWeapon, 0, shootingEntity) == 0)
-						this.setDead();
-				}
-			}
-		}
+		attackDirect(entityHit,1);
 	}
 
 	@Override

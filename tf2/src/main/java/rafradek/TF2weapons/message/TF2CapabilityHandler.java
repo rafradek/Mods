@@ -35,8 +35,9 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 						}
 
 						cap.healTarget = message.healTarget;
-						cap.critTime = message.critTime;
-						cap.collectedHeads = message.heads;
+						cap.dataManager.setEntryValues(message.entries);
+						//cap.critTime = message.critTime;
+						//cap.collectedHeads = message.heads;
 					}
 				}
 			});

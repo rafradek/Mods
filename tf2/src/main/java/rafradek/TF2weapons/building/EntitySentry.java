@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.building;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -10,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityLookHelper;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -52,6 +55,7 @@ public class EntitySentry extends EntityBuilding {
 	public boolean shootRocket;
 	public boolean shootBullet;
 	public int mercsKilled;
+	//public SentryLookHelper lookHelper;
 	private static final DataParameter<Integer> AMMO = EntityDataManager.createKey(EntitySentry.class,
 			DataSerializers.VARINT);
 	private static final DataParameter<Integer> ROCKET = EntityDataManager.createKey(EntitySentry.class,
@@ -66,11 +70,23 @@ public class EntitySentry extends EntityBuilding {
 	public EntitySentry(World worldIn) {
 		super(worldIn);
 		this.setSize(0.8f, 0.8f);
+		for(Field field:EntityLiving.class.getDeclaredFields()) {
+			if(field.getName().equals("lookHelper") || field.getName().equals("field_70749_g")) {
+				field.setAccessible(true);
+				try {
+					field.set(this, new SentryLookHelper(this));
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public EntitySentry(World worldIn, EntityLivingBase owner) {
 		super(worldIn, owner);
 		this.setSize(0.8f, 0.8f);
+		//this.lookHelper=new SentryLookHelper(this);
 	}
 
 	@Override
@@ -418,4 +434,8 @@ public class EntitySentry extends EntityBuilding {
 			((EntityPlayer)s.getEntity()).addStat(TF2Achievements.GUN_DOWN);
 		}
 	}
+	
+	/*public EntityLookHelper getLookHelper() {
+		return lookHelper;
+	}*/
 }

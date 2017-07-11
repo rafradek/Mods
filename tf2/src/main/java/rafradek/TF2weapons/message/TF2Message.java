@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -309,16 +310,24 @@ public abstract class TF2Message implements IMessage {
 		int entityID;
 		int heads;
 		int critTime;
-
+		List < EntityDataManager.DataEntry<? >> entries;
+		boolean sendAll;
+		
 		public CapabilityMessage() {
 		}
 
-		public CapabilityMessage(Entity entity) {
+		public CapabilityMessage(Entity entity,boolean sendAll) {
 			WeaponsCapability cap = entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			this.entityID = entity.getEntityId();
 			this.healTarget = cap.healTarget;
-			this.critTime = cap.critTime;
-			this.heads = cap.collectedHeads;
+			//this.critTime = cap.critTime;
+			//this.heads = cap.collectedHeads;
+			if(sendAll) {
+				this.entries=cap.dataManager.getAll();
+			}
+			else {
+				this.entries=cap.dataManager.getDirty();
+			}
 			// new Exception().printStackTrace();
 		}
 
@@ -328,6 +337,12 @@ public abstract class TF2Message implements IMessage {
 			healTarget = buf.readInt();
 			critTime = buf.readByte();
 			heads = buf.readShort();
+			try {
+				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			/*
 			 * try { tag=CompressedStreamTools.read(new ByteBufInputStream(buf),
 			 * new NBTSizeTracker(2097152L)); } catch (IOException e) { // TODO
@@ -341,6 +356,12 @@ public abstract class TF2Message implements IMessage {
 			buf.writeInt(healTarget);
 			buf.writeByte(critTime);
 			buf.writeShort(heads);
+			try {
+				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			/*
 			 * try { CompressedStreamTools.write(tag, new
 			 * ByteBufOutputStream(buf)); } catch (IOException e) { // TODO

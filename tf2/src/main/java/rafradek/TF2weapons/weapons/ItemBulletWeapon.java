@@ -78,7 +78,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 						pushvec=new Vec3d(pushvec.xCoord * knockbackAmount * (flag?2.8:1), (pushvec.yCoord+(flag?1:0)) * knockbackAmount,
 								pushvec.zCoord * knockbackAmount * (flag?2.8:1));
 						entity.addVelocity(pushvec.xCoord,pushvec.yCoord,pushvec.zCoord);
-						entity.isAirBorne = entity.isAirBorne || -(pushvec.yCoord * knockbackAmount) > 0.01D;
+						entity.isAirBorne = entity.isAirBorne || -(pushvec.yCoord * knockbackAmount) > 0.02D;
 						if(entity instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,entity.isAirBorne), (EntityPlayerMP) entity);
 					}
@@ -349,11 +349,6 @@ public class ItemBulletWeapon extends ItemWeapon {
 								new Vec3d(endX, endY, endZ), null);
 					}
 				}
-	}
-
-	public boolean canPenetrate(ItemStack stack, EntityLivingBase shooter) {
-		// TODO Auto-generated method stub
-		return TF2Attribute.getModifier("Penetration", stack, 0, shooter) > 0;
 	}
 
 	/*

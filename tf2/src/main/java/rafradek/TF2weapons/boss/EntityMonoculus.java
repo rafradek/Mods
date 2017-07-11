@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityMoveHelper;
 import net.minecraft.entity.boss.EntityWither;
@@ -41,6 +42,7 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.weapons.ItemMinigun;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityMonoculus extends EntityTF2Boss {
 
@@ -83,7 +85,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 					}
 
 				}));
-		this.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityBuilding>(this, EntityBuilding.class, 0,true, false,null));
+		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
 	}
 	@Override
 	public void fall(float distance, float damageMultiplier) {
@@ -217,6 +219,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 	@Override
 	public void onLivingUpdate() {
+		if (this.getHeldItemMainhand().isEmpty() || !(this.getHeldItemMainhand().getItem() instanceof ItemWeapon))
+			this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mnceye"));
+		
 		super.onLivingUpdate();
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
@@ -386,12 +391,12 @@ public class EntityMonoculus extends EntityTF2Boss {
 							this.parentEntity.getHeldItemMainhand(), this.parentEntity, world, 2, EnumHand.MAIN_HAND);
 					if (this.triple > 0) {
 						triple--;
-						this.attackTimer += Math.max(4, 6 - this.parentEntity.level / 5);
+						this.attackTimer = Math.max(4, 6 - this.parentEntity.level / 5);
 						((ItemProjectileWeapon) this.parentEntity.getHeldItemMainhand().getItem()).shoot(
 								this.parentEntity.getHeldItemMainhand(), this.parentEntity, world, 2,
 								EnumHand.MAIN_HAND);
 					} else {
-						this.attackTimer += Math.max(11, 29 - this.parentEntity.level);
+						this.attackTimer = Math.max(11, 29 - this.parentEntity.level);
 						if (this.parentEntity.isAngry())
 							triple = 2;
 					}

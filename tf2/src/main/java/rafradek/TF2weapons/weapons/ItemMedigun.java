@@ -62,7 +62,7 @@ public class ItemMedigun extends ItemUsable {
 			}
 		} else if (!world.isRemote && message != null && message.readData != null) {
 			living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = (int) message.readData.get(0)[0];
-			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(living),
+			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(living, false),
 					living);
 		}
 		return true;
@@ -198,7 +198,7 @@ public class ItemMedigun extends ItemUsable {
 		if (par5 && !this.canFire(par2World, (EntityLivingBase) par3Entity, par1ItemStack)) {
 			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
 			if (!par2World.isRemote)
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity),
+				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity, false),
 						par3Entity);
 		}
 		Potion effect=Potion.getPotionFromResourceLocation(ItemFromData.getData(par1ItemStack).getString(PropertyType.EFFECT_TYPE));
@@ -226,7 +226,7 @@ public class ItemMedigun extends ItemUsable {
 				// "+ItemUsable.itemProperties.server.get(par3Entity).getInteger("HealTarget"));
 				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSqToEntity(healTarget) > 72) {
 					par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
-					TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity),
+					TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity, false),
 							par3Entity);
 					// TF2weapons.sendTracking(new
 					// TF2Message.PropertyMessage("HealTarget",
@@ -314,7 +314,7 @@ public class ItemMedigun extends ItemUsable {
 			// System.out.println("Stop heal");
 			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget != -1) {
 				living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
-				TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living));
+				TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 			}
 
 		}
@@ -338,7 +338,7 @@ public class ItemMedigun extends ItemUsable {
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
 		if (world.isRemote && !TF2weapons.medigunLock && (oldState & 1 - newState & 1) == 1) {
 			living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
-			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living));
+			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 		}
 		return false;
 	}

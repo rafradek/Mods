@@ -1005,7 +1005,7 @@
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 0.35,
-		"Damage": 6.15,
+		"Damage": 5.5,
 		"Hidden": true,
 		"Attributes": 
 		{
@@ -1106,7 +1106,7 @@
 
 	"mrsbomb": 
 	{
-		"Name": "mrsbomb",
+		"Name": "Bomb",
 		"Class": "projectile",
 		"Projectile": "grenade",
 		"Render": "rafradek_tf2_weapons:merasmus_wand",
@@ -1116,6 +1116,7 @@
 		"Projectile speed": 1,
 		"Damage": 12.5,
 		"Hidden": true,
+		"Penetrate": true,
 		"Attributes": 
 		{
 			"DestroyBlock": 0.3,
@@ -1415,8 +1416,85 @@
 		"Cost": 18,
 		"Attributes":
 		{
-			"HealTarget": 2,
+			"HealTarget": 1.5,
 			"AmmoEfficiencyPenalty": 4
+		}
+	},
+	"disciplinary": 
+	{
+		"Name": "Disciplinary Action",
+		"Class": "melee",
+		"Based on": "fryingpan",
+		"Mobs": "soldier",
+		"Render": "rafradek_tf2_weapons:disciplinary_action",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.disciplinary",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.disciplinary",
+		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.disciplinary.world",
+		"Drop chance": 0.11,
+		"Stock":false,
+		"Cost": 12,
+		"Attributes": 
+		{
+			"RangeIncrease": 1.7,
+			"DamagePenalty": 0.75,
+			"SpeedOnHitAlly": 2
+		}
+	},
+	"loosecannon": 
+	{
+		"Name": "Loose Cannon",
+		"Class": "projectile",
+		"Based on": "grenadelauncher",
+		"Mobs": "demoman",
+		"Render": "rafradek_tf2_weapons:grenadelauncher",
+		"Charge sound": "rafradek_tf2_weapons:weapon.charge.stickylauncher",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.loosecannon",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.loosecannon",
+		"Description": "Can be charged by holding fire button\nCannonballs does not explode on impact",
+		"Drop chance": 0.11,
+		"Cost": 25,
+		"Damage": 6,
+		"Knockback": 16,
+		"Penetrate": true,
+		"Stock": false,
+		"Attributes": 
+		{
+			"WeaponMode": 2,
+			"ProjectileSpeedBonus": 1.2,
+			"ChargedGrenades": 20
+		}
+	},
+	"eurekaeffect": 
+	{
+		"Name": "Eureka Effect",
+		"Class": "wrench",
+		"Based on": "wrench",
+		"Render": "rafradek_tf2_weapons:eureka_effect",
+		"Description": "Alt-fire: Teleport to the spawn or\na teleport exit",
+		"Drop chance": 0.11,
+		"Cost": 27,
+		"Stock": false,
+		"Attributes": 
+		{
+			"WeaponMode": 1
+		}
+	},
+	"widowmaker": 
+	{
+		"Name": "Widowmaker",
+		"Class": "bullet",
+		"Based on": "shotgunengineer",
+		"Render": "rafradek_tf2_weapons:shotgun",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.widowmaker",
+		"Drop chance": 0.11,
+		"Cost": 18,
+		"Hidden": false,
+		"Stock": false,
+		"Reloads clip": false,
+		"Attributes": 
+		{
+			"MetalAsAmmo": 30,
+			"MetalOnHit": 7.5
 		}
 	}
 }

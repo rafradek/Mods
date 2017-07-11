@@ -30,7 +30,7 @@ public class RenderGrenade extends Render<EntityGrenade> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityGrenade entity) {
 
-		return entity.isBomb() ? TEXTURE_BOMB: TF2weapons.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
+		return entity.getBomb() > 0 ? TEXTURE_BOMB: TF2weapons.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
 	}
 
 	@Override
@@ -41,13 +41,13 @@ public class RenderGrenade extends Render<EntityGrenade> {
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick, 0.0F, 1.0F,
 				0.0F);
 		GL11.glRotatef(
-				(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTick) *(entity.isBomb()? 1:-1), 1.0F,
+				(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTick) *(entity.getBomb()>0? 1:-1), 1.0F,
 				0.0F, 0.0F);
-		if(entity.isBomb())
+		if(entity.getBomb()==1)
 			GL11.glScalef(2, 2, 2);
 		bindEntityTexture(entity);
 
-		ModelBase model=entity.isBomb()?this.modelBomb:this.model;
+		ModelBase model=entity.getBomb()>0?this.modelBomb:this.model;
 		// GL11.glTranslatef((float)entity.posX, (float)entity.posY,
 		// entity.posZ);
 		if (entity.getCritical() == 2) {

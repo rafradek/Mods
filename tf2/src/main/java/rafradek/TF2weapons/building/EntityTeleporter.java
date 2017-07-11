@@ -30,7 +30,7 @@ import rafradek.TF2weapons.TF2weapons;
 public class EntityTeleporter extends EntityBuilding {
 	// public static ArrayList<BlockPosDimension> teleportersData=new
 	// ArrayList<BlockPosDimension>();
-	public static final int TP_PER_PLAYER = 64;
+	public static final int TP_PER_PLAYER = 128;
 
 	public static int tpCount = 0;
 	public static HashMap<UUID, TeleporterData[]> teleporters = new HashMap<UUID, TeleporterData[]>();

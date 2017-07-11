@@ -107,13 +107,13 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			 * getSoundHandler().isSoundPlaying(ClientProxy.fireSounds.get(
 			 * living))+" "+ClientProxy.fireSounds.get(living).type); }
 			 */
-			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).critTime <= 0 && (!ClientProxy.fireSounds
+			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() <= 0 && (!ClientProxy.fireSounds
 					.containsKey(living)
 					|| !Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(ClientProxy.fireSounds.get(living))
 					|| (ClientProxy.fireSounds.get(living).type != 0 && ClientProxy.fireSounds.get(living).type != 2)))
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.FIRE_LOOP_SOUND), true, 0,
 						stack);
-			else if (living.getCapability(TF2weapons.WEAPONS_CAP, null).critTime > 0
+			else if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() > 0
 					&& (!ClientProxy.fireSounds.containsKey(living)
 							|| !Minecraft.getMinecraft().getSoundHandler()
 									.isSoundPlaying(ClientProxy.fireSounds.get(living))
@@ -234,7 +234,8 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		
 		if(target instanceof EntityLivingBase && TF2Attribute.getModifier("Rage Crit", stack, 0, attacker)!=0 && !stack.getTagCompound().getBoolean("RageActive")){
 			
-			stack.getTagCompound().setFloat("Rage", Math.min(20, stack.getTagCompound().getFloat("Rage")+amount*(target instanceof EntityPlayer?1f:TF2weapons.isEnemy(attacker, (EntityLivingBase) target)?0.4f:0.1f)));
+			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(Math.min(20, attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()+amount
+					*(target instanceof EntityPlayer?1f:TF2weapons.isEnemy(attacker, (EntityLivingBase) target)?0.4f:0.1f)));
 		}
 	}
 	
@@ -242,11 +243,11 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(stack, par2World, par3Entity, par4, par5);
 		if(stack.getTagCompound().getBoolean("RageActive")) {
-			stack.getTagCompound().setFloat("Rage", stack.getTagCompound().getFloat("Rage")-0.17f);
+			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()-0.17f);
 			if(par5 && par3Entity.ticksExisted%5==0) {
 				((EntityLivingBase) par3Entity).addPotionEffect(new PotionEffect(TF2weapons.critBoost,5));
 			}
-			if(stack.getTagCompound().getFloat("Rage")<=0)
+			if(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()<=0)
 				stack.getTagCompound().setBoolean("RageActive", false);
 		}
 			
@@ -293,19 +294,21 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
-		return super.showDurabilityBar(stack) || (TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 && stack.getTagCompound().getFloat("Rage") <= 20);
+		return super.showDurabilityBar(stack) || (TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 
+				&& Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage() < 20f);
 	}
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
-		return TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 ? (20 - stack.getTagCompound().getFloat("Rage"))/20 : super.getDurabilityForDisplay(stack);
+		return TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 ? (20D - Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage())/20D 
+				: super.getDurabilityForDisplay(stack);
 	}
 	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn = playerIn.getHeldItem(hand);
-		if (TF2Attribute.getModifier("Rage Crit", itemStackIn, 0, playerIn)!=0 && itemStackIn.getTagCompound().getFloat("Rage")>=20) {
+		if (TF2Attribute.getModifier("Rage Crit", itemStackIn, 0, playerIn)!=0 &&playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
 			playerIn.setActiveHand(hand);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}

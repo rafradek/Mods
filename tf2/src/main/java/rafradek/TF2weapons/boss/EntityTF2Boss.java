@@ -20,6 +20,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -39,6 +40,7 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.weapons.ItemMinigun;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 
@@ -271,6 +273,6 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	}
 	public boolean isPotionApplicable(PotionEffect potioneffectIn)
     {
-		return potioneffectIn.getPotion() != TF2weapons.stun && potioneffectIn.getPotion() != TF2weapons.it && super.isPotionApplicable(potioneffectIn);
+		return potioneffectIn.getPotion() == TF2weapons.stun && potioneffectIn.getAmplifier()>=3;
     }
 }

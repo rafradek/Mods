@@ -103,7 +103,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 						.getEntityId();
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2weapons.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost), entityHost);
+				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				// System.out.println("coœdo");
 			}
 
@@ -114,7 +114,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
 				TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost), entityHost);
+				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				//System.out.println("coœz");
 			}
 			pressed = false;

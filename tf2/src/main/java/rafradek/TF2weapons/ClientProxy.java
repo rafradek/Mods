@@ -138,7 +138,7 @@ public class ClientProxy extends CommonProxy {
 	public static RenderLivingBase disguiseRenderPlayer;
 	public static RenderLivingBase disguiseRenderPlayerSmall;
 	public static TextureMap particleMap;
-	public static KeyBinding reload = new KeyBinding("key.reload", Keyboard.KEY_R, "lol");
+	public static KeyBinding reload = new KeyBinding("key.reload", Keyboard.KEY_R, "TF2");
 	public static ResourceLocation scopeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/scope.png");
 	// public static Map<MinigunLoopSound, EntityLivingBase > spinSounds;
 	public static BiMap<EntityLivingBase, WeaponSound> fireSounds;
@@ -350,7 +350,7 @@ public class ClientProxy extends CommonProxy {
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
 		fireSounds = HashBiMap.create();
 		ClientRegistry.registerKeyBinding(ClientProxy.reload);
-		disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
+		/*disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
 		entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
@@ -375,7 +375,7 @@ public class ClientProxy extends CommonProxy {
 		textureDisguise.put("Pig", new ResourceLocation("textures/entity/pig/pig.png"));
 		entityModel.put("Chicken", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
 				.get(EntityChicken.class)).getMainModel());
-		textureDisguise.put("Chicken", new ResourceLocation("textures/entity/chicken.png"));
+		textureDisguise.put("Chicken", new ResourceLocation("textures/entity/chicken.png"));*/
 		
 			/*((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener(){
 

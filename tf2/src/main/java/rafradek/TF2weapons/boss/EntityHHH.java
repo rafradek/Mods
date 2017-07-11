@@ -43,6 +43,7 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityHHH extends EntityTF2Boss {
 
@@ -95,7 +96,7 @@ public class EntityHHH extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(105);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.32D);
-		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(16D);
+		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(13D);
 
 	}
 	@Override
@@ -115,6 +116,10 @@ public class EntityHHH extends EntityTF2Boss {
 	
 	@Override
 	public void onLivingUpdate() {
+		
+		if (this.getHeldItemMainhand().isEmpty() || !(this.getHeldItemMainhand().getItem() instanceof ItemWeapon))
+			this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("headtaker"));
+		
 		super.onLivingUpdate();
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {

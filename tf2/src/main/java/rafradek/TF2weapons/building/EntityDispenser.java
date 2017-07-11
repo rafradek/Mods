@@ -21,6 +21,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemWrench;
@@ -81,15 +82,12 @@ public class EntityDispenser extends EntityBuilding {
 				int level = this.getLevel();
 				living.heal(0.025f + 0.025f * level);
 				if (this.giveAmmoTimer == 0) {
-					if (living instanceof EntityTF2Character || (!living.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
-							&& living.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWrench)) {
+					if (living instanceof EntityEngineer || living instanceof EntityPlayer) {
+						int metal = living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 						int metalUse = Math.min(30 + this.getLevel() * 10,
-								Math.min(200 - TF2weapons.getMetal(living), this.getMetal()));
+								Math.min(200 - metal, this.getMetal()));
 						this.setMetal(this.getMetal() - metalUse);
-						TF2weapons.setMetal(living, TF2weapons.getMetal(living) + metalUse);
-
-						if (living instanceof EntityPlayerMP)
-							((EntityPlayerMP) living).updateHeldItem();
+						living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metal + metalUse);
 					}
 					if (!living.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
 							&& living.getHeldItem(EnumHand.MAIN_HAND).getItem().isRepairable()

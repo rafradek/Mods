@@ -101,7 +101,10 @@ public class ItemFromData extends Item {
 				MapList.weaponClasses.get(MapList.nameToData.get(type).getString(PropertyType.CLASS)));
 		//System.out.println(stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null));
 		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst=MapList.nameToData.get(type);
-		stack.setTagCompound(MapList.buildInAttributes.get(type).copy());
+		NBTTagCompound tag=new NBTTagCompound();
+		tag.setString("Type", type);
+		tag.setTag("Attributes", new NBTTagCompound());
+		stack.setTagCompound(tag);
 		// System.out.println(stack.toString());
 		return stack;
 	}
@@ -263,7 +266,22 @@ public class ItemFromData extends Item {
 		 */
 		if (par1ItemStack.hasTagCompound()) {
 			NBTTagCompound attributeList = par1ItemStack.getTagCompound().getCompoundTag("Attributes");
+			//attributeList.merge(MapList.buildInAttributes.get(getData(par1ItemStack).getName()));
 			Iterator<String> iterator = attributeList.getKeySet().iterator();
+			while (iterator.hasNext()) {
+				String name = iterator.next();
+				NBTBase tag = attributeList.getTag(name);
+				if (tag instanceof NBTTagFloat) {
+					NBTTagFloat tagFloat = (NBTTagFloat) tag;
+					TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
+					//System.out.println("Attribute id: "+name);
+					if (attribute != null && attribute.state != State.HIDDEN )
+						par2List.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
+				}
+			}
+			attributeList = MapList.buildInAttributes.get(getData(par1ItemStack).getName());
+			//attributeList.merge(MapList.buildInAttributes.get(getData(par1ItemStack).getName()));
+			iterator = attributeList.getKeySet().iterator();
 			while (iterator.hasNext()) {
 				String name = iterator.next();
 				NBTBase tag = attributeList.getTag(name);

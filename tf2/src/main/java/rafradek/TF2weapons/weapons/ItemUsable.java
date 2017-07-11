@@ -74,6 +74,9 @@ public abstract class ItemUsable extends ItemFromData {
 		if (this.getAmmoType(stack) == 0)
 			return 0;
 
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
+			return (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, living);
+		}
 		stack.getTagCompound().setFloat("UsedAmmo", stack.getTagCompound().getFloat("UsedAmmo")
 				+ amount * TF2Attribute.getModifier("Ammo Eff", stack, 1, living));
 		amount = 0;

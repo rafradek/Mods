@@ -40,8 +40,8 @@ public class EntityAISetup extends EntityAIBase {
 				|| this.engineer.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWrench)
 			return false;
 
-		buildType = (this.engineer.metal >= 130 && (this.engineer.sentry == null || this.engineer.sentry.isDead)) ? 1
-				: (this.engineer.metal >= 100 && (this.engineer.dispenser == null || this.engineer.dispenser.isDead))
+		buildType = (this.engineer.getWepCapability().getMetal() >= 130 && (this.engineer.sentry == null || this.engineer.sentry.isDead)) ? 1
+				: (this.engineer.getWepCapability().getMetal() >= 100 && (this.engineer.dispenser == null || this.engineer.dispenser.isDead))
 						? 2 : 0;
 		// System.out.println("Promote: "+buildType);
 		if (buildType > 0) {

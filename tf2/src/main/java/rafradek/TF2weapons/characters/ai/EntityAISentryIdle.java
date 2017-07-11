@@ -21,14 +21,14 @@ public class EntityAISentryIdle extends EntityAIBase {
 
 	@Override
 	public void updateTask() {
-		// System.out.println("Rotating");
+		//System.out.println("Rotating "+this.host.rotationYaw+" "+this.host.rotationYawHead);
 		if (this.direction) {
 			this.host.rotationYawHead += 2.5f;
-			if (this.host.rotationYawHead >= this.host.rotationYaw)
+			if (this.host.rotationYawHead >= this.host.rotationYaw+50)
 				this.direction = false;
 		} else {
 			this.host.rotationYawHead -= 2.5f;
-			if (this.host.rotationYawHead <= this.host.rotationYaw)
+			if (this.host.rotationYawHead <= this.host.rotationYaw-50)
 				this.direction = true;
 		}
 	}

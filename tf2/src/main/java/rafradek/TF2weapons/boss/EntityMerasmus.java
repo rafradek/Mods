@@ -54,6 +54,7 @@ import rafradek.TF2weapons.boss.BlockProp.EnumBlockType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityMerasmus extends EntityTF2Boss {
 
@@ -106,7 +107,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(200);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
-		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(8D);
+		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(0D);
 
 	}
 	protected PathNavigate getNewNavigator(World worldIn)
@@ -137,7 +138,12 @@ public class EntityMerasmus extends EntityTF2Boss {
 	}
 	@Override
 	public void onLivingUpdate() {
+		if (this.getHeldItemMainhand().isEmpty() || !(this.getHeldItemMainhand().getItem() instanceof ItemWeapon))
+			this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mrsbomb"));
+		
 		super.onLivingUpdate();
+		if (this.getActivePotionEffect(TF2weapons.stun) != null)
+			this.rotationPitch=90;
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
 				Vec3d pos = TF2weapons.radiusRandom2D(2.2f, this.rand);
@@ -164,7 +170,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 				living.removePotionEffect(MobEffects.NAUSEA);
 				this.playSound(TF2Sounds.MOB_MERASMUS_STUN, 1F, 1f);
 				this.attackEntityFrom(new EntityDamageSource("magicb",living).setMagicDamage(), 15);
-				this.addPotionEffect(new PotionEffect(TF2weapons.stun,90,1));
+				this.addPotionEffect(new PotionEffect(TF2weapons.stun,120,3));
+				this.teleportCooldown=120;
 			}
 			if(!this.hidden){
 				if(this.bombCooldown--<=0){
@@ -182,7 +189,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						living.addPotionEffect(new PotionEffect(TF2weapons.bombmrs,300));
 						TF2weapons.stun(living, 300, false);
 						((EntityPlayerMP)living).connection.sendPacket(new SPacketSoundEffect(TF2Sounds.MOB_MERASMUS_HEADBOMB, this.getSoundCategory(), living.posX, living.posY, living.posZ, 4F, 1f));
-						this.teleportCooldown=90;
+						//this.teleportCooldown=90;
 					}
 					this.bombCooldown=Math.max(600-this.playersAttacked*60,260);
 				}
@@ -190,10 +197,18 @@ public class EntityMerasmus extends EntityTF2Boss {
 				if(!this.hidden && this.teleportCooldown--<=0 && !this.isBombSpell()){
 					this.teleportCooldown=240;
 					this.playSound(TF2Sounds.MOB_MERASMUS_DISAPPEAR, 1F, 1f);
+					
 					for (int i = 0; i < 10; i++) {
-	
-						double x = this.posX + rand.nextDouble() * 40 - 20;
-						double z = this.posZ + rand.nextDouble() * 40 - 20;
+						double x;
+						double z;
+						if(this.getAttackTarget() != null) {
+							x = this.getAttackTarget().posX + rand.nextDouble() * 40 - 20;
+							z = this.getAttackTarget().posZ + rand.nextDouble() * 40 - 20;
+						}
+						else {
+							x = this.posX + rand.nextDouble() * 40 - 20;
+							z = this.posZ + rand.nextDouble() * 40 - 20;
+						}
 						double y = this.world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z)).getY() + 3;
 						if (this.attemptTeleport(x, y, z)) {
 							this.playSound(TF2Sounds.MOB_MERASMUS_APPEAR, 1F, 1f);
@@ -352,6 +367,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		if(hide){
 			this.navigator.clearPathEntity();
 			//this.moveHelper=null;
+			this.playSound(TF2Sounds.MOB_MERASMUS_HIDE, this.getSoundVolume(), 1F);
 			this.setInvisible(true);
 			int blockCount=(int) Math.min(100,10*(0.7f+0.3f*this.playersAttacked)*(0.9f+0.1f*this.level));
 			BlockPos initial=this.getPosition();
@@ -455,7 +471,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 			EntityLivingBase target=this.host.getAttackTarget();
 			World world=this.host.world;
 			this.host.getLookHelper().setLookPositionWithEntity(target, 30F, 90F);
-			if(!lastAttackMagic &&attackDuration<20){
+			if(attackDuration<20){
 				this.host.getNavigator().tryMoveToEntityLiving(target, 1f);
 			}
 			if(--this.attackDuration<=0){
@@ -484,6 +500,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 					this.attackDuration=(int) (55/(0.92+this.host.level*0.08f));
 					this.host.getNavigator().clearPathEntity();
 					this.host.playSound(TF2Sounds.MOB_MERASMUS_SPELL, 2F, 1F);
+					boolean attacked=false;
 					for(EntityLivingBase living:world.getEntitiesWithinAABB(EntityLivingBase.class, this.host.getEntityBoundingBox().expand(12, 5, 12), new Predicate<EntityLivingBase>(){
 
 						@Override
@@ -496,7 +513,10 @@ public class EntityMerasmus extends EntityTF2Boss {
 						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 6);
 						living.addVelocity(0, 1.25, 0);
 						living.fallDistance=-10;
+						attacked=true;
 					}
+					if(!attacked)
+						this.host.teleportCooldown-=20;
 				}
 				this.attacksMade++;
 			}
