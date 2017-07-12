@@ -75,7 +75,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
 	@Override
-	public boolean continueExecuting() {
+	public boolean shouldContinueExecuting() {
 		return this.shouldExecute() || !this.entityHost.getNavigator().noPath();
 	}
 
@@ -105,10 +105,10 @@ public class EntityAIStickybomb extends EntityAIBase {
 	public double lookingAtMax() {
 		if (this.attackTarget == null)
 			return 0;
-		double d0 = this.attackTarget.xCoord - this.entityHost.posX;
-		double d1 = (this.attackTarget.yCoord)
+		double d0 = this.attackTarget.x - this.entityHost.posX;
+		double d1 = (this.attackTarget.y)
 				- (this.entityHost.posY + this.entityHost.getEyeHeight());
-		double d2 = this.attackTarget.zCoord - this.entityHost.posZ;
+		double d2 = this.attackTarget.z - this.entityHost.posZ;
 		double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
 		float f = (float) (Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
 		float f1 = (float) (-(Math.atan2(d1, d3) * 180.0D / Math.PI));
@@ -126,12 +126,12 @@ public class EntityAIStickybomb extends EntityAIBase {
 		if(this.attackTarget==null)
 			return;
 		this.entityHost.switchSlot(1);
-		double d0 = this.entityHost.getDistanceSq(this.attackTarget.xCoord, this.attackTarget.yCoord,
-				this.attackTarget.zCoord);
+		double d0 = this.entityHost.getDistanceSq(this.attackTarget.x, this.attackTarget.y,
+				this.attackTarget.z);
 
-		double lookX = this.attackTarget.xCoord;
-		double lookY = this.attackTarget.yCoord;
-		double lookZ = this.attackTarget.zCoord;
+		double lookX = this.attackTarget.x;
+		double lookY = this.attackTarget.y;
+		double lookZ = this.attackTarget.z;
 		// System.out.println("raytracing:"+this.entityHost.world.rayTraceBlocks(new
 		// Vec3d(this.entityHost.posX,this.entityHost.posY+this.entityHost.getEyeHeight(),this.entityHost.posZ),
 		// new Vec3d(lookX,this.attackTarget.posY,lookZ)));
@@ -151,7 +151,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 			 * getMaxDamage()-1){
 			 * ((EntitySoldier)this.entityHost).rocketJump=true; }
 			 */
-			this.entityHost.getNavigator().tryMoveToXYZ(this.attackTarget.xCoord,this.attackTarget.yCoord,this.attackTarget.zCoord, this.entityMoveSpeed);
+			this.entityHost.getNavigator().tryMoveToXYZ(this.attackTarget.x,this.attackTarget.y,this.attackTarget.z, this.entityMoveSpeed);
 		}
 		// if(!(this.entityHost instanceof
 		// EntitySoldier&&((EntitySoldier)this.entityHost).rocketJump))

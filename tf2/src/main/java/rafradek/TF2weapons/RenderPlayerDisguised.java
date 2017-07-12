@@ -27,7 +27,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 	}
 
 	@Override
-	protected ResourceLocation getEntityTexture(final AbstractClientPlayer entity) {
+	public ResourceLocation getEntityTexture(final AbstractClientPlayer entity) {
 
 		return entity.getCapability(TF2weapons.WEAPONS_CAP, null).skinDisguise != null
 				? entity.getCapability(TF2weapons.WEAPONS_CAP, null).skinDisguise
@@ -41,7 +41,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 				.getPlayersTeam(entityIn.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2));
 
 		if (scoreplayerteam != null) {
-			String s = FontRenderer.getFormatFromString(scoreplayerteam.getColorPrefix());
+			String s = FontRenderer.getFormatFromString(scoreplayerteam.getPrefix());
 
 			if (s.length() >= 2)
 				i = this.getFontRendererFromRenderManager().getColorCode(s.charAt(1));

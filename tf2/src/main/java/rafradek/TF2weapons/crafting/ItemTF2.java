@@ -30,8 +30,10 @@ public class ItemTF2 extends Item {
 	}
 
 	@Override
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
 		// System.out.println(this.getCreativeTab());
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		for (int i = 0; i < 8; i++)
 			par3List.add(new ItemStack(this, 1, i));
 	}

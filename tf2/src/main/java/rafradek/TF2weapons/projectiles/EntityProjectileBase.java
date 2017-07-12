@@ -277,8 +277,8 @@ public abstract class EntityProjectileBase extends Entity
 						pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
 						.getAttributeValue());
 					}
-					target.addVelocity(pushvec.xCoord, pushvec.yCoord, pushvec.zCoord);
-					target.isAirBorne = target.isAirBorne || -(pushvec.yCoord) > 0.02D;
+					target.addVelocity(pushvec.x, pushvec.y, pushvec.z);
+					target.isAirBorne = target.isAirBorne || -(pushvec.y) > 0.02D;
 					if(target instanceof EntityPlayerMP)
 						TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,target.isAirBorne), (EntityPlayerMP) target);
 				}
@@ -339,12 +339,12 @@ public abstract class EntityProjectileBase extends Entity
 			Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 	
 			if (RayTraceResult != null)
-				Vec3d = new Vec3d(RayTraceResult.hitVec.xCoord, RayTraceResult.hitVec.yCoord, RayTraceResult.hitVec.zCoord);
+				Vec3d = new Vec3d(RayTraceResult.hitVec.x, RayTraceResult.hitVec.y, RayTraceResult.hitVec.z);
 	
 			Entity entity = null;
 			Vec3d result = null;
 			List<?> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
-					.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
+					.addCoord(this.motionX, this.motionY, this.motionZ).grow(1.0D, 1.0D, 1.0D));
 			double d0 = 0.0D;
 			int i;
 			float f1;
@@ -355,7 +355,7 @@ public abstract class EntityProjectileBase extends Entity
 				if (entity1.canBeCollidedWith() && entity1.isEntityAlive() && entity1 != this.sentry
 						&& entity1 != this.shootingEntity) {
 					f1 = this.getCollisionSize();
-					AxisAlignedBB axisalignedbb1 = entity1.getEntityBoundingBox().expand(f1, f1, f1);
+					AxisAlignedBB axisalignedbb1 = entity1.getEntityBoundingBox().grow(f1, f1, f1);
 					RayTraceResult RayTraceResult1 = axisalignedbb1.calculateIntercept(Vec3d1, Vec3d);
 	
 					if (RayTraceResult1 != null) {
@@ -392,8 +392,8 @@ public abstract class EntityProjectileBase extends Entity
 					BlockPos blpos = target.getBlockPos();
 					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
 				} else if (attr == 2)
-					this.explode(target.hitVec.xCoord, target.hitVec.yCoord,
-							target.hitVec.zCoord, null, 1f);
+					this.explode(target.hitVec.x, target.hitVec.y,
+							target.hitVec.z, null, 1f);
 				else
 					this.setDead();
 			}
@@ -415,7 +415,7 @@ public abstract class EntityProjectileBase extends Entity
 			this.setPosition(this.dataManager.get(STICK_POS).getX(), this.dataManager.get(STICK_POS).getY(),
 					this.dataManager.get(STICK_POS).getZ());
 			if (!this.world.isRemote && this.ticksExisted % 5 == 0 && this.world
-					.getCollisionBoxes(this, this.getEntityBoundingBox().expand(0.1f, 0.1f, 0.1f)).isEmpty())
+					.getCollisionBoxes(this, this.getEntityBoundingBox().grow(0.1f, 0.1f, 0.1f)).isEmpty())
 				this.setSticked(false);
 		}
 		if (this.moveable()) {
@@ -511,7 +511,7 @@ public abstract class EntityProjectileBase extends Entity
 			this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x, y, z));
 			this.resetPositionToBB();
 		} else {
-			this.world.theProfiler.startSection("move");
+			this.world.profiler.startSection("move");
 			// double d3 = this.posX;
 			// double d4 = this.posY;
 			// double d5 = this.posZ;
@@ -531,7 +531,7 @@ public abstract class EntityProjectileBase extends Entity
 			double d5 = z;
 
 			List<AxisAlignedBB> list1 = this.world.getCollisionBoxes(this,
-					this.getEntityBoundingBox().addCoord(x, y, z));
+					this.getEntityBoundingBox().expand(x, y, z));
 			AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
 			int i = 0;
 
@@ -572,9 +572,9 @@ public abstract class EntityProjectileBase extends Entity
 				this.setEntityBoundingBox(axisalignedbb);
 				y = this.stepHeight;
 				List<AxisAlignedBB> list = this.world.getCollisionBoxes(this,
-						this.getEntityBoundingBox().addCoord(d3, y, d5));
+						this.getEntityBoundingBox().expand(d3, y, d5));
 				AxisAlignedBB axisalignedbb2 = this.getEntityBoundingBox();
-				AxisAlignedBB axisalignedbb3 = axisalignedbb2.addCoord(d3, 0.0D, d5);
+				AxisAlignedBB axisalignedbb3 = axisalignedbb2.expand(d3, 0.0D, d5);
 				double d9 = y;
 				int l = 0;
 
@@ -648,8 +648,8 @@ public abstract class EntityProjectileBase extends Entity
 				}
 			}
 
-			this.world.theProfiler.endSection();
-			this.world.theProfiler.startSection("rest");
+			this.world.profiler.endSection();
+			this.world.profiler.startSection("rest");
 			this.resetPositionToBB();
 			this.isCollidedHorizontally = d3 != x || d5 != z;
 			this.isCollidedVertically = d4 != y;
@@ -713,7 +713,7 @@ public abstract class EntityProjectileBase extends Entity
 				throw new ReportedException(crashreport);
 			}
 
-			this.world.theProfiler.endSection();
+			this.world.profiler.endSection();
 		}
 	}
 

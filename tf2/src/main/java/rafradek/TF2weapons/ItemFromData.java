@@ -9,6 +9,7 @@ import java.util.Random;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -78,7 +79,9 @@ public class ItemFromData extends Item {
 		return BLANK_DATA;
 	}
 	@Override
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		Iterator<Entry<String, WeaponData>> iterator = MapList.nameToData.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, WeaponData> entry = iterator.next();
@@ -256,16 +259,17 @@ public class ItemFromData extends Item {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
 		/*
 		 * if (!par1ItemStack.hasTagCompound()) {
 		 * par1ItemStack.getTagCompound()=new NBTTagCompound();
 		 * par1ItemStack.getTagCompound().setTag("Attributes", (NBTTagCompound)
 		 * ((ItemUsable)par1ItemStack.getItem()).buildInAttributes.copy()); }
 		 */
-		if (par1ItemStack.hasTagCompound()) {
-			NBTTagCompound attributeList = par1ItemStack.getTagCompound().getCompoundTag("Attributes");
+		if (stack.hasTagCompound()) {
+			NBTTagCompound attributeList = stack.getTagCompound().getCompoundTag("Attributes");
 			//attributeList.merge(MapList.buildInAttributes.get(getData(par1ItemStack).getName()));
 			Iterator<String> iterator = attributeList.getKeySet().iterator();
 			while (iterator.hasNext()) {
@@ -276,10 +280,10 @@ public class ItemFromData extends Item {
 					TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
 					//System.out.println("Attribute id: "+name);
 					if (attribute != null && attribute.state != State.HIDDEN )
-						par2List.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
+						tooltip.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
 				}
 			}
-			attributeList = MapList.buildInAttributes.get(getData(par1ItemStack).getName());
+			attributeList = MapList.buildInAttributes.get(getData(stack).getName());
 			//attributeList.merge(MapList.buildInAttributes.get(getData(par1ItemStack).getName()));
 			iterator = attributeList.getKeySet().iterator();
 			while (iterator.hasNext()) {
@@ -290,17 +294,17 @@ public class ItemFromData extends Item {
 					TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
 					//System.out.println("Attribute id: "+name);
 					if (attribute != null && attribute.state != State.HIDDEN )
-						par2List.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
+						tooltip.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
 				}
 			}
-			if (getData(par1ItemStack).hasProperty(PropertyType.DESC)) {
-				par2List.add("");
-				for(String line:getData(par1ItemStack).getString(PropertyType.DESC).split("\n"))
-					par2List.add(line);
+			if (getData(stack).hasProperty(PropertyType.DESC)) {
+				tooltip.add("");
+				for(String line:getData(stack).getString(PropertyType.DESC).split("\n"))
+					tooltip.add(line);
 			}
-			if (par1ItemStack.getTagCompound().getBoolean("Bought")) {
-				par2List.add("");
-				par2List.add("This item cannot be destroyed");
+			if (stack.getTagCompound().getBoolean("Bought")) {
+				tooltip.add("");
+				tooltip.add("This item cannot be destroyed");
 			}
 		}
 	}

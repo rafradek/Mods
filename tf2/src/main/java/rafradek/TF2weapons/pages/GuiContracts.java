@@ -122,30 +122,30 @@ public class GuiContracts extends GuiScreen {
 		this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, 256, 216);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		int contractDay=this.mc.player.getStatFileWriter().readStat(TF2Achievements.CONTRACT_DAY);
-		this.fontRendererObj.drawString(I18n.format("gui.contracts", new Object[0]), this.guiLeft+8, this.guiTop+5, 4210752);
+		this.fontRenderer.drawString(I18n.format("gui.contracts", new Object[0]), this.guiLeft+8, this.guiTop+5, 4210752);
 		if(contractDay != 0) {
 			String str=I18n.format("gui.contracts.contractDay",contractDay-this.mc.world.getWorldTime()/24000);
-			this.fontRendererObj.drawString(str, this.guiLeft+251-this.fontRendererObj.getStringWidth(str), this.guiTop+5, 4210752);
+			this.fontRenderer.drawString(str, this.guiLeft+251-this.fontRenderer.getStringWidth(str), this.guiTop+5, 4210752);
 		}
 		if(this.selectedContract != null) {
-			this.fontRendererObj.drawString(I18n.format("gui.contracts."+this.selectedContract.className, new Object[0]), this.guiLeft+83, this.guiTop+18, 0xFFFFFF);
-			this.fontRendererObj.drawString(I18n.format("gui.contracts.objectives"), this.guiLeft+83, this.guiTop+35, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts."+this.selectedContract.className, new Object[0]), this.guiLeft+83, this.guiTop+18, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.objectives"), this.guiLeft+83, this.guiTop+35, 0xFFFFFF);
 			if(!this.selectedContract.className.equals("kill"))
-				this.fontRendererObj.drawString(I18n.format("gui.contracts.objectives_t", I18n.format("entity."+this.selectedContract.className+".name")), this.guiLeft+83, this.guiTop+47, 0xFFFFFF);
+				this.fontRenderer.drawString(I18n.format("gui.contracts.objectives_t", I18n.format("entity."+this.selectedContract.className+".name")), this.guiLeft+83, this.guiTop+47, 0xFFFFFF);
 			for(int i=0;i<this.selectedContract.objectives.length;i++) {
 				String str=I18n.format("objective."+this.selectedContract.objectives[i].toString().toLowerCase());
 				if(this.selectedContract.objectives[i].advanced)
 					str=I18n.format("objective.advanced") + " " +str;
 				str+=" ("+this.selectedContract.objectives[i].getPoints()+" CP)";
-				this.fontRendererObj.drawSplitString(str,
+				this.fontRenderer.drawSplitString(str,
 						this.guiLeft+83, this.guiTop+67+i*20,164, 0xFFFFFF);
 			}
-			this.fontRendererObj.drawString(I18n.format("gui.contracts.rewards"), this.guiLeft+9, this.guiTop+135, 0xFFFFFF);
-			this.fontRendererObj.drawString(I18n.format("gui.contracts.reward1"), this.guiLeft+9, this.guiTop+150, 0xFFFFFF);
-			this.fontRendererObj.drawString(I18n.format("gui.contracts.reward2"), this.guiLeft+9, this.guiTop+165, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.rewards"), this.guiLeft+9, this.guiTop+135, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward1"), this.guiLeft+9, this.guiTop+150, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward2"), this.guiLeft+9, this.guiTop+165, 0xFFFFFF);
 		}
 		else if(contractDay==0) {
-			this.fontRendererObj.drawSplitString(I18n.format("gui.contracts.require"), this.guiLeft+83, this.guiTop+18,164, 0xFFFFFF);
+			this.fontRenderer.drawSplitString(I18n.format("gui.contracts.require"), this.guiLeft+83, this.guiTop+18,164, 0xFFFFFF);
 		}
     }
 }

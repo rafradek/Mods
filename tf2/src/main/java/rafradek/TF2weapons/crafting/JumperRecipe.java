@@ -9,13 +9,14 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemUsable;
 
-public class JumperRecipe implements IRecipe {
+public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
 	String nameBefore;
 	String nameAfter;
@@ -67,12 +68,6 @@ public class JumperRecipe implements IRecipe {
 	}
 
 	@Override
-	public int getRecipeSize() {
-		// TODO Auto-generated method stub
-		return 9;
-	}
-
-	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stu
 		return ItemFromData.getNewStack(nameAfter);
@@ -89,6 +84,12 @@ public class JumperRecipe implements IRecipe {
 		}
 
 		return aitemstack;
+	}
+
+	@Override
+	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
+		return width >= 3 && height >=3;
 	}
 
 }

@@ -6,10 +6,11 @@ import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 
-public class RecipeFromScrap implements IRecipe {
+public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -34,12 +35,6 @@ public class RecipeFromScrap implements IRecipe {
 	}
 
 	@Override
-	public int getRecipeSize() {
-		// TODO Auto-generated method stub
-		return 2;
-	}
-
-	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stu
 		return new ItemStack(TF2weapons.itemTF2, 1, 6);
@@ -58,5 +53,11 @@ public class RecipeFromScrap implements IRecipe {
 
         return nonnulllist;
     }
+
+	@Override
+	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
+		return width * height >= 2;
+	}
 
 }

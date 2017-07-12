@@ -170,7 +170,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
-		if(attacker instanceof EntityPlayerMP && target instanceof EntityLivingBase && !target.isEntityAlive() && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
+		/*if(attacker instanceof EntityPlayerMP && target instanceof EntityLivingBase && !target.isEntityAlive() && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
 			if(!attacker.getCapability(TF2weapons.WEAPONS_CAP, null).charging){
 				((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_NOSCOPE);
 				if(((EntityPlayerMP) attacker).getStatFile().readStat(TF2Achievements.KILLED_NOSCOPE)>=10)
@@ -182,7 +182,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 			}
 			else
 				attacker.getCapability(TF2weapons.PLAYER_CAP, null).headshotsRow=0;
-		}
+		}*/
 	}
 	public void doFireSound(ItemStack stack, EntityLivingBase living, World world, int critical) {
 		if (ItemFromData.getData(stack).hasProperty(PropertyType.CHARGED_FIRE_SOUND) 

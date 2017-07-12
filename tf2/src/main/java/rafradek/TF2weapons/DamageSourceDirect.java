@@ -65,10 +65,10 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 		String s1 = s + ".item";
 		return !weapon.isEmpty() && I18n.canTranslate(s1)
 				? new TextComponentTranslation(s1,
-						new Object[] { p_151519_1_.getDisplayName(), this.getEntity().getDisplayName(),
+						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName(),
 								weapon.getDisplayName() })
 				: new TextComponentTranslation(s,
-						new Object[] { p_151519_1_.getDisplayName(), this.getEntity().getDisplayName() });
+						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName() });
 	}
 
 	/*
@@ -89,8 +89,8 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 		return this.getWeapon();
 	}
 	
-	public Entity getEntity(){
-		return selfdmg?TF2weapons.dummyEnt:super.getEntity();
+	public Entity getTrueSource(){
+		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
 	}
 	public void setAttackSelf(){
 		this.selfdmg=true;

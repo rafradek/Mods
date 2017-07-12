@@ -174,7 +174,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 								ClientProxy.spawnFlameParticle(world, living, 0, true);
 						}
 						else {
-							for(EntityLivingBase target:world.getEntitiesWithinAABB(EntityLivingBase.class, living.getEntityBoundingBox().expand(4, -0.5, 4).offset(0, -0.5, 0), new Predicate<EntityLivingBase>() {
+							for(EntityLivingBase target:world.getEntitiesWithinAABB(EntityLivingBase.class, living.getEntityBoundingBox().grow(4, -0.5, 4).offset(0, -0.5, 0), new Predicate<EntityLivingBase>() {
 		
 								@Override
 								public boolean apply(EntityLivingBase input) {
@@ -224,8 +224,8 @@ public class ItemMinigun extends ItemBulletWeapon {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if(attacker instanceof EntityPlayer && !target.isEntityAlive() && target instanceof EntityLivingBase && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
 			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).killsSpinning++;
-			if(attacker.getCapability(TF2weapons.WEAPONS_CAP, null).killsSpinning>=8)
-				((EntityPlayer)attacker).addStat(TF2Achievements.REVOLUTION);
+			/*if(attacker.getCapability(TF2weapons.WEAPONS_CAP, null).killsSpinning>=8)
+				((EntityPlayer)attacker).addStat(TF2Achievements.REVOLUTION);*/
 		}
 	}
 }

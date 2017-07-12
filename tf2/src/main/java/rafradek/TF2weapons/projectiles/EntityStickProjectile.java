@@ -23,9 +23,9 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		super.onHitGround(x, y, z, mop);
-		this.setPosition(mop.hitVec.xCoord + mop.sideHit.getFrontOffsetX() * 0.1,
-				mop.hitVec.yCoord + mop.sideHit.getFrontOffsetY() * 0.1f,
-				mop.hitVec.zCoord + mop.sideHit.getFrontOffsetZ() * 0.1);
+		this.setPosition(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.1,
+				mop.hitVec.y + mop.sideHit.getFrontOffsetY() * 0.1f,
+				mop.hitVec.z + mop.sideHit.getFrontOffsetZ() * 0.1);
 		this.sticked = true;
 		this.stickedBlock = mop.getBlockPos();
 	}

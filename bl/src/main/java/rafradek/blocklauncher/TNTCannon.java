@@ -5,6 +5,7 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -23,6 +24,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TNTCannon extends Item {
 
@@ -309,17 +312,19 @@ public class TNTCannon extends Item {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, EntityPlayer par2EntityPlayer, List par2List, boolean par4) {
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
 		if (this.isSticky(stack))
-			par2List.add("Sticky");
+			tooltip.add("Sticky");
 		if (this.isBouncy(stack))
-			par2List.add("Bouncing");
+			tooltip.add("Bouncing");
 		if (this.isHarmless(stack))
-			par2List.add("Harmless");
+			tooltip.add("Harmless");
 		if (this.isCrushing(stack))
-			par2List.add("Crushing");
+			tooltip.add("Crushing");
 		if (this.firesEntireStack(stack))
-			par2List.add("Super Spread");
+			tooltip.add("Super Spread");
 	}
 
 	public float getSpread(ItemStack stack, int i) {
@@ -498,12 +503,13 @@ public class TNTCannon extends Item {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		for (int i = 0; i < 19; i++) {
 			if (i == 6)
 				i = 16;
-			ItemStack stack = new ItemStack(par1);
+			ItemStack stack = new ItemStack(this);
 			stack.setTagCompound(new NBTTagCompound());
 			stack.getTagCompound().setInteger("Type", i);
 			par3List.add(stack);

@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -63,7 +64,7 @@ public class EntityMedic extends EntityTF2Character {
 	public void onLivingUpdate() {
 
 		super.onLivingUpdate();
-		if (this.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget > 0)
+		if (this.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() > 0)
 			this.ignoreFrustumCheck = true;
 		else
 			this.ignoreFrustumCheck = false;
@@ -104,7 +105,7 @@ public class EntityMedic extends EntityTF2Character {
 	 * Returns the sound this mob makes when it is hurt.
 	 */
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return TF2Sounds.MOB_MEDIC_HURT;
 	}
 

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABC",
+    "  D"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "rafradek_blocklauncher:launchpart"
+    },
+    "C": {
+      "item": "minecraft:redstone"
+    },
+    "D": {
+      "item": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "rafradek_blocklauncher:launchpart_better",
+    "data": 0
+  }
+}

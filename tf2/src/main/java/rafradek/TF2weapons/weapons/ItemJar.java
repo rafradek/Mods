@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -57,11 +58,12 @@ public class ItemJar extends ItemProjectileWeapon {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		if (par1ItemStack.hasTagCompound() && par1ItemStack.getTagCompound().getBoolean("IsEmpty"))
-			par2List.add("Right click to fill the container");
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("IsEmpty"))
+			tooltip.add("Right click to fill the container");
+		super.addInformation(stack, world, tooltip, advanced);
 	}
 
 	@Override

@@ -21,19 +21,11 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		/*
-		 * super.addInformation(par1ItemStack, par2EntityPlayer, par2List,
-		 * par4); if(par1ItemStack.getTagCompound()!=null)
-		 * par2List.add("tag: "+par1ItemStack.getTagCompound().toString());
-		 */
-	}
-
-	@Override
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		for (int i = 18; i < 24; i++)
-			par3List.add(new ItemStack(par1, 1, i));
+			par3List.add(new ItemStack(this, 1, i));
 	}
 
 	@Override

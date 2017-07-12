@@ -33,7 +33,7 @@ public class GuiTeleporter extends GuiScreen {
 	@Override
 	public void initGui() {
 		this.buttonList.clear();
-		this.teleportField=new GuiTextField(5, fontRendererObj, this.width / 2 -40, this.height / 2 - 10, 30, 20);
+		this.teleportField=new GuiTextField(5, fontRenderer, this.width / 2 -40, this.height / 2 - 10, 30, 20);
 		this.teleportField.setMaxStringLength(3);
 		this.teleportField.setFocused(true);
 		this.teleportField.setText(Integer.toString(this.channel));
@@ -99,7 +99,7 @@ public class GuiTeleporter extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
-		this.drawCenteredString(this.fontRendererObj, I18n.format("gui.teleporter.info", new Object[0]),
+		this.drawCenteredString(this.fontRenderer, I18n.format("gui.teleporter.info", new Object[0]),
 				this.width / 2 - 5, 20, 16777215);
 		//this.drawCenteredString(this.fontRendererObj, Integer.toString(channel), this.width / 2 - 25, this.height / 2,
 		//		16777215);

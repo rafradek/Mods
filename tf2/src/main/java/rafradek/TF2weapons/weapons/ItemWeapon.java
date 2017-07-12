@@ -28,6 +28,7 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
@@ -191,7 +192,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 		if (!living.onGround && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0 && TF2Attribute.getModifier("KnockbackFAN", stack, 0, living)!=0){
 			Vec3d look=living.getLookVec();
-			living.addVelocity(-look.xCoord*0.66, -look.yCoord*0.58, -look.zCoord*0.66);
+			living.addVelocity(-look.x*0.66, -look.y*0.58, -look.z*0.66);
 		}
 		
 		if (!world.isRemote && world.getDifficulty().getDifficultyId()>1 && living instanceof EntityPlayer
@@ -201,7 +202,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			living.getCapability(TF2weapons.PLAYER_CAP, null).zombieHuntTicks = 15;
 			int range=world.getDifficulty()==EnumDifficulty.HARD?60:38;
 			for (EntityCreature mob : world.getEntitiesWithinAABB(EntityCreature.class,
-					living.getEntityBoundingBox().expand(range, range, range), new Predicate<EntityCreature>() {
+					living.getEntityBoundingBox().grow(range, range, range), new Predicate<EntityCreature>() {
 
 						@Override
 						public boolean apply(EntityCreature input) {
@@ -308,9 +309,10 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	
 	
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		super.addInformation(stack, world, tooltip, advanced);
 		/*
 		 * if (par1ItemStack.hasTagCompound()) {
 		 * par2List.add("Firing: "+Integer.toString(par1ItemStack.getTagCompound
@@ -321,10 +323,10 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		 * .getShort("crittime"))); }
 		 */
 
-		if (this.hasClip(par1ItemStack))
-			par2List.add(
-					"Clip: " + (this.getWeaponClipSize(par1ItemStack, par2EntityPlayer) - par1ItemStack.getItemDamage())
-							+ "/" + this.getWeaponClipSize(par1ItemStack, par2EntityPlayer));
+		if (this.hasClip(stack))
+			tooltip.add(
+					"Clip: " + (this.getWeaponClipSize(stack, null) - stack.getItemDamage())
+							+ "/" + this.getWeaponClipSize(stack, null));
 	}
 
 	@Override
@@ -393,7 +395,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			}
 			if(!wrench.isEmpty()) {
 				Vec3d forward=living.getLookVec().scale(120).add(living.getPositionEyes(1));
-				RayTraceResult result=TF2weapons.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.xCoord, forward.yCoord, forward.zCoord, false, 0.5f, false).get(0);
+				RayTraceResult result=TF2weapons.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.x, forward.y, forward.z, false, 0.5f, false).get(0);
 				if(result.entityHit != null && result.entityHit instanceof EntityBuilding && result.entityHit.isEntityAlive() && !((EntityBuilding)result.entityHit).isSapped() && ((EntityBuilding)result.entityHit).getOwner() == living) {
 					result.entityHit.setPosition(living.posX, living.posY, living.posZ);
 					((EntityBuilding) result.entityHit).grab();

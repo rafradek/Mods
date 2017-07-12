@@ -7,6 +7,7 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -102,16 +103,17 @@ public class ItemWearable extends ItemFromData {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
-		if (par1ItemStack.hasTagCompound()) {
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		super.addInformation(stack, world, tooltip, advanced);
+		if (stack.hasTagCompound()) {
 			
-			if (par1ItemStack.getTagCompound().hasKey("UEffect")) {
-				par2List.add("");
+			if (stack.getTagCompound().hasKey("UEffect")) {
+				tooltip.add("");
 				String str;
 				
-				switch (par1ItemStack.getTagCompound().getByte("UEffect")){
+				switch (stack.getTagCompound().getByte("UEffect")){
 					case 0:str="Burning Flames"; break;
 					case 1:str="Hearts"; break;
 					case 2:str="Steaming"; break;
@@ -124,7 +126,7 @@ public class ItemWearable extends ItemFromData {
 					case 9:str="Dragon's breath"; break;
 					default:str="Musically";
 				}
-				par2List.add("Effect - "+str);
+				tooltip.add("Effect - "+str);
 			}
 		}
 	}

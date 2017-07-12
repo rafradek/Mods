@@ -221,14 +221,16 @@ public class ItemMonsterPlacerPlus extends Item {
 	 * returns a list of items with the same ID, but different meta (eg: dye
 	 * returns 16 items)
 	 */
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		for (int i = 0; i < 18; i++)
-			par3List.add(new ItemStack(par1, 1, i));
-		par3List.add(new ItemStack(par1, 1, 26));
-		par3List.add(new ItemStack(par1, 1, 27));
-		par3List.add(new ItemStack(par1, 1, 28));
-		par3List.add(new ItemStack(par1, 1, 29));
-		par3List.add(new ItemStack(par1, 1, 30));
+			par3List.add(new ItemStack(this, 1, i));
+		par3List.add(new ItemStack(this, 1, 26));
+		par3List.add(new ItemStack(this, 1, 27));
+		par3List.add(new ItemStack(this, 1, 28));
+		par3List.add(new ItemStack(this, 1, 29));
+		par3List.add(new ItemStack(this, 1, 30));
 	}
 
 	@Override

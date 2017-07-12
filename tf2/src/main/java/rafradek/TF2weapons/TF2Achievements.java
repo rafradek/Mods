@@ -4,16 +4,14 @@ import java.util.ArrayList;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.Achievement;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatBasic;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraftforge.common.AchievementPage;
 import rafradek.TF2weapons.crafting.AustraliumRecipe;
 
-public class TF2Achievements extends AchievementPage {
+public class TF2Achievements{
 
-	public static final ArrayList<Achievement> ACHIEVEMENTS = new ArrayList<>();
+	/*public static final ArrayList<Achievement> ACHIEVEMENTS = new ArrayList<>();
 	public static final Achievement JOIN_TEAM = addAchievement(
 			new Achievement("achievement.joinTeam", "joinTeam", 0, 0, TF2weapons.itemHorn, null).initIndependentStat());
 	public static final Achievement FIRST_ENCOUNTER = addAchievement(new Achievement("achievement.firstEncounter",
@@ -95,7 +93,7 @@ public class TF2Achievements extends AchievementPage {
 	public static final Achievement MERASMUS= addAchievement(new Achievement("achievement.merasmus",
 			"merasmus", 10, -6, ItemFromData.getNewStack("merasmushat"),null).initIndependentStat());
 	public static final Achievement BOSS_30_LVL= addAchievement(new Achievement("achievement.boss30lvl",
-			"boss30lvl", 12, -6, ItemFromData.getNewStack("bombinomicon"),null).initIndependentStat().setSpecial());
+			"boss30lvl", 12, -6, ItemFromData.getNewStack("bombinomicon"),null).initIndependentStat().setSpecial());*/
 	public static final StatBase SANDVICH_EATEN = new StatBasic("sandichEaten",new TextComponentTranslation("stat.sandvichEaten", new Object[0])).registerStat();
 	public static final StatBase KILLED_WRANGLER_SNIPER = new StatBasic("killedWranglerSniper",new TextComponentTranslation("stat.killedWranglerSniper", new Object[0])).registerStat();
 	public static final StatBase KILLED_SENTRYGUN = new StatBasic("killedSentrygun",new TextComponentTranslation("stat.killedSentryGun", new Object[0])).registerStat();
@@ -109,7 +107,7 @@ public class TF2Achievements extends AchievementPage {
 	public static final StatBase KILLED_MERC = new StatBasic("killedMercs",new TextComponentTranslation("stat.killedMercs", new Object[0])).registerStat();
 	public static final StatBase CONTRACT_DAY = new StatBasic("contractDay",new TextComponentTranslation("stat.contractDay", new Object[0])).registerStat();
 	//public static final StatBase KILLED_ABOVE = new StatBasic("killedAbove",new TextComponentTranslation("stat.killedDoublejump", new Object[0])).registerStat();
-	public static Achievement addAchievement(Achievement achievement) {
+	/*public static Achievement addAchievement(Achievement achievement) {
 		ACHIEVEMENTS.add(achievement);
 		achievement.registerStat();
 		// StatList.ALL_STATS.add(achievement);
@@ -119,6 +117,6 @@ public class TF2Achievements extends AchievementPage {
 	public TF2Achievements() {
 		super("TF2 Stuff", ACHIEVEMENTS.toArray(new Achievement[ACHIEVEMENTS.size()]));
 		// TODO Auto-generated constructor stub
-	}
+	}*/
 
 }

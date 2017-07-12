@@ -207,9 +207,9 @@ public abstract class TF2Message implements IMessage {
 						buf.writeBoolean(true);
 						buf.writeInt(mop.entityHit.getEntityId());
 						// if(mop.hitVec!=null){
-						// buf.writeFloat((float) mop.hitVec.xCoord);
-						// buf.writeFloat((float) mop.hitVec.yCoord);
-						// buf.writeFloat((float) mop.hitVec.zCoord);
+						// buf.writeFloat((float) mop.hitVec.x);
+						// buf.writeFloat((float) mop.hitVec.y);
+						// buf.writeFloat((float) mop.hitVec.z);
 						// }
 						// buf.writeInt(mop.entityHit.getEntityId());
 						buf.writeBoolean(((float[]) mop.hitInfo)[0] == 1);
@@ -319,7 +319,7 @@ public abstract class TF2Message implements IMessage {
 		public CapabilityMessage(Entity entity,boolean sendAll) {
 			WeaponsCapability cap = entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			this.entityID = entity.getEntityId();
-			this.healTarget = cap.healTarget;
+			this.healTarget = cap.getHealTarget();
 			//this.critTime = cap.critTime;
 			//this.heads = cap.collectedHeads;
 			if(sendAll) {
@@ -335,8 +335,6 @@ public abstract class TF2Message implements IMessage {
 		public void fromBytes(ByteBuf buf) {
 			entityID = buf.readInt();
 			healTarget = buf.readInt();
-			critTime = buf.readByte();
-			heads = buf.readShort();
 			try {
 				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -354,8 +352,6 @@ public abstract class TF2Message implements IMessage {
 		public void toBytes(ByteBuf buf) {
 			buf.writeInt(entityID);
 			buf.writeInt(healTarget);
-			buf.writeByte(critTime);
-			buf.writeShort(heads);
 			try {
 				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -414,9 +410,9 @@ public abstract class TF2Message implements IMessage {
 			for (RayTraceResult mop : target) {
 				buf.writeInt(mop.entityHit.getEntityId());
 				// if(mop.hitVec!=null){
-				// buf.writeFloat((float) mop.hitVec.xCoord);
-				// buf.writeFloat((float) mop.hitVec.yCoord);
-				// buf.writeFloat((float) mop.hitVec.zCoord);
+				// buf.writeFloat((float) mop.hitVec.x);
+				// buf.writeFloat((float) mop.hitVec.y);
+				// buf.writeFloat((float) mop.hitVec.z);
 				// }
 				// buf.writeInt(mop.entityHit.getEntityId());
 				buf.writeBoolean(((float[]) mop.hitInfo)[0] == 1);
@@ -647,9 +643,9 @@ public abstract class TF2Message implements IMessage {
 
 		public VelocityAddMessage(Vec3d vec, boolean airborne) {
 			// this.shooter=shooter.getEntityId();
-			this.x=(float) vec.xCoord;
-			this.y=(float) vec.yCoord;
-			this.z=(float) vec.zCoord;
+			this.x=(float) vec.x;
+			this.y=(float) vec.y;
+			this.z=(float) vec.z;
 			this.airborne=airborne;
 		}
 

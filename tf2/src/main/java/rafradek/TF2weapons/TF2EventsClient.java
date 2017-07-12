@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -51,6 +51,7 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -70,6 +71,7 @@ import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.GuiContracts;
 import rafradek.TF2weapons.pages.GuiPages;
+import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemMinigun;
@@ -357,7 +359,7 @@ public class TF2EventsClient {
 			
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -400,12 +402,12 @@ public class TF2EventsClient {
 	        setColorTeam(player,1f);
 	        Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.VIGNETTE);
 	        Tessellator tessellator = Tessellator.getInstance();
-	        VertexBuffer vertexbuffer = tessellator.getBuffer();
-	        vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
-	        vertexbuffer.pos(0.0D, (double)event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
-	        vertexbuffer.pos((double)event.getResolution().getScaledWidth(), (double)event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
-	        vertexbuffer.pos((double)event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
-	        vertexbuffer.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
+	        BufferBuilder BufferBuilder = tessellator.getBuffer();
+	        BufferBuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+	        BufferBuilder.pos(0.0D, (double)event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
+	        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), (double)event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
+	        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
+	        BufferBuilder.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
 	        tessellator.draw();
 	        GlStateManager.depthMask(true);
 	        GlStateManager.enableDepth();
@@ -420,13 +422,13 @@ public class TF2EventsClient {
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			// gui.drawTexturedModalRect(xCoord,
-			// yCoord, textureSprite, widthIn, heightIn);
+			// gui.drawTexturedModalRect(x,
+			// y, textureSprite, widthIn, heightIn);
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.scopeTexture);
 			double widthDrawStart = (double) (event.getResolution().getScaledWidth() - event.getResolution().getScaledHeight()) / 2;
 			double widthDrawEnd = widthDrawStart + event.getResolution().getScaledHeight();
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 			renderer.pos(widthDrawStart, event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
 			renderer.pos(widthDrawEnd, event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
@@ -498,7 +500,7 @@ public class TF2EventsClient {
 				&& held.getItem() instanceof ItemFromData && ((ItemFromData)held.getItem()).showInfoBox(held, player)) {
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -561,7 +563,7 @@ public class TF2EventsClient {
 			
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -587,7 +589,7 @@ public class TF2EventsClient {
 			renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.0D, 0.0D).endVertex();
 			tessellator.draw();
 
-			Entity healTarget = player.world.getEntityByID(cap.healTarget);
+			Entity healTarget = player.world.getEntityByID(cap.getHealTarget());
 			if (healTarget != null && healTarget instanceof EntityLivingBase) {
 				EntityLivingBase living = (EntityLivingBase) healTarget;
 				
@@ -687,7 +689,7 @@ public class TF2EventsClient {
 				&& TF2weapons.isOnSameTeam(player, mouseTarget)) {
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -1124,7 +1126,7 @@ public class TF2EventsClient {
 		if (!ent.hasCapability(TF2weapons.WEAPONS_CAP, null))
 			return;
 		// System.out.println("Drawing");
-		Entity healTarget = ent.world.getEntityByID(ent.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget);
+		Entity healTarget = ent.world.getEntityByID(ent.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget());
 		if (healTarget != null) {
 			Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
 			double cameraX = camera.prevPosX + (camera.posX - camera.prevPosX) * partialTicks;
@@ -1143,7 +1145,7 @@ public class TF2EventsClient {
 			float f = MathHelper.sqrt(xDist * xDist + zDist * zDist);
 			float fullDist = MathHelper.sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GlStateManager.pushMatrix();
 			GlStateManager.translate((float) xPos1 - cameraX, (float) (yPos1 + ent.getEyeHeight() - 0.1) - cameraY, (float) zPos1 - cameraZ);
 			GL11.glRotatef((float) (Math.atan2(xDist, zDist) * 180.0D / Math.PI), 0.0F, 1.0F, 0.0F);
@@ -1481,5 +1483,31 @@ public class TF2EventsClient {
 			GL11.glColor4f(1.0F, 1F, 1.0F, 1F);
 		}
 	}
+	
+	@SubscribeEvent
+	public void addTooltip(ItemTooltipEvent event) {
+		
+		if (event.getItemStack().hasTagCompound() && event.getItemStack().getTagCompound().getBoolean("Australium") && !(event.getItemStack().getItem() instanceof ItemFromData)
+				&& !event.getItemStack().hasDisplayName()) {
+			event.getToolTip().set(0, "Australium " + event.getToolTip().get(0));
+		}
+		if (event.getItemStack().hasTagCompound() && event.getItemStack().getTagCompound().getBoolean("Strange")) {
+			if (!(event.getItemStack().getItem() instanceof ItemFromData) && !event.getItemStack().hasDisplayName()) {
+				event.getToolTip().set(0, TF2EventsCommon.STRANGE_TITLES[event.getItemStack().getTagCompound().getInteger("StrangeLevel")] + " " + event.getToolTip().get(0));
+			}
+
+			event.getToolTip().add("");
+			if (event.getItemStack().getItem() instanceof ItemMedigun) {
+				event.getToolTip().add("Ubercharges: " + event.getItemStack().getTagCompound().getInteger("Ubercharges"));
+			} else if (event.getItemStack().getItem() instanceof ItemCloak) {
+				event.getToolTip().add("Seconds cloaked: " + event.getItemStack().getTagCompound().getInteger("CloakTicks") / 20);
+			} else {
+				event.getToolTip().add("Mob kills: " + event.getItemStack().getTagCompound().getInteger("Kills"));
+				event.getToolTip().add("Player kills: " + event.getItemStack().getTagCompound().getShort("PlayerKills"));
+			}
+		}
+		
+	}
+	
 
 }

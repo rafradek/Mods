@@ -75,6 +75,7 @@ import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -170,13 +171,14 @@ public class ClientProxy extends CommonProxy {
 		if (modelName == null || modelName.isEmpty())
 			return;
 
+		System.out.println("Model: "+modelName);
 		ModelResourceLocation model = new ModelResourceLocation(modelName, "inventory");
-		ModelBakery.registerItemVariants(MapList.weaponClasses.get("bullet"), model);
+		ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
 		nameToModel.put(weapon.getName(), model);
 		if (weapon.hasProperty(PropertyType.RENDER_BACKSTAB)) {
 			modelName = weapon.getString(PropertyType.RENDER_BACKSTAB);
 			model = new ModelResourceLocation(modelName, "inventory");
-			ModelBakery.registerItemVariants(MapList.weaponClasses.get("bullet"), model);
+			ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
 			nameToModel.put(weapon.getName() + "/b", model);
 		}
 	}
@@ -184,77 +186,9 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void registerRenderInformation() {
 
-		nameToModel = new HashMap<String, ModelResourceLocation>();
-		for (WeaponData weapon : MapList.nameToData.values())
-			// System.out.println("Execut "+weapon.getName());
-			RegisterWeaponData(weapon);
-		ItemMeshDefinition mesher = new ItemMeshDefinition() {
-
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				if (stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
-					if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst!=ItemFromData.BLANK_DATA)
-						return nameToModel.get(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst.getName());
-					else if(stack.hasTagCompound())
-						return nameToModel.get(stack.getTagCompound().getString("Type"));
-				}
-				return nameToModel.get("minigun");
-			}
-
-		};
-		for (Item item : MapList.weaponClasses.values())
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, mesher);
-		ModelResourceLocation spawnEgg = new ModelResourceLocation("spawn_egg", "inventory");
-
-		for (int i = 0; i < 31; i++)
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(TF2weapons.itemPlacer, i, spawnEgg);
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(TF2weapons.itemDisguiseKit, 0,
-				new ModelResourceLocation(TF2weapons.MOD_ID + ":disguise_kit", "inventory"));
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(TF2weapons.itemSandvich, 0,
-				new ModelResourceLocation(TF2weapons.MOD_ID + ":sandvich", "inventory"));
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(TF2weapons.itemAmmoBelt, 0,
-				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_belt", "inventory"));
-		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemBlock.getItemFromBlock(TF2weapons.blockCabinet),
-		// 0, new
-		// ModelResourceLocation(TF2weapons.MOD_ID+":tf2workbench","inventory"));
-
-		final ModelResourceLocation sentryRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":sentryred",
-				"inventory");
-		final ModelResourceLocation sentryBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":sentryblu",
-				"inventory");
-		final ModelResourceLocation dispenserRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":dispenserred",
-				"inventory");
-		final ModelResourceLocation dispenserBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":dispenserblu",
-				"inventory");
-		final ModelResourceLocation teleporterRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":teleporterred",
-				"inventory");
-		final ModelResourceLocation teleporterBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":teleporterblu",
-				"inventory");
-
-		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
-				teleporterRed, teleporterBlu);
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(TF2weapons.itemBuildingBox,
-				new ItemMeshDefinition() {
-					@Override
-					public ModelResourceLocation getModelLocation(ItemStack stack) {
-						if (stack.getItemDamage() == 18)
-							return sentryRed;
-						else if (stack.getItemDamage() == 19)
-							return sentryBlu;
-						else if (stack.getItemDamage() == 20)
-							return dispenserRed;
-						else if (stack.getItemDamage() == 21)
-							return dispenserBlu;
-						else if (stack.getItemDamage() == 22)
-							return teleporterRed;
-						else
-							return teleporterBlu;
-					}
-				});
-		Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new IItemColor() {
-
-			@Override
-			public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+		
+		Minecraft.getMinecraft().getItemColors().registerItemColorHandler((stack, tintIndex) ->
+			{
 				if(stack.getItemDamage()<25){
 					return stack.getItemDamage() % 2 == 0 ? 16711680 : 255;
 				}
@@ -267,10 +201,8 @@ public class ClientProxy extends CommonProxy {
 				else if(stack.getItemDamage() == 30)
 					return 0x20582B;
 				return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
-			}
-
-		}, TF2weapons.itemPlacer);
-		List<Item> items = GameRegistry.findRegistry(Item.class).getValues();
+			}, TF2weapons.itemPlacer);
+		List<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
 		Iterator<Item> itemIterator = items.iterator();
 		while (itemIterator.hasNext()) {
 			Item item = itemIterator.next();
@@ -345,6 +277,7 @@ public class ClientProxy extends CommonProxy {
 		 */
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(p_178086_1_,
 		// p_178086_2_, p_178086_3_);
+		
 		reloadSounds = new HashMap<EntityLivingBase, ReloadSound>();
 		soundsToStart = new ConcurrentHashMap<EntityLivingBase, ItemStack>();
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
@@ -419,7 +352,7 @@ public class ClientProxy extends CommonProxy {
 
 	@Override
 	public EntityPlayer getPlayerForSide(MessageContext ctx) {
-		return ctx.side == Side.SERVER ? ctx.getServerHandler().playerEntity : Minecraft.getMinecraft().player;
+		return ctx.side == Side.SERVER ? ctx.getServerHandler().player : Minecraft.getMinecraft().player;
 	}
 
 	@Override
@@ -439,6 +372,71 @@ public class ClientProxy extends CommonProxy {
 		// ModelResourceLocation(TF2weapons.MOD_ID+":copper_ingot",
 		// "inventory"),new
 		// ModelResourceLocation(TF2weapons.MOD_ID+":lead_ingot", "inventory"));
+		nameToModel = new HashMap<String, ModelResourceLocation>();
+		for (WeaponData weapon : MapList.nameToData.values())
+			// System.out.println("Execut "+weapon.getName());
+			RegisterWeaponData(weapon);
+		
+		for (Item item : MapList.weaponClasses.values()) {
+			ModelLoader.setCustomMeshDefinition(item, stack -> {
+				System.out.println("nym "+stack);
+				if (stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+					if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst!=ItemFromData.BLANK_DATA)
+						return nameToModel.get(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst.getName());
+					else if(stack.hasTagCompound())
+						return nameToModel.get(stack.getTagCompound().getString("Type"));
+				}
+				return nameToModel.get("minigun");
+			});
+		}
+		
+		ModelResourceLocation spawnEgg = new ModelResourceLocation("spawn_egg", "inventory");
+
+		for (int i = 0; i < 31; i++)
+			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemPlacer, i, spawnEgg);
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDisguiseKit, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":disguise_kit", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemSandvich, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":sandvich", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoBelt, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_belt", "inventory"));
+		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemBlock.getItemFromBlock(TF2weapons.blockCabinet),
+		// 0, new
+		// ModelResourceLocation(TF2weapons.MOD_ID+":tf2workbench","inventory"));
+
+		final ModelResourceLocation sentryRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":sentryred",
+				"inventory");
+		final ModelResourceLocation sentryBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":sentryblu",
+				"inventory");
+		final ModelResourceLocation dispenserRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":dispenserred",
+				"inventory");
+		final ModelResourceLocation dispenserBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":dispenserblu",
+				"inventory");
+		final ModelResourceLocation teleporterRed = new ModelResourceLocation(TF2weapons.MOD_ID + ":teleporterred",
+				"inventory");
+		final ModelResourceLocation teleporterBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":teleporterblu",
+				"inventory");
+
+		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
+				teleporterRed, teleporterBlu);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemBuildingBox,
+				new ItemMeshDefinition() {
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						if (stack.getItemDamage() == 18)
+							return sentryRed;
+						else if (stack.getItemDamage() == 19)
+							return sentryBlu;
+						else if (stack.getItemDamage() == 20)
+							return dispenserRed;
+						else if (stack.getItemDamage() == 21)
+							return dispenserBlu;
+						else if (stack.getItemDamage() == 22)
+							return teleporterRed;
+						else
+							return teleporterBlu;
+					}
+				});
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoFire, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_fire", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemChocolate, 0,

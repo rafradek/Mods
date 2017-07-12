@@ -3,7 +3,6 @@ package rafradek.TF2weapons.decoration;
 import java.io.IOException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.achievement.GuiAchievements;
 import net.minecraft.client.gui.achievement.GuiStats;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
@@ -49,7 +48,7 @@ public class GuiWearables extends InventoryEffectRenderer {
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		this.fontRendererObj.drawString(I18n.format("item.ammoBelt.name", new Object[0]), 97, 8, 4210752);
+		this.fontRenderer.drawString(I18n.format("item.ammoBelt.name", new Object[0]), 97, 8, 4210752);
 	}
 
 	/**
@@ -127,8 +126,8 @@ public class GuiWearables extends InventoryEffectRenderer {
 	 */
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
-		if (button.id == 0)
-			this.mc.displayGuiScreen(new GuiAchievements(this, this.mc.player.getStatFileWriter()));
+		/*if (button.id == 0)
+			this.mc.displayGuiScreen(new GuiAchievements(this, this.mc.player.getStatFileWriter()));*/
 
 		if (button.id == 1)
 			this.mc.displayGuiScreen(new GuiStats(this, this.mc.player.getStatFileWriter()));

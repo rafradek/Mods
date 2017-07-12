@@ -15,6 +15,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Tuple;
@@ -55,7 +56,7 @@ public class EntityDispenser extends EntityBuilding {
 		}
 
 		List<EntityLivingBase> targetList = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				this.getEntityBoundingBox().expand(2, 1.5d, 2), new Predicate<EntityLivingBase>() {
+				this.getEntityBoundingBox().grow(2, 1.5d, 2), new Predicate<EntityLivingBase>() {
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -145,7 +146,7 @@ public class EntityDispenser extends EntityBuilding {
 
 	public static boolean isNearDispenser(World world, final EntityLivingBase living) {
 		List<EntityDispenser> targetList = world.getEntitiesWithinAABB(EntityDispenser.class,
-				living.getEntityBoundingBox().expand(2.5D, 2D, 2.5D), new Predicate<EntityDispenser>() {
+				living.getEntityBoundingBox().grow(2.5D, 2D, 2.5D), new Predicate<EntityDispenser>() {
 
 					@Override
 					public boolean apply(EntityDispenser input) {
@@ -179,7 +180,7 @@ public class EntityDispenser extends EntityBuilding {
 	}
 
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return null;
 	}
 

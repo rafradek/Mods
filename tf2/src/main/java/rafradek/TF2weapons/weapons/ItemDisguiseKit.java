@@ -54,12 +54,4 @@ public class ItemDisguiseKit extends Item {
 		return false;
 	}
 
-	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
-
-		// par2List.add("Charge:
-		// "+Float.toString(par1ItemStack.getTagCompound().getFloat("charge")));
-	}
 }

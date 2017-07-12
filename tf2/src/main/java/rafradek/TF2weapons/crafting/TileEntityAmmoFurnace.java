@@ -22,6 +22,7 @@ import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntityLockable;
@@ -317,13 +318,9 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 					this.setInventorySlotContents(i, ItemStack.EMPTY);
 
 				if (ammoToConsume <= 0) {
-					for (Object obj : recipe.getInput()) {
+					for (Ingredient obj : recipe.getIngredients()) {
 
-						ItemStack out;
-						if (obj instanceof ItemStack)
-							out = (ItemStack) obj;
-						else
-							out = ((List<ItemStack>) obj).get(0);
+						ItemStack out=obj.getMatchingStacks()[0];
 						for (int j = 10; j < 19; j++) {
 							boolean handled = false;
 							ItemStack inSlot = this.getStackInSlot(j);

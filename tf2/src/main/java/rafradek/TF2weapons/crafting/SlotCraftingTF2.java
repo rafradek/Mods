@@ -26,14 +26,14 @@ public class SlotCraftingTF2 extends SlotCrafting {
 	public ItemStack onTake(EntityPlayer playerIn, ItemStack stack) {
 		if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 9) {
 			stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), ItemFromData.VISIBLE_WEAPON);
-			playerIn.addStat(TF2Achievements.HOME_MADE);
+			//playerIn.addStat(TF2Achievements.HOME_MADE);
 			playerIn.inventory.setItemStack(stack);
 		} else if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 10) {
 			stack = ItemFromData.getRandomWeaponOfClass("cosmetic", playerIn.getRNG(), false);
 			playerIn.inventory.setItemStack(stack);
 		}
 		if(stack.hasTagCompound()&&stack.getTagCompound().getBoolean("Australium")){
-			playerIn.addStat(TF2Achievements.SHINY);
+			//playerIn.addStat(TF2Achievements.SHINY);
 		}
 		net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerCraftingEvent(playerIn, stack, craftMatrix);
 		this.onCrafting(stack);

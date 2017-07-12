@@ -61,8 +61,10 @@ public class ItemAmmo extends Item {
 	}
 
 	@Override
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
 		// System.out.println(this.getCreativeTab());
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		for (int i = 1; i < AMMO_TYPES.length; i++)
 			if (i != 10 && i != 12)
 				par3List.add(new ItemStack(this, 1, i));

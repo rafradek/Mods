@@ -25,15 +25,15 @@ public class EntityAIFollowTrader extends EntityAIBase {
 	}
 
 	@Override
-	public boolean continueExecuting() {
+	public boolean shouldContinueExecuting() {
 		return !this.owner.getNavigator().noPath() && this.owner.getDistanceSqToEntity(this.owner.lastTrader) > (100);
 	}
 
 	@Override
 	public void updateTask() {
 		// System.out.println("Up");
-		if (this.owner.lastTrader.getAITarget() != null)
-			this.owner.setAttackTarget(owner.lastTrader.getAITarget());
+		if (this.owner.lastTrader.getRevengeTarget() != null)
+			this.owner.setAttackTarget(owner.lastTrader.getRevengeTarget());
 		this.owner.getLookHelper().setLookPositionWithEntity(this.owner.lastTrader, 10.0F, 10F);
 
 		if (--this.timeToRecalcPath <= 0) {

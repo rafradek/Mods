@@ -50,7 +50,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int reloadCool;
 	public int lastFire;
 	//public int critTime;
-	public int healTarget = -1;
+	//public int healTarget = -1;
 	public boolean mainHand;
 	public HashMap<String, Integer> effectsCool = new HashMap<String, Integer>();
 	public int chargeTicks;
@@ -126,6 +126,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setCritTime(int time) {
 		this.dataManager.set(CRIT_TIME, time);
+	}
+	
+	public int getHealTarget() {
+		return this.dataManager.get(HEAL_TARGET);
+	}
+	
+	public void setHealTarget(int target) {
+		this.dataManager.set(HEAL_TARGET, target);
 	}
 	
 	public int getHeads() {
@@ -565,12 +573,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		NBTTagCompound tag = new NBTTagCompound();
 		tag.setByte("VisTicks", (byte) this.invisTicks);
 		tag.setByte("DisguiseTicks", (byte) this.disguiseTicks);
-		tag.setInteger("HealTarget", this.healTarget);
 		NBTTagCompound cld = new NBTTagCompound();
 		for (Entry<String, Integer> entry : this.effectsCool.entrySet())
 			cld.setInteger(entry.getKey(), entry.getValue());
 		tag.setTag("Cooldowns", cld);
-		tag.setInteger("HealTarget", this.healTarget);
+		tag.setInteger("HealTarget", this.getHealTarget());
 		tag.setShort("Heads", this.dataManager.get(HEADS).shortValue());
 		tag.setShort("HeadsCool", (short) (this.collectedHeadsTime - this.owner.ticksExisted));
 		tag.setBoolean("Cloaked", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_INVIS));
@@ -591,7 +598,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void deserializeNBT(NBTTagCompound nbt) {
 		this.invisTicks = nbt.getByte("VisTicks");
 		this.disguiseTicks = nbt.getByte("DisguiseTicks");
-		this.healTarget = nbt.getByte("HealTarget");
+		this.setHealTarget(nbt.getInteger("HealTarget"));
 		NBTTagCompound cld = nbt.getCompoundTag("Cooldowns");
 		for (String key : cld.getKeySet())
 			this.effectsCool.put(key, cld.getInteger(key));

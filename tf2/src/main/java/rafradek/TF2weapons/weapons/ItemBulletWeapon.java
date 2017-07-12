@@ -75,10 +75,10 @@ public class ItemBulletWeapon extends ItemWeapon {
 						.getAttributeValue();
 					if (knockbackAmount > 0){
 						boolean flag=map.get(entity)[1] >= 3.75 && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0&&TF2Attribute.getModifier("KnockbackFAN", stack, 0, living) != 0;
-						pushvec=new Vec3d(pushvec.xCoord * knockbackAmount * (flag?2.8:1), (pushvec.yCoord+(flag?1:0)) * knockbackAmount,
-								pushvec.zCoord * knockbackAmount * (flag?2.8:1));
-						entity.addVelocity(pushvec.xCoord,pushvec.yCoord,pushvec.zCoord);
-						entity.isAirBorne = entity.isAirBorne || -(pushvec.yCoord * knockbackAmount) > 0.02D;
+						pushvec=new Vec3d(pushvec.x * knockbackAmount * (flag?2.8:1), (pushvec.y+(flag?1:0)) * knockbackAmount,
+								pushvec.z * knockbackAmount * (flag?2.8:1));
+						entity.addVelocity(pushvec.x,pushvec.y,pushvec.z);
+						entity.isAirBorne = entity.isAirBorne || -(pushvec.y * knockbackAmount) > 0.02D;
 						if(entity instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,entity.isAirBorne), (EntityPlayerMP) entity);
 					}
@@ -218,20 +218,20 @@ public class ItemBulletWeapon extends ItemWeapon {
 		// float
 		// fixedYaw=Math.max(Math.abs(wrapAngledYaw),90)-Math.min(Math.abs(wrapAngledYaw),90);
 
-		endX = (endX / var9 + rand.xCoord)
+		endX = (endX / var9 + rand.x)
 				* getMaxRange(stack) /*
 								 * +
 								 * (rand[0]*ratioX[0])((fixedYaw/90)+(1-fixedYaw
 								 * /90)*(-living.rotationPitch/90))*this.
 								 * positive(wrapAngledYaw)*40
 								 */;
-		endY = (endY / var9 + rand.yCoord)
+		endY = (endY / var9 + rand.y)
 				* getMaxRange(stack) /*
 								 * +
 								 * (rand[1]*ratioY[1])(0.5-Math.abs(spreadPitch)
 								 * )*80*40
 								 */;
-		endZ = (endZ / var9 + rand.zCoord)
+		endZ = (endZ / var9 + rand.z)
 				* getMaxRange(stack) /*
 								 * + ((ratioX[2]>ratioY[2]?rand[0]:rand[1])*(
 								 * ratioX[2]+ratioY[2]))(rand[0]*ratioX[2] +
@@ -326,18 +326,18 @@ public class ItemBulletWeapon extends ItemWeapon {
 					
 					ClientProxy.spawnBulletHoleParticle(world, var4);
 					for(int i=0;i<2;i++)
-						world.spawnParticle(EnumParticleTypes.BLOCK_CRACK, var4.hitVec.xCoord+var4.sideHit.getFrontOffsetX()*0.05, var4.hitVec.yCoord+var4.sideHit.getFrontOffsetY()*0.05, var4.hitVec.zCoord+var4.sideHit.getFrontOffsetZ()*0.05, var4.sideHit.getFrontOffsetX()*0.07*i, var4.sideHit.getFrontOffsetY()*0.07*i, var4.sideHit.getFrontOffsetZ()*0.07*i, new int[]{Block.getStateId(world.getBlockState(var4.getBlockPos()))});
+						world.spawnParticle(EnumParticleTypes.BLOCK_CRACK, var4.hitVec.x+var4.sideHit.getFrontOffsetX()*0.05, var4.hitVec.y+var4.sideHit.getFrontOffsetY()*0.05, var4.hitVec.z+var4.sideHit.getFrontOffsetZ()*0.05, var4.sideHit.getFrontOffsetX()*0.07*i, var4.sideHit.getFrontOffsetY()*0.07*i, var4.sideHit.getFrontOffsetZ()*0.07*i, new int[]{Block.getStateId(world.getBlockState(var4.getBlockPos()))});
 					if(getData(stack).hasProperty(PropertyType.HIT_SOUND)){
 						SoundEvent event = getData(stack).hasProperty(PropertyType.HIT_WORLD_SOUND)
 								? getSound(stack, PropertyType.HIT_WORLD_SOUND) : getSound(stack, PropertyType.HIT_SOUND);
-						world.playSound(var4.hitVec.xCoord, var4.hitVec.yCoord, var4.hitVec.zCoord, event,
+						world.playSound(var4.hitVec.x, var4.hitVec.y, var4.hitVec.z, event,
 								SoundCategory.PLAYERS, getData(stack).getName().equals("fryingpan") ? 2f : 0.7f, 1f, false);
 					}
 				} else if (!world.isRemote) {
 					if(TF2Attribute.getModifier("Explode Bullet", stack, 0, living)!=0){
-						TF2weapons.explosion(world, living, stack, living, null, var4.hitVec.xCoord + var4.sideHit.getFrontOffsetX() * 0.05,
-								var4.hitVec.yCoord + var4.sideHit.getFrontOffsetY() * 0.05,
-								var4.hitVec.zCoord + var4.sideHit.getFrontOffsetZ() * 0.05, TF2Attribute.getModifier("Explode Bullet", stack, 0, living), 1, critical, (float) living.getPositionVector().distanceTo(var4.hitVec));
+						TF2weapons.explosion(world, living, stack, living, null, var4.hitVec.x + var4.sideHit.getFrontOffsetX() * 0.05,
+								var4.hitVec.y + var4.sideHit.getFrontOffsetY() * 0.05,
+								var4.hitVec.z + var4.sideHit.getFrontOffsetZ() * 0.05, TF2Attribute.getModifier("Explode Bullet", stack, 0, living), 1, critical, (float) living.getPositionVector().distanceTo(var4.hitVec));
 					}
 					else if(removeBlocks){
 						float damage = TF2weapons.calculateDamage(TF2weapons.dummyEnt, world, living, stack, critical,
@@ -357,9 +357,9 @@ public class ItemBulletWeapon extends ItemWeapon {
 	 * AxisAlignedBB head=AxisAlignedBB.getBoundingBox(living.posX-0.21,
 	 * ymax-0.21, living.posZ-0.21,living.posX+0.21, ymax+0.21,
 	 * living.posZ+0.21);
-	 * System.out.println("Trafienie: "+Math.abs(ymax-hitVec.yCoord));
+	 * System.out.println("Trafienie: "+Math.abs(ymax-hitVec.y));
 	 * 
-	 * return Math.abs(ymax-hitVec.yCoord)<0.205; }
+	 * return Math.abs(ymax-hitVec.y)<0.205; }
 	 */
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub

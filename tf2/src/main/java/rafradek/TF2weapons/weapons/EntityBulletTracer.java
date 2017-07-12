@@ -7,7 +7,7 @@ import rafradek.TF2weapons.TF2weapons;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
@@ -73,7 +73,7 @@ public class EntityBulletTracer extends Particle {
 	}
 
 	@Override
-	public void renderParticle(VertexBuffer worldRendererIn, Entity entityIn, float partialTicks, float rotationX,
+	public void renderParticle(BufferBuilder worldRendererIn, Entity entityIn, float partialTicks, float rotationX,
 			float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
 
 		float x = (float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks - interpPosX);
@@ -97,42 +97,42 @@ public class EntityBulletTracer extends Particle {
 		float yMin = this.particleTexture.getMinV();
 		float yMax = this.particleTexture.getMaxV();
 
-		worldRendererIn.pos(x - rightVec.xCoord * f4, y - rightVec.yCoord * f4, z - rightVec.zCoord * f4)
+		worldRendererIn.pos(x - rightVec.x * f4, y - rightVec.y * f4, z - rightVec.z * f4)
 				.tex(xMax, yMax).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
 				.lightmap(j, k).endVertex();
 		;
-		worldRendererIn.pos(x + rightVec.xCoord * f4, y + rightVec.yCoord * f4, z + rightVec.zCoord * f4)
+		worldRendererIn.pos(x + rightVec.x * f4, y + rightVec.y * f4, z + rightVec.z * f4)
 				.tex(xMax, yMin).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
 				.lightmap(j, k).endVertex();
 		;
-		worldRendererIn.pos(xNext + rightVec.xCoord * f4, yNext + rightVec.yCoord * f4, zNext + rightVec.zCoord * f4)
+		worldRendererIn.pos(xNext + rightVec.x * f4, yNext + rightVec.y * f4, zNext + rightVec.z * f4)
 				.tex(xMin, yMin).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
 				.lightmap(j, k).endVertex();
 		;
-		worldRendererIn.pos(xNext - rightVec.xCoord * f4, yNext - rightVec.yCoord * f4, zNext - rightVec.zCoord * f4)
+		worldRendererIn.pos(xNext - rightVec.x * f4, yNext - rightVec.y * f4, zNext - rightVec.z * f4)
 				.tex(xMin, yMax).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
 				.lightmap(j, k).endVertex();
 		;
 
 		/*
-		 * worldRendererIn.pos((double)(x + rightVec.xCoord * f4),
-		 * (double)(y+rightVec.yCoord*f4),
-		 * (double)(z+rightVec.zCoord*f4)).tex((double)xMax,
+		 * worldRendererIn.pos((double)(x + rightVec.x * f4),
+		 * (double)(y+rightVec.y*f4),
+		 * (double)(z+rightVec.z*f4)).tex((double)xMax,
 		 * (double)yMax).color(this.particleRed, this.particleGreen,
 		 * this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();;
-		 * worldRendererIn.pos((double)(x - rightVec.xCoord * f4),
-		 * (double)(y-rightVec.yCoord*f4),
-		 * (double)(z-rightVec.zCoord*f4)).tex((double)xMax,
+		 * worldRendererIn.pos((double)(x - rightVec.x * f4),
+		 * (double)(y-rightVec.y*f4),
+		 * (double)(z-rightVec.z*f4)).tex((double)xMax,
 		 * (double)yMin).color(this.particleRed, this.particleGreen,
 		 * this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();;
-		 * worldRendererIn.pos((double)(xNext - rightVec.xCoord * f4),
-		 * (double)(yNext-rightVec.yCoord*f4),
-		 * (double)(zNext-rightVec.zCoord*f4)).tex((double)xMin,
+		 * worldRendererIn.pos((double)(xNext - rightVec.x * f4),
+		 * (double)(yNext-rightVec.y*f4),
+		 * (double)(zNext-rightVec.z*f4)).tex((double)xMin,
 		 * (double)yMin).color(this.particleRed, this.particleGreen,
 		 * this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();;
-		 * worldRendererIn.pos((double)(xNext + rightVec.xCoord * f4 ),
-		 * (double)(yNext+rightVec.yCoord*f4),
-		 * (double)(zNext+rightVec.zCoord*f4)).tex((double)xMin,
+		 * worldRendererIn.pos((double)(xNext + rightVec.x * f4 ),
+		 * (double)(yNext+rightVec.y*f4),
+		 * (double)(zNext+rightVec.z*f4)).tex((double)xMin,
 		 * (double)yMin).color(this.particleRed, this.particleGreen,
 		 * this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();;
 		 */

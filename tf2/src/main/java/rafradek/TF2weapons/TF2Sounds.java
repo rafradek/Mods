@@ -1,11 +1,15 @@
 package rafradek.TF2weapons;
 
+import java.util.HashMap;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class TF2Sounds {
 
+	public static final HashMap<ResourceLocation, SoundEvent> SOUND_EVENTS = new HashMap<>();
 	public static final SoundEvent MISC_PAIN = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.pain"));
 	public static final SoundEvent MISC_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit"));
 	public static final SoundEvent MISC_MINI_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit.mini"));
@@ -234,7 +238,11 @@ public class TF2Sounds {
 		 */
 	}
 
+	
+	
 	public static SoundEvent register(ResourceLocation location) {
-		return GameRegistry.register(new SoundEvent(location), location);
+		SoundEvent event=new SoundEvent(location).setRegistryName(location);
+		SOUND_EVENTS.put(location, event);
+		return event;
 	}
 }

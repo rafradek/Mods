@@ -92,7 +92,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	}
 
 	public Entity getEntity(){
-		return selfdmg?TF2weapons.dummyEnt:super.getEntity();
+		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
 	}
 	public void setAttackSelf(){
 		this.selfdmg=true;
@@ -100,8 +100,8 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	@Override
 	public ItemStack getWeaponOrig() {
 		// TODO Auto-generated method stub
-		return this.getSourceOfDamage() instanceof EntityProjectileBase && !((EntityProjectileBase)this.getSourceOfDamage()).usedWeaponOrig.isEmpty() ?
-				((EntityProjectileBase)this.getSourceOfDamage()).usedWeaponOrig:this.getWeapon();
+		return this.getImmediateSource() instanceof EntityProjectileBase && !((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig.isEmpty() ?
+				((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig:this.getWeapon();
 	}
 
 	@Override

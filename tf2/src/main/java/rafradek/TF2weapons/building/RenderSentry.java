@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -51,7 +51,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 			this.mainModel = this.level3;
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
 		Tessellator tessellator = Tessellator.getInstance();
-		VertexBuffer vertexbuffer = tessellator.getBuffer();
+		BufferBuilder BufferBuilder = tessellator.getBuffer();
 		if (living.isControlled()) {
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(p_76986_2_, p_76986_4_, p_76986_6_);
@@ -67,88 +67,88 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 				GL11.glColor4f(1.0F, 0.0F, 0.0F, 0.23F);
 			else
 				GL11.glColor4f(0.0F, 0.0F, 1.0F, 0.23F);
-			AxisAlignedBB boundingBox = living.getEntityBoundingBox().expand(0.3f, 0.3f, 0.3f);
-			vertexbuffer.begin(7, DefaultVertexFormats.POSITION_NORMAL);
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
+			AxisAlignedBB boundingBox = living.getEntityBoundingBox().grow(0.3f, 0.3f, 0.3f);
+			BufferBuilder.begin(7, DefaultVertexFormats.POSITION_NORMAL);
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, -1.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, -1.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(-1.0F, 0.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(-1.0F, 0.0F, 0.0F)
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			vertexbuffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
 			tessellator.draw();
 			GlStateManager.popMatrix();
 
 			Vec3d look = living.getLook(p_76986_9_).scale(200);
 			RayTraceResult target = TF2weapons.pierce(living.world, living, living.posX,
-					living.posY + living.getEyeHeight(), living.posZ, look.xCoord + living.posX,
-					look.yCoord + living.posY + living.getEyeHeight(), look.zCoord + living.posZ, false, 0.02f, false)
+					living.posY + living.getEyeHeight(), living.posZ, look.x + living.posX,
+					look.y + living.posY + living.getEyeHeight(), look.z + living.posZ, false, 0.02f, false)
 					.get(0);
 			if (target != null) {
 				GlStateManager.pushMatrix();
 
-				double xDist = target.hitVec.xCoord - (living.prevPosX + (living.posX - living.prevPosX) * p_76986_9_);
-				double yDist = (target.hitVec.yCoord)
+				double xDist = target.hitVec.x - (living.prevPosX + (living.posX - living.prevPosX) * p_76986_9_);
+				double yDist = (target.hitVec.y)
 						- (living.prevPosY + (living.posY - living.prevPosY) * p_76986_9_ + living.height / 2);
-				double zDist = target.hitVec.zCoord - (living.prevPosZ + (living.posZ - living.prevPosZ) * p_76986_9_);
+				double zDist = target.hitVec.z - (living.prevPosZ + (living.posZ - living.prevPosZ) * p_76986_9_);
 				float f = MathHelper.sqrt(xDist * xDist + zDist * zDist);
 				float fullDist = MathHelper.sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 				GlStateManager.translate((float) p_76986_2_, (float) p_76986_4_ + living.getEyeHeight(),
 						(float) p_76986_6_);
 				GL11.glRotatef((float) (Math.atan2(xDist, zDist) * 180.0D / Math.PI), 0.0F, 1.0F, 0.0F);
 				GL11.glRotatef((float) (Math.atan2(yDist, f) * 180.0D / Math.PI) * -1, 1.0F, 0.0F, 0.0F);
-				vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-				vertexbuffer.pos(-0.04, -0.04, 0).endVertex();
-				vertexbuffer.pos(0.04, 0.04, 0).endVertex();
-				vertexbuffer.pos(0.04, 0.04, fullDist).endVertex();
-				vertexbuffer.pos(-0.04, -0.04, fullDist).endVertex();
+				BufferBuilder.begin(7, DefaultVertexFormats.POSITION);
+				BufferBuilder.pos(-0.04, -0.04, 0).endVertex();
+				BufferBuilder.pos(0.04, 0.04, 0).endVertex();
+				BufferBuilder.pos(0.04, 0.04, fullDist).endVertex();
+				BufferBuilder.pos(-0.04, -0.04, fullDist).endVertex();
 				tessellator.draw();
-				vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-				vertexbuffer.pos(-0.04, -0.04, fullDist).endVertex();
-				vertexbuffer.pos(0.04, 0.04, fullDist).endVertex();
-				vertexbuffer.pos(0.04, 0.04, 0).endVertex();
-				vertexbuffer.pos(-0.04, -0.04, 0).endVertex();
+				BufferBuilder.begin(7, DefaultVertexFormats.POSITION);
+				BufferBuilder.pos(-0.04, -0.04, fullDist).endVertex();
+				BufferBuilder.pos(0.04, 0.04, fullDist).endVertex();
+				BufferBuilder.pos(0.04, 0.04, 0).endVertex();
+				BufferBuilder.pos(-0.04, -0.04, 0).endVertex();
 				tessellator.draw();
-				vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-				vertexbuffer.pos(0.04, -0.04, 0).endVertex();
-				vertexbuffer.pos(-0.04, 0.04, 0).endVertex();
-				vertexbuffer.pos(-0.04, 0.04, fullDist).endVertex();
-				vertexbuffer.pos(0.04, -0.04, fullDist).endVertex();
+				BufferBuilder.begin(7, DefaultVertexFormats.POSITION);
+				BufferBuilder.pos(0.04, -0.04, 0).endVertex();
+				BufferBuilder.pos(-0.04, 0.04, 0).endVertex();
+				BufferBuilder.pos(-0.04, 0.04, fullDist).endVertex();
+				BufferBuilder.pos(0.04, -0.04, fullDist).endVertex();
 				tessellator.draw();
-				vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-				vertexbuffer.pos(0.04, -0.04, fullDist).endVertex();
-				vertexbuffer.pos(-0.04, 0.04, fullDist).endVertex();
-				vertexbuffer.pos(-0.04, 0.04, 0).endVertex();
-				vertexbuffer.pos(0.04, -0.04, 0).endVertex();
+				BufferBuilder.begin(7, DefaultVertexFormats.POSITION);
+				BufferBuilder.pos(0.04, -0.04, fullDist).endVertex();
+				BufferBuilder.pos(-0.04, 0.04, fullDist).endVertex();
+				BufferBuilder.pos(-0.04, 0.04, 0).endVertex();
+				BufferBuilder.pos(0.04, -0.04, 0).endVertex();
 				tessellator.draw();
 				GlStateManager.popMatrix();
 			}

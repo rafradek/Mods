@@ -19,7 +19,7 @@ import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -60,6 +60,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -97,7 +98,7 @@ public class SpinToWin {
 		conf = new Configuration(event.getSuggestedConfigurationFile());
 		syncConfig();
 		SPIN_TIME=new DataParameter<Boolean>(spinID, DataSerializers.BOOLEAN);
-		ench=GameRegistry.register(new EnchantmentSpin().setRegistryName("rafradek_spin", "spin"));
+		ForgeRegistries.ENCHANTMENTS.register(ench=new EnchantmentSpin().setRegistryName("rafradek_spin", "spin"));
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 	
@@ -260,7 +261,7 @@ public class SpinToWin {
 					
 					
 					for(EntityLivingBase target:player.world.getEntitiesWithinAABB(EntityLivingBase.class, 
-							player.getEntityBoundingBox().expand(range, 0, range), new Predicate<EntityLivingBase>(){
+							player.getEntityBoundingBox().grow(range, 0, range), new Predicate<EntityLivingBase>(){
 	
 						@Override
 						public boolean apply(EntityLivingBase input) {
@@ -348,7 +349,7 @@ public class SpinToWin {
 			GlStateManager.popMatrix();
 			if(!stack.isEmpty()&&!event.getEntity().isInvisible()){
 				Tessellator tessellator = Tessellator.getInstance();
-				VertexBuffer renderer = tessellator.getBuffer();
+				BufferBuilder renderer = tessellator.getBuffer();
 				GlStateManager.pushMatrix();
 				GlStateManager.translate((float) 0, (float) 0 + 0.1D, (float) 0);
 				// GL11.glRotatef((living.prevRotationYawHead +

@@ -112,7 +112,7 @@ public class EnchantedExplosion extends Explosion {
 									f -= (f2 + 0.3F) * 0.3F;
 								}
 
-								if (f > 0.0F && (this.exploder == null || this.exploder.verifyExplosion(this,
+								if (f > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this,
 										this.world, blockpos, iblockstate, f)))
 									hashset.add(blockpos);
 

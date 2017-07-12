@@ -108,7 +108,7 @@ public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
 				if (itemStack.getTagCompound().getFloat("Rage") <= 0)
 					itemStack.getTagCompound().setBoolean("Active", false);
 				for (EntityLivingBase living : world.getEntitiesWithinAABB(EntityLivingBase.class,
-						player.getEntityBoundingBox().expand(10, 10, 10), new Predicate<EntityLivingBase>() {
+						player.getEntityBoundingBox().grow(10, 10, 10), new Predicate<EntityLivingBase>() {
 
 							@Override
 							public boolean apply(EntityLivingBase input) {

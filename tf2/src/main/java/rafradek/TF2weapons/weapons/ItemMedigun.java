@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -42,7 +43,7 @@ public class ItemMedigun extends ItemUsable {
 		// "+startX+endX+" "+endY+" "+endZ);
 		if (world.isRemote && living == Minecraft.getMinecraft().player) {
 			RayTraceResult trace = this.trace(stack, living, world);
-			if (world.getEntityByID(living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget) == null
+			if (world.getEntityByID(living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget()) == null
 					&& trace != null && trace.entityHit != null && trace.entityHit instanceof EntityLivingBase
 					&& !(trace.entityHit instanceof EntityBuilding)) {
 				List<RayTraceResult> list = new ArrayList<RayTraceResult>();
@@ -61,9 +62,7 @@ public class ItemMedigun extends ItemUsable {
 				// false, 0, stack);
 			}
 		} else if (!world.isRemote && message != null && message.readData != null) {
-			living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = (int) message.readData.get(0)[0];
-			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(living, false),
-					living);
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget((int) message.readData.get(0)[0]);
 		}
 		return true;
 	}
@@ -196,10 +195,7 @@ public class ItemMedigun extends ItemUsable {
 		if (par1ItemStack.isEmpty())
 			return;
 		if (par5 && !this.canFire(par2World, (EntityLivingBase) par3Entity, par1ItemStack)) {
-			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
-			if (!par2World.isRemote)
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity, false),
-						par3Entity);
+			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 		}
 		Potion effect=Potion.getPotionFromResourceLocation(ItemFromData.getData(par1ItemStack).getString(PropertyType.EFFECT_TYPE));
 		if (!par2World.isRemote&&par1ItemStack.getTagCompound().getBoolean("Activated")) {
@@ -219,15 +215,13 @@ public class ItemMedigun extends ItemUsable {
 			}
 		}
 		if(par5){
-			Entity healTargetEnt = par2World.getEntityByID(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget);
+			Entity healTargetEnt = par2World.getEntityByID(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget());
 			if(healTargetEnt != null && healTargetEnt instanceof EntityLivingBase){
 				EntityLivingBase healTarget=(EntityLivingBase) healTargetEnt;
 				// System.out.println("healing:
 				// "+ItemUsable.itemProperties.server.get(par3Entity).getInteger("HealTarget"));
 				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSqToEntity(healTarget) > 72) {
-					par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
-					TF2weapons.sendTracking(new TF2Message.CapabilityMessage(par3Entity, false),
-							par3Entity);
+					par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 					// TF2weapons.sendTracking(new
 					// TF2Message.PropertyMessage("HealTarget",
 					// -1,par3Entity),par3Entity);
@@ -247,7 +241,7 @@ public class ItemMedigun extends ItemUsable {
 
 	@Override
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
-		cap.healTarget = -1;
+		cap.setHealTarget(-1);
 		living.removePotionEffect(TF2weapons.uber);
 		super.draw(cap, stack, living, world);
 	}
@@ -297,11 +291,12 @@ public class ItemMedigun extends ItemUsable {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		super.addInformation(stack, world, tooltip, advanced);
 
-		par2List.add("Charge: " + Float.toString(par1ItemStack.getTagCompound().getFloat("ubercharge")));
+		tooltip.add("Charge: " + Float.toString(stack.getTagCompound().getFloat("ubercharge")));
 	}
 
 	@Override
@@ -312,8 +307,8 @@ public class ItemMedigun extends ItemUsable {
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.NO_TARGET_SOUND), false,
 						1, stack);
 			// System.out.println("Stop heal");
-			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget != -1) {
-				living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
+			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() != -1) {
+				living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 				TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 			}
 
@@ -337,7 +332,7 @@ public class ItemMedigun extends ItemUsable {
 	@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
 		if (world.isRemote && !TF2weapons.medigunLock && (oldState & 1 - newState & 1) == 1) {
-			living.getCapability(TF2weapons.WEAPONS_CAP, null).healTarget = -1;
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 		}
 		return false;

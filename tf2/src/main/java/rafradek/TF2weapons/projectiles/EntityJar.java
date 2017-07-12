@@ -33,7 +33,7 @@ public class EntityJar extends EntityProjectileBase {
 		if (!this.world.isRemote) {
 			int coatedCount=0;
 			for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-					this.getEntityBoundingBox().expand(5, 5, 5)))
+					this.getEntityBoundingBox().grow(5, 5, 5)))
 				if (living.canBeHitWithPotion() && living.getDistanceSqToEntity(this) < 25
 						&& living != this.shootingEntity && !TF2weapons.isOnSameTeam(this.shootingEntity, living)){
 					living.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation(
@@ -44,8 +44,8 @@ public class EntityJar extends EntityProjectileBase {
 				}
 				else
 					living.extinguish();
-			if(coatedCount>=5 && this.shootingEntity instanceof EntityPlayer)
-				((EntityPlayer) this.shootingEntity).addStat(TF2Achievements.JARATE_MULTIPLE);
+			/*if(coatedCount>=5 && this.shootingEntity instanceof EntityPlayer)
+				((EntityPlayer) this.shootingEntity).addStat(TF2Achievements.JARATE_MULTIPLE);*/
 				
 			this.playSound(TF2Sounds.JAR_EXPLODE, 1.5f, 1f);
 			this.world.playEvent(2002, new BlockPos(this),
@@ -57,14 +57,14 @@ public class EntityJar extends EntityProjectileBase {
 
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
-		this.explode(mop.hitVec.xCoord + mop.sideHit.getFrontOffsetX() * 0.05,
-				mop.hitVec.yCoord + mop.sideHit.getFrontOffsetY() * 0.05,
-				mop.hitVec.zCoord + mop.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
+		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.05,
+				mop.hitVec.y + mop.sideHit.getFrontOffsetY() * 0.05,
+				mop.hitVec.z + mop.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
 	}
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		this.explode(mop.hitVec.xCoord, mop.hitVec.yCoord, mop.hitVec.zCoord, mop.entityHit, 1f);
+		this.explode(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.entityHit, 1f);
 	}
 
 	@Override

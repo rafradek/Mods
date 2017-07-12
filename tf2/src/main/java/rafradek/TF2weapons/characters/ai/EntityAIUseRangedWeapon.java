@@ -97,7 +97,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
 	@Override
-	public boolean continueExecuting() {
+	public boolean shouldContinueExecuting() {
 		return this.shouldExecute() || !this.entityHost.getNavigator().noPath();
 	}
 
@@ -183,7 +183,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			RayTraceResult mop = this.entityHost.world.rayTraceBlocks(this.attackTarget.getPositionVector(),
 					this.attackTarget.getPositionVector().addVector(0, -0.3f - yFall, 0));
 			if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
-				yFall = this.attackTarget.posY - mop.hitVec.yCoord;
+				yFall = this.attackTarget.posY - mop.hitVec.y;
 			shouldFireProj = mop != null || this.attackTarget.motionY <= 0f;
 			// System.out.println("perform"+yFall);
 			// System.out.println("perform"+yFall);
@@ -207,7 +207,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				 * this.attackTarget.getPositionVector().addVector(0, yFall*1.2,
 				 * 0)); if(mop != null &&
 				 * mop.typeOfHit==RayTraceResult.Type.BLOCK){
-				 * lookY=mop.hitVec.yCoord; } else{
+				 * lookY=mop.hitVec.y; } else{
 				 * lookY=this.attackTarget.posY-yFall; } } else{
 				 */
 				lookY -= (this.attackTarget.height/2)*this.fireAtFeet;
@@ -298,8 +298,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				double offsetX = this.dodgeHeadFor ? this.attackTarget.posX - this.entityHost.posX : 0;
 				double offsetY = this.dodgeHeadFor ? this.attackTarget.posY - this.entityHost.posY : 0;
 				double offsetZ = this.dodgeHeadFor ? this.attackTarget.posZ - this.entityHost.posZ : 0;
-				this.entityHost.getNavigator().tryMoveToXYZ(Vec3d.xCoord + offsetX, Vec3d.yCoord + offsetY,
-						Vec3d.zCoord + offsetZ, this.entityMoveSpeed * this.dodgeSpeed);
+				this.entityHost.getNavigator().tryMoveToXYZ(Vec3d.x + offsetX, Vec3d.y + offsetY,
+						Vec3d.z + offsetZ, this.entityMoveSpeed * this.dodgeSpeed);
 			}
 		}
 		// }

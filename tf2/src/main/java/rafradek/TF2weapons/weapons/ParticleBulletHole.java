@@ -2,7 +2,7 @@ package rafradek.TF2weapons.weapons;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -13,7 +13,7 @@ public class ParticleBulletHole extends Particle {
 
 	RayTraceResult block;
 	public ParticleBulletHole(World worldIn, RayTraceResult result) {
-		super(worldIn, result.hitVec.xCoord + result.sideHit.getFrontOffsetX() * 0.012, result.hitVec.yCoord + result.sideHit.getFrontOffsetY() * 0.012, result.hitVec.zCoord + result.sideHit.getFrontOffsetZ() * 0.012 );
+		super(worldIn, result.hitVec.x + result.sideHit.getFrontOffsetX() * 0.012, result.hitVec.y + result.sideHit.getFrontOffsetY() * 0.012, result.hitVec.z + result.sideHit.getFrontOffsetZ() * 0.012 );
 		this.block=result;
 		this.particleRed = 0.05F;
         this.particleGreen = 0.05F;
@@ -45,7 +45,7 @@ public class ParticleBulletHole extends Particle {
             this.setExpired();
         }
     }
-	public void renderParticle(VertexBuffer buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ)
+	public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ)
     {
 		//super.renderParticle(buffer, entityIn, partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ);
 		//System.out.println("rot: "+rotationX+" "+rotationZ+" "+rotationYZ+" "+rotationXY+" "+rotationXZ);

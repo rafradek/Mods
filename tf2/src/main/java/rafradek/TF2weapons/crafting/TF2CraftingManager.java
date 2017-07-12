@@ -16,11 +16,15 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.crafting.CraftingHelper.ShapedPrimer;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import rafradek.TF2weapons.ItemFromData;
@@ -36,88 +40,88 @@ public class TF2CraftingManager {
 		bonk.setCount( 2);
 		ItemStack cola = ItemFromData.getNewStack("critcola");
 		cola.setCount( 2);
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[1] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 9, 1),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[1] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 9, 1),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[2] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 25, 2),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[2] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 25, 2),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[3] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 25, 3),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[3] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 25, 3),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[4] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 10, 4),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[4] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 10, 4),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 40, 5),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 40, 5),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[6] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 4, 6),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[6] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 4, 6),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[7] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 12, 7),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[7] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 12, 7),
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[8] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 12, 8),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[8] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 12, 8),
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[11] = new ShapelessOreRecipe(
-				new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmo, 8, 13),
+				null, new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
+		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmo, 4, 14),
+		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 4, 14),
 				new Object[] { " P ", "P P", " P ", 'P', "paper" }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemAmmoMedigun, 1),
 				new Object[] { Items.SPECKLED_MELON, Items.GHAST_TEAR, new ItemStack(Items.DYE, 1, 15) });
-		addRecipe(new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmoFire, 1),
+		addRecipe(new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoFire, 1),
 				new Object[] { "ingotIron", Items.MAGMA_CREAM, "ingotIron" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 30, 9),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 30, 9),
 				new Object[] { "ingotIron", "paper" }));
 		addRecipe(new AustraliumRecipe());
 		addRecipe(new JumperRecipe("rocketlauncher","rocketjumper"));
 		addRecipe(new JumperRecipe("stickybomblauncher","stickyjumper"));
-		addRecipe(new ShapedOreRecipe(ItemFromData.getNewStack("cloak"), new Object[] { "AAA", "LGL", "AAA", 'A',
-				"ingotAustralium", 'I', "ingotIron", 'G', "blockGlass", 'L', "leather" }));
-		addRecipe(new ShapedOreRecipe(TF2weapons.itemDisguiseKit, new Object[] { "I I", "PAG", "I I", 'A',
+		addRecipe(new ShapedOreRecipe(null, ItemFromData.getNewStack("cloak"), new Object[] { "AAA", "LGL", "AAA", 'A',
+				"ingotAustralium", 'G', "blockGlass", 'L', "leather" }));
+		addRecipe(new ShapedOreRecipe(null, TF2weapons.itemDisguiseKit, new Object[] { "I I", "PAG", "I I", 'A',
 				"ingotAustralium", 'I', "ingotIron", 'G', "blockGlass", 'P', "paper" }));
-		addRecipe(new ShapedOreRecipe(ItemFromData.getNewStack("sapper"),
+		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("sapper"),
 				new Object[] { " R ", "IRI", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemHorn),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemHorn),
 				new Object[] { "CLC", "C C", " C ", 'C', "ingotCopper", 'L', "leather" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemBuildingBox, 1, 18),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 18),
 				new Object[] { "RDR", "GIG", "III", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'G',
 						"gunpowder", 'R', "dustRedstone" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemBuildingBox, 1, 20),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 20),
 				new Object[] { "MDR", "SIm", "rIG", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmoMedigun), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
 						"dustRedstone", 'r', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'S',
 						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'm', new ItemStack(TF2weapons.itemAmmo, 1, 2) }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemBuildingBox, 1, 22), new Object[] { "IAI", "RAR",
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 22), new Object[] { "IAI", "RAR",
 				"IAI", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'R', "dustRedstone" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.blockAmmoFurnace),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockAmmoFurnace),
 				new Object[] { "RIG", "SFr", "sIM", 'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
 						new ItemStack(TF2weapons.itemAmmo, 1, 7), 'r', new ItemStack(TF2weapons.itemAmmo, 1, 6), 's',
 						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'S', new ItemStack(TF2weapons.itemAmmo, 1, 11) }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmoBelt),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemAmmoBelt),
 				new Object[] { " IL", "IL ", "L  ", 'I', "ingotIron", 'L', "leather" }));
-		addRecipe(new ShapedOreRecipe(bonk,
+		addRecipe(new ShapedOreRecipe(null,bonk,
 				new Object[] { "SDS", "IWI", "SAS", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'W',
 						new ItemStack(Items.WATER_BUCKET), 'S', new ItemStack(Items.SUGAR), 'D', "dyeYellow" }));
-		addRecipe(new ShapedOreRecipe(cola,
+		addRecipe(new ShapedOreRecipe(null,cola,
 				new Object[] { "SDS", "IWI", "SAS", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'W',
 						new ItemStack(Items.WATER_BUCKET), 'S', new ItemStack(Items.SUGAR), 'D', "dyeMagenta" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemSandvich),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemSandvich),
 				new Object[] { " B ", "LHL", " B ", 'B', new ItemStack(Items.BREAD), 'L',
 						new ItemStack(Blocks.TALLGRASS, 1, 1), 'H', new ItemStack(Items.PORKCHOP) }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemChocolate, 2), new Object[] { "CCC", "CCC", "MII",
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemChocolate, 2), new Object[] { "CCC", "CCC", "MII",
 				'C', new ItemStack(Items.DYE, 1, 3), 'M', new ItemStack(Items.MILK_BUCKET), 'I', "paper" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemScoutBoots), new Object[] { "FFF", "FBF", "FFF", 'F',
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemScoutBoots), new Object[] { "FFF", "FBF", "FFF", 'F',
 				new ItemStack(Items.FEATHER), 'B', new ItemStack(Items.LEATHER_BOOTS) }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemMantreads),
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemMantreads),
 				new Object[] { " B ", "III", 'I', "ingotIron", 'B', new ItemStack(Items.IRON_BOOTS) }));
 
 		ItemStack jarate = ItemFromData.getNewStack("jarate");
 		jarate.getTagCompound().setBoolean("IsEmpty", true);
-		addRecipe(new ShapedOreRecipe(jarate, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
+		addRecipe(new ShapedOreRecipe(null,jarate, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
 		ItemStack madmilk = ItemFromData.getNewStack("madmilk");
 		madmilk.getTagCompound().setBoolean("IsEmpty", true);
-		addRecipe(new ShapedOreRecipe(madmilk, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
+		addRecipe(new ShapedOreRecipe(null,madmilk, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
 		ItemStack banner=new ItemStack(Items.BANNER,1,EnumDyeColor.RED.getDyeDamage());
 		banner.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", new NBTTagList());
 		banner.setCount(2);
-		addRecipe(new ShapedOreRecipe(banner,
+		addRecipe(new ShapedOreRecipe(null,banner,
 				new Object[] { "WWW", "WWW", "AS ", 'W',new ItemStack(Blocks.WOOL), 'A',new ItemStack(TF2weapons.itemTF2, 1, 2),'S', Items.STICK }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),
 				new ItemStack(TF2weapons.itemTF2, 1, 3), new ItemStack(TF2weapons.itemTF2, 1, 3));
@@ -135,79 +139,25 @@ public class TF2CraftingManager {
 	}
 
 	public ShapedRecipes addRecipe(ItemStack stack, Object... recipeComponents) {
-		String s = "";
-		int i = 0;
-		int j = 0;
-		int k = 0;
-
-		if (recipeComponents[i] instanceof String[]) {
-			String[] astring = ((String[]) recipeComponents[i++]);
-
-			for (String s2 : astring) {
-				++k;
-				j = s2.length();
-				s = s + s2;
-			}
-		} else
-			while (recipeComponents[i] instanceof String) {
-				String s1 = (String) recipeComponents[i++];
-				++k;
-				j = s1.length();
-				s = s + s1;
-			}
-
-		Map<Character, ItemStack> map;
-
-		for (map = Maps.<Character, ItemStack>newHashMap(); i < recipeComponents.length; i += 2) {
-			Character character = (Character) recipeComponents[i];
-			ItemStack itemstack = ItemStack.EMPTY;
-
-			if (recipeComponents[i + 1] instanceof Item)
-				itemstack = new ItemStack((Item) recipeComponents[i + 1]);
-			else if (recipeComponents[i + 1] instanceof Block)
-				itemstack = new ItemStack((Block) recipeComponents[i + 1], 1, 32767);
-			else if (recipeComponents[i + 1] instanceof ItemStack)
-				itemstack = (ItemStack) recipeComponents[i + 1];
-
-			map.put(character, itemstack);
-		}
-
-		ItemStack[] aitemstack = new ItemStack[j * k];
-
-		for (int l = 0; l < j * k; ++l) {
-			char c0 = s.charAt(l);
-
-			if (map.containsKey(Character.valueOf(c0)))
-				aitemstack[l] = map.get(Character.valueOf(c0)).copy();
-			else
-				aitemstack[l] = null;
-		}
-
-		ShapedRecipes shapedrecipes = new ShapedRecipes(j, k, aitemstack, stack);
-		this.recipes.add(shapedrecipes);
-		return shapedrecipes;
+		ShapedPrimer primer = CraftingHelper.parseShaped(recipeComponents);
+		ShapedRecipes recipe;
+        recipe=(ShapedRecipes) new ShapedRecipes("", primer.width, primer.height, primer.input, stack);
+		this.recipes.add(recipe);
+		return recipe;
 	}
 
 	/**
 	 * Adds a shapeless crafting recipe to the the game.
 	 */
 	public void addShapelessRecipe(ItemStack stack, Object... recipeComponents) {
-		List<ItemStack> list = Lists.<ItemStack>newArrayList();
+		NonNullList<Ingredient> list = NonNullList.create();
 
 		for (Object object : recipeComponents)
-			if (object instanceof ItemStack)
-				list.add(((ItemStack) object).copy());
-			else if (object instanceof Item)
-				list.add(new ItemStack((Item) object));
-			else {
-				if (!(object instanceof Block))
-					throw new IllegalArgumentException(
-							"Invalid shapeless recipe: unknown type " + object.getClass().getName() + "!");
+			list.add(CraftingHelper.getIngredient(object));
 
-				list.add(new ItemStack((Block) object));
-			}
-
-		this.recipes.add(new ShapelessRecipes(stack, list));
+		ShapelessRecipes recipe;
+        recipe= (ShapelessRecipes) new ShapelessRecipes("", stack, list);
+		this.recipes.add(recipe);
 	}
 
 	/**

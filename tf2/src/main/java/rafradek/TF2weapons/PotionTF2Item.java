@@ -2,7 +2,7 @@ package rafradek.TF2weapons;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -25,7 +25,7 @@ public class PotionTF2Item extends Potion {
 		mc.getTextureManager().bindTexture(texture);
 		// mc.ingameGUI.drawTexturedModalRect(x+6,y+7,0,0,16,16);
 		Tessellator tessellator = Tessellator.getInstance();
-		VertexBuffer renderer = tessellator.getBuffer();
+		BufferBuilder renderer = tessellator.getBuffer();
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 
 		renderer.pos(x + 7, y + 23, 0.0D).tex(0.0D, 1D).endVertex();
@@ -41,7 +41,7 @@ public class PotionTF2Item extends Potion {
 		mc.getTextureManager().bindTexture(texture);
 		// mc.ingameGUI.drawTexturedModalRect(x+3,y+3,0,0,16,16);
 		Tessellator tessellator = Tessellator.getInstance();
-		VertexBuffer renderer = tessellator.getBuffer();
+		BufferBuilder renderer = tessellator.getBuffer();
 
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 

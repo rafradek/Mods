@@ -1,7 +1,7 @@
 package rafradek.TF2weapons.projectiles;
 
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.MathHelper;
@@ -26,7 +26,7 @@ public class EntityFlameEffect extends Particle {
 	}
 
 	@Override
-	public void renderParticle(VertexBuffer p_180434_1_, Entity p_180434_2_, float p_180434_3_, float p_180434_4_,
+	public void renderParticle(BufferBuilder p_180434_1_, Entity p_180434_2_, float p_180434_3_, float p_180434_4_,
 			float p_180434_5_, float p_180434_6_, float p_180434_7_, float p_180434_8_) {
 		float f6 = (this.particleAge + p_180434_3_) / this.particleMaxAge;
 		this.particleScale = 1.0F + f6 * f6 * 5.5F;

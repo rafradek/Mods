@@ -8,7 +8,7 @@ import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
@@ -142,7 +142,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 			TF2EventsClient.renderBeam(living, p_76986_9_);
 			if (sniperZoomed) {
 				Tessellator tessellator = Tessellator.getInstance();
-				VertexBuffer renderer = tessellator.getBuffer();
+				BufferBuilder renderer = tessellator.getBuffer();
 				GlStateManager.pushMatrix();
 				GlStateManager.translate((float) p_76986_2_, (float) p_76986_4_ + living.getEyeHeight(),
 						(float) p_76986_6_);
@@ -189,10 +189,10 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 				 * renderer.startDrawingQuads(); renderer.addVertex(-0.03,
 				 * p_76986_1_.getEyeHeight()-0.03,0); renderer.addVertex(0.03,
 				 * p_76986_1_.getEyeHeight()+0.03,0);
-				 * renderer.addVertex(lookVec.xCoord*50+0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()+0.03, lookVec.zCoord*64);
-				 * renderer.addVertex(lookVec.xCoord*50-0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.zCoord*64);
+				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64);
+				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64);
 				 * tessellator.draw();
 				 */
 				/*
@@ -200,18 +200,18 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 				 * p_76986_1_.getEyeHeight()-0.03, -0.03);
 				 * renderer.addVertex(0.03, p_76986_1_.getEyeHeight()+0.03,
 				 * +0.03);
-				 * renderer.addVertex(lookVec.xCoord*50+0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()+0.03, lookVec.zCoord*64+0.03);
-				 * renderer.addVertex(lookVec.xCoord*50-0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.zCoord*64-0.03);
+				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64+0.03);
+				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64-0.03);
 				 * tessellator.draw(); renderer.startDrawingQuads();
 				 * renderer.addVertex(0.03, p_76986_1_.getEyeHeight()-0.03,
 				 * 0.03); renderer.addVertex(-0.03,
 				 * p_76986_1_.getEyeHeight()+0.03, -0.03);
-				 * renderer.addVertex(lookVec.xCoord*50-0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()+0.03, lookVec.zCoord*64-0.03);
-				 * renderer.addVertex(lookVec.xCoord*50+0.03,lookVec.yCoord*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.zCoord*64+0.03);
+				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64-0.03);
+				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64+0.03);
 				 * tessellator.draw();
 				 */
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);

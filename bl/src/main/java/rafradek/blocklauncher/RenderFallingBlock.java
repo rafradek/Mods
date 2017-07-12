@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -71,7 +71,7 @@ public class RenderFallingBlock extends Render<EntityFallingEnchantedBlock> {
 				 */if (state.getRenderType() != EnumBlockRenderType.INVISIBLE) {
 					GlStateManager.pushMatrix();
 					GlStateManager.disableLighting();
-					VertexBuffer worldrenderer = tessellator.getBuffer();
+					BufferBuilder worldrenderer = tessellator.getBuffer();
 					worldrenderer.begin(7, DefaultVertexFormats.BLOCK);
 					int i = blockpos.getX();
 					int j = blockpos.getY();

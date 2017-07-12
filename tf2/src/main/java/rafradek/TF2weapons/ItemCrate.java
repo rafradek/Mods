@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -11,6 +12,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.decoration.ItemWearable;
 
@@ -51,11 +54,11 @@ public class ItemCrate extends ItemFromData {
 			
 			if (!playerIn.inventory.addItemStackToInventory(stack))
 				playerIn.dropItem(stack, true);
-			playerIn.addStat(TF2Achievements.LOOT_CRATE);
+			//playerIn.addStat(TF2Achievements.LOOT_CRATE);
 			playerIn.addStat(TF2weapons.cratesOpened);
-			if(!worldIn.isRemote && ((EntityPlayerMP)playerIn).getStatFile().readStat(TF2weapons.cratesOpened)>=9){
+			/*if(!worldIn.isRemote && ((EntityPlayerMP)playerIn).getStatFile().readStat(TF2weapons.cratesOpened)>=9){
 				playerIn.addStat(TF2Achievements.CRATES_10);
-			}
+			}*/
 			itemStackIn.shrink(1);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}
@@ -63,27 +66,28 @@ public class ItemCrate extends ItemFromData {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
 		/*
 		 * if (!par1ItemStack.hasTagCompound()) {
 		 * par1ItemStack.getTagCompound()=new NBTTagCompound();
 		 * par1ItemStack.getTagCompound().setTag("Attributes", (NBTTagCompound)
 		 * ((ItemUsable)par1ItemStack.getItem()).buildInAttributes.copy()); }
 		 */
-		if (par1ItemStack.hasTagCompound()) {
-			super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
+		if (stack.hasTagCompound()) {
+			super.addInformation(stack, world, tooltip, advanced);
 
-			if (par1ItemStack.getTagCompound().getBoolean("Open")) {
-				par2List.add("The crate is opened now");
-				par2List.add("Right click to get the item");
+			if (stack.getTagCompound().getBoolean("Open")) {
+				tooltip.add("The crate is opened now");
+				tooltip.add("Right click to get the item");
 			}
 
-			par2List.add("Possible content:");
-			for (String name : getData(par1ItemStack).crateContent.keySet()) {
+			tooltip.add("Possible content:");
+			for (String name : getData(stack).crateContent.keySet()) {
 				WeaponData data = MapList.nameToData.get(name);
 				if (data != null)
-					par2List.add(data.getString(PropertyType.NAME));
+					tooltip.add(data.getString(PropertyType.NAME));
 			}
 		}
 	}

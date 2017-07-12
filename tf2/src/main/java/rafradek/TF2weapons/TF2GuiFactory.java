@@ -15,21 +15,22 @@ public class TF2GuiFactory implements IModGuiFactory {
 	}
 
 	@Override
-	public Class<? extends GuiScreen> mainConfigGuiClass() {
-		// TODO Auto-generated method stub
-		return TF2GuiConfig.class;
-	}
-
-	@Override
 	public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+
 	@Override
-	public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
+	public boolean hasConfigGui() {
 		// TODO Auto-generated method stub
-		return null;
+		return true;
+	}
+
+	@Override
+	public GuiScreen createConfigGui(GuiScreen parentScreen) {
+		// TODO Auto-generated method stub
+		return new TF2GuiConfig(parentScreen);
 	}
 
 }

@@ -46,8 +46,8 @@ public class EntityAIAirblast extends EntityAIBase {
 			return;
 		}
 		Vec3d eyeVec = new Vec3d(host.posX, host.posY + host.getEyeHeight(), host.posZ);
-		List<Entity> list = host.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(eyeVec.xCoord - 5,
-				eyeVec.yCoord - 5, eyeVec.zCoord - 5, eyeVec.xCoord + 5, eyeVec.yCoord + 5, eyeVec.zCoord + 5));
+		List<Entity> list = host.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(eyeVec.x - 5,
+				eyeVec.y - 5, eyeVec.z - 5, eyeVec.x + 5, eyeVec.y + 5, eyeVec.z + 5));
 		boolean airblast = false;
 		for (Entity entity : list)
 			// System.out.println(entity+"

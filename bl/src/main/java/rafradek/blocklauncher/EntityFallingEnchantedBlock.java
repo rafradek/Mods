@@ -197,12 +197,12 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 										 * worldObj, i, j, k)!=null
 										 */) {
 				List<Entity> list2 = this.world.getEntitiesWithinAABBExcludingEntity(this,
-						this.getEntityBoundingBox().addCoord(this.motionX, this.motionY, this.motionZ).expand(10.0D,
+						this.getEntityBoundingBox().expand(this.motionX, this.motionY, this.motionZ).grow(10.0D,
 								10.0D, 10.0D));
 				if (this.mine && this.isCollided && list2.size() != 0)
 					for (Entity ent : list2)
 						if (ent instanceof EntityLivingBase && ent != this.owner
-								&& ent.getEntityBoundingBox().intersectsWith(this.getEntityBoundingBox())) {
+								&& ent.getEntityBoundingBox().intersects(this.getEntityBoundingBox())) {
 							this.fuse = 999;
 							this.setDead();
 							this.explode(oldMotionX, oldMotionY, oldMotionZ);
@@ -238,10 +238,10 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 					Vec3d Vec3d1 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY,
 							this.posZ + this.motionZ);
 					if (RayTraceResult != null) {
-						Vec3d1 = new Vec3d(RayTraceResult.hitVec.xCoord, RayTraceResult.hitVec.yCoord,
-								RayTraceResult.hitVec.zCoord);
+						Vec3d1 = new Vec3d(RayTraceResult.hitVec.x, RayTraceResult.hitVec.y,
+								RayTraceResult.hitVec.z);
 						if (this.impact) {
-							this.setPosition(Vec3d1.xCoord, Vec3d1.yCoord, Vec3d1.zCoord);
+							this.setPosition(Vec3d1.x, Vec3d1.y, Vec3d1.z);
 							this.fuse = 999;
 							this.setDead();
 							this.explode(oldMotionX, oldMotionY, oldMotionZ);
@@ -258,7 +258,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 						if (entity1.canBeCollidedWith() && (entity1 != entitylivingbase)
 								&& !(entity1 instanceof EntityFallingEnchantedBlock)) {
 							float f = this.scale / 2;
-							AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand(f, f, f).offset(0, -f,
+							AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow(f, f, f).offset(0, -f,
 									0);
 							RayTraceResult RayTraceResult1 = axisalignedbb.calculateIntercept(Vec3d, Vec3d1);
 
@@ -306,11 +306,11 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 									if(damage != damageLeft)
 										hit=true;
 								}
-						box=box.offset(moveVec.xCoord, moveVec.yCoord, moveVec.zCoord);
+						box=box.offset(moveVec.x, moveVec.y, moveVec.z);
 					}
 					if(hit) {
 						this.lastAttacked=null;
-						for(Entity entityh:this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox().expand(this.scale*2, this.scale*2, this.scale*2), new Predicate<Entity>() {
+						for(Entity entityh:this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox().grow(this.scale*2, this.scale*2, this.scale*2), new Predicate<Entity>() {
 
 							@Override
 							public boolean apply(Entity input) {
@@ -475,9 +475,9 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 
 		}
 		if (entity != null && mop != null) {
-			double x = mop.hitVec.xCoord;
-			double y = mop.hitVec.yCoord;
-			double z = mop.hitVec.zCoord;
+			double x = mop.hitVec.x;
+			double y = mop.hitVec.y;
+			double z = mop.hitVec.z;
 			float hardness = BlockLauncher.getHardness(this.block, this.world);
 			if (this.impact) {
 				double maxPos = Math.max(this.motionX, Math.max(this.motionY, this.motionZ)) * 3;
@@ -510,7 +510,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 							((EntityLivingBase) entity)
 									.addPotionEffect(new PotionEffect(Potion.getPotionById(2), 50, 3));
 							((EntityLiving) entity).setAttackTarget(null);
-							((EntityLiving) entity).setLastAttacker(null);
+							((EntityLiving) entity).setLastAttackedEntity(null);
 						}
 					} else if (block == Blocks.WEB)
 						((EntityLivingBase) entity).addPotionEffect(new PotionEffect(Potion.getPotionById(2), 100, 2));
@@ -555,6 +555,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 
 	public boolean placeBlock(BlockPos blockpos) {
 		Block block = this.block.getBlock();
+		IBlockState prevstate=this.world.getBlockState(blockpos);
 		if (!this.isBreakingAnvil
 				&& this.world.mayPlace(block, blockpos, true, EnumFacing.UP, (Entity) null)
 				&& (!BlockFalling.canFallThrough(this.world.getBlockState(blockpos.offset(EnumFacing.DOWN)))
@@ -569,7 +570,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 						this.world.setBlockState(firepos, this.fireBlock.getDefaultState());
 				}
 			if (block instanceof BlockFalling)
-				((BlockFalling) block).onEndFalling(this.world, blockpos);
+				((BlockFalling) block).onEndFalling(this.world, blockpos, this.block, prevstate);
 
 			if (this.dataTag != null && block instanceof ITileEntityProvider) {
 				TileEntity tileentity = this.world.getTileEntity(blockpos);
@@ -656,7 +657,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 			this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x, y, z));
 			this.resetPositionToBB();
 		} else {
-			this.world.theProfiler.startSection("move");
+			this.world.profiler.startSection("move");
 			double d3 = this.posX;
 			double d4 = this.posY;
 			double d5 = this.posZ;
@@ -675,7 +676,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 			double d7 = y;
 			double d8 = z;
 
-			List list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().addCoord(x, y, z));
+			List list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
 			AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
 			AxisAlignedBB axisalignedbb1;
 
@@ -717,9 +718,9 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 				AxisAlignedBB axisalignedbb3 = this.getEntityBoundingBox();
 				this.setEntityBoundingBox(axisalignedbb);
 				y = this.stepHeight;
-				List list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().addCoord(d6, y, d8));
+				List list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(d6, y, d8));
 				AxisAlignedBB axisalignedbb4 = this.getEntityBoundingBox();
-				AxisAlignedBB axisalignedbb5 = axisalignedbb4.addCoord(d6, 0.0D, d8);
+				AxisAlignedBB axisalignedbb5 = axisalignedbb4.expand(d6, 0.0D, d8);
 				double d12 = y;
 				AxisAlignedBB axisalignedbb6;
 
@@ -798,8 +799,8 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 					this.setEntityBoundingBox(axisalignedbb3);
 				}
 			}
-			this.world.theProfiler.endSection();
-			this.world.theProfiler.startSection("rest");
+			this.world.profiler.endSection();
+			this.world.profiler.startSection("rest");
 			this.resetPositionToBB();
 			this.isCollidedHorizontally = d6 != x || d8 != z;
 			this.isCollidedVertically = d7 != y;
@@ -864,7 +865,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 				throw new ReportedException(crashreport);
 			}
 
-			this.world.theProfiler.endSection();
+			this.world.profiler.endSection();
 		}
 	}
 

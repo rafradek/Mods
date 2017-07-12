@@ -65,7 +65,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		if (source == DamageSource.DROWN || source == DamageSource.LAVA || source == DamageSource.ON_FIRE)
 			return false;
 		if (source instanceof TF2DamageSource) {
-			if (source.getEntity()==this)
+			if (source.getTrueSource()==this)
 				return false;
 			if (((TF2DamageSource) source).getCritical() > 0) {
 				amount *= 0.7f;
@@ -75,8 +75,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 				amount *= 0.36f;
 		}
 		if (super.attackEntityFrom(source, amount*damageMult)) {
-			if (source.getEntity() != null && source.getEntity() instanceof EntityPlayer)
-				this.attackers.add((EntityPlayer) source.getEntity());
+			if (source.getTrueSource() != null && source.getTrueSource() instanceof EntityPlayer)
+				this.attackers.add((EntityPlayer) source.getTrueSource());
 
 			return true;
 		}
@@ -184,7 +184,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		int highestLevel = 0;
 		int statmult=0;
 		for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				this.getEntityBoundingBox().expand(64, 64, 64),new Predicate<EntityLivingBase>(){
+				this.getEntityBoundingBox().grow(64, 64, 64),new Predicate<EntityLivingBase>(){
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -238,10 +238,10 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 			player.sendMessage(new TextComponentTranslation("tf2boss.death",new Object[] {this.getDisplayName(),this.level}));
 		}
 	}
-	public void addAchievement(EntityPlayer player){
+	/*public void addAchievement(EntityPlayer player){
 		if(this.level>=30)
 			player.addStat(TF2Achievements.BOSS_30_LVL);
-	}
+	}*/
 	@Override
 	public void writeEntityToNBT(NBTTagCompound nbt) {
 		super.writeEntityToNBT(nbt);

@@ -12,8 +12,8 @@ public class TF2ShowGuiHandler implements IMessageHandler<TF2Message.ShowGuiMess
 	@Override
 	public IMessage onMessage(final ShowGuiMessage message, MessageContext ctx) {
 		if (message.id != 99)
-			FMLNetworkHandler.openGui(ctx.getServerHandler().playerEntity, TF2weapons.instance, message.id,
-					ctx.getServerHandler().playerEntity.world, 0, 0, 0);
+			FMLNetworkHandler.openGui(ctx.getServerHandler().player, TF2weapons.instance, message.id,
+					ctx.getServerHandler().player.world, 0, 0, 0);
 		else {
 
 		}

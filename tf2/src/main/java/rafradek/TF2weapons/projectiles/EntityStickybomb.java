@@ -39,8 +39,8 @@ public class EntityStickybomb extends EntityProjectileBase {
         {
             return false;
         }
-		else if(source.getEntity() != null && source.getEntity() instanceof EntityLivingBase &&
-				!TF2weapons.isOnSameTeam(source.getEntity(), this.shootingEntity)&& !(source.isExplosion() || source.isFireDamage())){
+		else if(source.getTrueSource() != null && source.getTrueSource() instanceof EntityLivingBase &&
+				!TF2weapons.isOnSameTeam(source.getTrueSource(), this.shootingEntity)&& !(source.isExplosion() || source.isFireDamage())){
 			this.setDead();
 			return true;
 		}

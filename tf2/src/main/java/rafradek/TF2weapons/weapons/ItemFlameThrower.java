@@ -163,8 +163,8 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		eyeVec.add(lookVec);
 		float size = TF2Attribute.getModifier("Flame Range", stack, 5, living);
 		List<Entity> list = world.getEntitiesWithinAABB(Entity.class,
-				new AxisAlignedBB(eyeVec.xCoord - size, eyeVec.yCoord - size, eyeVec.zCoord - size,
-						eyeVec.xCoord + size, eyeVec.yCoord + size, eyeVec.zCoord + size));
+				new AxisAlignedBB(eyeVec.x - size, eyeVec.y - size, eyeVec.z - size,
+						eyeVec.x + size, eyeVec.y + size, eyeVec.z + size));
 		// System.out.println("aiming: "+lookVec+" "+eyeVec+" "+centerVec);
 		for (Entity entity : list) {
 			// System.out.println("dist: "+entity.getDistanceSq(living.posX,
@@ -184,25 +184,25 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 				float speed = (float) Math.sqrt(entity.motionX * entity.motionX + entity.motionY * entity.motionY
 						+ entity.motionZ * entity.motionZ)
 						* (0.65f + TF2Attribute.getModifier("Flame Range", stack, 0.5f, living));
-				List<RayTraceResult> rayTraces = TF2weapons.pierce(world, living, eyeVec.xCoord, eyeVec.yCoord,
-						eyeVec.zCoord, eyeVec.xCoord + lookVec.xCoord * 256, eyeVec.yCoord + lookVec.yCoord * 256,
-						eyeVec.zCoord + lookVec.zCoord * 256, false, 0.08f, false);
+				List<RayTraceResult> rayTraces = TF2weapons.pierce(world, living, eyeVec.x, eyeVec.y,
+						eyeVec.z, eyeVec.x + lookVec.x * 256, eyeVec.y + lookVec.y * 256,
+						eyeVec.z + lookVec.z * 256, false, 0.08f, false);
 				if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
 					// System.out.println("hit: "+mop.hitVec);
-					proj.setThrowableHeading(rayTraces.get(0).hitVec.xCoord - entity.posX,
-							rayTraces.get(0).hitVec.yCoord - entity.posY - entity.height/2, rayTraces.get(0).hitVec.zCoord - entity.posZ,
+					proj.setThrowableHeading(rayTraces.get(0).hitVec.x - entity.posX,
+							rayTraces.get(0).hitVec.y - entity.posY - entity.height/2, rayTraces.get(0).hitVec.z - entity.posZ,
 							speed, 0);
 				else
-					proj.setThrowableHeading(eyeVec.xCoord + lookVec.xCoord * 256 - entity.posX,
-							eyeVec.yCoord + lookVec.yCoord * 256 - entity.posY,
-							eyeVec.zCoord + lookVec.zCoord * 256 - entity.posZ, speed, 0);
+					proj.setThrowableHeading(eyeVec.x + lookVec.x * 256 - entity.posX,
+							eyeVec.y + lookVec.y * 256 - entity.posY,
+							eyeVec.z + lookVec.z * 256 - entity.posZ, speed, 0);
 			} else {
 				double mult = (entity instanceof EntityLivingBase ? 
 						1-((EntityLivingBase) entity).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() : 0.2)
 						+ TF2Attribute.getModifier("Flame Range", stack, 0.8f, living);
-				entity.motionX = lookVec.xCoord * 0.6 * mult;
-				entity.motionY = (lookVec.yCoord * 0.2 + 0.36) * mult;
-				entity.motionZ = lookVec.zCoord * 0.6 * mult;
+				entity.motionX = lookVec.x * 0.6 * mult;
+				entity.motionY = (lookVec.y * 0.2 + 0.36) * mult;
+				entity.motionZ = lookVec.z * 0.6 * mult;
 			}
 			if (entity instanceof EntityProjectileBase){
 				((EntityProjectileBase) entity).reflected=true;
@@ -219,9 +219,9 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			}
 			if(living instanceof EntityPlayerMP){
 				((EntityPlayerMP)living).addStat(TF2Achievements.PROJECTILES_REFLECTED);
-				if(((EntityPlayerMP)living).getStatFile().readStat(TF2Achievements.PROJECTILES_REFLECTED)>=100){
+				/*if(((EntityPlayerMP)living).getStatFile().readStat(TF2Achievements.PROJECTILES_REFLECTED)>=100){
 					((EntityPlayerMP)living).addStat(TF2Achievements.HOT_POTATO);
-				}
+				}*/
 			}
 			EntityTracker tracker = ((WorldServer) world).getEntityTracker();
 			tracker.sendToTrackingAndSelf(entity, new SPacketEntityVelocity(entity));

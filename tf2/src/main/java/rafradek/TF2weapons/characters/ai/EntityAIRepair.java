@@ -81,7 +81,7 @@ public class EntityAIRepair extends EntityAIBase {
 		this.searchTimer--;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){
 			List<EntityDispenser> list=this.entityHost.world.getEntitiesWithinAABB(EntityDispenser.class,
-				this.entityHost.getEntityBoundingBox().expand(10, 3, 10), new Predicate<EntityDispenser>() {
+				this.entityHost.getEntityBoundingBox().grow(10, 3, 10), new Predicate<EntityDispenser>() {
 
 					@Override
 					public boolean apply(EntityDispenser input) {
@@ -107,7 +107,7 @@ public class EntityAIRepair extends EntityAIBase {
 		} else if (this.searchTimer <= 0) {
 			this.searchTimer = 4;
 			for (EntityBuilding build : this.entityHost.world.getEntitiesWithinAABB(EntityBuilding.class,
-					this.entityHost.getEntityBoundingBox().expand(10, 3, 10), new Predicate<EntityBuilding>() {
+					this.entityHost.getEntityBoundingBox().grow(10, 3, 10), new Predicate<EntityBuilding>() {
 
 						@Override
 						public boolean apply(EntityBuilding input) {
@@ -128,7 +128,7 @@ public class EntityAIRepair extends EntityAIBase {
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
 	@Override
-	public boolean continueExecuting() {
+	public boolean shouldContinueExecuting() {
 		return this.shouldExecute() || !this.entityHost.getNavigator().noPath();
 	}
 

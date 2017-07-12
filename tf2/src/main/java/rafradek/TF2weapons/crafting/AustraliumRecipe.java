@@ -8,6 +8,7 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
@@ -71,12 +72,6 @@ public class AustraliumRecipe implements IRecipe {
 	}
 
 	@Override
-	public int getRecipeSize() {
-		// TODO Auto-generated method stub
-		return 2;
-	}
-
-	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stu
 		return ITEM;
@@ -93,6 +88,30 @@ public class AustraliumRecipe implements IRecipe {
 		}
 
 		return aitemstack;
+	}
+
+	@Override
+	public IRecipe setRegistryName(ResourceLocation name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResourceLocation getRegistryName() {
+		// TODO Auto-generated method stub
+		return new ResourceLocation(TF2weapons.MOD_ID, "australium_recipe");
+	}
+
+	@Override
+	public Class<IRecipe> getRegistryType() {
+		// TODO Auto-generated method stub
+		return IRecipe.class;
+	}
+
+	@Override
+	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
+		return width >= 3 && height >=3;
 	}
 
 }

@@ -113,7 +113,7 @@ public class TF2Explosion extends Explosion {
 										f -= (f2 + 0.3F) * 0.3F;
 									}
 
-									if (f > 0.0F && (this.exploder == null || this.exploder.verifyExplosion(this,
+									if (f > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this,
 											this.world, blockpos, iblockstate, f)))
 										hashset.add(blockpos);
 
@@ -182,7 +182,7 @@ public class TF2Explosion extends Explosion {
 					// float explMod=(this.explosionSize/4);
 					Vec3d move = new Vec3d(d5,d6,d7).normalize();
 					double d10 = this.getBlockDensity(Vec3d,
-							entity.getEntityBoundingBox().expand(-0.05f, -0.05f, -0.05f));
+							entity.getEntityBoundingBox().grow(-0.05f, -0.05f, -0.05f));
 					double d11 = (1D - d4) * d10;
 					// System.out.println("multiplier: "+d11+" damage:
 					// "+this.dmg);
@@ -306,7 +306,7 @@ public class TF2Explosion extends Explosion {
 		double d0 = 1.0D / ((p_72842_2_.maxX - p_72842_2_.minX) * 2.0D + 1.0D);
 		double d1 = 1.0D / ((p_72842_2_.maxY - p_72842_2_.minY) * 2.0D + 1.0D);
 		double d2 = 1.0D / ((p_72842_2_.maxZ - p_72842_2_.minZ) * 2.0D + 1.0D);
-		List<AxisAlignedBB> collisionBoxes = this.world.getCollisionBoxes(null,p_72842_2_.expand(1, 1, 1));
+		List<AxisAlignedBB> collisionBoxes = this.world.getCollisionBoxes(null,p_72842_2_.grow(1, 1, 1));
 		if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) {
 			int i = 0;
 			int j = 0;

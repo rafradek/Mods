@@ -77,7 +77,7 @@ public class EntitySapper extends EntityBuilding {
 	}
 
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return null;
 	}
 

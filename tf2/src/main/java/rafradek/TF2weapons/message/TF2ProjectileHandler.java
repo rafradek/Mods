@@ -15,7 +15,7 @@ public class TF2ProjectileHandler implements IMessageHandler<TF2Message.Predicti
 
 	@Override
 	public IMessage onMessage(final PredictionMessage message, MessageContext ctx) {
-		final EntityPlayer shooter = ctx.getServerHandler().playerEntity;
+		final EntityPlayer shooter = ctx.getServerHandler().player;
 		// ItemStack stack=shooter.getHeldItem(EnumHand.MAIN_HAND);
 		((WorldServer) shooter.world).addScheduledTask(new Runnable() {
 

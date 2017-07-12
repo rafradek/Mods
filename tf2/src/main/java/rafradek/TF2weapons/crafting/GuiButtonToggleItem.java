@@ -29,17 +29,17 @@ public class GuiButtonToggleItem extends GuiButton {
 	}
 
 	@Override
-	public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
 		if (this.visible && this.stackToDraw !=null && !this.stackToDraw.isEmpty()) {
-			super.drawButton(mc, mouseX, mouseY);
+			super.drawButton(mc, mouseX, mouseY, partialTicks);
 			this.zLevel = 100.0F;
 			mc.getRenderItem().zLevel = 100.0F;
 			RenderHelper.enableGUIStandardItemLighting();
 			GlStateManager.enableLighting();
 			GlStateManager.enableRescaleNormal();
-			mc.getRenderItem().renderItemAndEffectIntoGUI(this.stackToDraw, this.xPosition + 1, this.yPosition + 1);
-			mc.getRenderItem().renderItemOverlays(mc.fontRendererObj, this.stackToDraw, this.xPosition + 1,
-					this.yPosition + 1);
+			mc.getRenderItem().renderItemAndEffectIntoGUI(this.stackToDraw, this.x + 1, this.y + 1);
+			mc.getRenderItem().renderItemOverlays(mc.fontRenderer, this.stackToDraw, this.x + 1,
+					this.y + 1);
 			GlStateManager.disableLighting();
 			RenderHelper.disableStandardItemLighting();
 			mc.getRenderItem().zLevel = 0.0F;

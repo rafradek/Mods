@@ -52,7 +52,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 	@Override
 	public IMessage onMessage(final TF2Message.ActionMessage message, final MessageContext ctx) {
 		if (ctx.side == Side.SERVER) {
-			final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+			final EntityPlayerMP player = ctx.getServerHandler().player;
 			((WorldServer) player.world).addScheduledTask(new Runnable() {
 
 				@Override
@@ -62,7 +62,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						message.entity = player.getEntityId();
 						TF2weapons.sendTracking(message, player);
 					} else if (message.value == 99) {
-						Entity wearer = ctx.getServerHandler().playerEntity.world.getEntityByID(message.entity);
+						Entity wearer = ctx.getServerHandler().player.world.getEntityByID(message.entity);
 						// System.out.println("ID: "+message.entity+" "+wearer);
 						if (wearer == null || !(wearer instanceof EntityPlayer))
 							wearer = player;
@@ -84,10 +84,10 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 								player);
 					} else if (message.value == 16) {
 						player.world.getScoreboard().addPlayerToTeam(player.getName(), "RED");
-						player.addStat(TF2Achievements.JOIN_TEAM);
+						//player.addStat(TF2Achievements.JOIN_TEAM);
 					} else if (message.value == 17) {
 						player.world.getScoreboard().addPlayerToTeam(player.getName(), "BLU");
-						player.addStat(TF2Achievements.JOIN_TEAM);
+						//player.addStat(TF2Achievements.JOIN_TEAM);
 					} else if (message.value == 18 && player.openContainer != null && player.openContainer instanceof ContainerMerchant &&
 							player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.containsKey(player.getName())) {
 						player.closeScreen();
@@ -206,9 +206,9 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 									dimension = 0;
 								}
 								if(pos != null)
-									pos = EntityPlayer.getBedSpawnLocation(TF2weapons.server.worldServerForDimension(dimension), pos, player.isSpawnForced(dimension));
+									pos = EntityPlayer.getBedSpawnLocation(TF2weapons.server.getWorld(dimension), pos, player.isSpawnForced(dimension));
 								else
-									pos = TF2weapons.server.worldServerForDimension(0).provider.getRandomizedSpawnPoint();
+									pos = TF2weapons.server.getWorld(0).provider.getRandomizedSpawnPoint();
 							}
 							else if(EntityTeleporter.teleporters.containsKey(player.getUniqueID())) {
 								TeleporterData[] data=EntityTeleporter.teleporters.get(player.getUniqueID());

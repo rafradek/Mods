@@ -71,15 +71,15 @@ public class GuiSentry extends GuiScreen {
 		this.attackHostileMobsBtn.displayString = (attackFlags & 4) == 0 ? "no" : "yes";
 		this.attackFriendlyMobsBtn.displayString = (attackFlags & 8) == 0 ? "no" : "yes";
 		this.drawDefaultBackground();
-		this.drawCenteredString(this.fontRendererObj, I18n.format("gui.sentry.info", new Object[0]), this.width / 2 - 5,
+		this.drawCenteredString(this.fontRenderer, I18n.format("gui.sentry.info", new Object[0]), this.width / 2 - 5,
 				20, 16777215);
-		this.drawString(this.fontRendererObj, I18n.format("gui.sentry.onhurt", new Object[0]), this.width / 2 - 80,
+		this.drawString(this.fontRenderer, I18n.format("gui.sentry.onhurt", new Object[0]), this.width / 2 - 80,
 				this.height / 2 - 50, 16777215);
-		this.drawString(this.fontRendererObj, I18n.format("gui.sentry.player", new Object[0]), this.width / 2 - 80,
+		this.drawString(this.fontRenderer, I18n.format("gui.sentry.player", new Object[0]), this.width / 2 - 80,
 				this.height / 2 - 25, 16777215);
-		this.drawString(this.fontRendererObj, I18n.format("gui.sentry.hostile", new Object[0]), this.width / 2 - 80,
+		this.drawString(this.fontRenderer, I18n.format("gui.sentry.hostile", new Object[0]), this.width / 2 - 80,
 				this.height / 2, 16777215);
-		this.drawString(this.fontRendererObj, I18n.format("gui.sentry.friendly", new Object[0]), this.width / 2 - 80,
+		this.drawString(this.fontRenderer, I18n.format("gui.sentry.friendly", new Object[0]), this.width / 2 - 80,
 				this.height / 2 + 25, 16777215);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 

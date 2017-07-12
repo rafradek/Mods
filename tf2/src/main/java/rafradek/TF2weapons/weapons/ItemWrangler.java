@@ -49,7 +49,7 @@ public class ItemWrangler extends ItemUsable {
 		if (!world.isRemote) {
 			weaponsCapability.controlledSentry = null;
 			List<EntitySentry> list = world.getEntitiesWithinAABB(EntitySentry.class,
-					living.getEntityBoundingBox().expand(128, 128, 128), new Predicate<EntitySentry>() {
+					living.getEntityBoundingBox().grow(128, 128, 128), new Predicate<EntitySentry>() {
 
 						@Override
 						public boolean apply(EntitySentry input) {

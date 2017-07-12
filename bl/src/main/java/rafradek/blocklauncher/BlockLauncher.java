@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,6 +24,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import rafradek.blocklauncher.BlockEventBus.DestroyBlockEntry;
 
@@ -33,19 +35,20 @@ public class BlockLauncher {
 	public static Item launchpart;
 	public static Item launchpartBetter;
 
+	public static final String MOD_ID="rafradek_blocklauncher";
 	@SidedProxy(modId = "rafradek_blocklauncher", clientSide = "rafradek.blocklauncher.BLClientProxy", serverSide = "rafradek.blocklauncher.BLCommonProxy")
 	public static BLCommonProxy proxy;
 	public static CreativeTabs tabblocklauncher;
-	public static EnchantmentPowerBL enchPower;
-	public static EnchantmentEfficiencyBL enchEff;
-	public static EnchantmentDropBL enchLoot;
-	public static EnchantmentShrinkBL enchShrink;
-	public static EnchantmentHeavyBL enchHeavy;
+	public static Enchantment enchPower;
+	public static Enchantment enchEff;
+	public static Enchantment enchLoot;
+	public static Enchantment enchShrink;
+	public static Enchantment enchHeavy;
 	public static Block fireench;
-	public static EnchantmentFireBL enchFire;
+	public static Enchantment enchFire;
 	public static EnumEnchantmentType enchType = EnumHelper.addEnchantmentType("BLOCK_LAUNCHER", null);
-	public static EnchantmentGravityBL enchGravity;
-	public static EnchantmentMultipleBL enchMultiple;
+	public static Enchantment enchGravity;
+	public static Enchantment enchMultiple;
 
 	@Mod.EventHandler
 	public void init(FMLPreInitializationEvent event) {
@@ -55,20 +58,14 @@ public class BlockLauncher {
 				return new ItemStack(cannon);
 			}
 		}.setRelevantEnchantmentTypes(enchType);
-		GameRegistry.register(enchPower = new EnchantmentPowerBL(),
-				new ResourceLocation("rafradek_blocklauncher:power"));
-		GameRegistry.register(enchEff = new EnchantmentEfficiencyBL(),
-				new ResourceLocation("rafradek_blocklauncher:efficiency"));
-		GameRegistry.register(enchLoot = new EnchantmentDropBL(), new ResourceLocation("rafradek_blocklauncher:drop"));
-		GameRegistry.register(enchShrink = new EnchantmentShrinkBL(),
-				new ResourceLocation("rafradek_blocklauncher:shrink"));
-		GameRegistry.register(enchHeavy = new EnchantmentHeavyBL(),
-				new ResourceLocation("rafradek_blocklauncher:heavy"));
-		GameRegistry.register(enchFire = new EnchantmentFireBL(), new ResourceLocation("rafradek_blocklauncher:fire"));
-		GameRegistry.register(enchGravity = new EnchantmentGravityBL(),
-				new ResourceLocation("rafradek_blocklauncher:gravity"));
-		GameRegistry.register(enchMultiple = new EnchantmentMultipleBL(),
-				new ResourceLocation("rafradek_blocklauncher:multiple"));
+		ForgeRegistries.ENCHANTMENTS.register(enchPower = new EnchantmentPowerBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:power")));
+		ForgeRegistries.ENCHANTMENTS.register(enchEff = new EnchantmentEfficiencyBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:efficiency")));
+		ForgeRegistries.ENCHANTMENTS.register(enchLoot = new EnchantmentDropBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:drop")));
+		ForgeRegistries.ENCHANTMENTS.register(enchShrink = new EnchantmentShrinkBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:shrink")));
+		ForgeRegistries.ENCHANTMENTS.register(enchHeavy = new EnchantmentHeavyBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:heavy")));
+		ForgeRegistries.ENCHANTMENTS.register(enchFire = new EnchantmentFireBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:fire")));
+		ForgeRegistries.ENCHANTMENTS.register(enchGravity = new EnchantmentGravityBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:gravity")));
+		ForgeRegistries.ENCHANTMENTS.register(enchMultiple = new EnchantmentMultipleBL().setRegistryName(new ResourceLocation("rafradek_blocklauncher:multiple")));
 		/*
 		 * Enchantment.addToBookList(enchPower);
 		 * Enchantment.addToBookList(enchEff);
@@ -88,14 +85,13 @@ public class BlockLauncher {
 		// GameRegistry.registerBlock(fireench=new
 		// BlockFireEnchanted().setHardness(0.0F).setLightLevel(1.0F).setStepSound(Block.soundTypeWood).setUnlocalizedName("fire"),
 		// "rafradek_fire");
-		GameRegistry.register(cannon = new TNTCannon(), new ResourceLocation("rafradek_blocklauncher:cannon"));
-		GameRegistry.register(
-				launchpart = new Item().setCreativeTab(tabblocklauncher).setUnlocalizedName("launchpart"),
-				new ResourceLocation("rafradek_blocklauncher:launchpart"));
-		GameRegistry.register(
-				launchpartBetter = new Item().setCreativeTab(tabblocklauncher).setUnlocalizedName("launchpart_better"),
-				new ResourceLocation("rafradek_blocklauncher:launchpart_better"));
-		GameRegistry.addRecipe(new RecipesBlockLauncher());
+		ForgeRegistries.ITEMS.register(cannon = (TNTCannon) new TNTCannon().setRegistryName(new ResourceLocation("rafradek_blocklauncher:cannon")));
+		ForgeRegistries.ITEMS.register(
+				launchpart = new Item().setCreativeTab(tabblocklauncher).setUnlocalizedName("launchpart").setRegistryName(new ResourceLocation("rafradek_blocklauncher:launchpart")));
+		ForgeRegistries.ITEMS.register(
+				launchpartBetter = new Item().setCreativeTab(tabblocklauncher).setUnlocalizedName("launchpart_better")
+				.setRegistryName(new ResourceLocation("rafradek_blocklauncher:launchpart_better")));
+		ForgeRegistries.RECIPES.register(new RecipesBlockLauncher().setRegistryName("rafradek_blocklauncher:tntcannons"));
 		ItemStack stack1 = new ItemStack(cannon);
 		stack1.setTagCompound(new NBTTagCompound());
 		stack1.getTagCompound().setInteger("Type", 0);
@@ -116,34 +112,33 @@ public class BlockLauncher {
 		ItemStack stack9 = stack1.copy();
 		stack9.getTagCompound().setInteger("Type", 18);
 
-		GameRegistry.addRecipe(stack1, "ABC", "  D", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"br"), null, stack1, "ABC", "  D", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
 				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Blocks.PLANKS);
-		GameRegistry.addRecipe(stack2, "ABC", " D ", Character.valueOf('A'), Blocks.OBSIDIAN, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"bc"), null, stack2, "ABC", " D ", Character.valueOf('A'), Blocks.OBSIDIAN, Character.valueOf('B'),
 				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.IRON_INGOT);
-		GameRegistry.addRecipe(stack3, "ABC", "D E", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"sb"), null, stack3, "ABC", "D E", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
 				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.STICK,
 				Character.valueOf('E'), Items.LEATHER);
-		GameRegistry.addRecipe(stack4, "ABD", " CE", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"bf"), null, stack4, "ABD", " CE", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
 				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.FLINT_AND_STEEL,
 				Character.valueOf('E'), Blocks.PLANKS);
-		GameRegistry.addRecipe(stack5, "ABD", "ECF", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"bl"), null, stack5, "ABD", "ECF", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
 				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.FLINT_AND_STEEL,
 				Character.valueOf('E'), Blocks.PLANKS, Character.valueOf('F'), Blocks.GLASS);
-		GameRegistry.addRecipe(stack6, "DAB", " CA", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
-				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.FLINT_AND_STEEL,
-				Character.valueOf('E'), Blocks.PLANKS);
-		GameRegistry.addRecipe(stack7, "ABC", Character.valueOf('A'), Blocks.IRON_BLOCK, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"bt"), null, stack6, "DAB", " CA", Character.valueOf('A'), Items.IRON_INGOT, Character.valueOf('B'),
+				launchpart, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.FLINT_AND_STEEL);
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"cb"), null, stack7, "ABC", Character.valueOf('A'), Blocks.IRON_BLOCK, Character.valueOf('B'),
 				launchpartBetter, Character.valueOf('C'), Items.REDSTONE);
-		GameRegistry.addRecipe(stack8, "ABC", "  D", Character.valueOf('A'), Items.DIAMOND, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"sr"), null, stack8, "ABC", "  D", Character.valueOf('A'), Items.DIAMOND, Character.valueOf('B'),
 				launchpartBetter, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Blocks.PLANKS);
-		GameRegistry.addRecipe(stack9, "ABD", " CE", Character.valueOf('A'), Blocks.IRON_BLOCK, Character.valueOf('B'),
+		GameRegistry.addShapedRecipe(new ResourceLocation(MOD_ID,"ml"), null, stack9, "ABD", " CE", Character.valueOf('A'), Blocks.IRON_BLOCK, Character.valueOf('B'),
 				launchpartBetter, Character.valueOf('C'), Items.REDSTONE, Character.valueOf('D'), Items.FLINT_AND_STEEL,
 				Character.valueOf('E'), Blocks.PLANKS);
-		GameRegistry.addRecipe(new ItemStack(launchpart), "BCB", " A ", Character.valueOf('A'), Blocks.IRON_BLOCK,
+		/*GameRegistry.addRecipe(new ItemStack(launchpart), "BCB", " A ", Character.valueOf('A'), Blocks.IRON_BLOCK,
 				Character.valueOf('B'), Blocks.PISTON, Character.valueOf('C'), Items.REDSTONE);
 		GameRegistry.addRecipe(new ItemStack(launchpartBetter), "BCB", " A ", Character.valueOf('A'),
 				Blocks.DIAMOND_BLOCK, Character.valueOf('B'), Blocks.PISTON, Character.valueOf('C'),
-				Blocks.REDSTONE_BLOCK);
+				Blocks.REDSTONE_BLOCK);*/
 		proxy.registerRender();
 	}
 
@@ -226,7 +221,7 @@ public class BlockLauncher {
 		return 0;
 	}
 	public static Vec3d normalize(Vec3d vec) {
-		double maxValue = Math.max(vec.xCoord, Math.max(vec.yCoord, vec.zCoord));
-		return new Vec3d(vec.xCoord / maxValue, vec.yCoord / maxValue, vec.zCoord / maxValue);
+		double maxValue = Math.max(vec.x, Math.max(vec.y, vec.z));
+		return new Vec3d(vec.x / maxValue, vec.y / maxValue, vec.z / maxValue);
 	}
 }

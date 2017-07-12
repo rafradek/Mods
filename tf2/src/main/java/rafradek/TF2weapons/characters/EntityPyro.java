@@ -107,7 +107,7 @@ public class EntityPyro extends EntityTF2Character {
 	 * Returns the sound this mob makes when it is hurt.
 	 */
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return TF2Sounds.MOB_PYRO_HURT;
 	}
 

@@ -88,7 +88,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 			this.targetChoosen = 0;
 			double d1 = this.getTargetDistance();
 			List<? extends EntityLivingBase> list = this.taskOwner.world.getEntitiesWithinAABB(this.targetClass,
-					this.taskOwner.getEntityBoundingBox().expand(d1, d0, d1), this.targetEntitySelector);
+					this.taskOwner.getEntityBoundingBox().grow(d1, d0, d1), this.targetEntitySelector);
 			Collections.sort(list, this.theNearestAttackableTargetSorter);
 
 			if (list.isEmpty())
@@ -120,7 +120,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 	 * of checks. Args : entity, canTargetInvinciblePlayer
 	 */
 	@Override
-	public boolean continueExecuting() {
+	public boolean shouldContinueExecuting() {
 		EntityLivingBase entitylivingbase = this.taskOwner.getAttackTarget();
 
 		if (entitylivingbase == null)

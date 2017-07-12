@@ -147,8 +147,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
 				Vec3d pos = TF2weapons.radiusRandom2D(2.2f, this.rand);
-				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.xCoord + this.posX, this.posY - 0.5,
-						pos.yCoord + this.posZ, 0, 0, 0, new int[0]);
+				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
+						pos.y + this.posZ, 0, 0, 0, new int[0]);
 			}
 		
 		if(!world.isRemote){
@@ -156,7 +156,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 				this.setNoAI(false);
 			}
 			this.bombDuration--;
-			for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(1.5, 1, 1.5), new Predicate<EntityLivingBase>(){
+			for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(1.5, 1, 1.5), new Predicate<EntityLivingBase>(){
 
 				@Override
 				public boolean apply(EntityLivingBase input) {
@@ -175,7 +175,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 			}
 			if(!this.hidden){
 				if(this.bombCooldown--<=0){
-					List<EntityPlayer> list=this.world.getEntitiesWithinAABB(EntityPlayer.class, this.getEntityBoundingBox().expand(30, 15, 30), new Predicate<EntityPlayer>(){
+					List<EntityPlayer> list=this.world.getEntitiesWithinAABB(EntityPlayer.class, this.getEntityBoundingBox().grow(30, 15, 30), new Predicate<EntityPlayer>(){
 	
 						@Override
 						public boolean apply(EntityPlayer input) {
@@ -214,8 +214,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 							this.playSound(TF2Sounds.MOB_MERASMUS_APPEAR, 1F, 1f);
 							for (int j = 0; j < 40; j++) {
 								Vec3d pos = TF2weapons.radiusRandom3D(2.7f, this.rand);
-								this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.xCoord + this.posX,
-										pos.yCoord + this.posY, pos.zCoord + this.posZ, 0, 0, 0, new int[0]);
+								this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX,
+										pos.y + this.posY, pos.z + this.posZ, 0, 0, 0, new int[0]);
 							}
 							this.teleportCooldown += 200 + rand.nextInt(80);
 							break;
@@ -298,10 +298,10 @@ public class EntityMerasmus extends EntityTF2Boss {
 		hat.getTagCompound().setShort("BossLevel",(short)this.level);
 		this.entityDropItem(hat, 0);
 	}
-	public void addAchievement(EntityPlayer player){
+	/*public void addAchievement(EntityPlayer player){
 		super.addAchievement(player);
 		player.addStat(TF2Achievements.MERASMUS);
-	}
+	}*/
 	public SoundEvent getDeathSound(){
 		return TF2Sounds.MOB_MERASMUS_DEFEAT;
 	}
@@ -399,19 +399,19 @@ public class EntityMerasmus extends EntityTF2Boss {
 		this.setNoAI(hide);
 	}
 	@Override
-	public void moveEntityWithHeading(float strafe, float forward) {
+	public void travel(float strafe, float forward, float par3) {
 		if (!this.isBombSpell()&&!this.hidden){
-			super.moveEntityWithHeading(strafe, forward);
+			super.travel(strafe, forward,par3);
 			return;
 		}
 		if (this.isInWater()) {
-			this.moveRelative(strafe, forward, 0.02F);
+			this.moveRelative(strafe, forward, par3, 0.02F);
 			this.move(MoverType.SELF,this.motionX, this.motionY, this.motionZ);
 			this.motionX *= 0.800000011920929D;
 			this.motionY *= 0.800000011920929D;
 			this.motionZ *= 0.800000011920929D;
 		} else if (this.isInLava()) {
-			this.moveRelative(strafe, forward, 0.02F);
+			this.moveRelative(strafe, forward, par3, 0.02F);
 			this.move(MoverType.SELF,this.motionX, this.motionY, this.motionZ);
 			this.motionX *= 0.5D;
 			this.motionY *= 0.5D;
@@ -425,7 +425,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						MathHelper.floor(this.posZ))).getBlock().slipperiness * 0.91F;
 
 			float f1 = 0.16277136F / (f * f * f);
-			this.moveRelative(strafe, forward, this.onGround ? 0.1F * f1 : 0.02F);
+			this.moveRelative(strafe, forward, par3, this.onGround ? 0.1F * f1 : 0.02F);
 			f = 0.91F;
 
 			if (this.onGround)
@@ -501,7 +501,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 					this.host.getNavigator().clearPathEntity();
 					this.host.playSound(TF2Sounds.MOB_MERASMUS_SPELL, 2F, 1F);
 					boolean attacked=false;
-					for(EntityLivingBase living:world.getEntitiesWithinAABB(EntityLivingBase.class, this.host.getEntityBoundingBox().expand(12, 5, 12), new Predicate<EntityLivingBase>(){
+					for(EntityLivingBase living:world.getEntitiesWithinAABB(EntityLivingBase.class, this.host.getEntityBoundingBox().grow(12, 5, 12), new Predicate<EntityLivingBase>(){
 
 						@Override
 						public boolean apply(EntityLivingBase input) {

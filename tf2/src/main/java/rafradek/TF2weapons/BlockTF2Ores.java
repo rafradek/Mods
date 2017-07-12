@@ -44,9 +44,9 @@ public class BlockTF2Ores extends BlockOre {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void getSubBlocks(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> list) {
+	public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
 		for (EnumOreType enumoretype : EnumOreType.values())
-			list.add(new ItemStack(itemIn, 1, enumoretype.ordinal()));
+			list.add(new ItemStack(this, 1, enumoretype.ordinal()));
 	}
 
 	@Override

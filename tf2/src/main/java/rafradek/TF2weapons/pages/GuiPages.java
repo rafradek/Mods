@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -120,7 +121,7 @@ public class GuiPages extends GuiScreen {
 		for (int i = 0; i < 16*6; i++)
 			if (buttonsItem[i].stackToDraw != null && buttonsItem[i].isMouseOver() && buttonsItem[i].visible)
 				this.drawHoveringText(
-						buttonsItem[i].stackToDraw.getTooltip(mc.player, false), mouseX,
+						buttonsItem[i].stackToDraw.getTooltip(mc.player, ITooltipFlag.TooltipFlags.NORMAL), mouseX,
 						mouseY);
     }
 	public void setButtons() {
@@ -151,9 +152,9 @@ public class GuiPages extends GuiScreen {
 		
 		ArrayList<String> list=new ArrayList<>();
 		list.add(stack.getDisplayName());
-		stack.getItem().addInformation(stack, Minecraft.getMinecraft().player, list, false);
+		stack.getItem().addInformation(stack, Minecraft.getMinecraft().world, list, ITooltipFlag.TooltipFlags.NORMAL);
 		for(int i=0;i<list.size();i++) {
-			this.fontRendererObj.drawStringWithShadow(list.get(i), this.guiLeft+70, this.guiTop+34+10*i, 0xFFFFFF);
+			this.fontRenderer.drawStringWithShadow(list.get(i), this.guiLeft+70, this.guiTop+34+10*i, 0xFFFFFF);
 		}
 		int yStart=this.guiTop+36+Math.max(64, list.size()*10);
 		this.drawHorizontalLine(this.guiLeft+4, this.guiLeft+292, yStart, 0xFFFFFF);
@@ -221,13 +222,13 @@ public class GuiPages extends GuiScreen {
 			}
 		}
 		for(int i=0;i<list.size();i++) {
-			this.fontRendererObj.drawStringWithShadow(list.get(i), this.guiLeft+4, yStart+14+i*10, 0xFFFFFF);
+			this.fontRenderer.drawStringWithShadow(list.get(i), this.guiLeft+4, yStart+14+i*10, 0xFFFFFF);
 		}
 		GlStateManager.enableLighting();
 		GlStateManager.enableRescaleNormal();
 		GlStateManager.scale(4, 4, 4);
 		mc.getRenderItem().renderItemAndEffectIntoGUI(stack, (this.guiLeft+4)/4, (this.guiTop + 36)/4);
-		mc.getRenderItem().renderItemOverlays(mc.fontRendererObj, stack, this.guiLeft+4, this.guiTop + 36);
+		mc.getRenderItem().renderItemOverlays(mc.fontRenderer, stack, this.guiLeft+4, this.guiTop + 36);
 		GlStateManager.scale(0.25, 0.25, 0.25);
 		GlStateManager.disableLighting();
 		RenderHelper.disableStandardItemLighting();

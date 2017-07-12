@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 
-public class RecipeToScrap implements IRecipe {
+public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -35,12 +35,6 @@ public class RecipeToScrap implements IRecipe {
 	}
 
 	@Override
-	public int getRecipeSize() {
-		// TODO Auto-generated method stub
-		return 2;
-	}
-
-	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stu
 		return new ItemStack(TF2weapons.itemTF2, 1, 3);
@@ -58,5 +52,11 @@ public class RecipeToScrap implements IRecipe {
 
         return nonnulllist;
     }
+
+	@Override
+	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
+		return width * height >= 2;
+	}
 
 }

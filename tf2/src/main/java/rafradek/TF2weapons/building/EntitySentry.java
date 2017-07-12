@@ -140,7 +140,7 @@ public class EntitySentry extends EntityBuilding {
 					public boolean apply(EntityLivingBase target) {
 						return (((((getAttackFlags() & 2) == 2 && getOwnerId() != null) && target instanceof EntityPlayer) 
 								|| target.getTeam() != null
-								|| ((getAttackFlags() & 1) == 1 && (getAITarget()==target || (getOwner() != null && getOwner().getAITarget()==target)))
+								|| ((getAttackFlags() & 1) == 1 && (getRevengeTarget()==target || (getOwner() != null && getOwner().getRevengeTarget()==target)))
 								|| ((getAttackFlags() & 4) == 4 && target instanceof IMob && getOwnerId() != null)
 								|| ((getAttackFlags() & 4) == 4 && target instanceof EntityLiving && ((EntityLiving) target).getAttackTarget() == getOwner()))
 								|| ((getAttackFlags() & 8) == 8 && !(target instanceof EntityPlayer) && !(target instanceof IMob) && getOwnerId() != null))
@@ -168,11 +168,11 @@ public class EntitySentry extends EntityBuilding {
 			Vec3d lookVec = this.getOwner().getLookVec().scale(200);
 			List<RayTraceResult> trace = TF2weapons.pierce(world, this.getOwner(), this.getOwner().posX,
 					this.getOwner().posY + this.getOwner().getEyeHeight(), this.getOwner().posZ,
-					this.getOwner().posX + lookVec.xCoord,
-					this.getOwner().posY + this.getOwner().getEyeHeight() + lookVec.yCoord,
-					this.getOwner().posZ + lookVec.zCoord, false, 0.02f, false);
-			this.getLookHelper().setLookPosition(trace.get(0).hitVec.xCoord, trace.get(0).hitVec.yCoord,
-					trace.get(0).hitVec.zCoord, 30, 75);
+					this.getOwner().posX + lookVec.x,
+					this.getOwner().posY + this.getOwner().getEyeHeight() + lookVec.y,
+					this.getOwner().posZ + lookVec.z, false, 0.02f, false);
+			this.getLookHelper().setLookPosition(trace.get(0).hitVec.x, trace.get(0).hitVec.y,
+					trace.get(0).hitVec.z, 30, 75);
 		}
 		if (this.getAttackTarget() != null && !this.getAttackTarget().isEntityAlive())
 			this.setAttackTarget(null);
@@ -234,8 +234,8 @@ public class EntitySentry extends EntityBuilding {
 			 * dist=new
 			 * Vec3d(this.host.posX-bullet.entityHit.posX,this.host.posY-bullet.
 			 * entityHit.posY,this.host.posZ-bullet.entityHit.posZ).normalize();
-			 * bullet.entityHit.addVelocity(dist.xCoord,dist.yCoord,
-			 * dist.zCoord); }
+			 * bullet.entityHit.addVelocity(dist.x,dist.y,
+			 * dist.z); }
 			 */
 
 		}
@@ -254,7 +254,7 @@ public class EntitySentry extends EntityBuilding {
 			this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
 					1f);
 			List<RayTraceResult> list = TF2weapons.pierce(this.world, this, this.posX,
-					this.posY + this.getEyeHeight(), this.posZ, attackPos.xCoord, attackPos.yCoord, attackPos.zCoord,
+					this.posY + this.getEyeHeight(), this.posZ, attackPos.x, attackPos.y, attackPos.z,
 					false, 0.08f, false);
 			for (RayTraceResult bullet : list)
 				if (bullet.entityHit != null) {
@@ -271,13 +271,13 @@ public class EntitySentry extends EntityBuilding {
 						if(bullet.entityHit instanceof EntityLivingBase )
 							dist=dist.scale(1-((EntityLivingBase) bullet.entityHit).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue());
 						if(dist.lengthSquared()>0f) {
-							bullet.entityHit.addVelocity(dist.xCoord, dist.yCoord, dist.zCoord);
+							bullet.entityHit.addVelocity(dist.x, dist.y, dist.z);
 							bullet.entityHit.isAirBorne=bullet.entityHit.motionY>0.05;
 							if (bullet.entityHit instanceof EntityPlayerMP)
 								TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(dist, bullet.entityHit.isAirBorne), (EntityPlayerMP) bullet.entityHit);
 							
 							if (bullet.entityHit instanceof EntityLivingBase) {
-								((EntityLivingBase) bullet.entityHit).setLastAttacker(this);
+								((EntityLivingBase) bullet.entityHit).setLastAttackedEntity(this);
 								((EntityLivingBase) bullet.entityHit).setRevengeTarget(this);
 								if (!bullet.entityHit.isEntityAlive()) {
 									this.setKills(this.getKills() + 1);
@@ -385,7 +385,7 @@ public class EntitySentry extends EntityBuilding {
 	}
 
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return this.isSapped() ? null : TF2Sounds.MOB_SENTRY_HURT;
 	}
 
@@ -430,9 +430,9 @@ public class EntitySentry extends EntityBuilding {
 	
 	public void onDeath(DamageSource s){
 		super.onDeath(s);
-		if(s.getEntity() !=null && s.getEntity() instanceof EntityPlayer && s instanceof TF2DamageSource && !((TF2DamageSource)s).getWeapon().isEmpty() && ItemFromData.getData(((TF2DamageSource)s).getWeapon()).getName().equals("pistol")){
+		/*if(s.getEntity() !=null && s.getEntity() instanceof EntityPlayer && s instanceof TF2DamageSource && !((TF2DamageSource)s).getWeapon().isEmpty() && ItemFromData.getData(((TF2DamageSource)s).getWeapon()).getName().equals("pistol")){
 			((EntityPlayer)s.getEntity()).addStat(TF2Achievements.GUN_DOWN);
-		}
+		}*/
 	}
 	
 	/*public EntityLookHelper getLookHelper() {

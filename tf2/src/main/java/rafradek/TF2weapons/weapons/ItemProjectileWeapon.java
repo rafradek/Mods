@@ -57,7 +57,7 @@ public class ItemProjectileWeapon extends ItemWeapon {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding)
 				&& getData(stack).getName().equals("sandmanball")) {
-			EntityBall ball = (EntityBall) source.getSourceOfDamage();
+			EntityBall ball = (EntityBall) source.getImmediateSource();
 			if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 1100) {
 				TF2weapons.stun((EntityLivingBase) target, 160, true);
 				target.playSound(TF2Sounds.WEAPON_STUN_MAX, 4f, 1f);

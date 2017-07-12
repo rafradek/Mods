@@ -34,7 +34,7 @@ public class GuiConfirm extends GuiScreen {
 	public void initGui() {
 		this.buttonList.add(new GuiOptionButton(0, this.width / 2 - 75, this.height / 6 + 96, this.confirmButtonText));
 		this.listLines.clear();
-		this.listLines.addAll(this.fontRendererObj.listFormattedStringToWidth(this.messageLine2, this.width - 50));
+		this.listLines.addAll(this.fontRenderer.listFormattedStringToWidth(this.messageLine2, this.width - 50));
 	}
 
 	/**
@@ -52,12 +52,12 @@ public class GuiConfirm extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
-		this.drawCenteredString(this.fontRendererObj, this.messageLine1, this.width / 2, 70, 16777215);
+		this.drawCenteredString(this.fontRenderer, this.messageLine1, this.width / 2, 70, 16777215);
 		int i = 90;
 
 		for (String s : this.listLines) {
-			this.drawCenteredString(this.fontRendererObj, s, this.width / 2, i, 16777215);
-			i += this.fontRendererObj.FONT_HEIGHT;
+			this.drawCenteredString(this.fontRenderer, s, this.width / 2, i, 16777215);
+			i += this.fontRenderer.FONT_HEIGHT;
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);

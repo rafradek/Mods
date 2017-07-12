@@ -124,8 +124,8 @@ public class EntityHHH extends EntityTF2Boss {
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
 				Vec3d pos = TF2weapons.radiusRandom2D(2.2f, this.rand);
-				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.xCoord + this.posX, this.posY - 0.5,
-						pos.yCoord + this.posZ, 0, 0, 0, new int[0]);
+				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
+						pos.y + this.posZ, 0, 0, 0, new int[0]);
 			}
 		
 		if(!world.isRemote && this.begin<=0){
@@ -136,7 +136,7 @@ public class EntityHHH extends EntityTF2Boss {
 				this.setAttackTarget(null);
 			this.scareTick--;
 			if(this.getAttackTarget()==null && this.ticksExisted%5==0){
-				List<EntityLivingBase> list=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(20, 10, 20), new Predicate<EntityLivingBase>(){
+				List<EntityLivingBase> list=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(20, 10, 20), new Predicate<EntityLivingBase>(){
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -149,12 +149,12 @@ public class EntityHHH extends EntityTF2Boss {
 				Collections.sort(list, new EntityAINearestAttackableTarget.Sorter(this));
 				if(list.size()>0)
 					list.get(0).addPotionEffect(new PotionEffect(TF2weapons.it,600));
-				else if(this.getAITarget() != null) {
-					this.getAITarget().addPotionEffect(new PotionEffect(TF2weapons.it,600));
+				else if(this.getRevengeTarget() != null) {
+					this.getRevengeTarget().addPotionEffect(new PotionEffect(TF2weapons.it,600));
 				}
 				if(this.scareTick<=0){
 					boolean one=false;
-					for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(10, 10, 10), new Predicate<EntityLivingBase>(){
+					for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(10, 10, 10), new Predicate<EntityLivingBase>(){
 
 						@Override
 						public boolean apply(EntityLivingBase input) {
@@ -190,15 +190,15 @@ public class EntityHHH extends EntityTF2Boss {
 					if(this.getAttackTarget()!=null&&this.attemptTeleport(this.getAttackTarget().posX, this.getAttackTarget().posY, this.getAttackTarget().posZ)){
 						for (int i = 0; i < 40; i++) {
 							Vec3d pos = TF2weapons.radiusRandom2D(2.7f, this.rand);
-							this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.xCoord + this.posX, this.posY - 0.5,
-									pos.yCoord + this.posZ, 0, 0, 0, new int[0]);
+							this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
+									pos.y + this.posZ, 0, 0, 0, new int[0]);
 						}
 					}
 				}
 			}
 				
 			if(--this.attackTick<=0){
-				List<EntityLivingBase> ents=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(3, 1, 3), new Predicate<EntityLivingBase>(){
+				List<EntityLivingBase> ents=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(3, 1, 3), new Predicate<EntityLivingBase>(){
 	
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -270,7 +270,7 @@ public class EntityHHH extends EntityTF2Boss {
 		}
 		if(ent!=null){
 			/*if(ent.getActivePotionEffect(TF2weapons.it)==null&&this.scareTick<=0){
-				for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().expand(10, 10, 10), new Predicate<EntityLivingBase>(){
+				for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(10, 10, 10), new Predicate<EntityLivingBase>(){
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -292,10 +292,10 @@ public class EntityHHH extends EntityTF2Boss {
 		}
 		super.setAttackTarget(ent);
 	}
-	public void addAchievement(EntityPlayer player){
+	/*public void addAchievement(EntityPlayer player){
 		super.addAchievement(player);
 		player.addStat(TF2Achievements.HHH);
-	}
+	}*/
 	public SoundEvent getAmbientSound(){
 		return TF2Sounds.MOB_HHH_SAY;
 	}

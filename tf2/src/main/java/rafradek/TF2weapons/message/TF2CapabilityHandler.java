@@ -26,16 +26,17 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 					Entity ent = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
 					if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
 						WeaponsCapability cap = ent.getCapability(TF2weapons.WEAPONS_CAP, null);
-						if (cap.healTarget != message.healTarget && message.healTarget > 0) {
+						int prevHealTarget=cap.getHealTarget();
+						
+						cap.dataManager.setEntryValues(message.entries);
+						
+						if (prevHealTarget != cap.getHealTarget() && message.healTarget > 0) {
 							SoundEvent sound = ItemFromData.getSound(
 									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
 									PropertyType.HEAL_START_SOUND);
 							ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
 									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
 						}
-
-						cap.healTarget = message.healTarget;
-						cap.dataManager.setEntryValues(message.entries);
 						//cap.critTime = message.critTime;
 						//cap.collectedHeads = message.heads;
 					}
@@ -45,10 +46,10 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 		 * if(ent !=null){ ent.getEntityData().setTag("TF2", message.tag); }
 		 */
 		else {
-			ctx.getServerHandler().playerEntity.getCapability(TF2weapons.WEAPONS_CAP,
-					null).healTarget = message.healTarget;
-			message.entityID = ctx.getServerHandler().playerEntity.getEntityId();
-			TF2weapons.sendTracking(message, ctx.getServerHandler().playerEntity);
+			ctx.getServerHandler().player.getCapability(TF2weapons.WEAPONS_CAP,
+					null).setHealTarget(message.healTarget);
+			/*message.entityID = ctx.getServerHandler().player.getEntityId();
+			TF2weapons.sendTracking(message, ctx.getServerHandler().player);*/
 		}
 		return null;
 	}

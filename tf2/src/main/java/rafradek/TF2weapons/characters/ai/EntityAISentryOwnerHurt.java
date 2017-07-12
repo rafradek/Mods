@@ -20,7 +20,7 @@ public class EntityAISentryOwnerHurt extends EntityAITarget {
 	public boolean shouldExecute() {
 		EntityLivingBase owner = this.sentry.getOwner();
 		if (owner != null) {
-			this.target = owner.getAITarget();
+			this.target = owner.getRevengeTarget();
 			return (this.sentry.getAttackFlags() & 1) == 1 && this.isSuitableTarget(this.target, false);
 		}
 		return false;

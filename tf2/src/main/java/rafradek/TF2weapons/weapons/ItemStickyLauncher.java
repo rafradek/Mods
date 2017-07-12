@@ -128,7 +128,7 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 			}
 			for (int i = 0; i < list.size(); i++) {
 				EntityStickybomb bomb = list.get(i);
-				if (bomb.ticksExisted > bomb.getArmTime() && (bomb.getType()!=1 || living.getEntityBoundingBox().expand(1, 0, 1).offset(0, -1.25, 0).isVecInside(bomb.getPositionVector()) || TF2weapons.lookingAt(living, 30, bomb.posX, bomb.posY, bomb.posZ))) {
+				if (bomb.ticksExisted > bomb.getArmTime() && (bomb.getType()!=1 || living.getEntityBoundingBox().grow(1, 0, 1).offset(0, -1.25, 0).contains(bomb.getPositionVector()) || TF2weapons.lookingAt(living, 30, bomb.posX, bomb.posY, bomb.posZ))) {
 					bomb.explode(bomb.posX, bomb.posY + bomb.height / 2, bomb.posZ, null, 1);
 					i--;
 					exploded = true;
@@ -136,10 +136,10 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 			}
 			if (exploded) {
 				living.playSound(ItemFromData.getSound(stack, PropertyType.DETONATE_SOUND), 1f, 1);
-				if(living instanceof EntityPlayer && cap.stickybombKilled>=3)
+				/*if(living instanceof EntityPlayer && cap.stickybombKilled>=3)
 					((EntityPlayer)living).addStat(TF2Achievements.PIPEBAGGER);
 				if(living instanceof EntityPlayer && cap.engineerKilled && cap.dispenserKilled && cap.sentryKilled)
-					((EntityPlayer)living).addStat(TF2Achievements.ARGYLE_SAP);
+					((EntityPlayer)living).addStat(TF2Achievements.ARGYLE_SAP);*/
 			}
 		}
 		return false;

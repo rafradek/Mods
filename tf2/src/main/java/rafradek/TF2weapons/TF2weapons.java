@@ -106,7 +106,6 @@ import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
-import net.minecraftforge.common.AchievementPage;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -137,8 +136,8 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -147,6 +146,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
+import net.minecraftforge.registries.IForgeRegistry;
 import rafradek.TF2weapons.TF2EventsCommon.DestroyBlockEntry;
 import rafradek.TF2weapons.TF2EventsCommon.TF2ContainerListener;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.7", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.7.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -582,22 +582,22 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"merasmus"),EntityMerasmus.class, "merasmus", 25, this, 80, 3, true);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
-		GameRegistry.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
-		GameRegistry.register(itemDisguiseKit = new ItemDisguiseKit().setUnlocalizedName("disguiseKit").setRegistryName(TF2weapons.MOD_ID + ":disguise_kit"));
-		GameRegistry.register(itemBuildingBox = new ItemBuildingBox().setUnlocalizedName("buildingBox").setRegistryName(TF2weapons.MOD_ID + ":building_box"));
-		GameRegistry.register(itemSandvich = new ItemFood(14, 1, false).setPotionEffect(new PotionEffect(MobEffects.REGENERATION, 120, 2), 1f).setUnlocalizedName("sandvich")
+		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
+		ForgeRegistries.ITEMS.register(itemDisguiseKit = new ItemDisguiseKit().setUnlocalizedName("disguiseKit").setRegistryName(TF2weapons.MOD_ID + ":disguise_kit"));
+		ForgeRegistries.ITEMS.register(itemBuildingBox = new ItemBuildingBox().setUnlocalizedName("buildingBox").setRegistryName(TF2weapons.MOD_ID + ":building_box"));
+		ForgeRegistries.ITEMS.register(itemSandvich = new ItemFood(14, 1, false).setPotionEffect(new PotionEffect(MobEffects.REGENERATION, 120, 2), 1f).setUnlocalizedName("sandvich")
 				.setCreativeTab(tabutilitytf2).setRegistryName(TF2weapons.MOD_ID + ":sandvich"));
-		GameRegistry.register(itemChocolate = new ItemFood(7, 0.6F, false).setPotionEffect(new PotionEffect(MobEffects.ABSORPTION, 600, 0), 1f).setUnlocalizedName("chocolate")
+		ForgeRegistries.ITEMS.register(itemChocolate = new ItemFood(7, 0.6F, false).setPotionEffect(new PotionEffect(MobEffects.ABSORPTION, 600, 0), 1f).setUnlocalizedName("chocolate")
 				.setCreativeTab(tabutilitytf2).setRegistryName(TF2weapons.MOD_ID + ":chocolate"));
-		GameRegistry.register(itemHorn = new ItemHorn().setUnlocalizedName("horn").setRegistryName(TF2weapons.MOD_ID + ":horn"));
-		GameRegistry.register(itemAmmo = new ItemAmmo().setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo"));
-		GameRegistry.register(itemAmmoPackage = new ItemAmmoPackage().setUnlocalizedName("tf2ammobox").setRegistryName(TF2weapons.MOD_ID + ":ammo_box"));
-		GameRegistry.register(itemAmmoFire = new ItemFireAmmo(10, 350).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_fire"));
-		GameRegistry.register(itemAmmoMedigun = new ItemFireAmmo(12, 1400).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_medigun"));
-		GameRegistry.register(itemAmmoBelt = new ItemAmmoBelt().setUnlocalizedName("ammoBelt").setRegistryName(TF2weapons.MOD_ID + ":ammo_belt").setCreativeTab(tabsurvivaltf2));
-		GameRegistry.register(itemScoutBoots = new ItemArmorTF2(ArmorMaterial.LEATHER, 0, EntityEquipmentSlot.FEET,"Allows double jumping",0f)
+		ForgeRegistries.ITEMS.register(itemHorn = new ItemHorn().setUnlocalizedName("horn").setRegistryName(TF2weapons.MOD_ID + ":horn"));
+		ForgeRegistries.ITEMS.register(itemAmmo = new ItemAmmo().setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo"));
+		ForgeRegistries.ITEMS.register(itemAmmoPackage = new ItemAmmoPackage().setUnlocalizedName("tf2ammobox").setRegistryName(TF2weapons.MOD_ID + ":ammo_box"));
+		ForgeRegistries.ITEMS.register(itemAmmoFire = new ItemFireAmmo(10, 350).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_fire"));
+		ForgeRegistries.ITEMS.register(itemAmmoMedigun = new ItemFireAmmo(12, 1400).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_medigun"));
+		ForgeRegistries.ITEMS.register(itemAmmoBelt = new ItemAmmoBelt().setUnlocalizedName("ammoBelt").setRegistryName(TF2weapons.MOD_ID + ":ammo_belt").setCreativeTab(tabsurvivaltf2));
+		ForgeRegistries.ITEMS.register(itemScoutBoots = new ItemArmorTF2(ArmorMaterial.LEATHER, 0, EntityEquipmentSlot.FEET,"Allows double jumping",0f)
 				.setUnlocalizedName("scoutBoots").setRegistryName(TF2weapons.MOD_ID + ":scout_shoes").setCreativeTab(tabutilitytf2));
-		GameRegistry.register(itemMantreads = new ItemArmorTF2(ArmorMaterial.IRON, 0, EntityEquipmentSlot.FEET,"Deals 1.8x falling damage to the player you land on",0.75f)
+		ForgeRegistries.ITEMS.register(itemMantreads = new ItemArmorTF2(ArmorMaterial.IRON, 0, EntityEquipmentSlot.FEET,"Deals 1.8x falling damage to the player you land on",0.75f)
 				.setUnlocalizedName("mantreads").setRegistryName(TF2weapons.MOD_ID + ":mantreads").setCreativeTab(tabutilitytf2));
 		// GameRegistry.register(itemCopperIngot=new
 		// Item().setUnlocalizedName("ingotCopper").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotCopper"));
@@ -605,7 +605,13 @@ public class TF2weapons {
 		// Item().setUnlocalizedName("ingotLead").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotLead"));
 		// GameRegistry.register(itemAustraliumIngot=new
 		// Item().setUnlocalizedName("ingotAustralium").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotAustralium"));
-		GameRegistry.register(itemTF2 = new ItemTF2().setRegistryName(TF2weapons.MOD_ID + ":itemTF2"));
+		ForgeRegistries.ITEMS.register(itemTF2 = new ItemTF2().setRegistryName(TF2weapons.MOD_ID + ":itemTF2"));
+		
+		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
+		while (iterator.hasNext()) {
+			String name = iterator.next();
+			ForgeRegistries.ITEMS.register(MapList.weaponClasses.get(name).setRegistryName(new ResourceLocation(MOD_ID, "" + name.toLowerCase())));
+		}
 
 		GameRegistry.registerTileEntity(TileEntityUpgrades.class, "UpgradeStation");
 		GameRegistry.registerTileEntity(TileEntityAmmoFurnace.class, "AmmoFurnace");
@@ -622,7 +628,7 @@ public class TF2weapons {
 				TF2weapons.MOD_ID + ":australium_ore");
 		registerBlock(blockAustralium = new Block(Material.IRON, MapColor.GOLD).setCreativeTab(tabsurvivaltf2).setHardness(9.0F).setResistance(20.0F)
 				.setUnlocalizedName("blockAustralium"), TF2weapons.MOD_ID + ":australium_block");
-		GameRegistry.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(2.0F).setResistance(4.0F)
+		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(2.0F).setResistance(4.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
 		OreDictionary.registerOre("oreCopper", blockCopperOre);
@@ -686,33 +692,33 @@ public class TF2weapons {
 					}
 
 				});
-		GameRegistry.register(bonk = new PotionTF2Item(false, 0x696969, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/bonk.png")).setPotionName("effect.bonk")
+		ForgeRegistries.POTIONS.register(bonk = new PotionTF2Item(false, 0x696969, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/bonk.png")).setPotionName("effect.bonk")
 				.setRegistryName(TF2weapons.MOD_ID + ":bonkEff"));
-		GameRegistry.register(stun = new PotionTF2(true, 0, 3, 1).setPotionName("effect.stun").setRegistryName(TF2weapons.MOD_ID + ":stunEff")
+		ForgeRegistries.POTIONS.register(stun = new PotionTF2(true, 0, 3, 1).setPotionName("effect.stun").setRegistryName(TF2weapons.MOD_ID + ":stunEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354F0D8BA", -0.5D, 2));
-		GameRegistry.register(crit = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/critacola.png")).setPotionName("effect.crit")
+		ForgeRegistries.POTIONS.register(crit = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/critacola.png")).setPotionName("effect.crit")
 				.setRegistryName(TF2weapons.MOD_ID + ":critEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354E56B59", 0.25D, 2));
-		GameRegistry.register(buffbanner = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/buffbanner.png")).setPotionName("effect.banner")
+		ForgeRegistries.POTIONS.register(buffbanner = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/buffbanner.png")).setPotionName("effect.banner")
 				.setRegistryName(TF2weapons.MOD_ID + ":bannerEff"));
-		GameRegistry.register(backup = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/backup.png")).setPotionName("effect.backup")
+		ForgeRegistries.POTIONS.register(backup = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/backup.png")).setPotionName("effect.backup")
 				.setRegistryName(TF2weapons.MOD_ID + ":backupEff"));
-		GameRegistry.register(conch = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/conch.png")).setPotionName("effect.conch")
+		ForgeRegistries.POTIONS.register(conch = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/conch.png")).setPotionName("effect.conch")
 				.setRegistryName(TF2weapons.MOD_ID + ":conchEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E2", 0.25D, 2));
-		GameRegistry.register(markDeath = new PotionTF2(true, 0, 1, 2).setPotionName("effect.markDeath").setRegistryName(TF2weapons.MOD_ID + ":markDeathEff"));
-		GameRegistry.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff"));
-		GameRegistry.register(jarate = new PotionTF2Item(true, 0xFFD500, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/jarate.png")).setPotionName("effect.jarate")
+		ForgeRegistries.POTIONS.register(markDeath = new PotionTF2(true, 0, 1, 2).setPotionName("effect.markDeath").setRegistryName(TF2weapons.MOD_ID + ":markDeathEff"));
+		ForgeRegistries.POTIONS.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff"));
+		ForgeRegistries.POTIONS.register(jarate = new PotionTF2Item(true, 0xFFD500, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/jarate.png")).setPotionName("effect.jarate")
 				.setRegistryName(TF2weapons.MOD_ID + ":jarateEff"));
-		GameRegistry.register(madmilk = new PotionTF2Item(true, 0xF1F1F1, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/madmilk.png")).setPotionName("effect.madmilk")
+		ForgeRegistries.POTIONS.register(madmilk = new PotionTF2Item(true, 0xF1F1F1, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/madmilk.png")).setPotionName("effect.madmilk")
 				.setRegistryName(TF2weapons.MOD_ID + ":madmilkEff"));
-		GameRegistry.register(charging = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/charging_targe.png")).setPotionName("effect.charging")
+		ForgeRegistries.POTIONS.register(charging = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/charging_targe.png")).setPotionName("effect.charging")
 				.setRegistryName(TF2weapons.MOD_ID + ":chargingEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E6", 2D, 2));
-		GameRegistry.register(uber = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/medigun_im.png")).setPotionName("effect.uber")
+		ForgeRegistries.POTIONS.register(uber = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/medigun_im.png")).setPotionName("effect.uber")
 				.setRegistryName(TF2weapons.MOD_ID + ":uberEff"));
-		GameRegistry.register(it = new PotionTF2(true, 0xFFFFFFFF, 1, 2).setPotionName("effect.it").setRegistryName(TF2weapons.MOD_ID + ":itEff"));
-		GameRegistry.register(bombmrs = new PotionTF2(false, 0xFFFFFFFF, 1, 2).setPotionName("effect.bombmrs").setRegistryName(TF2weapons.MOD_ID + ":bombEff")
+		ForgeRegistries.POTIONS.register(it = new PotionTF2(true, 0xFFFFFFFF, 1, 2).setPotionName("effect.it").setRegistryName(TF2weapons.MOD_ID + ":itEff"));
+		ForgeRegistries.POTIONS.register(bombmrs = new PotionTF2(false, 0xFFFFFFFF, 1, 2).setPotionName("effect.bombmrs").setRegistryName(TF2weapons.MOD_ID + ":bombEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE6F-7CE8-4030-940E-14B354F0D8BA", 1.25D, 2));
 		// conf.save();
 		WeaponData.PropertyType.init();
@@ -803,9 +809,9 @@ public class TF2weapons {
 
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
-		if (event.getSide() == Side.CLIENT) {
+		/*if (event.getSide() == Side.CLIENT) {
 			AchievementPage.registerAchievementPage(new TF2Achievements());
-		}
+		}*/
 		GameRegistry.addSmelting(new ItemStack(blockCopperOre), new ItemStack(itemTF2, 1, 0), 0.5f);
 		GameRegistry.addSmelting(new ItemStack(blockLeadOre), new ItemStack(itemTF2, 1, 1), 0.55f);
 		GameRegistry.addSmelting(new ItemStack(blockAustraliumOre), new ItemStack(itemTF2, 1, 2), 2f);
@@ -819,12 +825,15 @@ public class TF2weapons {
 			}
 
 		});
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockCabinet), "SCS", "SIS", 'S', new ItemStack(itemTF2, 1, 3), 'C', "workbench", 'I', "blockIron"));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemTF2, 1, 2), "AAA", "AAA", "AAA", 'A', new ItemStack(itemTF2, 1, 6)));
-		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(itemTF2, 9, 6), "ingotAustralium"));
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(blockAustralium), "AAA", "AAA", "AAA", 'A', new ItemStack(itemTF2, 1, 2)));
-		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(itemTF2, 9, 2), "blockAustralium"));
-		GameRegistry.addRecipe(new OpenCrateRecipe());
+		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null, new ItemStack(blockCabinet), "SCS", "SIS", 'S', new ItemStack(itemTF2, 1, 3), 'C', "workbench", 'I', "blockIron")
+				.setRegistryName(TF2weapons.MOD_ID,"recipe1"));
+		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null, new ItemStack(itemTF2, 1, 2), "AAA", "AAA", "AAA", 'A', new ItemStack(itemTF2, 1, 6))
+				.setRegistryName(TF2weapons.MOD_ID,"recipe2"));
+		ForgeRegistries.RECIPES.register(new ShapelessOreRecipe(null,new ItemStack(itemTF2, 9, 6), "ingotAustralium").setRegistryName(TF2weapons.MOD_ID,"recipe3"));
+		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null, new ItemStack(blockAustralium), "AAA", "AAA", "AAA", 'A', new ItemStack(itemTF2, 1, 2))
+				.setRegistryName(TF2weapons.MOD_ID,"recipe4"));
+		ForgeRegistries.RECIPES.register(new ShapelessOreRecipe(null,new ItemStack(itemTF2, 9, 2), "blockAustralium").setRegistryName(TF2weapons.MOD_ID,"recipe5"));
+		ForgeRegistries.RECIPES.register(new OpenCrateRecipe().setRegistryName(TF2weapons.MOD_ID,"opencrate"));
 
 		LootFunctionManager.registerFunction(new EntityBuildingFunction.Serializer());
 		LootFunctionManager.registerFunction(new EntityOfClassFunction.Serializer());
@@ -886,12 +895,6 @@ public class TF2weapons {
 				return p_82487_2_;
 			}
 		});
-
-		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
-		while (iterator.hasNext()) {
-			String name = iterator.next();
-			GameRegistry.register(MapList.weaponClasses.get(name), new ResourceLocation(MOD_ID, "" + name.toLowerCase()));
-		}
 
 		
 
@@ -1004,10 +1007,10 @@ public class TF2weapons {
 	}
 
 	public static void registerBlock(Block block, String name) {
-		GameRegistry.register(block.setRegistryName(name));
+		ForgeRegistries.BLOCKS.register(block.setRegistryName(name));
 		ItemBlock item = new ItemBlock(block);
 		item.setRegistryName(block.getRegistryName());
-		GameRegistry.register(item);
+		ForgeRegistries.ITEMS.register(item);
 		proxy.registerItemBlock(item);
 	}
 
@@ -1088,14 +1091,14 @@ public class TF2weapons {
 		}
 	}
 	public static void loadWeapon(String name, WeaponData weapon) {
-		IForgeRegistry<SoundEvent> registry = GameRegistry.findRegistry(SoundEvent.class);
+		
 		for (PropertyType propType : weapon.properties.keySet())
 			if (propType.name.contains("sound")) {
 				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
-				if (!registry.containsKey(soundLocation)) {
-					SoundEvent.REGISTRY.register(0,soundLocation,new SoundEvent(soundLocation));
+				if (!TF2Sounds.SOUND_EVENTS.containsKey(soundLocation)) {
+					TF2Sounds.register(soundLocation);
 					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
-						SoundEvent.REGISTRY.register(0,new ResourceLocation(propType.getString(weapon) + ".crit"),new SoundEvent(new ResourceLocation(propType.getString(weapon) + ".crit")));
+						TF2Sounds.register(new ResourceLocation(propType.getString(weapon) + ".crit"));
 				}
 			}
 		/*
@@ -1145,8 +1148,8 @@ public class TF2weapons {
 		if (!event.getServer().isDedicatedServer())
 			for (WeaponData weapon : MapList.nameToData.values())
 				ClientProxy.RegisterWeaponData(weapon);
-		if(event.getSide()==Side.SERVER)
-			AchievementPage.registerAchievementPage(new TF2Achievements());
+		/*if(event.getSide()==Side.SERVER)
+			AchievementPage.registerAchievementPage(new TF2Achievements());*/
 	}
 
 	@Mod.EventHandler
@@ -1307,11 +1310,11 @@ public class TF2weapons {
 		var3 = new Vec3d(endX, endY, endZ);
 
 		if (var4 != null)
-			var3 = new Vec3d(var4.hitVec.xCoord, var4.hitVec.yCoord, var4.hitVec.zCoord);
+			var3 = new Vec3d(var4.hitVec.x, var4.hitVec.y, var4.hitVec.z);
 
 		Entity var5 = null;
 		List<Entity> var6 = world.getEntitiesWithinAABBExcludingEntity(living,
-				new AxisAlignedBB(startX, startY, startZ, endX, endY, endZ).expand(2D, 2D, 2D));
+				new AxisAlignedBB(startX, startY, startZ, endX, endY, endZ).grow(2D, 2D, 2D));
 		// System.out.println("shoot: "+startX+","+startY+","+startZ+", do:
 		// "+endX+","+endY+","+endZ+" Count: "+var6.size());
 		double var7 = 0.0D;
@@ -1324,7 +1327,7 @@ public class TF2weapons {
 					target.setEntityBoundingBox(target.getEntityBoundingBox().offset((target.prevPosX - target.posX) * (1 - ticktime),
 							(target.prevPosY - target.posY) * (1 - ticktime), (target.prevPosZ - target.posZ) * (1 - ticktime)));
 				}
-				AxisAlignedBB var12 = target.getEntityBoundingBox().expand(size, (double) size, size);
+				AxisAlignedBB var12 = target.getEntityBoundingBox().grow(size, (double) size, size);
 				RayTraceResult var13 = var12.calculateIntercept(var17, var3);
 
 				if (var13 != null) {
@@ -1352,7 +1355,7 @@ public class TF2weapons {
 	public static RayTraceResult getTraceResult(Entity target, RayTraceResult hitVec, float size, boolean headshot, Vec3d start, Vec3d end) {
 		RayTraceResult result = new RayTraceResult(target, hitVec.hitVec);
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding) && headshot) {
-			Boolean var13 = getHead((EntityLivingBase)target).expandXyz(size).isVecInside(hitVec.hitVec);
+			Boolean var13 = getHead((EntityLivingBase)target).grow(size).contains(hitVec.hitVec);
 			result.hitInfo = var13;
 		}
 		result.sideHit=hitVec.sideHit;
@@ -1384,11 +1387,11 @@ public class TF2weapons {
 		if (shielded instanceof EntityLivingBase && ((EntityLivingBase) shielded).isActiveItemStackBlocking()) {
 			Vec3d location = source.getDamageLocation();
 			if(location == null)
-				location = source.getSourceOfDamage().getPositionVector();
+				location = source.getImmediateSource().getPositionVector();
 			if(location != null) {
 				Vec3d vec3d1 = shielded.getLook(1.0F);
 				Vec3d vec3d2 = location.subtractReverse(shielded.getPositionVector()).normalize();
-				vec3d2 = new Vec3d(vec3d2.xCoord, 0.0D, vec3d2.zCoord);
+				vec3d2 = new Vec3d(vec3d2.x, 0.0D, vec3d2.z);
 	
 				if (vec3d2.dotProduct(vec3d1) < 0.0D)
 					return true;
@@ -1789,7 +1792,7 @@ public class TF2weapons {
 	
 	public static void igniteAndAchievement(Entity target, EntityLivingBase living, int sec) {
 
-		if (living instanceof EntityPlayerMP) {
+		/*if (living instanceof EntityPlayerMP) {
 			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null) && target.getDataManager().get(TF2EventsCommon.ENTITY_EXP_JUMP)) {
 				((EntityPlayer) living).addStat(TF2Achievements.PILOT_LIGHT);
 			}
@@ -1798,7 +1801,7 @@ public class TF2weapons {
 				if (((EntityPlayerMP) living).getStatFile().readStat(TF2Achievements.FLAREGUN_IGNITED) >= 100)
 					((EntityPlayer) living).addStat(TF2Achievements.ATTENTION_GETTER);
 			}
-		}
+		}*/
 		target.setFire(sec);
 	}
 
@@ -1834,15 +1837,15 @@ public class TF2weapons {
 				vec=vec.scale(dmg/(expJump?6f:9f) * 
 						(ent instanceof EntityLivingBase && !expJump? 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue():1));	
 				if(ent.motionY!=0)
-					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.yCoord)/ent.motionY));
-				if(vec.yCoord>0) {
+					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.y)/ent.motionY));
+				if(vec.y>0) {
 					if(expJump) {
-						//ent.fallDistance -= vec.yCoord * 8 - 1;
+						//ent.fallDistance -= vec.y * 8 - 1;
 					}
 					else
-						ent.fallDistance -= vec.yCoord * 3 - 1;
+						ent.fallDistance -= vec.y * 3 - 1;
 				}
-				ent.addVelocity(vec.xCoord, vec.yCoord, vec.zCoord);
+				ent.addVelocity(vec.x, vec.y, vec.z);
 				explosion.getKnockbackMap().put(ent, vec);
 				
 			}
@@ -1851,15 +1854,15 @@ public class TF2weapons {
 			
 			TF2weapons.dealDamage(ent, world, shooter, weapon, criticalloc, entry.getValue() * dmg,
 					TF2weapons.causeBulletDamage(weapon, shooter, criticalloc, exploder).setExplosion());
-			if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
+			/*if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
 				killedInRow++;
 				if (killedInRow > 2 && exploder instanceof EntityRocket && shooter instanceof EntityPlayerMP && TF2weapons.isEnemy(shooter, (EntityLivingBase) ent)) {
 					((EntityPlayerMP) shooter).addStat(TF2Achievements.CRIT_ROCKET_KILL);
 				}
-			}
+			}*/
 			if (exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase) {
 				EntitySentry sentry=((EntityProjectileBase)exploder).sentry;
-				((EntityLivingBase) ent).setLastAttacker(sentry);
+				((EntityLivingBase) ent).setLastAttackedEntity(sentry);
 				((EntityLivingBase) ent).setRevengeTarget(sentry);
 				if (!ent.isEntityAlive())
 					sentry.setKills(sentry.getKills() + 1);

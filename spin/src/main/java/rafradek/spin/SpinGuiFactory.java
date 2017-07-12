@@ -17,21 +17,8 @@ public class SpinGuiFactory implements IModGuiFactory {
 		// TODO Auto-generated method stub
 
 	}
-
-	@Override
-	public Class<? extends GuiScreen> mainConfigGuiClass() {
-		// TODO Auto-generated method stub
-		return SpinGuiConfig.class;
-	}
-
 	@Override
 	public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -46,5 +33,16 @@ public class SpinGuiFactory implements IModGuiFactory {
 			List<IConfigElement> list = new ConfigElement(SpinToWin.conf.getCategory("config")).getChildElements();
 			return list;
 		}
+	}
+
+	@Override
+	public boolean hasConfigGui() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+	@Override
+	public GuiScreen createConfigGui(GuiScreen parentScreen) {
+		// TODO Auto-generated method stub
+		return new SpinGuiConfig(parentScreen);
 	}
 }

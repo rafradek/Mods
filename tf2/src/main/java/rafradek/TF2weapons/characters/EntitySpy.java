@@ -6,6 +6,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.ITextComponent;
@@ -67,7 +68,7 @@ public class EntitySpy extends EntityTF2Character {
 			EntityLivingBase target = this.getAttackTarget();
 			if (target != null && this.loadout.get(3).getTagCompound().getBoolean("Active")) {
 				boolean useKnife = false;
-				if ((this.getAITarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
+				if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
 						|| (useKnife = (this.getDistanceSqToEntity(target) < 13
 								&& !TF2weapons.lookingAtFast(target, 105, this.posX, this.posY, this.posZ)))) {
 
@@ -151,7 +152,7 @@ public class EntitySpy extends EntityTF2Character {
 	 * Returns the sound this mob makes when it is hurt.
 	 */
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return TF2Sounds.MOB_SPY_HURT;
 	}
 

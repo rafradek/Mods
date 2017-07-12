@@ -160,9 +160,9 @@ public class ContainerUpgrades extends Container {
 			this.transactions[idEnch]++;
 			this.transactionsCost[idEnch] += cost;
 
-			playerIn.addStat(TF2Achievements.WEAPON_UPGRADE);
+			/*playerIn.addStat(TF2Achievements.WEAPON_UPGRADE);
 			if (attr.numLevels > 1 && attr.calculateCurrLevel(stack) == attr.numLevels)
-				playerIn.addStat(TF2Achievements.FULLY_UPGRADED);
+				playerIn.addStat(TF2Achievements.FULLY_UPGRADED);*/
 		} else if (!adding && this.transactions[idEnch] > 0) {
 			cost = this.transactionsCost[idEnch];
 			int count = this.transactions[idEnch];

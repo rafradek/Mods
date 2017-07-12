@@ -35,7 +35,7 @@ public class EntityFlare extends EntityProjectileSimple {
 	}
 
 	@Override
-	public int getBrightnessForRender(float partialTicks) {
+	public int getBrightnessForRender() {
 		return 15728880;
 	}
 

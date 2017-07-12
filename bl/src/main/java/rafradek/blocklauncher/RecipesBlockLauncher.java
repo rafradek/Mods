@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 
-public class RecipesBlockLauncher implements IRecipe {
+public class RecipesBlockLauncher extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
 	@Override
 	public boolean matches(InventoryCrafting inventorycrafting, World world) {
@@ -95,12 +95,6 @@ public class RecipesBlockLauncher implements IRecipe {
 	}
 
 	@Override
-	public int getRecipeSize() {
-		// TODO Auto-generated method stub
-		return 10;
-	}
-
-	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stub
 		return ItemStack.EMPTY;
@@ -118,5 +112,11 @@ public class RecipesBlockLauncher implements IRecipe {
 
         return nonnulllist;
     }
+
+	@Override
+	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
+		return width * height >=9;
+	}
 
 }

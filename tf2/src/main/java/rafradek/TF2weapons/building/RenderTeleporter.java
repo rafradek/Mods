@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -44,7 +44,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 		if (living.getSoundState() == 1) {
 
 			Tessellator tessellator = Tessellator.getInstance();
-			VertexBuffer renderer = tessellator.getBuffer();
+			BufferBuilder renderer = tessellator.getBuffer();
 			GlStateManager.pushMatrix();
 			GlStateManager.translate((float) x, (float) y + 0.23D, (float) z);
 			// GL11.glRotatef((living.prevRotationYawHead +

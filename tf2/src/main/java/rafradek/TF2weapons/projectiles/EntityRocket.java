@@ -26,14 +26,14 @@ public class EntityRocket extends EntityProjectileBase {
 
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
-		this.explode(mop.hitVec.xCoord + mop.sideHit.getFrontOffsetX() * 0.05,
-				mop.hitVec.yCoord + mop.sideHit.getFrontOffsetY() * 0.05,
-				mop.hitVec.zCoord + mop.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
+		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.05,
+				mop.hitVec.y + mop.sideHit.getFrontOffsetY() * 0.05,
+				mop.hitVec.z + mop.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
 	}
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		this.explode(mop.hitVec.xCoord, mop.hitVec.yCoord, mop.hitVec.zCoord, mop.entityHit, 1f);
+		this.explode(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.entityHit, 1f);
 	}
 
 	public double maxMotion() {

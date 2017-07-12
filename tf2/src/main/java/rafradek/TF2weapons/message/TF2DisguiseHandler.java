@@ -13,7 +13,7 @@ public class TF2DisguiseHandler implements IMessageHandler<TF2Message.DisguiseMe
 
 	@Override
 	public IMessage onMessage(final DisguiseMessage message, MessageContext ctx) {
-		final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+		final EntityPlayerMP player = ctx.getServerHandler().player;
 		((WorldServer) player.world).addScheduledTask(new Runnable() {
 
 			@Override

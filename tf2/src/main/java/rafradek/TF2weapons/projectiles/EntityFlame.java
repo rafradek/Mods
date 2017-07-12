@@ -48,8 +48,8 @@ public class EntityFlame extends EntityProjectileBase {
 					this.usedWeapon);
 			// float distance= (float) new Vec3d(this.shootingEntity.posX,
 			// this.shootingEntity.posY,
-			// this.shootingEntity.posZ).distanceTo(new Vec3d(mop.hitVec.xCoord,
-			// mop.hitVec.yCoord, mop.hitVec.zCoord))+5.028f;
+			// this.shootingEntity.posZ).distanceTo(new Vec3d(mop.hitVec.x,
+			// mop.hitVec.y, mop.hitVec.z))+5.028f;
 			float dmg = TF2weapons.calculateDamage(entityHit, world, this.shootingEntity, usedWeapon, critical,
 					1 + this.ticksExisted / this.getMaxTime());
 			// System.out.println("damage: "+dmg);

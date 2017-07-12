@@ -109,7 +109,7 @@ public class GuiUpgradeStation extends GuiContainer {
 
 	@Override
 	public void drawHoveringText(List<String> textLines, int x, int y) {
-		drawHoveringText(textLines, x, y, fontRendererObj);
+		drawHoveringText(textLines, x, y, fontRenderer);
 	}
 
 	@Override
@@ -140,9 +140,9 @@ public class GuiUpgradeStation extends GuiContainer {
 				// "+this.inventorySlots.inventorySlots.get(0).getStack());
 				this.drawTexturedModalRect(9 + xOffset + j * 9, 50 + yOffset, currLevel > j ? 240 : 248, 24, 8, 8);
 			if(currLevel < this.station.attributes.get(attr))
-				this.fontRendererObj.drawString(String.valueOf(attr.getUpgradeCost(stack)), 56 + xOffset, 50 + yOffset,
+				this.fontRenderer.drawString(String.valueOf(attr.getUpgradeCost(stack)), 56 + xOffset, 50 + yOffset,
 						16777215);
-			this.fontRendererObj.drawSplitString(attr.getTranslatedString(1 + attr.perLevel, false), 9 + xOffset,
+			this.fontRenderer.drawSplitString(attr.getTranslatedString(1 + attr.perLevel, false), 9 + xOffset,
 					32 + yOffset, 98, 16777215);
 			if (!attr.canApply(stack) || currLevel >= this.station.attributes.get(attr)
 					|| attr.getUpgradeCost(stack) > expPoints) {
@@ -155,10 +155,10 @@ public class GuiUpgradeStation extends GuiContainer {
 				this.buttons[i * 2 + 1].enabled = currLevel>0;
 			}
 		}
-		this.fontRendererObj.drawString(I18n.format("container.upgrades", new Object[0]), 8, 5, 4210752);
-		this.fontRendererObj.drawString(I18n.format("container.currency", new Object[] { String.valueOf(expPoints) }),
+		this.fontRenderer.drawString(I18n.format("container.upgrades", new Object[0]), 8, 5, 4210752);
+		this.fontRenderer.drawString(I18n.format("container.currency", new Object[] { String.valueOf(expPoints) }),
 				128, 10, 4210752);
-		this.fontRendererObj.drawString(I18n.format("container.inventory", new Object[0]), 36, this.ySize - 96 + 3,
+		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 36, this.ySize - 96 + 3,
 				4210752);
 		/*
 		 * for(int i=0;i<12;i++){ if(this.buttonsItem[i].stackToDraw !=null &&

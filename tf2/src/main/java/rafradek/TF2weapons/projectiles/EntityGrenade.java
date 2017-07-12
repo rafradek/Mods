@@ -71,7 +71,7 @@ public class EntityGrenade extends EntityProjectileBase {
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
 		if (!this.hitGround) {
 			if(getBomb()==0) {
-				this.explode(mop.hitVec.xCoord, mop.hitVec.yCoord, mop.hitVec.zCoord, mop.entityHit, 1);
+				this.explode(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.entityHit, 1);
 			}
 			else {
 				this.attackDirect(entityHit, 1);

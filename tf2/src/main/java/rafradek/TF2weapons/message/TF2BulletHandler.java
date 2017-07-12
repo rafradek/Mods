@@ -15,7 +15,7 @@ public class TF2BulletHandler implements IMessageHandler<TF2Message.BulletMessag
 	@Override
 	public IMessage onMessage(final BulletMessage message, MessageContext ctx) {
 		/*
-		 * final EntityPlayer shooter=ctx.getServerHandler().playerEntity;
+		 * final EntityPlayer shooter=ctx.getServerHandler().player;
 		 * ((WorldServer)shooter.world).addScheduledTask(new Runnable(){
 		 * 
 		 * @Override public void run() { ItemStack

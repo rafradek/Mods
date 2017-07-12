@@ -11,11 +11,13 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.ResourceLocation;
@@ -144,7 +146,7 @@ public class GuiTF2Crafting extends GuiContainer {
 		GlStateManager.enableRescaleNormal();
 		ItemStack itemstack = id == 0 ? craftingTabStack : chestTabStack;
 		this.itemRender.renderItemAndEffectIntoGUI(itemstack, l, i1);
-		this.itemRender.renderItemOverlays(this.fontRendererObj, itemstack, l, i1);
+		this.itemRender.renderItemOverlays(this.fontRenderer, itemstack, l, i1);
 		GlStateManager.disableLighting();
 		this.itemRender.zLevel = 0.0F;
 		this.zLevel = 0.0F;
@@ -152,7 +154,7 @@ public class GuiTF2Crafting extends GuiContainer {
 
 	@Override
 	public void drawHoveringText(List<String> textLines, int x, int y) {
-		drawHoveringText(textLines, x, y, fontRendererObj);
+		drawHoveringText(textLines, x, y, fontRenderer);
 	}
 
 	@Override
@@ -167,30 +169,7 @@ public class GuiTF2Crafting extends GuiContainer {
 			itemsToRender = new ItemStack[9];
 			if (currentRecipe >= 0 && currentRecipe < TF2CraftingManager.INSTANCE.getRecipeList().size()) {
 				IRecipe recipe = TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe);
-
-				if (recipe instanceof ShapelessOreRecipe) {
-					List<Object> input = ((ShapelessOreRecipe) recipe).getInput();
-					for (int i = 0; i < input.size(); i++)
-						if (input.get(i) instanceof ItemStack)
-							itemsToRender[i] = (ItemStack) input.get(i);
-						else if (input.get(i) != null)
-							itemsToRender[i] = ((List<ItemStack>) input.get(i)).get(0);
-				} else if (recipe instanceof ShapelessRecipes) {
-					List<ItemStack> input = ((ShapelessRecipes) recipe).recipeItems;
-					for (int i = 0; i < input.size(); i++)
-						itemsToRender[i] = input.get(i);
-				} else if (recipe instanceof ShapedOreRecipe) {
-					Object[] input = ((ShapedOreRecipe) recipe).getInput();
-					for (int i = 0; i < input.length; i++)
-						if (input[i] instanceof ItemStack)
-							itemsToRender[i] = (ItemStack) input[i];
-						else if (input[i] != null)
-							itemsToRender[i] = ((List<ItemStack>) input[i]).get(0);
-				} else if (recipe instanceof ShapedRecipes) {
-					ItemStack[] input = ((ShapedRecipes) recipe).recipeItems;
-					for (int i = 0; i < input.length; i++)
-						itemsToRender[i] = input[i];
-				} else if (recipe instanceof AustraliumRecipe) {
+				if (recipe instanceof AustraliumRecipe) {
 					itemsToRender[0] = new ItemStack(TF2weapons.itemTF2, 1, 2);
 					itemsToRender[1] = new ItemStack(TF2weapons.itemTF2, 1, 2);
 					itemsToRender[2] = new ItemStack(TF2weapons.itemTF2, 1, 2);
@@ -217,6 +196,13 @@ public class GuiTF2Crafting extends GuiContainer {
 					itemsToRender[0] = new ItemStack(TF2weapons.itemTF2, 1, 7);
 					itemsToRender[1] = ItemFromData.getNewStack("crate1");
 				}
+				else{
+					List<Ingredient> input = recipe.getIngredients();
+					for (int i = 0; i < input.size(); i++) {
+						if(input.get(i).getMatchingStacks().length>0)
+							itemsToRender[i] = input.get(i).getMatchingStacks()[0];
+					}
+				}
 			}
 		}
 	}
@@ -227,13 +213,13 @@ public class GuiTF2Crafting extends GuiContainer {
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		this.fontRendererObj.drawString(I18n.format("container.crafting", new Object[0]), 8, 5, 4210752);
-		this.fontRendererObj.drawString(I18n.format("container.inventory", new Object[0]), 8, this.ySize - 96 + 3,
+		this.fontRenderer.drawString(I18n.format("container.crafting", new Object[0]), 8, 5, 4210752);
+		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 8, this.ySize - 96 + 3,
 				4210752);
 		for (int i = 0; i < 12; i++)
 			if (this.buttonsItem[i].stackToDraw != null && this.buttonsItem[i].isMouseOver())
 				((GuiTF2Crafting) mc.currentScreen).drawHoveringText(
-						this.buttonsItem[i].stackToDraw.getTooltip(mc.player, false), mouseX - this.guiLeft,
+						this.buttonsItem[i].stackToDraw.getTooltip(mc.player, ITooltipFlag.TooltipFlags.NORMAL), mouseX - this.guiLeft,
 						mouseY - this.guiTop);
 	}
 

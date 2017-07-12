@@ -334,7 +334,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			}
 			else{
 				List<EntityTF2Character> list = this.world.getEntitiesWithinAABB(EntityTF2Character.class,
-						this.getEntityBoundingBox().expand(40, 4.0D, 40), null);
+						this.getEntityBoundingBox().grow(40, 4.0D, 40), null);
 				
 				boolean found=false;
 				for(EntityTF2Character ent:list){
@@ -373,14 +373,14 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	public void onDeath(DamageSource s) {
-		if (s.getEntity() != null && s.getEntity() instanceof EntityPlayerMP && !TF2weapons.isOnSameTeam(this, s.getEntity())) {
-			EntityPlayerMP player=(EntityPlayerMP) s.getEntity();
-			if(s.getEntity().getTeam() != null) {
+		if (s.getTrueSource() != null && s.getTrueSource() instanceof EntityPlayerMP && !TF2weapons.isOnSameTeam(this, s.getTrueSource())) {
+			EntityPlayerMP player=(EntityPlayerMP) s.getTrueSource();
+			if(s.getTrueSource().getTeam() != null) {
 				player.addStat(TF2Achievements.KILLED_MERC);
 				if(player.getStatFile().readStat(TF2Achievements.KILLED_MERC)>=5 && player.getStatFile().readStat(TF2Achievements.CONTRACT_DAY)==0/*player.getCapability(TF2weapons.PLAYER_CAP, null).nextContractDay == -1*/)
 					player.addStat(TF2Achievements.CONTRACT_DAY, (int) (this.world.getWorldTime()/24000+1));
 			}
-			player.addStat(TF2Achievements.FIRST_ENCOUNTER);
+			//player.addStat(TF2Achievements.FIRST_ENCOUNTER);
 			
 		}
 		super.onDeath(s);
@@ -400,14 +400,12 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public Predicate<EntityLivingBase> getEntitySelector() {
-		return new Predicate<EntityLivingBase>() {
-			@Override
-			public boolean apply(EntityLivingBase p_82704_1_) {
-				return ((p_82704_1_.getTeam() != null) && !TF2weapons.isOnSameTeam(EntityTF2Character.this, p_82704_1_))
-						&& (!(p_82704_1_ instanceof EntityTF2Character && TF2weapons.naturalCheck.equals("Never"))
-								|| (!((EntityTF2Character) p_82704_1_).natural || !natural));
+		return living ->
+		{
+				return ((living.getTeam() != null) && !TF2weapons.isOnSameTeam(EntityTF2Character.this, living))
+						&& (!(living instanceof EntityTF2Character && TF2weapons.naturalCheck.equals("Never"))
+								|| (!((EntityTF2Character) living).natural || !natural));
 
-			}
 		};
 	}
 
@@ -606,7 +604,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (this.isEntityInvulnerable(source))
 			return false;
 		else if (super.attackEntityFrom(source, amount)) {
-			Entity entity = source.getEntity();
+			Entity entity = source.getTrueSource();
 			return this.getRidingEntity() != entity && this.getRidingEntity() != entity ? true : true;
 		} else
 			return false;
@@ -616,7 +614,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	 * Returns the sound this mob makes when it is hurt.
 	 */
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return SoundEvents.ENTITY_HOSTILE_HURT;
 	}
 
@@ -859,9 +857,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
-		if ((this.getAITarget() instanceof EntityPlayer || (this.getAITarget() instanceof IEntityOwnable && ((IEntityOwnable)this.getAITarget()).getOwner() != null 
-				&& ((IEntityOwnable)this.getAITarget()).getOwner() instanceof EntityPlayer))
-				&& this.getAITarget().getTeam() != null && TF2weapons.isEnemy(this.getAITarget(), this))
+		if ((this.getRevengeTarget() instanceof EntityPlayer || (this.getRevengeTarget() instanceof IEntityOwnable && ((IEntityOwnable)this.getRevengeTarget()).getOwner() != null 
+				&& ((IEntityOwnable)this.getRevengeTarget()).getOwner() instanceof EntityPlayer))
+				&& this.getRevengeTarget().getTeam() != null && TF2weapons.isEnemy(this.getRevengeTarget(), this))
 			for(int i=0;i<loadout.size();i++){
 				ItemStack stack=loadout.get(i);
 				if (!stack.isEmpty() && stack.getItem() instanceof ItemFromData

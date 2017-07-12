@@ -25,9 +25,9 @@ public class TF2GuiConfigHandler implements IMessageHandler<TF2Message.GuiConfig
 			@Override
 			public void run() {
 
-				Entity ent = ctx.getServerHandler().playerEntity.world.getEntityByID(message.entityid);
+				Entity ent = ctx.getServerHandler().player.world.getEntityByID(message.entityid);
 				if (ent != null && ent instanceof EntityBuilding
-						&& ((EntityBuilding) ent).getOwner() == ctx.getServerHandler().playerEntity) {
+						&& ((EntityBuilding) ent).getOwner() == ctx.getServerHandler().player) {
 					if (message.id == 127) {
 						((EntityBuilding) ent).grab();
 						return;

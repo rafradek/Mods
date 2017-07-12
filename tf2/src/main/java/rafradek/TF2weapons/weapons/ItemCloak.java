@@ -2,6 +2,7 @@ package rafradek.TF2weapons.weapons;
 
 import java.util.List;
 
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,6 +12,8 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
@@ -123,11 +126,12 @@ public class ItemCloak extends ItemFromData {
 	}
 
 	@Override
-	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
-			boolean par4) {
-		super.addInformation(par1ItemStack, par2EntityPlayer, par2List, par4);
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		super.addInformation(stack, world, tooltip, advanced);
 
-		par2List.add("Charge: " + (100 - par1ItemStack.getItemDamage() / 6) + "%");
+		tooltip.add("Charge: " + (100 - stack.getItemDamage() / 6) + "%");
 	}
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
 		return true;

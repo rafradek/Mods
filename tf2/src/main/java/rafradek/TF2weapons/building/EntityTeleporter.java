@@ -17,6 +17,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -70,7 +71,7 @@ public class EntityTeleporter extends EntityBuilding {
 				&& ((TF2weapons.dispenserHeal && getTeam() == null && ((EntityLivingBase) entityIn).getTeam() == null)
 						|| TF2weapons.isOnSameTeam(EntityTeleporter.this, entityIn))
 				&& entityIn.getEntityBoundingBox()
-						.intersectsWith(this.getEntityBoundingBox().expand(0, 0.5, 0).offset(0, 0.5D, 0)))
+						.intersects(this.getEntityBoundingBox().grow(0, 0.5, 0).offset(0, 0.5D, 0)))
 			if (ticksToTeleport <= 0)
 				if (ticksToTeleport < 0)
 					ticksToTeleport = 10;
@@ -86,8 +87,8 @@ public class EntityTeleporter extends EntityBuilding {
 						entityIn.playSound(TF2Sounds.MOB_TELEPORTER_RECEIVE, 0.75f, 1f);
 						if(this.getOwner() instanceof EntityPlayerMP){
 							((EntityPlayer) this.getOwner()).addStat(TF2Achievements.TELEPORTED);
-							if(((EntityPlayerMP) this.getOwner()).getStatFile().readStat(TF2Achievements.TELEPORTED)>=100)
-								((EntityPlayer) this.getOwner()).addStat(TF2Achievements.TELEPORTS);
+							/*if(((EntityPlayerMP) this.getOwner()).getStatFile().readStat(TF2Achievements.TELEPORTED)>=100)
+								((EntityPlayer) this.getOwner()).addStat(TF2Achievements.TELEPORTS);*/
 						}
 					}
 				}
@@ -120,7 +121,7 @@ public class EntityTeleporter extends EntityBuilding {
 				/*
 				 * if(ticksToTeleport<=0){ List<EntityLivingBase>
 				 * targetList=this.world.getEntitiesWithinAABB(
-				 * EntityLivingBase.class, this.getEntityBoundingBox().expand(0,
+				 * EntityLivingBase.class, this.getEntityBoundingBox().grow(0,
 				 * 0.5, 0).offset(0, 0.5D, 0), new
 				 * Predicate<EntityLivingBase>(){
 				 * 
@@ -268,7 +269,7 @@ public class EntityTeleporter extends EntityBuilding {
 	}
 
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return null;
 	}
 

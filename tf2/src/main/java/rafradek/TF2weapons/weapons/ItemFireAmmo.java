@@ -29,7 +29,9 @@ public class ItemFireAmmo extends ItemAmmo {
 	}
 
 	@Override
-	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
+		if(!this.isInCreativeTab(par2CreativeTabs))
+			return;
 		par3List.add(new ItemStack(this));
 	}
 

@@ -55,17 +55,17 @@ public class TF2PropertyHandler implements IMessageHandler<TF2Message.PropertyMe
 			});
 		else {
 			if (message.type == 0)
-				ctx.getServerHandler().playerEntity.getEntityData().setInteger(message.name, message.intValue);
+				ctx.getServerHandler().player.getEntityData().setInteger(message.name, message.intValue);
 			else if (message.type == 1)
-				ctx.getServerHandler().playerEntity.getEntityData().setFloat(message.name, message.floatValue);
+				ctx.getServerHandler().player.getEntityData().setFloat(message.name, message.floatValue);
 			else if (message.type == 2)
-				ctx.getServerHandler().playerEntity.getEntityData().setByte(message.name, message.byteValue);
+				ctx.getServerHandler().player.getEntityData().setByte(message.name, message.byteValue);
 			else if (message.type == 3)
-				ctx.getServerHandler().playerEntity.getEntityData().setString(message.name, message.stringValue);
+				ctx.getServerHandler().player.getEntityData().setString(message.name, message.stringValue);
 			// System.out.println("send: "+message.name+" "+message.intValue+"
 			// "+message.floatValue);
-			message.entityID = ctx.getServerHandler().playerEntity.getEntityId();
-			TF2weapons.sendTracking(message, ctx.getServerHandler().playerEntity);
+			message.entityID = ctx.getServerHandler().player.getEntityId();
+			TF2weapons.sendTracking(message, ctx.getServerHandler().player);
 		}
 		return null;
 	}

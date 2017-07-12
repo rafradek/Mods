@@ -91,7 +91,7 @@ public class GuiDisguiseKit extends GuiScreen {
 			
 		});
 		Keyboard.enableRepeatEvents(true);
-		this.playerNameField = new GuiTextField(6, this.fontRendererObj, this.width / 2 + 26, this.height / 2 + 60, 108,
+		this.playerNameField = new GuiTextField(6, this.fontRenderer, this.width / 2 + 26, this.height / 2 + 60, 108,
 				19);
 		this.playerNameField.setMaxStringLength(64);
 		this.playerNameField.setFocused(true);
@@ -176,7 +176,7 @@ public class GuiDisguiseKit extends GuiScreen {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		
 		this.drawDefaultBackground();
-		this.drawCenteredString(this.fontRendererObj, I18n.format("gui.disguise.info", new Object[0]),
+		this.drawCenteredString(this.fontRenderer, I18n.format("gui.disguise.info", new Object[0]),
 				this.width / 2 - 5, 20, 16777215);
 		/*for (int i = 0; i < this.mobs.length; i++)
 			drawEntityOnScreen(this.width / 2 - 105 + (i % 4) * 70, this.height / 2 - 26 + 110 * (i / 4), 35, mobs[i]);

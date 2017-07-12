@@ -133,7 +133,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 				this.superJump = true;
 				this.jump();
 			}
-			Entity entity = source.getEntity();
+			Entity entity = source.getTrueSource();
 			if (entity instanceof EntityPlayerMP)
 				this.bossInfo.addPlayer((EntityPlayerMP) entity);
 			this.rage += amount / 100f;
@@ -177,8 +177,8 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		// TODO Auto-generated method stub
 		if(!stack.isEmpty() && stack.hasTagCompound())
 			stack.getTagCompound().setBoolean("Bought", true);
-		if (this.trader != null && !stack.isEmpty() &&stack.getItem() instanceof ItemWeapon)
-			this.trader.addStat(TF2Achievements.MANN_CO_MADE);
+		/*if (this.trader != null && !stack.isEmpty() &&stack.getItem() instanceof ItemWeapon)
+			this.trader.addStat(TF2Achievements.MANN_CO_MADE);*/
 
 	}
 
@@ -193,7 +193,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 			this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
 			// System.out.println("Has path: "+this.getNavigator().noPath());
-			List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().expand(1, 0, 1));
+			List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
 			boolean obscuredView = false;
 			for (AxisAlignedBB box : boxes)
 				if (box.calculateIntercept(this.getPositionVector().addVector(0, this.getEyeHeight(), 0),
@@ -209,7 +209,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			}
 			if (this.rage > 1) {
 				List<EntityLivingBase> list = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-						this.getEntityBoundingBox().expand(12, 12, 12), new Predicate<EntityLivingBase>() {
+						this.getEntityBoundingBox().grow(12, 12, 12), new Predicate<EntityLivingBase>() {
 
 							@Override
 							public boolean apply(EntityLivingBase input) {
@@ -252,7 +252,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	}
 
 	@Override
-	protected SoundEvent getHurtSound() {
+	protected SoundEvent getHurtSound(DamageSource source) {
 		return SoundEvents.ENTITY_HOSTILE_HURT;
 	}
 

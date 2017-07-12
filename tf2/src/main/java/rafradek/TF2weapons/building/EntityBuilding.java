@@ -78,7 +78,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 
 	@Override
 	public void applyEntityCollision(Entity entityIn) {
-		if (entityIn.getEntityBoundingBox().intersectsWith(this.getCollisionBoundingBox()))
+		if (entityIn.getEntityBoundingBox().intersects(this.getCollisionBoundingBox()))
 			super.applyEntityCollision(entityIn);
 	}
 
@@ -260,7 +260,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		/*
 		 * else if(this.height>this.getCollHeight()){ AxisAlignedBB
 		 * colBox=this.getEntityBoundingBox();
-		 * colBox=colBox.expand((this.getCollWidth()-this.width)/2,
+		 * colBox=colBox.grow((this.getCollWidth()-this.width)/2,
 		 * (this.getCollHeight()-this.height)/2,
 		 * (this.getCollWidth()-this.width)/2); colBox=colBox.offset(0,
 		 * this.getEntityBoundingBox().minY-colBox.minY, 0); return colBox; }
