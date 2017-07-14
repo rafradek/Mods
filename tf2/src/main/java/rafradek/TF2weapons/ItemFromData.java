@@ -24,6 +24,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2Attribute.State;
@@ -255,7 +256,7 @@ public class ItemFromData extends Item {
 	}
 
 	public static SoundEvent getSound(ItemStack stack, PropertyType name) {
-		return SoundEvent.REGISTRY.getObject(new ResourceLocation(getData(stack).getString(name)));
+		return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(getData(stack).getString(name)));
 	}
 
 	@Override

@@ -158,7 +158,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		// Sound").getString();
 		TF2weapons.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
 
-		Vec3d lookVec = living.getLookVec();
+		Vec3d lookVec = living.getLook(1f);
 		Vec3d eyeVec = new Vec3d(living.posX, living.posY + living.getEyeHeight(), living.posZ);
 		eyeVec.add(lookVec);
 		float size = TF2Attribute.getModifier("Flame Range", stack, 5, living);

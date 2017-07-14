@@ -65,7 +65,6 @@ public class EntityMonoculus extends EntityTF2Boss {
 	@Override
 	public void entityInit() {
 		super.entityInit();
-		this.getLookVec();
 		this.dataManager.register(ANGRY, false);
 	}
 

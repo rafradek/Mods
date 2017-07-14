@@ -191,7 +191,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			this.doMuzzleFlash(stack, living, hand);
 
 		if (!living.onGround && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0 && TF2Attribute.getModifier("KnockbackFAN", stack, 0, living)!=0){
-			Vec3d look=living.getLookVec();
+			Vec3d look=living.getLook(1f);
 			living.addVelocity(-look.x*0.66, -look.y*0.58, -look.z*0.66);
 		}
 		
@@ -394,7 +394,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				}
 			}
 			if(!wrench.isEmpty()) {
-				Vec3d forward=living.getLookVec().scale(120).add(living.getPositionEyes(1));
+				Vec3d forward=living.getLook(1f).scale(120).add(living.getPositionEyes(1));
 				RayTraceResult result=TF2weapons.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.x, forward.y, forward.z, false, 0.5f, false).get(0);
 				if(result.entityHit != null && result.entityHit instanceof EntityBuilding && result.entityHit.isEntityAlive() && !((EntityBuilding)result.entityHit).isSapped() && ((EntityBuilding)result.entityHit).getOwner() == living) {
 					result.entityHit.setPosition(living.posX, living.posY, living.posZ);

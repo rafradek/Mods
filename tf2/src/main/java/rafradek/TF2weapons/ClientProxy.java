@@ -171,7 +171,6 @@ public class ClientProxy extends CommonProxy {
 		if (modelName == null || modelName.isEmpty())
 			return;
 
-		System.out.println("Model: "+modelName);
 		ModelResourceLocation model = new ModelResourceLocation(modelName, "inventory");
 		ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
 		nameToModel.put(weapon.getName(), model);
@@ -379,7 +378,6 @@ public class ClientProxy extends CommonProxy {
 		
 		for (Item item : MapList.weaponClasses.values()) {
 			ModelLoader.setCustomMeshDefinition(item, stack -> {
-				System.out.println("nym "+stack);
 				if (stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
 					if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst!=ItemFromData.BLANK_DATA)
 						return nameToModel.get(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst.getName());
@@ -676,16 +674,22 @@ public class ClientProxy extends CommonProxy {
 		// ResourceLocation soundName=new
 		// ResourceLocation(ItemUsable.getData(stack).get("Reload
 		// Sound").getString());
-		ReloadSound sound = new ReloadSound(ItemFromData.getSound(stack, PropertyType.RELOAD_SOUND), player);
-		if (ClientProxy.reloadSounds.get(player) != null)
-			ClientProxy.reloadSounds.get(player).done = true;
-		ClientProxy.reloadSounds.put(player, sound);
-		Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+		SoundEvent event = ItemFromData.getSound(stack, PropertyType.RELOAD_SOUND);
+		if(event != null) {
+			ReloadSound sound = new ReloadSound(event, player);
+			if (ClientProxy.reloadSounds.get(player) != null)
+				ClientProxy.reloadSounds.get(player).done = true;
+			ClientProxy.reloadSounds.put(player, sound);
+			Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+		}
 	}
 
 	public static WeaponSound playWeaponSound(EntityLivingBase living, SoundEvent playSound, boolean loop, int type,
 			ItemStack stack) {
-		// System.out.println(sound.type);
+		// System.out.println(sound.type);\
+		if (playSound == null)
+			return null;
+		
 		WeaponSound sound;
 		if (loop)
 			sound = new WeaponLoopSound(playSound, living, type < 2, ItemFromData.getData(stack), type == 1, type);

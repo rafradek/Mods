@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.7.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.8.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -1095,7 +1095,7 @@ public class TF2weapons {
 		for (PropertyType propType : weapon.properties.keySet())
 			if (propType.name.contains("sound")) {
 				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
-				if (!TF2Sounds.SOUND_EVENTS.containsKey(soundLocation)) {
+				if (!"".equals(soundLocation.getResourcePath())) {
 					TF2Sounds.register(soundLocation);
 					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
 						TF2Sounds.register(new ResourceLocation(propType.getString(weapon) + ".crit"));
@@ -1522,7 +1522,7 @@ public class TF2weapons {
 		float comparepitch = Math.abs(180 - Math.abs(Math.abs(f1 - entity.rotationPitch) - 180));
 		// System.out.println("Angl: "+compareyaw+" "+comparepitch);
 		return compareyaw < max && comparepitch < max;*/
-		return isLyingInCone(new Vec3d(targetX, targetY, targetZ),entity.getPositionEyes(1),entity.getPositionEyes(1).add(entity.getLookVec()),(float) Math.toRadians(max));
+		return isLyingInCone(new Vec3d(targetX, targetY, targetZ),entity.getPositionEyes(1),entity.getPositionEyes(1).add(entity.getLook(1)),(float) Math.toRadians(max));
 	}
 	
 	public static boolean lookingAtFast(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {

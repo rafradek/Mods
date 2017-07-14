@@ -80,8 +80,12 @@ public abstract class EntityProjectileBase extends Entity
 			DataSerializers.BYTE);
 	private static final DataParameter<Boolean> STICK = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BOOLEAN);
-	private static final DataParameter<Rotations> STICK_POS = EntityDataManager.createKey(EntityProjectileBase.class,
-			DataSerializers.ROTATIONS);
+	private static final DataParameter<Float> STICK_X = EntityDataManager.createKey(EntityProjectileBase.class,
+			DataSerializers.FLOAT);
+	private static final DataParameter<Float> STICK_Y = EntityDataManager.createKey(EntityProjectileBase.class,
+			DataSerializers.FLOAT);
+	private static final DataParameter<Float> STICK_Z = EntityDataManager.createKey(EntityProjectileBase.class,
+			DataSerializers.FLOAT);
 	private static final DataParameter<Boolean> PENETRATE = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BOOLEAN);
 	
@@ -121,7 +125,9 @@ public abstract class EntityProjectileBase extends Entity
 		this.dataManager.register(CRITICAL, (byte) 0);
 		this.dataManager.register(TYPE, (byte) 0);
 		this.dataManager.register(STICK, false);
-		this.dataManager.register(STICK_POS, new Rotations(0f, 0f, 0f));
+		this.dataManager.register(STICK_X, 0f);
+		this.dataManager.register(STICK_Y, 0f);
+		this.dataManager.register(STICK_Z, 0f);
 		this.dataManager.register(PENETRATE, false);
 	}
 
@@ -383,7 +389,7 @@ public abstract class EntityProjectileBase extends Entity
 					continue;
 			}
 	
-			if (target.entityHit != null)
+			if (target.entityHit != null && !(TF2weapons.isOnSameTeam(this.shootingEntity, target.entityHit) && this.ticksExisted < 3))
 				this.onHitMob(target.entityHit, target);
 			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
 				int attr = this.world.isRemote ? 0
@@ -412,8 +418,8 @@ public abstract class EntityProjectileBase extends Entity
 		 */
 		float f2;
 		if (this.isSticked()) {
-			this.setPosition(this.dataManager.get(STICK_POS).getX(), this.dataManager.get(STICK_POS).getY(),
-					this.dataManager.get(STICK_POS).getZ());
+			this.setPosition(this.dataManager.get(STICK_X), this.dataManager.get(STICK_Y),
+					this.dataManager.get(STICK_Z));
 			if (!this.world.isRemote && this.ticksExisted % 5 == 0 && this.world
 					.getCollisionBoxes(this, this.getEntityBoundingBox().grow(0.1f, 0.1f, 0.1f)).isEmpty())
 				this.setSticked(false);
@@ -763,7 +769,9 @@ public abstract class EntityProjectileBase extends Entity
 
 	public void setSticked(boolean stick) {
 		this.dataManager.set(STICK, stick);
-		this.dataManager.set(STICK_POS, new Rotations((float) this.posX, (float) this.posY, (float) this.posZ));
+		this.dataManager.set(STICK_X, (float) this.posX);
+		this.dataManager.set(STICK_Y, (float) this.posY);
+		this.dataManager.set(STICK_Z, (float) this.posZ);
 		/*
 		 * if(!this.world.isRemote){ EntityTracker
 		 * tracker=((WorldServer)this.world).getEntityTracker();

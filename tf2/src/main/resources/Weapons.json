@@ -291,6 +291,7 @@
 		"Pellets": 1,
 		"Spread": 4,
 		"Projectile speed": 1.257,
+		"Penetrate": true,
 		"Damage": 0.85,
 		"Max damage": 1,
 		"Min damage": 0.6,
