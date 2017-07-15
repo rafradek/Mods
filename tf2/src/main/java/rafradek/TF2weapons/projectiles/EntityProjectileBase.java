@@ -383,8 +383,9 @@ public abstract class EntityProjectileBase extends Entity
 					continue;
 			}
 	
-			if (target.entityHit != null)
+			if (target.entityHit != null && !(TF2weapons.isOnSameTeam(this.shootingEntity, target.entityHit) && this.ticksExisted < 3)) {
 				this.onHitMob(target.entityHit, target);
+			}
 			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
 				int attr = this.world.isRemote ? 0
 						: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);

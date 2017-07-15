@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.7", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.8.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -1088,11 +1088,12 @@ public class TF2weapons {
 		}
 	}
 	public static void loadWeapon(String name, WeaponData weapon) {
+		//IForgeRegistry<SoundEvent> registry = GameRegistry.findRegistry(SoundEvent.class);
 		IForgeRegistry<SoundEvent> registry = GameRegistry.findRegistry(SoundEvent.class);
 		for (PropertyType propType : weapon.properties.keySet())
 			if (propType.name.contains("sound")) {
 				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
-				if (!registry.containsKey(soundLocation)) {
+				if (!"".equals(soundLocation.getResourcePath()) && !registry.containsKey(soundLocation)) {
 					SoundEvent.REGISTRY.register(0,soundLocation,new SoundEvent(soundLocation));
 					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
 						SoundEvent.REGISTRY.register(0,new ResourceLocation(propType.getString(weapon) + ".crit"),new SoundEvent(new ResourceLocation(propType.getString(weapon) + ".crit")));

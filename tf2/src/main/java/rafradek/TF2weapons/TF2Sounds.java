@@ -1,7 +1,11 @@
 package rafradek.TF2weapons;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class TF2Sounds {
@@ -235,6 +239,8 @@ public class TF2Sounds {
 	}
 
 	public static SoundEvent register(ResourceLocation location) {
-		return GameRegistry.register(new SoundEvent(location), location);
+		SoundEvent event=new SoundEvent(location);
+		ForgeRegistries.SOUND_EVENTS.register(event.setRegistryName(location));
+		return event;
 	}
 }

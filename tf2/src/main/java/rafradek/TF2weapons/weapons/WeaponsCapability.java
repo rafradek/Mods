@@ -128,6 +128,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.set(CRIT_TIME, time);
 	}
 	
+	public int getHealTarget() {
+		return this.dataManager.get(HEAL_TARGET);
+	}
+	
+	public void setHealTarget(int target) {
+		this.dataManager.set(HEAL_TARGET, target);
+	}
+	
 	public int getHeads() {
 		return this.dataManager.get(HEADS);
 	}
