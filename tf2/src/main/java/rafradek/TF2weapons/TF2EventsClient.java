@@ -951,7 +951,7 @@ public class TF2EventsClient {
 				}
 				if (teleporter.getTPprogress() <= 0) {
 					gui.drawString(gui.getFontRenderer(),
-							teleporter.getTeleports() + " (ID: " + teleporter.getID() + ")", event.getResolution().getScaledWidth() / 2 + 13,
+							teleporter.getTeleports() + " (ID: " + (teleporter.getID() + 1) + ")", event.getResolution().getScaledWidth() / 2 + 13,
 							event.getResolution().getScaledHeight() / 2 + 38, 16777215);
 				}
 				float health = teleporter.getHealth() / teleporter.getMaxHealth();
@@ -1103,7 +1103,7 @@ public class TF2EventsClient {
 		else{
 			ClientProxy.renderCritGlow=0;
 		}
-		if (player.getDataManager().get(TF2EventsCommon.ENTITY_INVIS)||player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+		if (WeaponsCapability.get(player).isInvisible() ||player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
 			/*
 			 * GL11.glEnable(GL11.GL_BLEND); GlStateManager.clear(256);
 			 * OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -1231,14 +1231,14 @@ public class TF2EventsClient {
 
 	@SubscribeEvent
 	public void playerName(PlayerEvent.NameFormat event) {
-		if(Minecraft.getMinecraft().player != null && event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
-			String username=event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+		if(Minecraft.getMinecraft().player != null && WeaponsCapability.get(event.getEntityPlayer()).isDisguised()) {
+			String username=WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().substring(2);
 			
 			if(TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
 				event.setDisplayname(event.getDisplayname()+" ["+username+"]");
 			}
 			else {
-				if(event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
+				if(WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().startsWith("M:")) {
 					if(event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise != null){
 						event.setDisplayname(TextFormatting.RESET+event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise.getDisplayName().getFormattedText());
 					}
@@ -1328,7 +1328,7 @@ public class TF2EventsClient {
 			}
 		}
 		if (event.getRenderer() != ClientProxy.disguiseRender && event.getRenderer() != ClientProxy.disguiseRenderPlayer
-				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
+				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && WeaponsCapability.get(event.getEntity()).isDisguised()) {
 
 			
 			 
@@ -1420,8 +1420,8 @@ public class TF2EventsClient {
 			 * y, z, entityYaw, partialTicks); }
 			 */
 			RenderLivingBase<EntityLivingBase> render = null;
-			if (event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
-				String mobType = event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+			if (WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("M:")) {
+				String mobType = WeaponsCapability.get(event.getEntity()).getDisguiseType().substring(2);
 				EntityLivingBase entToRender=event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise;
 				if(entToRender == null || !EntityList.getKey(entToRender).equals(new ResourceLocation(mobType))) {
 					entToRender = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise =
@@ -1455,7 +1455,7 @@ public class TF2EventsClient {
 					ClientProxy.disguiseRender.setRenderOptions(ClientProxy.entityModel.get(mobType), ClientProxy.textureDisguise.get(mobType));
 					render = ClientProxy.disguiseRender;
 				}*/
-			} else if (event.getEntity() instanceof AbstractClientPlayer && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("P:"))
+			} else if (event.getEntity() instanceof AbstractClientPlayer && WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("P:"))
 				if ("slim".equals(event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).skinType)) {
 					render = ClientProxy.disguiseRenderPlayerSmall;
 				} else {

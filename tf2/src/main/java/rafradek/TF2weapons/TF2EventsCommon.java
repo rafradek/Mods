@@ -211,13 +211,8 @@ public class TF2EventsCommon {
 	public static HashMap<World, Integer> spawnEvents = new HashMap<>();
 	public static ArrayList<EntityLivingBase> pathsToDefine = new ArrayList<>();
 	public static ArrayList<DestroyBlockEntry> destroyProgress = new ArrayList<>();
-	public static final DataParameter<Boolean> ENTITY_INVIS = new DataParameter<Boolean>(165, DataSerializers.BOOLEAN);
-	public static final DataParameter<Boolean> ENTITY_DISGUISED = new DataParameter<Boolean>(167, DataSerializers.BOOLEAN);
-	public static final DataParameter<String> ENTITY_DISGUISE_TYPE = new DataParameter<String>(168, DataSerializers.STRING);
 	//public static final DataParameter<Boolean> ENTITY_UBER = new DataParameter<Boolean>(169, DataSerializers.BOOLEAN);
 	public static final DataParameter<Float> ENTITY_OVERHEAL = new DataParameter<Float>(170, DataSerializers.FLOAT);
-	public static final DataParameter<Boolean> ENTITY_EXP_JUMP = new DataParameter<Boolean>(171, DataSerializers.BOOLEAN);
-	public static final DataParameter<Integer> ENTITY_HEAL_TARGET = new DataParameter<Integer>(172, DataSerializers.VARINT);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
 	public static long[] tickTimeLiving=new long[20];
@@ -497,7 +492,7 @@ public class TF2EventsCommon {
 			if (damageSource.hasCapability(TF2weapons.WEAPONS_CAP, null) && damageSource.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks > 0) {
 				event.setCanceled(true);
 			}
-			if (damageSource.hasCapability(TF2weapons.WEAPONS_CAP, null) && damageSource.getDataManager().get(ENTITY_DISGUISED)) {
+			if (damageSource.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(damageSource).isDisguised()) {
 				disguise(damageSource, false);
 			}
 		}
@@ -551,7 +546,8 @@ public class TF2EventsCommon {
 		if (event.getEntityLiving().getActivePotionEffect(TF2weapons.crit) != null) {
 			event.setAmount(event.getAmount() * 1.1f);
 		}
-		if (event.getEntityLiving().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getAmount()>1 &&event.getSource() == DamageSource.FALL && event.getEntityLiving().getDataManager().get(ENTITY_EXP_JUMP)) {
+		if (event.getEntityLiving().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getAmount()>1 &&event.getSource() == DamageSource.FALL 
+				&& event.getEntityLiving().getCapability(TF2weapons.WEAPONS_CAP, null).isExpJump()) {
 			event.setAmount((float) Math.sqrt(event.getAmount()));
 		}
 		for (ItemStack stack : event.getEntityLiving().getEquipmentAndArmor())
@@ -678,7 +674,7 @@ public class TF2EventsCommon {
 		if (event.getPlayer().getActivePotionEffect(TF2weapons.stun) != null) {
 			event.setCanceled(true);
 		}
-		if (event.getPlayer().getDataManager().get(ENTITY_DISGUISED)) {
+		if (WeaponsCapability.get(event.getPlayer()).isDisguised()) {
 			disguise(event.getPlayer(), false);
 		}
 	}
@@ -743,14 +739,6 @@ public class TF2EventsCommon {
 		if (event.getEntity() instanceof EntityLivingBase) {
 			//event.getEntity().getDataManager().register(ENTITY_UBER, false);
 			event.getEntity().getDataManager().register(ENTITY_OVERHEAL, 0f);
-			
-			if (event.getEntity() instanceof EntityTF2Character || event.getEntity() instanceof EntityPlayer) {
-				event.getEntity().getDataManager().register(ENTITY_INVIS, false);
-				event.getEntity().getDataManager().register(ENTITY_DISGUISED, false);
-				event.getEntity().getDataManager().register(ENTITY_DISGUISE_TYPE, "");
-				event.getEntity().getDataManager().register(ENTITY_EXP_JUMP, false);
-				event.getEntity().getDataManager().register(ENTITY_HEAL_TARGET, -1);
-			}
 		}
 	}
 
@@ -822,7 +810,7 @@ public class TF2EventsCommon {
 				&& !(item.getItem() instanceof ItemCloak && item.getTagCompound().getBoolean("Active"))) {
 			event.setCanceled(true);
 		}
-		if (event.getEntity().getDataManager().get(ENTITY_DISGUISED)
+		if (WeaponsCapability.get(event.getEntity()).isDisguised() 
 				&& !(item.getItem() instanceof ItemFood || item.getItem() instanceof ItemCloak || item.getItem() instanceof ItemDisguiseKit)) {
 			disguise(event.getEntityPlayer(), false);
 		}
@@ -841,7 +829,7 @@ public class TF2EventsCommon {
 		if (event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks > 0) {
 			event.setCanceled(true);
 		}
-		if (event.getEntity().getDataManager().get(ENTITY_DISGUISED) && !(event.getEntityPlayer().getHeldItem(event.getHand()).getItem() instanceof ItemFood)) {
+		if (WeaponsCapability.get(event.getEntity()).isDisguised() && !(event.getEntityPlayer().getHeldItem(event.getHand()).getItem() instanceof ItemFood)) {
 			disguise(event.getEntityPlayer(), false);
 		}
 		if (event.getEntityLiving().getActivePotionEffect(TF2weapons.bonk) != null) {
@@ -880,7 +868,7 @@ public class TF2EventsCommon {
 	}
 
 	public static void disguise(EntityLivingBase entity, boolean active) {
-		entity.getDataManager().set(ENTITY_DISGUISED, active);
+		WeaponsCapability.get(entity).setDisguised(active);
 		entity.getCapability(TF2weapons.WEAPONS_CAP, null).disguiseTicks = 0;
 		if(active && entity.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks < 20 && entity.world instanceof WorldServer)
 			((WorldServer)entity.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, entity.posX, entity.posY, entity.posZ, 20, 0.2, 1, 0.2, 0.04f, new int[0]);
@@ -935,13 +923,13 @@ public class TF2EventsCommon {
 			if(living.hasCapability(TF2weapons.PLAYER_CAP, null))
 				living.getCapability(TF2weapons.PLAYER_CAP, null).tick();
 
-			if (living.getDataManager().get(ENTITY_EXP_JUMP)) {
+			if (cap.isExpJump()) {
 				if (living.onGround) {
 					cap.killsAirborne=0;
-					living.getDataManager().set(ENTITY_EXP_JUMP, false);
+					cap.setExpJump(false);
 				}
 				if(living.isElytraFlying())
-					living.getDataManager().set(ENTITY_EXP_JUMP, false);
+					cap.setExpJump(false);
 				living.motionX = living.motionX * 1.035;
 				living.motionZ = living.motionZ * 1.035;
 			}
@@ -1010,12 +998,12 @@ public class TF2EventsCommon {
 
 				}
 			}
-			if (living.world.isRemote && living.getDataManager().get(ENTITY_DISGUISED) != cap.lastDisgused) {
-				cap.lastDisgused=living.getDataManager().get(ENTITY_DISGUISED);
+			if (living.world.isRemote && WeaponsCapability.get(event.getEntity()).isDisguised()  != cap.lastDisgused) {
+				cap.lastDisgused=WeaponsCapability.get(event.getEntity()).isDisguised();
 				if(living instanceof EntityPlayer)
 					((EntityPlayer)living).refreshDisplayName();
 			}
-			String disguisetype=living.getDataManager().get(ENTITY_DISGUISE_TYPE);
+			String disguisetype=cap.getDisguiseType();
 			
 			if (living.world.isRemote && !disguisetype.equals(cap.lastDisguiseValue)){
 				if(living instanceof EntityPlayer) {
@@ -1023,7 +1011,7 @@ public class TF2EventsCommon {
 				}
 				
 				cap.lastDisguiseValue = disguisetype;
-				if(living.getDataManager().get(ENTITY_DISGUISE_TYPE).startsWith("P:")) {
+				if(cap.getDisguiseType().startsWith("P:")) {
 					cap.skinDisguise = null;
 					cap.skinType = DefaultPlayerSkin.getSkinType(living.getUniqueID());
 					THREAD_POOL.submit(new Runnable() {
@@ -1031,7 +1019,7 @@ public class TF2EventsCommon {
 						@Override
 						public void run() {
 							GameProfile profile = TileEntitySkull
-									.updateGameprofile(new GameProfile(null, living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2)));
+									.updateGameprofile(new GameProfile(null, cap.getDisguiseType().substring(2)));
 							if (profile.getId() != null) {
 								cap.skinType = DefaultPlayerSkin.getSkinType(profile.getId());
 								cap.skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
@@ -1106,7 +1094,7 @@ public class TF2EventsCommon {
 					}
 				}
 			}
-			if (living.getDataManager().get(ENTITY_INVIS)) {
+			if (cap.isInvisible()) {
 				// System.out.println("cloak");
 				boolean visible = living.hurtTime == 10;
 				if (!visible) {
@@ -1140,7 +1128,7 @@ public class TF2EventsCommon {
 				}
 				boolean active = living.world.isRemote || !ItemCloak.searchForWatches(living).getSecond().isEmpty();
 				if (!active) {
-					living.getDataManager().set(ENTITY_INVIS, false);
+					cap.setInvisible(false);
 					living.setInvisible(false);
 					// System.out.println("decloak");
 				}
@@ -1342,6 +1330,7 @@ public class TF2EventsCommon {
 			}
 			if(living instanceof EntityPlayerMP && TF2weapons.isEnemy(living, event.getEntityLiving())){
 				EntityPlayerMP player=(EntityPlayerMP)living;
+				TF2PlayerCapability plcap = player.getCapability(TF2weapons.PLAYER_CAP, null);
 				/*if(living.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped){
 					player.addStat(TF2Achievements.KILLED_DOUBLEJUMP);
 					if(player.getStatFile().readStat(TF2Achievements.KILLED_DOUBLEJUMP)>=20){
@@ -1373,7 +1362,7 @@ public class TF2EventsCommon {
 				if(!stack.isEmpty() && ItemFromData.getData(stack).getName().contains("sentry")){
 					player.addStat(TF2Achievements.KILLED_SENTRYGUN);
 					if(event.getEntity() instanceof EntityTF2Character)
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_W_SENTRY,stack);
+						plcap.completeObjective(Objective.KILL_W_SENTRY,stack);
 					if(player.getStatFile().readStat(TF2Achievements.KILLED_SENTRYGUN)>=500)
 						player.addStat(TF2Achievements.SENTRYGUN_KILLS);
 					if(event.getEntityLiving() instanceof EntitySniper && living.getHeldItemMainhand() != null && living.getHeldItemMainhand().getItem() instanceof ItemWrangler){
@@ -1383,51 +1372,51 @@ public class TF2EventsCommon {
 					}
 				}*/
 				if(event.getEntity() instanceof EntityTF2Character) {
-					if((player.getCapability(TF2weapons.PLAYER_CAP, null).fastKillTimer+=120)>360) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).fastKillTimer=0;
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS,stack);
+					if((plcap.fastKillTimer+=120)>360) {
+						plcap.fastKillTimer=0;
+						plcap.completeObjective(Objective.KILLS,stack);
 					}
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL,stack);
+					plcap.completeObjective(Objective.KILL,stack);
 					if(event.getSource() instanceof TF2DamageSource && (((TF2DamageSource)event.getSource()).getAttackFlags()&TF2DamageSource.HEADSHOT)==TF2DamageSource.HEADSHOT) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.HEADSHOT,stack);
+						plcap.completeObjective(Objective.HEADSHOT,stack);
 					}
 					if(event.getSource() instanceof TF2DamageSource && (((TF2DamageSource)event.getSource()).getAttackFlags()&TF2DamageSource.BACKSTAB)==TF2DamageSource.BACKSTAB) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.BACKSTAB,stack);
+						plcap.completeObjective(Objective.BACKSTAB,stack);
 					}
 					if(event.getSource().getImmediateSource() instanceof EntityProjectileBase && ((EntityProjectileBase)event.getSource().getImmediateSource()).reflected) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_REFLECTED,stack);
+						plcap.completeObjective(Objective.KILL_REFLECTED,stack);
 					}
 					if(stack.getItem() instanceof ItemStickyLauncher) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.STICKY_KILL,stack);
+						plcap.completeObjective(Objective.STICKY_KILL,stack);
 					}
 					if(stack.getItem() instanceof ItemMeleeWeapon) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_MELEE,stack);
+						plcap.completeObjective(Objective.KILL_MELEE,stack);
 					}
-					if(player.getDataManager().get(ENTITY_EXP_JUMP)) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_BLAST,stack);
+					if(player.getCapability(TF2weapons.WEAPONS_CAP, null).isExpJump()) {
+						plcap.completeObjective(Objective.KILL_BLAST,stack);
 					}
 					if(player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_DOUBLE,stack);
+						plcap.completeObjective(Objective.KILL_DOUBLE,stack);
 					}
 				}
 				if(event.getEntity() instanceof EntityScout)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_SCOUT,stack);
+					plcap.completeObjective(Objective.KILL_SCOUT,stack);
 				else if(event.getEntity() instanceof EntityPyro)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_PYRO,stack);
+					plcap.completeObjective(Objective.KILL_PYRO,stack);
 				else if(event.getEntity() instanceof EntitySoldier)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_SOLDIER,stack);
+					plcap.completeObjective(Objective.KILL_SOLDIER,stack);
 				else if(event.getEntity() instanceof EntityHeavy)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_HEAVY,stack);
+					plcap.completeObjective(Objective.KILL_HEAVY,stack);
 				else if(event.getEntity() instanceof EntityDemoman)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_DEMOMAN,stack);
+					plcap.completeObjective(Objective.KILL_DEMOMAN,stack);
 				else if(event.getEntity() instanceof EntityEngineer)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_ENGINEER,stack);
+					plcap.completeObjective(Objective.KILL_ENGINEER,stack);
 				else if(event.getEntity() instanceof EntityMedic)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_MEDIC,stack);
+					plcap.completeObjective(Objective.KILL_MEDIC,stack);
 				else if(event.getEntity() instanceof EntitySpy)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_SPY,stack);
+					plcap.completeObjective(Objective.KILL_SPY,stack);
 				else if(event.getEntity() instanceof EntitySniper)
-					player.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_SNIPER,stack);
+					plcap.completeObjective(Objective.KILL_SNIPER,stack);
 				
 				
 			}
@@ -1674,6 +1663,17 @@ public class TF2EventsCommon {
 	public void register(RegistryEvent.Register<SoundEvent> event) {
 		//System.out.println("SoundEvents:"+TF2Sounds.SOUND_EVENTS.size());
 		TF2Sounds.registerSounds();
+		System.out.println("Registering sounds: "+ MapList.nameToData.values());
+		for (WeaponData weapon : MapList.nameToData.values())
+			for (PropertyType propType : weapon.properties.keySet())
+				if (propType.name.contains("sound")) {
+					ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
+					if (!"".equals(soundLocation.getResourcePath())) {
+						TF2Sounds.register(soundLocation);
+						if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
+							TF2Sounds.register(new ResourceLocation(propType.getString(weapon) + ".crit"));
+					}
+				}
 		for(SoundEvent sevent:TF2Sounds.SOUND_EVENTS.values()) {
 			event.getRegistry().register(sevent);
 		}

@@ -105,6 +105,7 @@ public class GuiTF2Crafting extends GuiContainer {
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		this.renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	protected void drawTab(int id) {
@@ -152,10 +153,10 @@ public class GuiTF2Crafting extends GuiContainer {
 		this.zLevel = 0.0F;
 	}
 
-	@Override
+	/*@Override
 	public void drawHoveringText(List<String> textLines, int x, int y) {
 		drawHoveringText(textLines, x, y, fontRenderer);
-	}
+	}*/
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -199,8 +200,11 @@ public class GuiTF2Crafting extends GuiContainer {
 				else{
 					List<Ingredient> input = recipe.getIngredients();
 					for (int i = 0; i < input.size(); i++) {
-						if(input.get(i).getMatchingStacks().length>0)
+						if(input.get(i).getMatchingStacks().length>0) {
 							itemsToRender[i] = input.get(i).getMatchingStacks()[0];
+							if(itemsToRender[i].getMetadata()==32767)
+								itemsToRender[i].setItemDamage(0);
+						}
 					}
 				}
 			}
@@ -218,9 +222,10 @@ public class GuiTF2Crafting extends GuiContainer {
 				4210752);
 		for (int i = 0; i < 12; i++)
 			if (this.buttonsItem[i].stackToDraw != null && this.buttonsItem[i].isMouseOver())
-				((GuiTF2Crafting) mc.currentScreen).drawHoveringText(
-						this.buttonsItem[i].stackToDraw.getTooltip(mc.player, ITooltipFlag.TooltipFlags.NORMAL), mouseX - this.guiLeft,
+				this.renderToolTip(this.buttonsItem[i].stackToDraw, mouseX - this.guiLeft,
 						mouseY - this.guiTop);
+		System.out.println("Hovered: "+this.getSlotUnderMouse());
+		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 	}
 
 	/**

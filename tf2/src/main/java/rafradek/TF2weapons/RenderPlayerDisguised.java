@@ -13,6 +13,7 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class RenderPlayerDisguised extends RenderPlayer {
 
@@ -38,7 +39,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 	protected int getTeamColor(AbstractClientPlayer entityIn) {
 		int i = 16777215;
 		ScorePlayerTeam scoreplayerteam = entityIn.world.getScoreboard()
-				.getPlayersTeam(entityIn.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2));
+				.getPlayersTeam(WeaponsCapability.get(entityIn).getDisguiseType().substring(2));
 
 		if (scoreplayerteam != null) {
 			String s = FontRenderer.getFormatFromString(scoreplayerteam.getPrefix());
@@ -83,7 +84,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 
 			if (entity != entityplayersp) {
 				Team team = Minecraft.getMinecraft().world.getScoreboard().getPlayersTeam(
-						entity.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2));
+						WeaponsCapability.get(entity).getDisguiseType().substring(2));
 				Team team1 = entityplayersp.getTeam();
 
 				if (team != null) {

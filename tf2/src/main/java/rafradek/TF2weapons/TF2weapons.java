@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.8.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.8.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -726,11 +726,8 @@ public class TF2weapons {
 			MapGenStructureIO.registerStructureComponent(MannCoBuilding.class, "ViMC");
 			VillagerRegistry.instance().registerVillageCreationHandler(new MannCoBuilding.CreationHandler());
 		}
-		TF2Sounds.registerSounds();
-		if (event.getSide() == Side.CLIENT) {
-			loadWeapons();
+		loadWeapons();
 			//System.out.println(MapList.nameToData.get("rocketlauncher"));
-		}
 		cratesOpened = (new StatBasic("stat.cratesOpened", new TextComponentTranslation("stat.cratesOpened", new Object[0]))).registerStat();
 
 		proxy.preInit();
@@ -975,8 +972,6 @@ public class TF2weapons {
 		// FMLCommonHandler.instance().bus().register(new
 		// TF2EventBusListener());
 		proxy.registerRenderInformation();
-		MapList.nameToData.clear();
-		MapList.buildInAttributes.clear();
 
 	}
 
@@ -1092,15 +1087,7 @@ public class TF2weapons {
 	}
 	public static void loadWeapon(String name, WeaponData weapon) {
 		
-		for (PropertyType propType : weapon.properties.keySet())
-			if (propType.name.contains("sound")) {
-				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
-				if (!"".equals(soundLocation.getResourcePath())) {
-					TF2Sounds.register(soundLocation);
-					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
-						TF2Sounds.register(new ResourceLocation(propType.getString(weapon) + ".crit"));
-				}
-			}
+		
 		/*
 		 * else{ weaponList[Integer.parseInt(weaponEntry)] =(ItemUsable)
 		 * weaponClass.getConstructor(new Class[] {ConfigCategory.class,
@@ -1144,7 +1131,6 @@ public class TF2weapons {
 	public void serverPreInit(FMLServerAboutToStartEvent event) {
 		// System.out.println("Starting server");
 		
-		loadWeapons();
 		if (!event.getServer().isDedicatedServer())
 			for (WeaponData weapon : MapList.nameToData.values())
 				ClientProxy.RegisterWeaponData(weapon);
@@ -1411,7 +1397,7 @@ public class TF2weapons {
 		if (initial < 2 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) != 0))
 			initial = 2;
 		if (initial < 2 && (!stack.isEmpty() && shooter != null && shooter instanceof EntityPlayer && 
-				(shooter.getDataManager().get(TF2EventsCommon.ENTITY_EXP_JUMP) || shooter.isElytraFlying())
+				(shooter.getCapability(TF2weapons.WEAPONS_CAP, null).isExpJump() || shooter.isElytraFlying())
 				&& TF2Attribute.getModifier("Crit Rocket", stack, 0, shooter) != 0))
 			initial = 2;
 		if (initial == 1 && (!stack.isEmpty() && shooter != null && shooter instanceof EntityPlayer && TF2Attribute.getModifier("Crit Mini", stack, 0, shooter) != 0))

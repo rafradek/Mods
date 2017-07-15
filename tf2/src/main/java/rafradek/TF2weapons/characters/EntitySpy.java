@@ -14,12 +14,12 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAIAmbush;
 import rafradek.TF2weapons.weapons.ItemCloak;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntitySpy extends EntityTF2Character {
 
@@ -39,9 +39,9 @@ public class EntitySpy extends EntityTF2Character {
 		}
 		this.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks = 20;
 		if(!this.world.isRemote) {
-			this.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, true);
-			this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, true);
-			this.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, "T:Engineer");
+			this.getWepCapability().setInvisible(true);
+			this.getWepCapability().setDisguised(true);
+			this.getWepCapability().setDisguiseType("T:Engineer");
 		}
 	}
 
@@ -73,7 +73,7 @@ public class EntitySpy extends EntityTF2Character {
 								&& !TF2weapons.lookingAtFast(target, 105, this.posX, this.posY, this.posZ)))) {
 
 					((ItemCloak) this.loadout.get(3).getItem()).setCloak(
-							!this.getDataManager().get(TF2EventsCommon.ENTITY_INVIS), this.loadout.get(3), this,
+							!this.getWepCapability().isInvisible(), this.loadout.get(3), this,
 							this.world);
 					if (useKnife) {
 						this.weaponCounter = 8;
@@ -125,14 +125,14 @@ public class EntitySpy extends EntityTF2Character {
 	}
 
 	public String getName() {
-		if(this.world.isRemote && ClientProxy.getLocalPlayer() != null && this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
-			String username=this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+		if(this.world.isRemote && ClientProxy.getLocalPlayer() != null && this.getWepCapability().isDisguised()) {
+			String username=this.getWepCapability().getDisguiseType().substring(2);
 			
 			if(TF2weapons.isOnSameTeam(ClientProxy.getLocalPlayer(), this)) {
 				return super.getName()+" ["+username+"]";
 			}
 			else {
-				if(this.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
+				if(this.getWepCapability().getDisguiseType().startsWith("M:")) {
 					return TextFormatting.RESET+I18n.format("entity."+username+".name");
 				}
 				else

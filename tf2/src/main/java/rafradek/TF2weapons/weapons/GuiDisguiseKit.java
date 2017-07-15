@@ -288,8 +288,8 @@ public class GuiDisguiseKit extends GuiScreen {
 					GameProfile profile = TileEntitySkull
 							.updateGameprofile(new GameProfile(null, playerNameField.getText()));
 					player = new EntityOtherPlayerMP(mc.world, profile);
-					player.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, true);
-					player.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, "P:"+playerNameField.getText());
+					WeaponsCapability.get(player).setDisguised(true);
+					WeaponsCapability.get(player).setDisguiseType("P:"+playerNameField.getText());
 					final WeaponsCapability cap = player.getCapability(TF2weapons.WEAPONS_CAP, null);
 					cap.skinType = DefaultPlayerSkin.getSkinType(player.getUniqueID());
 					if (profile.getId() != null)

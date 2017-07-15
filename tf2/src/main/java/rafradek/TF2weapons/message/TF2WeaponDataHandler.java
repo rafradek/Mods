@@ -81,7 +81,6 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 			input.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return null;
 	}

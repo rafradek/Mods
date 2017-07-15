@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -26,7 +27,7 @@ public class ItemCloak extends ItemFromData {
 	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		if (par1ItemStack.getTagCompound().getBoolean("Active")
-				&& par3Entity.getDataManager().get(TF2EventsCommon.ENTITY_INVIS)) {
+				&& WeaponsCapability.get(par3Entity).isInvisible()) {
 			// System.out.println("uncharge");
 			par1ItemStack.setItemDamage(Math.min(600, par1ItemStack.getItemDamage() + 3));
 			if (par1ItemStack.getTagCompound().getBoolean("Strange")) {
@@ -40,7 +41,7 @@ public class ItemCloak extends ItemFromData {
 				this.setCloak(false, par1ItemStack, (EntityLivingBase) par3Entity, par2World);
 			}
 		} else if (par1ItemStack.getTagCompound().getBoolean("Active")
-				&& !par3Entity.getDataManager().get(TF2EventsCommon.ENTITY_INVIS))
+				&& !WeaponsCapability.get(par3Entity).isInvisible())
 			par1ItemStack.getTagCompound().setBoolean("Active", false);
 		else
 			par1ItemStack.setItemDamage(Math.max(par1ItemStack.getItemDamage() - 1, 0));
@@ -59,13 +60,20 @@ public class ItemCloak extends ItemFromData {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		ItemStack stack=living.getHeldItem(hand);
-		if (living.isInvisible() || stack.getItemDamage() < 528) {
-			this.setCloak(!living.getDataManager().get(TF2EventsCommon.ENTITY_INVIS), stack, living, world);
+		if (living.isInvisible() || (!isFeignDeath(stack, living) && stack.getItemDamage() < 528)) {
+			this.setCloak(!WeaponsCapability.get(living).isInvisible(), stack, living, world);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
+		}
+		else if(!living.isInvisible()) {
+			
 		}
 		return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
 	}
 
+	public boolean isFeignDeath(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("WeaponMode", stack, 0, living) == 1;
+	}
+	
 	@Override
 	public boolean onDroppedByPlayer(ItemStack item, EntityPlayer player) {
 		if (item.getTagCompound().getBoolean("Active"))
@@ -103,7 +111,7 @@ public class ItemCloak extends ItemFromData {
 			}
 			// System.out.println("ok: "+active);
 			stack.getTagCompound().setBoolean("Active", active);
-			living.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, active);
+			WeaponsCapability.get(living).setInvisible(active);
 
 			// setInvisiblity(living);
 			if (active)
@@ -120,9 +128,9 @@ public class ItemCloak extends ItemFromData {
 
 	public static void setInvisiblity(EntityLivingBase living) {
 		boolean cloaked = living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20;
-		boolean disguised = living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED);
+		boolean disguised = WeaponsCapability.get(living).isDisguised();
 		living.setInvisible(cloaked || (disguised && living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
-				&& !living.getDataManager().get(TF2EventsCommon.ENTITY_INVIS)));
+				&& !WeaponsCapability.get(living).isInvisible()));
 	}
 
 	@Override

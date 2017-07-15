@@ -1,0 +1,16 @@
+[
+{
+  "modid": "rafradek_crit",
+  "name": "Random Crits",
+  "description": "Bring your best Garen experience",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["rafradek"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

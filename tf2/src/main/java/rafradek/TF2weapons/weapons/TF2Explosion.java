@@ -31,7 +31,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 
@@ -205,7 +204,7 @@ public class TF2Explosion extends Explosion {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),
 						// (EntityPlayerMP) entity);
-						entity.getDataManager().set(TF2EventsCommon.ENTITY_EXP_JUMP, true);
+						entity.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
 						this.getKnockbackMap().put(entity, move.scale(d11));
 						// entity.getDataWatcher().updateObject(29,
 						// Byte.valueOf((byte) 1));

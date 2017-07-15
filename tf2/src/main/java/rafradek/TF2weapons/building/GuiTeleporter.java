@@ -36,7 +36,7 @@ public class GuiTeleporter extends GuiScreen {
 		this.teleportField=new GuiTextField(5, fontRenderer, this.width / 2 -40, this.height / 2 - 10, 30, 20);
 		this.teleportField.setMaxStringLength(3);
 		this.teleportField.setFocused(true);
-		this.teleportField.setText(Integer.toString(this.channel));
+		this.teleportField.setText(Integer.toString(this.channel+1));
 		this.buttonList.add(this.doneBtn = new GuiButton(0, this.width / 2 + 5, this.height / 2 + 60, 40, 20,
 				I18n.format("gui.done", new Object[0])));
 		this.buttonList
@@ -62,12 +62,12 @@ public class GuiTeleporter extends GuiScreen {
 				channel++;
 				if (channel >= EntityTeleporter.TP_PER_PLAYER)
 					channel = 0;
-				this.teleportField.setText(Integer.toString(this.channel));
+				this.teleportField.setText(Integer.toString(this.channel + 1));
 			} else if (button.id == 2) {
 				channel--;
 				if (channel < 0)
 					channel = EntityTeleporter.TP_PER_PLAYER - 1;
-				this.teleportField.setText(Integer.toString(this.channel));
+				this.teleportField.setText(Integer.toString(this.channel + 1));
 			} else if (button.id == 3 && !this.teleporter.isExit())
 				exit = !exit;
 			else if (button.id == 4) {
@@ -88,7 +88,7 @@ public class GuiTeleporter extends GuiScreen {
 		super.keyTyped(typedChar, keyCode);
 		this.teleportField.textboxKeyTyped(typedChar, keyCode);
 		try {
-			channel = MathHelper.clamp(Integer.parseInt(this.teleportField.getText()),0,EntityTeleporter.TP_PER_PLAYER-1);
+			channel = MathHelper.clamp(Integer.parseInt(this.teleportField.getText())-1,0,EntityTeleporter.TP_PER_PLAYER-1);
 		}
 		catch (Exception ex) {
 			

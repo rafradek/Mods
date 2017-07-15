@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
-import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 
@@ -27,7 +26,7 @@ public class ItemDisguiseKit extends Item {
 	}
 
 	public static void startDisguise(EntityLivingBase living, World world, String type) {
-		living.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, type);
+		WeaponsCapability.get(living).setDisguiseType(type);
 		if (living.getCapability(TF2weapons.WEAPONS_CAP, null).disguiseTicks == 0)
 			// System.out.println("starting disguise");
 			if (!world.isRemote)
@@ -42,10 +41,10 @@ public class ItemDisguiseKit extends Item {
 	}
 
 	public static boolean isDisguised(EntityLivingBase living, EntityLivingBase view) {
-		if(!living.hasCapability(TF2weapons.WEAPONS_CAP, null) || !living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED) 
+		if(!living.hasCapability(TF2weapons.WEAPONS_CAP, null) || !WeaponsCapability.get(living).isDisguised() 
 				|| (living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks != 0 && !(view instanceof EntityBuilding)))
 			return false;
-		String disguisetype=living.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE);
+		String disguisetype=WeaponsCapability.get(living).getDisguiseType();
 		if(disguisetype.startsWith("M:") || disguisetype.startsWith("T:"))
 			return true;
 		if(disguisetype.startsWith("P:")) {

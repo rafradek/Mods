@@ -90,6 +90,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
+	public static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
+	public static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
+	public static final DataParameter<Boolean> DISGUISED = new DataParameter<Boolean>(8, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> INVIS = new DataParameter<Boolean>(9, DataSerializers.BOOLEAN);
 	
 	public static final DataParameter<Integer> CRIT_TIME= new DataParameter<Integer>(0, DataSerializers.VARINT);
 	public static final DataParameter<Integer> HEADS= new DataParameter<Integer>(1, DataSerializers.VARINT);
@@ -117,6 +121,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(HEAL_TARGET, -1);
 		this.dataManager.register(PHLOG_RAGE, 0f);
 		this.dataManager.register(METAL, MAX_METAL);
+		this.dataManager.register(INVIS, false);
+		this.dataManager.register(DISGUISED, false);
+		this.dataManager.register(DISGUISE_TYPE, "");
+		this.dataManager.register(EXP_JUMP, false);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -155,6 +163,41 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void setPhlogRage(float rage) {
 		this.dataManager.set(PHLOG_RAGE, rage);
 	}
+	
+	public boolean isInvisible() {
+		return this.dataManager.get(INVIS);
+	}
+	
+	public void setInvisible(boolean invis) {
+		this.dataManager.set(INVIS, invis);
+	}
+	
+	public void setDisguised(boolean val) {
+		this.dataManager.set(DISGUISED, val);
+	}
+	
+	public boolean isDisguised() {
+		return this.dataManager.get(DISGUISED);
+	}
+	
+	public void setExpJump(boolean val) {
+		this.dataManager.set(EXP_JUMP, val);
+	}
+	
+	public boolean isExpJump() {
+		return this.dataManager.get(EXP_JUMP);
+	}
+	
+	public void setDisguiseType(String val) {
+		this.dataManager.set(DISGUISE_TYPE, val);
+	}
+	
+	public String getDisguiseType() {
+		return this.dataManager.get(DISGUISE_TYPE);
+	}
+	
+	
+	
 	public void addHead() {
 
 		this.collectedHeadsTime = owner.ticksExisted;
@@ -467,7 +510,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (player instanceof EntityTF2Character)
 				((EntityTF2Character) player).onShot();
 
-			if (player.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED) && !(item instanceof ItemSapper))
+			if (this.isDisguised() && !(item instanceof ItemSapper))
 				TF2EventsCommon.disguise(player, false);
 
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
@@ -521,7 +564,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				break;
 			this.fire2Cool += item.getAltFiringSpeed(stack, player);
 
-			if (player.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED))
+			if (this.isDisguised())
 				TF2EventsCommon.disguise(player, false);
 
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
@@ -580,9 +623,9 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		tag.setInteger("HealTarget", this.getHealTarget());
 		tag.setShort("Heads", this.dataManager.get(HEADS).shortValue());
 		tag.setShort("HeadsCool", (short) (this.collectedHeadsTime - this.owner.ticksExisted));
-		tag.setBoolean("Cloaked", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_INVIS));
-		tag.setBoolean("Disguised", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED));
-		tag.setString("DisguiseType", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE));
+		tag.setBoolean("Cloaked", this.isInvisible());
+		tag.setBoolean("Disguised", this.isDisguised());
+		tag.setString("DisguiseType", this.getDisguiseType());
 		tag.setInteger("KillsSpinning", this.killsSpinning);
 		tag.setInteger("FocusedShot", this.focusShotTicks);
 		tag.setInteger("KnockbackFANCool", this.fanCool);
@@ -604,11 +647,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			this.effectsCool.put(key, cld.getInteger(key));
 		this.dataManager.set(HEADS, (int) nbt.getShort("Heads"));
 		this.collectedHeadsTime = nbt.getShort("HeadsCool");
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, nbt.getBoolean("Cloaked"));
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, nbt.getBoolean("Disguised"));
+		this.setInvisible(nbt.getBoolean("Cloaked"));
+		this.setDisguised(nbt.getBoolean("Disguised"));
 		//this.owner.getDataManager().set(TF2EventBusListener.ENTITY_UBER, nbt.getBoolean("Uber"));
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, nbt.getString("DisguiseType"));
-		if (this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED))
+		this.setDisguiseType(nbt.getString("DisguiseType"));
+		if (this.isDisguised())
 			TF2EventsCommon.disguise(this.owner, true);
 		this.killsSpinning=nbt.getInteger("KillsSpinning");
 		this.focusShotTicks=nbt.getInteger("FocusedShot");
@@ -617,5 +660,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.setPhlogRage(nbt.getFloat("Phlog"));
 		this.setMetal(nbt.getInteger("Metal"));
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
+	}
+	
+	public static EntityDataManager getDataManager(Entity ent) {
+		return ent.getCapability(TF2weapons.WEAPONS_CAP, null).dataManager;
+	}
+	
+	public static WeaponsCapability get(Entity ent) {
+		return ent.getCapability(TF2weapons.WEAPONS_CAP, null);
 	}
 }
