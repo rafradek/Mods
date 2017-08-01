@@ -12,6 +12,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -53,6 +55,8 @@ public class EntityTeleporter extends EntityBuilding {
 			DataSerializers.BYTE);
 	private static final DataParameter<Boolean> EXIT = EntityDataManager.createKey(EntityTeleporter.class,
 			DataSerializers.BOOLEAN);
+	private static final DataParameter<Byte> COLOR = EntityDataManager.createKey(EntityTeleporter.class,
+			DataSerializers.BYTE);
 
 	public EntityTeleporter(World worldIn) {
 		super(worldIn);
@@ -117,6 +121,9 @@ public class EntityTeleporter extends EntityBuilding {
 					this.setSoundState(1);
 					if (this.linkedTp != null)
 						this.linkedTp.setSoundState(1);
+				}
+				if (this.linkedTp != null && this.getColor() != this.linkedTp.getColor()) {
+					this.getDataManager().set(COLOR, (byte) this.linkedTp.getColor());
 				}
 				/*
 				 * if(ticksToTeleport<=0){ List<EntityLivingBase>
@@ -194,6 +201,12 @@ public class EntityTeleporter extends EntityBuilding {
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		if (player == this.getOwner() && player.getHeldItem(hand).getItem() instanceof ItemDye) {
+			if(!world.isRemote) {
+				this.setColor(player.getHeldItem(hand).getMetadata());
+			}
+			return true;
+		}
 		if (this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
 			ClientProxy.showGuiTeleporter(this);
 			return true;
@@ -208,6 +221,7 @@ public class EntityTeleporter extends EntityBuilding {
 		this.dataManager.register(TPPROGRESS, 0);
 		this.dataManager.register(EXIT, false);
 		this.dataManager.register(CHANNEL, (byte) 0);
+		this.dataManager.register(COLOR, (byte) -1);
 	}
 
 	public boolean isExit() {
@@ -258,6 +272,17 @@ public class EntityTeleporter extends EntityBuilding {
 		return this.dataManager.get(TELEPORTS);
 	}
 
+	public void setColor(int color) {
+		this.dataManager.set(COLOR, (byte)color);
+		if(this.linkedTp != null && !this.isExit()) {
+			this.linkedTp.setColor(color);
+		}
+	}
+
+	public int getColor() {
+		return this.dataManager.get(COLOR);
+	}
+	
 	/*
 	 * public void setOwner(EntityLivingBase owner) { super.setOwner(owner);
 	 * if(owner instanceof EntityPlayer){ this.dataManager.set(key, value);14,
@@ -334,6 +359,7 @@ public class EntityTeleporter extends EntityBuilding {
 		par1NBTTagCompound.setBoolean("TeleExit", this.isExit());
 		par1NBTTagCompound.setInteger("TeleID", this.tpID);
 		par1NBTTagCompound.setShort("Teleports", (short) this.getTeleports());
+		par1NBTTagCompound.setByte("Color", (byte) this.getColor());
 	}
 
 	@Override
@@ -346,7 +372,7 @@ public class EntityTeleporter extends EntityBuilding {
 		if(teleporters.get(this.getOwnerId())[this.getID()] == null || teleporters.get(this.getOwnerId())[this.getID()].id == this.tpID)
 			//this.setID(par1NBTTagCompound.getByte("TeleExitID"));
 			this.setExit(par1NBTTagCompound.getBoolean("TeleExit"));
-		
+		this.getDataManager().set(COLOR, par1NBTTagCompound.getByte("Color"));
 	}
 
 	public static class TeleporterData extends BlockPos {

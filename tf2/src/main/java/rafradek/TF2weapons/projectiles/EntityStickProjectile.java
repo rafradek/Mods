@@ -12,6 +12,7 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 	public EntityStickProjectile(World world) {
 		super(world);
 		this.setSize(0.3F, 0.3F);
+		
 	}
 
 	public EntityStickProjectile(World world, EntityLivingBase living, EnumHand hand) {

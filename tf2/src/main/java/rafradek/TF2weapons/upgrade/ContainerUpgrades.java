@@ -16,6 +16,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.weapons.ItemCleaver;
 
 public class ContainerUpgrades extends Container {
 	/** The crafting matrix inventory (3x3). */
@@ -51,7 +52,7 @@ public class ContainerUpgrades extends Container {
 				if (stack.isEmpty())
 					return false;
 				else
-					return stack.getItem() instanceof ItemFromData && stack.getMaxStackSize() == 1;
+					return stack.getItem() instanceof ItemFromData && (stack.getMaxStackSize() == 1 || stack.getItem() instanceof ItemCleaver);
 			}
 		});
 

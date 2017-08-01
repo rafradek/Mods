@@ -199,11 +199,18 @@ public class GuiTF2Crafting extends GuiContainer {
 				}
 				else{
 					List<Ingredient> input = recipe.getIngredients();
+					
 					for (int i = 0; i < input.size(); i++) {
+						int space = 0;
+						if(recipe instanceof ShapedRecipes)
+							space = (3-((ShapedRecipes)recipe).recipeWidth)*(i/((ShapedRecipes)recipe).recipeWidth);
+						else if(recipe instanceof ShapedOreRecipe)
+							space = (3-((ShapedOreRecipe)recipe).getWidth())*(i/((ShapedOreRecipe)recipe).getWidth());
+							
 						if(input.get(i).getMatchingStacks().length>0) {
-							itemsToRender[i] = input.get(i).getMatchingStacks()[0];
-							if(itemsToRender[i].getMetadata()==32767)
-								itemsToRender[i].setItemDamage(0);
+							itemsToRender[i + space] = input.get(i).getMatchingStacks()[0];
+							if(itemsToRender[i + space].getMetadata()==32767)
+								itemsToRender[i + space].setItemDamage(0);
 						}
 					}
 				}
@@ -224,7 +231,6 @@ public class GuiTF2Crafting extends GuiContainer {
 			if (this.buttonsItem[i].stackToDraw != null && this.buttonsItem[i].isMouseOver())
 				this.renderToolTip(this.buttonsItem[i].stackToDraw, mouseX - this.guiLeft,
 						mouseY - this.guiTop);
-		System.out.println("Hovered: "+this.getSlotUnderMouse());
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 	}
 

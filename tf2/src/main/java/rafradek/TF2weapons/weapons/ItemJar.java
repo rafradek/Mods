@@ -71,8 +71,6 @@ public class ItemJar extends ItemProjectileWeapon {
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
 			stack.shrink(1);
-			if (stack.getCount() <= 0 && living instanceof EntityPlayer)
-				((EntityPlayer) living).inventory.deleteStack(stack);
 		}
 		return true;
 	}

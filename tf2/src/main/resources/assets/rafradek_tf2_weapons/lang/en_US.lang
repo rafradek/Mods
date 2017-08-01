@@ -81,6 +81,13 @@ weaponAttribute.SpeedOnHitAlly=On Hit Ally: Boosts both players' speed for sever
 weaponAttribute.ChargedGrenades=Cannonballs have a fuse time of 1 second
 weaponAttribute.MetalAsAmmo=Uses metal as ammo
 weaponAttribute.MetalOnHit=Restores damage dealt as metal
+weaponAttribute.CloakDurationBonus=+%1$s cloak duration
+weaponAttribute.CloakRegenBonus=+%1$s cloak regen rate
+weaponAttribute.CloakDrainActivate=%1$s cloak meter on activation
+weaponAttribute.NoExternalCloak=No cloak from dispensers
+weaponAttribute.CritStunned=100%% crit chance vs stunned
+weaponAttribute.BleedingDuration=On hit: Bleed for %1$s seconds
+weaponAttribute.MiniCritDistance=Mini-crit long distance targets
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

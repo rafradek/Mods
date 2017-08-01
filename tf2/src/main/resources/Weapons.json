@@ -543,7 +543,7 @@
 		"Decloak sound": "rafradek_tf2_weapons:weapon.off.cloak",
 		"Drop chance": 0.05,
 		"Stock": true,
-		"Cost": 18
+		"Cost": 32
 	},
 
 	"wrench": 
@@ -1496,6 +1496,64 @@
 		{
 			"MetalAsAmmo": 30,
 			"MetalOnHit": 7.5
+		}
+	},
+	"deadringer": 
+	{
+		"Name": "Dead Ringer",
+		"Class": "cloak",
+		"Based on": "cloak",
+		"Render": "rafradek_tf2_weapons:dead_ringer",
+		"Cloak sound": "",
+		"Decloak sound": "rafradek_tf2_weapons:weapon.off.deadringer",
+		"Charge sound": "rafradek_tf2_weapons:weapon.draw.deadringer",
+		"Description": "Cloak Type: Feign Death",
+		"Stock": false,
+		"Cost": 32,
+		"Attributes":
+		{
+			"WeaponMode": 1,
+			"CloakRegenBonus": 1.5,
+			"CloakDurationBonus": 1.4,
+			"CloakDrainActivate": 0.5,
+			"NoExternalCloak": 1
+			
+		}
+	},
+	"cleaver": 
+	{
+		"Name": "Flying Guillotine",
+		"Class": "cleaver",
+		"Slot": 1,
+		"Mobs": "scout",
+		"Projectile": "cleaver",
+		"Render": "rafradek_tf2_weapons:flying_guillotine",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.cleaver",
+		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.cleaver.world",
+		"Firing speed": 2000,
+		"Pellets": 1,
+		"Spread": 0,
+		"Projectile speed": 2.6,
+		"Damage": 5,
+		"Max damage": 1,
+		"Min damage": 1,
+		"Random crits": false,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": false,
+		"Knockback": 4,
+		"Spread recovery": false,
+		"Dual wield speed": 0.5,
+		"Ammo type": 0,
+		"Efficient range": 25,
+		"Drop chance": 0.09,
+		"Stock": false,
+		"Cost": 2,
+		"Attributes":
+		{
+			"CritStunned": 1,
+			"BleedingDuration": 5,
+			"MiniCritDistance": 24
 		}
 	}
 }

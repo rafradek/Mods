@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.nbt.NBTTagString;
@@ -498,14 +499,25 @@ public class WeaponData {
 		}
 		return list;
 	}
-	public static class WeaponDataCapability implements ICapabilityProvider, INBTSerializable<NBTTagString>{
+	public static class WeaponDataCapability implements ICapabilityProvider{
 
 		public WeaponData inst=ItemFromData.BLANK_DATA;
 		public HashMap<String, Float> cachedAttrMult = new HashMap<>();
 		public HashMap<String, Float> cachedAttrAdd = new HashMap<>();
 		public boolean cached=false;
-		@Override
-		public NBTTagString serializeNBT() {
+		public int active;
+		
+		/*public static WeaponData get(ItemStack stack) {
+			WeaponData value=ItemFromData.BLANK_DATA;
+			if(!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+				value=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst;
+				if (value == ItemFromData.BLANK_DATA && stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Type")))
+					value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst = MapList.nameToData.get(stack.getTagCompound().getString("Type"));
+			}
+			return value;
+		}*/
+		/*@Override
+		public NBTTagByte serializeNBT() {
 			// TODO Auto-generated method stub
 			if(inst!=ItemFromData.BLANK_DATA)
 				return new NBTTagString(inst.getName());
@@ -513,12 +525,12 @@ public class WeaponData {
 		}
 
 		@Override
-		public void deserializeNBT(NBTTagString nbt) {
+		public void deserializeNBT(NBTTagByte nbt) {
 			if(nbt != null && !nbt.getString().equals("toloadfiles"))
 				inst=MapList.nameToData.get(nbt.getString());
 			if(inst==null)
 				inst=ItemFromData.BLANK_DATA;
-		}
+		}*/
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {

@@ -173,10 +173,12 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				hat.getTagCompound().setByte("UEffect", (byte) this.rand.nextInt(10));
 				this.inventoryArmorDropChances[0] = 0.35f;
 				this.tradeLevel=2;
+				TF2Attribute.upgradeItemStack(this.loadout.get(0), Math.min(1600, 640+(int) (this.world.getWorldTime() / 2000)),
+						rand);
 			}
 			this.setItemStackToSlot(EntityEquipmentSlot.HEAD, hat);
-			if(this.world.getWorldTime() > 360000)
-			TF2Attribute.upgradeItemStack(this.loadout.get(0), Math.min(640, 20+(int) (this.world.getWorldTime() / 6000)),
+			if(this.world.getWorldTime() > 48000)
+			TF2Attribute.upgradeItemStack(this.loadout.get(0), Math.min(800, 232+(int) (this.world.getWorldTime() / 4000)),
 					rand);
 		}
 	}
@@ -527,7 +529,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				TileEntity banner=this.world.getTileEntity(pos);
 				if(banner != null && banner instanceof TileEntityBanner){
 					boolean fast=false;
-					for(BannerPattern pattern: ((TileEntityBanner)banner).getPatternList()){
+					for(BannerPattern pattern: TF2EventsCommon.getPatterns((TileEntityBanner)banner)){
 						if(pattern==TF2weapons.redPattern)
 							this.bannerTeam=0;
 						else if(pattern==TF2weapons.bluPattern)
@@ -601,6 +603,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	 */
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
+		if (this.recentlyHit > 0 && source == DamageSource.MAGIC)
+			this.recentlyHit=Math.max(20, this.recentlyHit);
 		if (this.isEntityInvulnerable(source))
 			return false;
 		else if (super.attackEntityFrom(source, amount)) {
@@ -748,9 +752,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			int slot = getValidSlots()[this.rand.nextInt(getValidSlots().length)];
 			String className = this.getClass().getSimpleName().substring(6).toLowerCase();
 			ItemStack item = ItemFromData.getRandomWeaponOfSlotMob(className, slot, this.getRNG(), false, false);
-			ItemStack metal = new ItemStack(TF2weapons.itemTF2,
-					Math.max(1, ItemFromData.getData(item).getInt(PropertyType.COST) / 9), 3);
-			this.tradeOffers.add(new MerchantRecipe(buyItem ? item : metal, ItemStack.EMPTY, buyItem ? metal : item, 0, 1));
+			if(!item.isEmpty()) {
+				ItemStack metal = new ItemStack(TF2weapons.itemTF2,
+						Math.max(1, ItemFromData.getData(item).getInt(PropertyType.COST) / 9), 3);
+				this.tradeOffers.add(new MerchantRecipe(buyItem ? item : metal, ItemStack.EMPTY, buyItem ? metal : item, 0, 1));
+			}
 		}
 		int hatCount = this.rand.nextInt(2+this.tradeLevel);
 
@@ -857,9 +863,10 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
-		if ((this.getRevengeTarget() instanceof EntityPlayer || (this.getRevengeTarget() instanceof IEntityOwnable && ((IEntityOwnable)this.getRevengeTarget()).getOwner() != null 
-				&& ((IEntityOwnable)this.getRevengeTarget()).getOwner() instanceof EntityPlayer))
-				&& this.getRevengeTarget().getTeam() != null && TF2weapons.isEnemy(this.getRevengeTarget(), this))
+		EntityLivingBase attacker=this.getAttackingEntity();
+		if ((attacker instanceof EntityPlayer || (attacker instanceof IEntityOwnable && ((IEntityOwnable)attacker).getOwner() != null 
+				&& ((IEntityOwnable)attacker).getOwner() instanceof EntityPlayer))
+				&& attacker.getTeam() != null && TF2weapons.isEnemy(attacker, this))
 			for(int i=0;i<loadout.size();i++){
 				ItemStack stack=loadout.get(i);
 				if (!stack.isEmpty() && stack.getItem() instanceof ItemFromData
@@ -896,6 +903,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public WeaponsCapability getWepCapability() {
 		return this.getCapability(TF2weapons.WEAPONS_CAP, null);
 	}
+	
 	/*
 	 * @Override public void writeSpawnData(ByteBuf buffer) { PacketBuffer
 	 * packet=new PacketBuffer(buffer); for(int i=0;i<this.loadout.length;i++){

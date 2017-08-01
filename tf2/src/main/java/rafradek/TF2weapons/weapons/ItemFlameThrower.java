@@ -129,8 +129,8 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	}
 
 	public static boolean isPushable(EntityLivingBase living, Entity target) {
-		return !(target instanceof EntityBuilding) && !(target instanceof EntityProjectileBase && ((EntityProjectileBase)target).isPushable())
-				&& !(target instanceof EntityFlame) && !(target instanceof EntityArrow && target.onGround)
+		return !(target instanceof EntityBuilding) && !(target instanceof EntityProjectileBase && !((EntityProjectileBase)target).isPushable())
+				&& !(target instanceof EntityArrow && target.onGround)
 				&& !(target instanceof IThrowableEntity && ((IThrowableEntity) target).getThrower() == living)
 				&& !TF2weapons.isOnSameTeam(living, target);
 	}

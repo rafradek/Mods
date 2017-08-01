@@ -10,6 +10,7 @@ import atomicstryker.dynamiclights.client.DynamicLights;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
@@ -42,12 +43,14 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -110,6 +113,9 @@ public class TF2EventsClient {
 				&& minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots
 				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 			minecraft.player.jump();
+			float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 3 : 1);
+			minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
+			minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
 			minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 		}
@@ -181,7 +187,7 @@ public class TF2EventsClient {
 			int state = this.getActionType(attackKeyDown, altAttackKeyDown) + plus;
 			cap.state = state;
 			if (item != null && item.getItem() instanceof ItemUsable && oldState != (this.getActionType(attackKeyDown, altAttackKeyDown) & 3)
-					&& item.getTagCompound().getByte("active") == 2) {
+					&& item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (state & 2)) {
 					cap.stateDo(player, item);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
@@ -285,7 +291,14 @@ public class TF2EventsClient {
 				event.setNewfov(event.getFov() * 1.4f);
 			}
 	}
-
+	
+	@SubscribeEvent
+	public void blockDeathGui(GuiOpenEvent event) {
+		if(event.getGui() instanceof GuiGameOver && WeaponsCapability.get(Minecraft.getMinecraft().player).isFeign() && Minecraft.getMinecraft().player.getHealth() > 0f) {
+			event.setCanceled(true);
+		}
+	}
+	
 	@SubscribeEvent
 	public void guiPostInit(GuiScreenEvent.InitGuiEvent.Post event) {
 		if (Minecraft.getMinecraft().player != null) {
@@ -1121,7 +1134,14 @@ public class TF2EventsClient {
 			event.setCanceled(true);
 		}
 	}
-
+	@SubscribeEvent
+	public void renderSpecificHand(RenderSpecificHandEvent event) {
+		EntityPlayer player=Minecraft.getMinecraft().player;
+		if((event.getItemStack().getItem() instanceof ItemCloak && !WeaponsCapability.get(player).isFeign() 
+				&& ((ItemCloak)event.getItemStack().getItem()).isFeignDeath(event.getItemStack(), player))) {
+			event.setCanceled(true);
+		}
+	}
 	public static void renderBeam(EntityLivingBase ent, float partialTicks) {
 		if (!ent.hasCapability(TF2weapons.WEAPONS_CAP, null))
 			return;

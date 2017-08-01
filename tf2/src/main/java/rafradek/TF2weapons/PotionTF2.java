@@ -1,6 +1,8 @@
 package rafradek.TF2weapons;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
+import net.minecraft.util.DamageSource;
 
 public class PotionTF2 extends Potion {
 
@@ -9,5 +11,16 @@ public class PotionTF2 extends Potion {
 		this.setIconIndex(x, y);
 		
 	}
-
+	
+	public boolean isReady(int duration, int amplifier) {
+		if (this == TF2weapons.bleeding)
+			return duration % 10 == 0;
+		return false;
+    }
+	
+	public void performEffect(EntityLivingBase entityLivingBaseIn, int amplifier) {
+		if (this == TF2weapons.bleeding) {
+			entityLivingBaseIn.attackEntityFrom(DamageSource.MAGIC, 0.41f * (amplifier+1));
+		}
+    }
 }

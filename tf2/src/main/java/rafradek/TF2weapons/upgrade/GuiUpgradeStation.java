@@ -105,6 +105,7 @@ public class GuiUpgradeStation extends GuiContainer {
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		this.renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	@Override

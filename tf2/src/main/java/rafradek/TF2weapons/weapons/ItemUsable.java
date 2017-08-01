@@ -9,6 +9,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import net.minecraft.creativetab.CreativeTabs;
@@ -102,10 +103,10 @@ public abstract class ItemUsable extends ItemFromData {
 		 * par3Entity, new NBTTagCompound()); }
 		 */
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
-
+		WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 		EntityLivingBase living=(EntityLivingBase) par3Entity;
-		if (stack.getTagCompound().getByte("active") == 0 && par5) {
-			stack.getTagCompound().setByte("active", (byte) 1);
+		if (stackcap.active == 0 && par5) {
+			stackcap.active = 1;
 			// itemProperties.get(par2World.isRemote).get(par3Entity).setShort("reloadd",
 			// (short) 800);
 
@@ -115,16 +116,16 @@ public abstract class ItemUsable extends ItemFromData {
 			}
 			cap.fire1Cool = 750;
 			cap.fire2Cool = 750;
-		} else if (stack.getTagCompound().getByte("active") > 0
+		} else if (stackcap.active > 0
 				&& stack != living.getHeldItemOffhand() && !par5) {
-			stack.getTagCompound().setByte("active", (byte) 0);
+			if (stackcap.active == 2 && (cap.state & 3) > 0)
+				this.endUse(stack, living, par2World, cap.state, 0);
+			
+			stackcap.active = 0;
 			this.holster(cap, stack, living, par2World);
 
-			if (stack.getTagCompound().getByte("active") == 2 && (cap.state & 3) > 0)
-				this.endUse(stack, living, par2World, cap.state, 0);
-
 		}
-		if (par3Entity.ticksExisted % 5 == 0 && stack.getTagCompound().getByte("active") == 2
+		if (par3Entity.ticksExisted % 5 == 0 && stackcap.active == 2
 				&& TF2Attribute.getModifier("Mark Death", stack, 0, living) > 0)
 			living.addPotionEffect(new PotionEffect(TF2weapons.markDeath,
 					(int) TF2Attribute.getModifier("Mark Death", stack, 0,living) * 20));
@@ -169,8 +170,7 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		return stack.getTagCompound().getByte("active") > 0
-				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
+		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0
 				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1);
 	}
 
@@ -231,7 +231,7 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		// TODO Auto-generated method stub
-		return item.getTagCompound().getByte("active") > 0
+		return item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0
 				&& player.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
 				&& (player.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(item, player) != 1);
 	}
@@ -242,5 +242,11 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
 		return Short.MAX_VALUE;
+	}
+	@Override
+	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+		if(newStack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null) && !slotChanged)
+			newStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active=oldStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active;
+		return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
 	}
 }

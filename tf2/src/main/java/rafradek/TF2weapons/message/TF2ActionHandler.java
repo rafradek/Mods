@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ContainerMerchant;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -161,6 +162,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					} else if (message.value == 23 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 						player.fallDistance = 0;
 						player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped=true;
+						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
 					} else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
@@ -244,7 +246,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					else if (message.value == 19) {
 						if (player != null) {
 							player.setDead();
-							player.world.spawnEntity(new EntityStatue(player.world, player));
+							player.world.spawnEntity(new EntityStatue(player.world, player,false));
+						}
+					} 
+					else if (message.value == 24) {
+						if (player != null) {
+							player.world.spawnEntity(new EntityStatue(player.world, player,true));
 						}
 					} 
 					else if (message.value == 22) {
@@ -306,7 +313,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 			cap.state = message.value + (cap.state & 8);
 
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && oldState != (message.value & 3)
-					&& stack.getTagCompound().getByte("active") == 2) {
+					&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (message.value & 2)) {
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);

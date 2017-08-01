@@ -59,6 +59,7 @@ public class GuiWearables extends InventoryEffectRenderer {
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		this.oldMouseX = mouseX;
 		this.oldMouseY = mouseY;
+		this.renderHoveredToolTip(mouseX, mouseY);
 	}
 
 	/**
@@ -120,6 +121,7 @@ public class GuiWearables extends InventoryEffectRenderer {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 	}
 
+	
 	/**
 	 * Called by the controls from the buttonList when activated. (Mouse pressed
 	 * for buttons)

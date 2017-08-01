@@ -31,6 +31,8 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 			this.setType(0);
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
 			this.setType(1);
+		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
+			this.setType(2);
 		// TODO Auto-generated constructor stub
 	}
 
