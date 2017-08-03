@@ -141,8 +141,9 @@ public class ItemAmmo extends Item {
 			return STACK_FILL;
 
 		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
-		if (metalammo != 0 && owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= metalammo) 
-			return STACK_FILL;
+		if (metalammo != 0) {
+			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= metalammo ? STACK_FILL : ItemStack.EMPTY;
+		}
 		
 		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
 			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)

@@ -633,9 +633,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		String[] result=new String[2];
-		if(TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0) {
-			return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
-		}
+		boolean metalammo=TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0;
+		
 		int holdTickMax=holdingMode(stack, player);
 		
 		if(holdTickMax > 0 && player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
@@ -652,7 +651,11 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			}
 		}
 		else {
-			result[0]="AMMO";
+			if(metalammo)
+				result[0] = "METAL";
+			else
+				result[0] = "AMMO";
+			
 			int focus=(int) TF2Attribute.getModifier("Focus", stack, 0, player);
 			int progress=0;
 			if(focus!=0){
@@ -669,6 +672,9 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			}
 		}
 		int ammoLeft=player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[getAmmoType(stack)];
+		if(metalammo)
+			ammoLeft=player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+		
 		if(hasClip(stack)){
 			int inClip=stack.getMaxDamage()-stack.getItemDamage();
 			

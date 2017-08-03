@@ -37,7 +37,7 @@ public class EntityAIFollowTrader extends EntityAIBase {
 		this.owner.getLookHelper().setLookPositionWithEntity(this.owner.lastTrader, 10.0F, 10F);
 
 		if (--this.timeToRecalcPath <= 0) {
-			this.timeToRecalcPath = 10;
+			this.timeToRecalcPath = 8;
 
 			this.owner.getNavigator().tryMoveToEntityLiving(this.owner.lastTrader, 1);
 		}

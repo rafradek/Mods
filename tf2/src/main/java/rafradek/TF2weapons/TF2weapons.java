@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.10.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.11", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -369,7 +369,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 23;
+		return 24;
 	}
 
 	@Mod.EventHandler
@@ -798,6 +798,7 @@ public class TF2weapons {
 		randomCrits = gameplay.get("Random critical hits").getBoolean();
 		bossReappear = gameplay.get("Boss respawn cooldown").getInt();
 		damageMultiplier = 200f/(float)gameplay.get("TF2 - Minecraft health translation").getInt(200);
+		deadRingerTrigger = gameplay.get("Feign death events").getBoolean();
 		
 		dynamicLights = conf.get("modcompatibility", "Dynamic Lights", true).getBoolean() && Loader.isModLoaded("dynamiclights");
 		dynamicLightsProj = conf.get("modcompatibility", "Dynamic Lights - Projectiles", true).getBoolean();

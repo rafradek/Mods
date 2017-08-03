@@ -3,8 +3,8 @@
         {
         	"name": "pol1",	
         	"rolls": {
-                "min": 3,
-                "max": 6
+                "min": 2,
+                "max": 4
             },
             "entries": [
                 {
@@ -17,6 +17,14 @@
                             "data": {
                              	"min": 1,
                              	"max": 14
+                            }
+                            
+                        },
+                        {
+                            "function": "set_count",
+                            "data": {
+                             	"min": 1,
+                             	"max": 2
                             }
                             
                         }

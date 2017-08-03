@@ -21,7 +21,7 @@ public class EntityFlare extends EntityProjectileSimple {
 	}
 
 	@Override
-	protected double getGravity() {
+	public double getGravity() {
 		return 0.019f;
 	}
 

@@ -35,12 +35,12 @@
             "entries": [
             	{
                     "type": "empty",
-                    "weight": 19
+                    "weight": 24
                 },
                 {
                     "type": "item",
                     "name": "rafradek_tf2_weapons:bullet",
-                    "weight": 6,
+                    "weight": 8,
                     "functions": [
                     	{
                             "function": "set_weapon_upgraded",
@@ -57,7 +57,7 @@
                 {
                     "type": "item",
                     "name": "rafradek_tf2_weapons:minigun",
-                    "weight": 3,
+                    "weight": 2,
                     "functions": [
                     	{
                             "function": "set_weapon_upgraded",
@@ -68,6 +68,17 @@
                             },
                             "valve_chance":0.05
                             
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:itemTF2",
+                    "weight": 2,
+                    "functions": [
+                    	{
+                            "function": "set_data",
+                            "data": 7
                         }
                     ]
                 },

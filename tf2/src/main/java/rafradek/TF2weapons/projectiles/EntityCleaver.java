@@ -44,7 +44,7 @@ public class EntityCleaver extends EntityProjectileSimple {
 	}
 	
 	@Override
-	protected double getGravity() {
+	public double getGravity() {
 		return 0.05f;
 	}
 }

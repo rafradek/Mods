@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
@@ -129,6 +130,13 @@ public class ItemCloak extends ItemFromData {
 			stack=living.getHeldItemOffhand();
 			if(stack.getItem() instanceof ItemCloak && ((ItemCloak)stack.getItem()).isFeignDeath(stack, living) && stack.getItemDamage() == 0) {
 				return stack;
+			}
+			IItemHandler items=living.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			for(int i=0; i<items.getSlots(); i++) {
+				stack=items.getStackInSlot(i);
+				if(stack.getItem() instanceof ItemCloak && ((ItemCloak)stack.getItem()).isFeignDeath(stack, living) && stack.getItemDamage() == 0) {
+					return stack;
+				}
 			}
 		}
 		return ItemStack.EMPTY;

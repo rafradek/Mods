@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.characters;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -77,9 +78,11 @@ import rafradek.TF2weapons.characters.ai.EntityAIUseRangedWeapon;
 import rafradek.TF2weapons.decoration.ItemWearable;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
+import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
+import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class EntityTF2Character extends EntityCreature implements IMob, IMerchant, IEntityTF2{
@@ -258,6 +261,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				float base = this.getDiff() == 1 ? 1.9f : (this.getDiff() == 3 ? 1.2f : 1.55f);
 				return base;
 			}
+			else if (attribute.equals("Damage") && this.getHeldItemMainhand().getItem() instanceof ItemMeleeWeapon)
+				return 1.25f;
 		return 1f;
 	}
 
@@ -295,8 +300,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.setDiff(this.world.getDifficulty().getDifficultyId());
 			if (this.isTrading() && (this.trader.getDistanceSqToEntity(trader) > 100 || !this.isEntityAlive()))
 				this.setCustomer(null);
-			if (this.ammoLeft <= 0 && !this.noAmmo) {
-				this.setCombatTask(false);
+			if (this.ammoLeft <= 0 && !this.noAmmo && 
+					(this.getHeldItemMainhand().getItem() instanceof ItemUsable && ((ItemUsable)this.getHeldItemMainhand().getItem()).getAmmoType(this.getHeldItemMainhand()) != 0)) {
+				this.switchSlot(2);
 				this.noAmmo = true;
 			}
 			if(this.traderFollowTicks>0){
@@ -778,7 +784,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 					new MerchantRecipe(buyItem ? item : metal, buyItem ? ItemStack.EMPTY : metal2, buyItem ? metal : item, 0, 1));
 		}
 		
-		if(this.tradeLevel==1) {
+		if(this.tradeLevel>=1) {
 			boolean buyKey = this.rand.nextBoolean();
 			ItemStack item = new ItemStack(TF2weapons.itemTF2, 1, 7);
 			ItemStack metal = new ItemStack(TF2weapons.itemTF2, 4, 5);
@@ -839,12 +845,20 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.attack.fireAtFeet= slot==0 && this instanceof EntitySoldier ?TF2Attribute.getModifier("Explosion Radius", this.loadout.get(slot), 1, this):0;
 			this.attack.setRange(data.getFloat(PropertyType.EFFICIENT_RANGE));
 			String projName=data.getString(PropertyType.PROJECTILE);
-			if(projName.equals("grenade") || projName.equals("sticky")){
+			try {
+				EntityProjectileBase proj=MapList.projectileClasses.get(projName)
+						.getConstructor(World.class, EntityLivingBase.class, EnumHand.class)
+						.newInstance(world, this, EnumHand.MAIN_HAND);
+				this.attack.gravity=(float) proj.getGravity();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			/*if(projName.equals("grenade") || projName.equals("sticky")){
 				this.attack.gravity=0.0381f;
 			}
 			else if(projName.equals("flare")){
 				this.attack.gravity=0.019f;
-			}
+			}*/
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool=400;
 		}
 		this.usedSlot=slot;
@@ -904,6 +918,14 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		return this.getCapability(TF2weapons.WEAPONS_CAP, null);
 	}
 	
+	@Override
+	protected int getExperiencePoints(EntityPlayer player)
+    {
+		if(TF2weapons.isOnSameTeam(player, this))
+			return 0;
+		else
+			return super.getExperiencePoints(player);
+    }
 	/*
 	 * @Override public void writeSpawnData(ByteBuf buffer) { PacketBuffer
 	 * packet=new PacketBuffer(buffer); for(int i=0;i<this.loadout.length;i++){

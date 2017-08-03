@@ -11,6 +11,7 @@
   "authorList": ["rafradek"],
   "logoFile": "",
   "screenshots": [],
-  "dependencies": [], "credits": "Valve, lundgren1957, grodax, Cipher_punk, The_Last_Dovahkiin"
+  "dependencies": [],
+  "credits": "Valve, lundgren1957, grodax, Cipher_punk, The_Last_Dovahkiin, Wolfkann/Pikachiflame, WanderingSoulofTime"
 }
 ]
