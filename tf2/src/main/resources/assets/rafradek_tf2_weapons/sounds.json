@@ -852,12 +852,42 @@
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_03"
     ]
   },
+  "weapon.off.deadringer": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/spy_uncloak_feigndeath"
+    ]
+  },
+  "weapon.draw.deadringer": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/draw_dead_ringer_spy"
+    ]
+  },
   "weapon.fire.widowmaker.crit": {
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_01",
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_02",
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_03"
+    ]
+  },
+  "weapon.hit.cleaver": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_01",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_02",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_03",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_04"
+    ]
+  },
+  "weapon.hit.cleaver.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_world_01",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_world_02",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_world_03",
+    	"rafradek_tf2_weapons:weapon/cleaver_hit_world_04"
     ]
   },
   "mob.engineer.hurt": {

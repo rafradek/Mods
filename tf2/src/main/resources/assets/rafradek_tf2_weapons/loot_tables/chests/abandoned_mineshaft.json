@@ -35,7 +35,7 @@
             "entries": [
             	{
                     "type": "empty",
-                    "weight": 26
+                    "weight": 34
                 },
                 {
                     "type": "item",
@@ -68,6 +68,17 @@
                             },
                             "valve_chance":0.08
                             
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:itemTF2",
+                    "weight": 3,
+                    "functions": [
+                    	{
+                            "function": "set_data",
+                            "data": 7
                         }
                     ]
                 },
