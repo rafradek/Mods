@@ -66,16 +66,13 @@ public class ItemFromData extends Item {
 	}
 
 	public static WeaponData getData(ItemStack stack) {
-		
-		if (!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)){
-			WeaponData inst=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst;
-			//System.out.println("Having Data: "+(inst!=BLANK_DATA));
-			if(inst == BLANK_DATA && stack.hasTagCompound() &&MapList.nameToData.containsKey(stack.getTagCompound().getString("Type"))){
-				inst=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst=MapList.nameToData.get(stack.getTagCompound().getString("Type"));
-			}
-			return inst;
+		WeaponData value = BLANK_DATA;
+		if(!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+			value=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst;
+			if (value == BLANK_DATA && stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Type")))
+				value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst = MapList.nameToData.get(stack.getTagCompound().getString("Type"));
 		}
-		return BLANK_DATA;
+		return value;	
 	}
 	@Override
 	public void getSubItems(Item par1, CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {

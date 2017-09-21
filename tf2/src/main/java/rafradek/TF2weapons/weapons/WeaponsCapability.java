@@ -30,6 +30,7 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
@@ -91,11 +92,16 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
 	
-	public static final DataParameter<Integer> CRIT_TIME= new DataParameter<Integer>(0, DataSerializers.VARINT);
-	public static final DataParameter<Integer> HEADS= new DataParameter<Integer>(1, DataSerializers.VARINT);
-	public static final DataParameter<Integer> HEAL_TARGET= new DataParameter<Integer>(2, DataSerializers.VARINT);
-	public static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
-	public static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
+	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
+	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
+	private static final DataParameter<Boolean> DISGUISED = new DataParameter<Boolean>(8, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> INVIS = new DataParameter<Boolean>(9, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> FEIGN = new DataParameter<Boolean>(10, DataSerializers.BOOLEAN);
+	private static final DataParameter<Integer> CRIT_TIME= new DataParameter<Integer>(0, DataSerializers.VARINT);
+	private static final DataParameter<Integer> HEADS= new DataParameter<Integer>(1, DataSerializers.VARINT);
+	private static final DataParameter<Integer> HEAL_TARGET= new DataParameter<Integer>(2, DataSerializers.VARINT);
+	private static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
+	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -117,6 +123,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(HEAL_TARGET, -1);
 		this.dataManager.register(PHLOG_RAGE, 0f);
 		this.dataManager.register(METAL, MAX_METAL);
+		this.dataManager.register(FEIGN, false);
+		this.dataManager.register(INVIS, false);
+		this.dataManager.register(DISGUISED, false);
+		this.dataManager.register(DISGUISE_TYPE, "");
+		this.dataManager.register(EXP_JUMP, false);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -154,6 +165,46 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setPhlogRage(float rage) {
 		this.dataManager.set(PHLOG_RAGE, rage);
+	}
+	
+	public boolean isInvisible() {
+		return this.dataManager.get(INVIS);
+	}
+	
+	public void setInvisible(boolean invis) {
+		this.dataManager.set(INVIS, invis);
+	}
+	
+	public void setDisguised(boolean val) {
+		this.dataManager.set(DISGUISED, val);
+	}
+	
+	public boolean isDisguised() {
+		return this.dataManager.get(DISGUISED);
+	}
+	
+	public void setExpJump(boolean val) {
+		this.dataManager.set(EXP_JUMP, val);
+	}
+	
+	public boolean isExpJump() {
+		return this.dataManager.get(EXP_JUMP);
+	}
+	
+	public void setDisguiseType(String val) {
+		this.dataManager.set(DISGUISE_TYPE, val);
+	}
+	
+	public String getDisguiseType() {
+		return this.dataManager.get(DISGUISE_TYPE);
+	}
+	
+	public void setFeign(boolean val) {
+		this.dataManager.set(FEIGN, val);
+	}
+	
+	public boolean isFeign() {
+		return this.dataManager.get(FEIGN);
 	}
 	public void addHead() {
 
@@ -211,7 +262,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
 			ItemUsable item = (ItemUsable) stack.getItem();
-			
+			WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 			if(TF2Attribute.getModifier("Focus", stack, 0, owner)!=0){
 				this.focusShotTicks+=this.owner.isSprinting()?0:1;
 				//System.out.println("Focus: "+this.focusShotTicks);
@@ -227,10 +278,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				this.fire1Cool -= 50;
 			if (this.fire2Cool > 0)
 				this.fire2Cool -= 50;
-			if (this.fire1Cool <= 0 && stack.getTagCompound().getByte("active") == 1) {
-				stack.getTagCompound().setByte("active", (byte) 2);
+			if (this.fire1Cool <= 0 && stackcap.active == 1) {
+				stackcap.active = 2;
 				if (item.isDoubleWielding(owner))
-					owner.getHeldItemOffhand().getTagCompound().setByte("active", (byte) 2);
+					owner.getHeldItemOffhand().getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 2;
 				item.draw(this, stack, owner, owner.world);
 
 				/*
@@ -427,7 +478,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	 * removeModifier(ItemSniperRifle.slowdown); } map.put(player, state); } }
 	 */
 	public boolean shouldShoot(EntityLivingBase player, int state) {
-		return player.getActivePotionEffect(TF2weapons.stun) == null && player.getActivePotionEffect(TF2weapons.bonk) == null && (!(!player.world.isRemote
+		return TF2weapons.canInteract(player) && (!(!player.world.isRemote
 				&& player instanceof EntityPlayer
 				&& (this.predictionList.isEmpty()
 						|| (this.predictionList.get(0) != null && (this.predictionList.get(0).state & state) != state)))
@@ -437,7 +488,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void stateDo(EntityLivingBase player, ItemStack stack) {
 		ItemUsable item = (ItemUsable) stack.getItem();
 		// System.out.println(stack.getTagCompound().getByte("active"));
-		if ((this.state & 1) != 0 && stack.getTagCompound().getByte("active") == 2)
+		if ((this.state & 1) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 			// System.out.println("firin");
 			item.fireTick(stack, player, player.world);
 		while (this.fire1Cool <= 0 && shouldShoot(player, 1)) {
@@ -467,7 +518,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (player instanceof EntityTF2Character)
 				((EntityTF2Character) player).onShot();
 
-			if (player.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED) && !(item instanceof ItemSapper))
+			if (this.isDisguised() && !(item instanceof ItemSapper))
 				TF2EventsCommon.disguise(player, false);
 
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
@@ -507,7 +558,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					this.state -= 8;
 			}
 		}
-		if ((this.state & 2) != 0 && stack.getTagCompound().getByte("active") == 2)
+		if ((this.state & 2) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 			((ItemUsable) stack.getItem()).altFireTick(stack, player, player.world);
 		while (this.fire2Cool <= 0 && shouldShoot(player, 2)) {
 
@@ -521,7 +572,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				break;
 			this.fire2Cool += item.getAltFiringSpeed(stack, player);
 
-			if (player.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED))
+			if (this.isDisguised())
 				TF2EventsCommon.disguise(player, false);
 
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
@@ -573,17 +624,16 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		NBTTagCompound tag = new NBTTagCompound();
 		tag.setByte("VisTicks", (byte) this.invisTicks);
 		tag.setByte("DisguiseTicks", (byte) this.disguiseTicks);
-		tag.setInteger("HealTarget", this.healTarget);
 		NBTTagCompound cld = new NBTTagCompound();
 		for (Entry<String, Integer> entry : this.effectsCool.entrySet())
 			cld.setInteger(entry.getKey(), entry.getValue());
 		tag.setTag("Cooldowns", cld);
-		tag.setInteger("HealTarget", this.healTarget);
+		tag.setInteger("HealTarget", this.getHealTarget());
 		tag.setShort("Heads", this.dataManager.get(HEADS).shortValue());
 		tag.setShort("HeadsCool", (short) (this.collectedHeadsTime - this.owner.ticksExisted));
-		tag.setBoolean("Cloaked", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_INVIS));
-		tag.setBoolean("Disguised", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED));
-		tag.setString("DisguiseType", this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE));
+		tag.setBoolean("Cloaked", this.isInvisible());
+		tag.setBoolean("Disguised", this.isDisguised());
+		tag.setString("DisguiseType", this.getDisguiseType());
 		tag.setInteger("KillsSpinning", this.killsSpinning);
 		tag.setInteger("FocusedShot", this.focusShotTicks);
 		tag.setInteger("KnockbackFANCool", this.fanCool);
@@ -599,17 +649,17 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void deserializeNBT(NBTTagCompound nbt) {
 		this.invisTicks = nbt.getByte("VisTicks");
 		this.disguiseTicks = nbt.getByte("DisguiseTicks");
-		this.healTarget = nbt.getByte("HealTarget");
+		this.setHealTarget(nbt.getInteger("HealTarget"));
 		NBTTagCompound cld = nbt.getCompoundTag("Cooldowns");
 		for (String key : cld.getKeySet())
 			this.effectsCool.put(key, cld.getInteger(key));
 		this.dataManager.set(HEADS, (int) nbt.getShort("Heads"));
 		this.collectedHeadsTime = nbt.getShort("HeadsCool");
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_INVIS, nbt.getBoolean("Cloaked"));
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, nbt.getBoolean("Disguised"));
+		this.setInvisible(nbt.getBoolean("Cloaked"));
+		this.setDisguised(nbt.getBoolean("Disguised"));
 		//this.owner.getDataManager().set(TF2EventBusListener.ENTITY_UBER, nbt.getBoolean("Uber"));
-		this.owner.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, nbt.getString("DisguiseType"));
-		if (this.owner.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED))
+		this.setDisguiseType(nbt.getString("DisguiseType"));
+		if (this.isDisguised())
 			TF2EventsCommon.disguise(this.owner, true);
 		this.killsSpinning=nbt.getInteger("KillsSpinning");
 		this.focusShotTicks=nbt.getInteger("FocusedShot");
@@ -618,5 +668,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.setPhlogRage(nbt.getFloat("Phlog"));
 		this.setMetal(nbt.getInteger("Metal"));
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
+	}
+	
+	public static EntityDataManager getDataManager(Entity ent) {
+		return ent.getCapability(TF2weapons.WEAPONS_CAP, null).dataManager;
+	}
+	
+	public static WeaponsCapability get(Entity ent) {
+		return ent.getCapability(TF2weapons.WEAPONS_CAP, null);
 	}
 }

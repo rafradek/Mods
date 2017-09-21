@@ -7,6 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.weapons.ItemDisguiseKit;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityAIAmbush extends EntityAIBase {
 
@@ -34,7 +35,7 @@ public class EntityAIAmbush extends EntityAIBase {
 		 */
 		// System.out.println("execute:
 		// "+target!=null&&this.host.getEntityData().getByte("IsCloaked")!=0);
-		return target != null && this.host.getDataManager().get(TF2EventsCommon.ENTITY_INVIS);
+		return target != null && WeaponsCapability.get(host).isInvisible();
 	}
 
 	@Override

@@ -71,7 +71,7 @@ public class GuiDisguiseKit extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(null, "name"));
+		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(this.mc.player.getUniqueID(), "name"));
 		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
 			Entity entity=EntityList.createEntityByIDFromName(entry, this.mc.world);
 			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss())||this.mc.player.capabilities.isCreativeMode)) {
@@ -286,10 +286,10 @@ public class GuiDisguiseKit extends GuiScreen {
 				@Override
 				public void run() {
 					GameProfile profile = TileEntitySkull
-							.updateGameprofile(new GameProfile(null, playerNameField.getText()));
+							.updateGameprofile(new GameProfile(mc.player.getUniqueID(), playerNameField.getText()));
 					player = new EntityOtherPlayerMP(mc.world, profile);
-					player.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISED, true);
-					player.getDataManager().set(TF2EventsCommon.ENTITY_DISGUISE_TYPE, "P:"+playerNameField.getText());
+					WeaponsCapability.get(player).setDisguised(true);
+					WeaponsCapability.get(player).setDisguiseType("P:"+playerNameField.getText());
 					final WeaponsCapability cap = player.getCapability(TF2weapons.WEAPONS_CAP, null);
 					cap.skinType = DefaultPlayerSkin.getSkinType(player.getUniqueID());
 					if (profile.getId() != null)

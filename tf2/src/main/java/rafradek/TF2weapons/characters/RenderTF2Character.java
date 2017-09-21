@@ -19,6 +19,7 @@ import rafradek.TF2weapons.TF2EventsClient;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
@@ -72,14 +73,14 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 	protected ResourceLocation getEntityTexture(EntityTF2Character par1EntityLiving) {
 		String clazz = null;
 		boolean sameTeam=Minecraft.getMinecraft().player != null && TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
-		if ( !sameTeam && par1EntityLiving.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)
-				&& par1EntityLiving.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("T:"))
-			clazz = par1EntityLiving.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+		if ( !sameTeam && WeaponsCapability.get(par1EntityLiving).isDisguised()
+				&& WeaponsCapability.get(par1EntityLiving).getDisguiseType().startsWith("T:"))
+			clazz = WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2);
 		else
 			clazz = par1EntityLiving.getClass().getSimpleName().substring(6);
 		// System.out.println("class: "+clazz);
 		if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
-				&& par1EntityLiving.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)))
+				&& WeaponsCapability.get(par1EntityLiving).isDisguised()))
 			switch (clazz) {
 			case "Heavy":
 				return HEAVY_RED;

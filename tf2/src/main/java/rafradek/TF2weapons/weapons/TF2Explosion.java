@@ -205,7 +205,7 @@ public class TF2Explosion extends Explosion {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),
 						// (EntityPlayerMP) entity);
-						entity.getDataManager().set(TF2EventsCommon.ENTITY_EXP_JUMP, true);
+						WeaponsCapability.get(entity).setExpJump(true);
 						this.getKnockbackMap().put(entity, move.scale(d11));
 						// entity.getDataWatcher().updateObject(29,
 						// Byte.valueOf((byte) 1));

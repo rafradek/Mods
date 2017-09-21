@@ -137,6 +137,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
@@ -206,6 +207,7 @@ import rafradek.TF2weapons.message.TF2WeaponDataHandler;
 import rafradek.TF2weapons.message.TF2WeaponDropHandler;
 import rafradek.TF2weapons.message.TF2WearableChangeHandler;
 import rafradek.TF2weapons.projectiles.EntityBall;
+import rafradek.TF2weapons.projectiles.EntityCleaver;
 import rafradek.TF2weapons.projectiles.EntityFlame;
 import rafradek.TF2weapons.projectiles.EntityFlare;
 import rafradek.TF2weapons.projectiles.EntityGrenade;
@@ -239,7 +241,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.8.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.11.5", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -295,6 +297,7 @@ public class TF2weapons {
 	public static float damageMultiplier;
 	public static boolean dynamicLights;
 	public static boolean dynamicLightsProj;
+	public static boolean deadRingerTrigger;
 	
 	@Instance(value = MOD_ID)
 	public static TF2weapons instance;
@@ -328,6 +331,7 @@ public class TF2weapons {
 	public static Potion uber;
 	public static Potion it;
 	public static Potion bombmrs;
+	public static Potion bleeding;
 
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
@@ -367,7 +371,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 20;
+		return 25;
 	}
 
 	@Mod.EventHandler
@@ -580,6 +584,7 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"monoculus"),EntityMonoculus.class, "monoculus", 23, this, 80, 3, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"hhh"),EntityHHH.class, "hhh", 24, this, 80, 3, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"merasmus"),EntityMerasmus.class, "merasmus", 25, this, 80, 3, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"cleaver"),EntityCleaver.class, "cleaver", 26, this, 64, 20, false);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
 		GameRegistry.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
@@ -622,7 +627,7 @@ public class TF2weapons {
 				TF2weapons.MOD_ID + ":australium_ore");
 		registerBlock(blockAustralium = new Block(Material.IRON, MapColor.GOLD).setCreativeTab(tabsurvivaltf2).setHardness(9.0F).setResistance(20.0F)
 				.setUnlocalizedName("blockAustralium"), TF2weapons.MOD_ID + ":australium_block");
-		GameRegistry.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(2.0F).setResistance(4.0F)
+		GameRegistry.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(1.0F).setResistance(2.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
 		OreDictionary.registerOre("oreCopper", blockCopperOre);
@@ -714,6 +719,7 @@ public class TF2weapons {
 		GameRegistry.register(it = new PotionTF2(true, 0xFFFFFFFF, 1, 2).setPotionName("effect.it").setRegistryName(TF2weapons.MOD_ID + ":itEff"));
 		GameRegistry.register(bombmrs = new PotionTF2(false, 0xFFFFFFFF, 1, 2).setPotionName("effect.bombmrs").setRegistryName(TF2weapons.MOD_ID + ":bombEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE6F-7CE8-4030-940E-14B354F0D8BA", 1.25D, 2));
+		GameRegistry.register(bleeding = new PotionTF2(true, 0, 4, 0).setPotionName("effect.bleeding").setRegistryName(TF2weapons.MOD_ID + ":bleedingEff"));
 		// conf.save();
 		WeaponData.PropertyType.init();
 		if(!disableGeneration){
@@ -721,6 +727,9 @@ public class TF2weapons {
 			VillagerRegistry.instance().registerVillageCreationHandler(new MannCoBuilding.CreationHandler());
 		}
 		TF2Sounds.registerSounds();
+		for(SoundEvent sevent:TF2Sounds.SOUND_EVENTS.values()) {
+			GameRegistry.register(sevent);
+		}
 		if (event.getSide() == Side.CLIENT) {
 			loadWeapons();
 			//System.out.println(MapList.nameToData.get("rocketlauncher"));
@@ -757,6 +766,7 @@ public class TF2weapons {
 		shootAttract = conf.getBoolean("Shooting attracts mobs", "gameplay", true, "Gunfire made by players attracts mobs");
 		randomCrits = conf.getBoolean("Random critical hits", "gameplay", true, "Enables randomly appearing critical hits that deal 3x more damage");
 		damageMultiplier = 200f/(float)conf.getInt("TF2 - Minecraft health translation", "gameplay", 200,-10000,10000, "How much 10 minecraft hearts are worth in TF2 health");
+		deadRingerTrigger = conf.getBoolean("Feign death events", "gameplay", true, "Does feign death trigger death events, set to false in case of mod conflicts");
 		dynamicLights = conf.getBoolean("Dynamic Lights", "modcompatibility", true, "Enables custom light sources for AtomicStryker's Dynamic Lights mod")
 				&& Loader.isModLoaded("dynamiclights");
 		dynamicLightsProj = conf.getBoolean("Dynamic Lights - Projectiles", "modcompatibility", true, "Should projectiles emit light");
@@ -790,6 +800,7 @@ public class TF2weapons {
 		randomCrits = gameplay.get("Random critical hits").getBoolean();
 		bossReappear = gameplay.get("Boss respawn cooldown").getInt();
 		damageMultiplier = 200f/(float)gameplay.get("TF2 - Minecraft health translation").getInt(200);
+		deadRingerTrigger = gameplay.get("Feign death events").getBoolean();
 		
 		dynamicLights = conf.get("modcompatibility", "Dynamic Lights", true).getBoolean() && Loader.isModLoaded("dynamiclights");
 		dynamicLightsProj = conf.get("modcompatibility", "Dynamic Lights - Projectiles", true).getBoolean();
@@ -937,12 +948,6 @@ public class TF2weapons {
 				}
 				else if (ID == 3 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityAmmoFurnace)
 					return new ContainerAmmoFurnace(player.inventory, (TileEntityAmmoFurnace) world.getTileEntity(pos));
-				else if (ID == 4){
-					
-					/*if(!world.getCapability(WORLD_CAP, null).lostItems.containsKey(player.getName()))
-						world.getCapability(WORLD_CAP, null).lostItems.put(player.getName(), new ItemStackHandler(27));
-					return new ContainerRecover(player.inventory, world.getCapability(WORLD_CAP, null).lostItems.get(player.getName()));*/
-				}
 				return null;
 			}
 
@@ -960,8 +965,6 @@ public class TF2weapons {
 				}
 				else if (ID == 3 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityAmmoFurnace)
 					return new GuiAmmoFurnace(player.inventory, (TileEntityAmmoFurnace) world.getTileEntity(pos));
-				else if (ID == 4)
-					return new GuiRecover(player.inventory,new ItemStackHandler(27));
 				return null;
 			}
 
@@ -1089,14 +1092,14 @@ public class TF2weapons {
 	}
 	public static void loadWeapon(String name, WeaponData weapon) {
 		//IForgeRegistry<SoundEvent> registry = GameRegistry.findRegistry(SoundEvent.class);
-		IForgeRegistry<SoundEvent> registry = GameRegistry.findRegistry(SoundEvent.class);
+		IForgeRegistry<SoundEvent> registry = ForgeRegistries.SOUND_EVENTS;
 		for (PropertyType propType : weapon.properties.keySet())
 			if (propType.name.contains("sound")) {
 				ResourceLocation soundLocation = new ResourceLocation(propType.getString(weapon));
 				if (!"".equals(soundLocation.getResourcePath()) && !registry.containsKey(soundLocation)) {
-					SoundEvent.REGISTRY.register(0,soundLocation,new SoundEvent(soundLocation));
+					GameRegistry.register(new SoundEvent(soundLocation).setRegistryName(soundLocation));
 					if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
-						SoundEvent.REGISTRY.register(0,new ResourceLocation(propType.getString(weapon) + ".crit"),new SoundEvent(new ResourceLocation(propType.getString(weapon) + ".crit")));
+						GameRegistry.register(new SoundEvent(new ResourceLocation(propType.getString(weapon) + ".crit")).setRegistryName(new ResourceLocation(propType.getString(weapon) + ".crit")));
 				}
 			}
 		/*
@@ -1365,10 +1368,10 @@ public class TF2weapons {
 		AxisAlignedBB head = new AxisAlignedBB(target.posX - 0.32, ymax - 0.32, target.posZ - 0.32, target.posX + 0.32, ymax + 0.20, target.posZ + 0.32);
 		if (target instanceof EntityCreeper || target instanceof EntityEnderman || target instanceof EntityIronGolem)
 			head=head.offset(0, -0.2, 0);
-		if (target.width > target.height * 0.64) {
-			float offsetX = -MathHelper.sin(target.renderYawOffset * 0.017453292F) * target.width * 0.35f;
+		if (target.width >= 0.63) {
+			float offsetX = -MathHelper.sin(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
 	       // float f1 = -MathHelper.sin((rotationPitchIn + pitchOffset) * 0.017453292F);
-	        float offsetZ = MathHelper.cos(target.renderYawOffset * 0.017453292F) * target.width * 0.35f;
+	        float offsetZ = MathHelper.cos(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
 			/*double offsetX = MathHelper.cos(target.renderYawOffset / 180.0F * (float) Math.PI) * target.width / 2;
 			double offsetZ = -(double) (MathHelper.sin(target.renderYawOffset / 180.0F * (float) Math.PI) * target.width / 2);// cos*/
 			// double offsetX2=- (double)(MathHelper.sin(living.rotationYaw
@@ -1406,10 +1409,19 @@ public class TF2weapons {
 			initial = 1;
 		if (initial == 0 && !stack.isEmpty() && !target.onGround && !target.isInWater() && TF2Attribute.getModifier("Minicrit Airborne", stack, 0, shooter) != 0)
 			initial = 1;
+		if (initial == 0 && !stack.isEmpty() && shooter != null) {
+			float mindist=TF2Attribute.getModifier("Minicrit Distance", stack, 0, shooter);
+			mindist*=mindist;
+			if(mindist != 0f && target.getDistanceSqToEntity(shooter) >= mindist)
+				initial = 1;
+		}
 		if (initial < 2 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) != 0))
 			initial = 2;
+		if (initial < 2 && (!stack.isEmpty() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.stun) != null))
+				&& TF2Attribute.getModifier("Crit Stun", stack, 0, shooter) != 0)
+			initial = 2;
 		if (initial < 2 && (!stack.isEmpty() && shooter != null && shooter instanceof EntityPlayer && 
-				(shooter.getDataManager().get(TF2EventsCommon.ENTITY_EXP_JUMP) || shooter.isElytraFlying())
+				(shooter.getCapability(TF2weapons.WEAPONS_CAP, null).isExpJump() || shooter.isElytraFlying())
 				&& TF2Attribute.getModifier("Crit Rocket", stack, 0, shooter) != 0))
 			initial = 2;
 		if (initial == 1 && (!stack.isEmpty() && shooter != null && shooter instanceof EntityPlayer && TF2Attribute.getModifier("Crit Mini", stack, 0, shooter) != 0))
@@ -1791,7 +1803,7 @@ public class TF2weapons {
 	public static void igniteAndAchievement(Entity target, EntityLivingBase living, int sec) {
 
 		if (living instanceof EntityPlayerMP) {
-			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null) && target.getDataManager().get(TF2EventsCommon.ENTITY_EXP_JUMP)) {
+			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(target).isExpJump()) {
 				((EntityPlayer) living).addStat(TF2Achievements.PILOT_LIGHT);
 			}
 			if (ItemFromData.isSameType(living.getHeldItemMainhand(), "flaregun") && !target.isBurning()) {
@@ -1899,7 +1911,14 @@ public class TF2weapons {
 			ydiff=ydiff>0?ydiff-target.height/2:ydiff+target.height/2;
 		return xdiff*xdiff+zdiff*zdiff+ydiff*ydiff;
 	}
+	
 	public static double getDistanceBox(Entity target, double x, double y,double z,double widthO,double heightO){
 		return Math.sqrt(getDistanceSqBox(target,x,y,z,widthO,heightO));
+	}
+	
+	public static boolean canInteract(EntityLivingBase entity) {
+		return !(entity instanceof EntityPlayer && ((EntityPlayer)entity).isSpectator())
+				&& entity.getActivePotionEffect(TF2weapons.stun) == null && (!entity.hasCapability(TF2weapons.WEAPONS_CAP, null) 
+				|| (WeaponsCapability.get(entity).invisTicks == 0 && !WeaponsCapability.get(entity).isFeign())) && entity.getActivePotionEffect(TF2weapons.bonk) == null;
 	}
 }

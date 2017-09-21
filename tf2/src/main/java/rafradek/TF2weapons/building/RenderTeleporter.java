@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.passive.EntitySheep;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
 
@@ -69,7 +71,19 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			renderer.pos(-0.5, 0.0D, -0.5).tex(0.75D, 0.0D).endVertex();
 			tessellator.draw();
 
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+			if(living.getColor() != -1) {
+				float[] color=EntitySheep.getDyeRgb(EnumDyeColor.byDyeDamage(living.getColor()));
+				GL11.glColor4f(color[0], color[1], color[2], 0.85F);
+			
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(-0.5, 0.0D, 0.5).tex(0.75D, 1D).endVertex();
+				renderer.pos(0.5, 0.0D, 0.5).tex(1D, 1D).endVertex();
+				renderer.pos(0.5, 0.0D, -0.5).tex(1D, 0.5D).endVertex();
+				renderer.pos(-0.5, 0.0D, -0.5).tex(0.75D, 0.5D).endVertex();
+				tessellator.draw();
+			}
+			
+			GL11.glColor4f(1F, 1F, 1F, 1.0F);
 			GL11.glDisable(GL11.GL_BLEND);
 			// GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();

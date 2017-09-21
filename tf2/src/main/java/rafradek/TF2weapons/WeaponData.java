@@ -498,47 +498,36 @@ public class WeaponData {
 		}
 		return list;
 	}
-	public static class WeaponDataCapability implements ICapabilityProvider, INBTSerializable<NBTTagString>{
+	public static class WeaponDataCapability implements ICapabilityProvider{
 
 		public WeaponData inst=ItemFromData.BLANK_DATA;
 		public HashMap<String, Float> cachedAttrMult = new HashMap<>();
 		public HashMap<String, Float> cachedAttrAdd = new HashMap<>();
 		public boolean cached=false;
-		@Override
-		public NBTTagString serializeNBT() {
-			// TODO Auto-generated method stub
-			if(inst!=ItemFromData.BLANK_DATA)
-				return new NBTTagString(inst.getName());
-			return new NBTTagString("toloadfiles");
-		}
-
-		@Override
-		public void deserializeNBT(NBTTagString nbt) {
-			if(nbt != null && !nbt.getString().equals("toloadfiles"))
-				inst=MapList.nameToData.get(nbt.getString());
-			if(inst==null)
-				inst=ItemFromData.BLANK_DATA;
-		}
+		public int active;
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {
-				NBTTagCompound attributelist=stack.getTagCompound().getCompoundTag("Attributes");
-				for(String name : attributelist.getKeySet()) {
-					NBTBase tag = attributelist.getTag(name);
-					if (tag instanceof NBTTagFloat) {
-						TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
-						
-						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
-							if (!cachedAttrAdd.containsKey(attribute.effect))
-								cachedAttrAdd.put(attribute.effect, 0f);
-							cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
-						}
-						else {
-							if (!cachedAttrMult.containsKey(attribute.effect))
-								cachedAttrMult.put(attribute.effect, 1f);
-							cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
-						}
+				NBTTagCompound attributelist;
+				if(stack.hasTagCompound()) {
+					attributelist=stack.getTagCompound().getCompoundTag("Attributes");
+					for(String name : attributelist.getKeySet()) {
+						NBTBase tag = attributelist.getTag(name);
+						if (tag instanceof NBTTagFloat) {
+							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
 							
+							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+								if (!cachedAttrAdd.containsKey(attribute.effect))
+									cachedAttrAdd.put(attribute.effect, 0f);
+								cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
+							}
+							else {
+								if (!cachedAttrMult.containsKey(attribute.effect))
+									cachedAttrMult.put(attribute.effect, 1f);
+								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
+							}
+								
+						}
 					}
 				}
 				attributelist=MapList.buildInAttributes.get(ItemFromData.getData(stack).getName());

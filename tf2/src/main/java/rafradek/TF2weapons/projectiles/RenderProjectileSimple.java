@@ -1,11 +1,15 @@
 package rafradek.TF2weapons.projectiles;
 
 import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 
 public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
@@ -34,7 +38,8 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
 		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
-		GL11.glScalef(0.25f, 0.25f, 0.25f);
+		if(entity.getType() != 2)
+			GL11.glScalef(0.25f, 0.25f, 0.25f);
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick, 0.0F, 1.0F,
 				0.0F);
 		GL11.glRotatef(
@@ -43,18 +48,25 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 
 		bindEntityTexture(entity);
 
+		
 		// GL11.glTranslatef((float)entity.posX, (float)entity.posY,
 		// entity.posZ);
 		if (entity.getCritical() == 2) {
 			// GlStateManager.disableTexture2D();
 			GlStateManager.disableLighting();
 			// GL11.glColor4f(0.0F, 0.0F, 1.0F, 1F);
-			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+			if(entity.getType() == 2)
+				Minecraft.getMinecraft().getRenderItem().renderItem(ItemFromData.getNewStack("cleaver"), ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
+			else
+				model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 			// GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
 			// GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();
 		} else
-			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+			if(entity.getType() == 2)
+				Minecraft.getMinecraft().getRenderItem().renderItem(ItemFromData.getNewStack("cleaver"), ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
+			else
+				model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
 		/*
 		 * GL11.glScalef(1.5f, 1.5f, 1.5f); GL11.glEnable(GL11.GL_BLEND);

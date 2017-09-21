@@ -10,6 +10,7 @@ import atomicstryker.dynamiclights.client.DynamicLights;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
@@ -42,12 +43,14 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -70,6 +73,7 @@ import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.GuiContracts;
 import rafradek.TF2weapons.pages.GuiPages;
+import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemMinigun;
@@ -108,6 +112,9 @@ public class TF2EventsClient {
 				&& minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots
 				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 			minecraft.player.jump();
+			float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 3 : 1);
+			minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
+			minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
 			minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 		}
@@ -179,7 +186,7 @@ public class TF2EventsClient {
 			int state = this.getActionType(attackKeyDown, altAttackKeyDown) + plus;
 			cap.state = state;
 			if (item != null && item.getItem() instanceof ItemUsable && oldState != (this.getActionType(attackKeyDown, altAttackKeyDown) & 3)
-					&& item.getTagCompound().getByte("active") == 2) {
+					&& item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (state & 2)) {
 					cap.stateDo(player, item);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
@@ -284,6 +291,13 @@ public class TF2EventsClient {
 			}
 	}
 
+	@SubscribeEvent
+	public void blockDeathGui(GuiOpenEvent event) {
+		if(event.getGui() instanceof GuiGameOver && WeaponsCapability.get(Minecraft.getMinecraft().player).isFeign() && Minecraft.getMinecraft().player.getHealth() > 0f) {
+			event.setCanceled(true);
+		}
+	}
+	
 	@SubscribeEvent
 	public void guiPostInit(GuiScreenEvent.InitGuiEvent.Post event) {
 		if (Minecraft.getMinecraft().player != null) {
@@ -1101,7 +1115,7 @@ public class TF2EventsClient {
 		else{
 			ClientProxy.renderCritGlow=0;
 		}
-		if (player.getDataManager().get(TF2EventsCommon.ENTITY_INVIS)||player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+		if (WeaponsCapability.get(player).isInvisible()||player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
 			/*
 			 * GL11.glEnable(GL11.GL_BLEND); GlStateManager.clear(256);
 			 * OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -1119,7 +1133,16 @@ public class TF2EventsClient {
 			event.setCanceled(true);
 		}
 	}
-
+	
+	@SubscribeEvent
+	public void renderSpecificHand(RenderSpecificHandEvent event) {
+		EntityPlayer player=Minecraft.getMinecraft().player;
+		if((event.getItemStack().getItem() instanceof ItemCloak && !WeaponsCapability.get(player).isFeign() 
+				&& ((ItemCloak)event.getItemStack().getItem()).isFeignDeath(event.getItemStack(), player))) {
+			event.setCanceled(true);
+		}
+	}
+	
 	public static void renderBeam(EntityLivingBase ent, float partialTicks) {
 		if (!ent.hasCapability(TF2weapons.WEAPONS_CAP, null))
 			return;
@@ -1229,14 +1252,14 @@ public class TF2EventsClient {
 
 	@SubscribeEvent
 	public void playerName(PlayerEvent.NameFormat event) {
-		if(Minecraft.getMinecraft().player != null && event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
-			String username=event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+		if(Minecraft.getMinecraft().player != null && WeaponsCapability.get(event.getEntityPlayer()).isDisguised()) {
+			String username=WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().substring(2);
 			
 			if(TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
 				event.setDisplayname(event.getDisplayname()+" ["+username+"]");
 			}
 			else {
-				if(event.getEntityPlayer().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
+				if(WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().startsWith("M:")) {
 					if(event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise != null){
 						event.setDisplayname(TextFormatting.RESET+event.getEntityPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise.getDisplayName().getFormattedText());
 					}
@@ -1326,7 +1349,7 @@ public class TF2EventsClient {
 			}
 		}
 		if (event.getRenderer() != ClientProxy.disguiseRender && event.getRenderer() != ClientProxy.disguiseRenderPlayer
-				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISED)) {
+				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && WeaponsCapability.get(event.getEntity()).isDisguised()) {
 
 			
 			 
@@ -1418,8 +1441,8 @@ public class TF2EventsClient {
 			 * y, z, entityYaw, partialTicks); }
 			 */
 			RenderLivingBase<EntityLivingBase> render = null;
-			if (event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("M:")) {
-				String mobType = event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
+			if (WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("M:")) {
+				String mobType =WeaponsCapability.get(event.getEntity()).getDisguiseType().substring(2);
 				EntityLivingBase entToRender=event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise;
 				if(entToRender == null || !EntityList.getKey(entToRender).equals(new ResourceLocation(mobType))) {
 					entToRender = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise =
@@ -1453,7 +1476,7 @@ public class TF2EventsClient {
 					ClientProxy.disguiseRender.setRenderOptions(ClientProxy.entityModel.get(mobType), ClientProxy.textureDisguise.get(mobType));
 					render = ClientProxy.disguiseRender;
 				}*/
-			} else if (event.getEntity() instanceof AbstractClientPlayer && event.getEntity().getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).startsWith("P:"))
+			} else if (event.getEntity() instanceof AbstractClientPlayer && WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("P:"))
 				if ("slim".equals(event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).skinType)) {
 					render = ClientProxy.disguiseRenderPlayerSmall;
 				} else {

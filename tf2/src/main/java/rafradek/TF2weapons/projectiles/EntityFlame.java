@@ -98,7 +98,7 @@ public class EntityFlame extends EntityProjectileBase {
 	}
 
 	@Override
-	protected double getGravity() {
+	public double getGravity() {
 		return 0;
 	}
 

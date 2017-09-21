@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import rafradek.TF2weapons.decoration.ItemWearable;
 import rafradek.TF2weapons.projectiles.EntityBall;
+import rafradek.TF2weapons.projectiles.EntityCleaver;
 import rafradek.TF2weapons.projectiles.EntityFlame;
 import rafradek.TF2weapons.projectiles.EntityFlare;
 import rafradek.TF2weapons.projectiles.EntityGrenade;
@@ -18,6 +19,7 @@ import rafradek.TF2weapons.projectiles.EntityStickProjectile;
 import rafradek.TF2weapons.weapons.ItemBonk;
 import rafradek.TF2weapons.weapons.ItemBulletWeapon;
 import rafradek.TF2weapons.weapons.ItemChargingTarge;
+import rafradek.TF2weapons.weapons.ItemCleaver;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemJar;
@@ -76,6 +78,7 @@ public class MapList {
 		weaponClasses.put("jar", new ItemJar());
 		weaponClasses.put("wrangler", new ItemWrangler());
 		weaponClasses.put("shield", new ItemChargingTarge());
+		weaponClasses.put("cleaver", new ItemCleaver());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
@@ -94,5 +97,6 @@ public class MapList {
 		projectileClasses.put("jar", EntityJar.class);
 		projectileClasses.put("ball", EntityBall.class);
 		projectileClasses.put("repairclaw", EntityStickProjectile.class);
+		projectileClasses.put("cleaver", EntityCleaver.class);
 	}
 }

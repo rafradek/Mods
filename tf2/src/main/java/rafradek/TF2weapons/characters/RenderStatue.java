@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class RenderStatue extends Render<EntityStatue> {
 
@@ -24,6 +25,7 @@ public class RenderStatue extends Render<EntityStatue> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void doRender(EntityStatue entity, double x, double y, double z, float entityYaw, float partialTicks) {
+		if(!entity.isFeign) {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 		GlStateManager.enableTexture2D();
 		GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
@@ -71,7 +73,17 @@ public class RenderStatue extends Render<EntityStatue> {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
 		GlStateManager.color(1.0f, 0.8f, 0f);
-		renderManager.getEntityRenderObject(entity.entity).doRender(entity.entity, x, y, z, entityYaw, 0);
+		}
+		else {
+			entity.entity.setInvisible(false);
+			WeaponsCapability.get(entity.entity).setInvisible(false);
+			//entity.entity.setHealth(0f);
+			entity.entity.limbSwingAmount=0;
+			entity.entity.renderYawOffset=entity.renderYawOffset;
+			entity.entity.deathTime=entity.ticksExisted;
+		}
+		renderManager.getEntityRenderObject(entity.entity).doRender(entity.entity, x, y, z, entityYaw, entity.isFeign ? partialTicks : 0);
+		if(!entity.isFeign) {
 		GlStateManager.color(1.0f, 1f, 1f);
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 		GlStateManager.enableTexture2D();
@@ -110,6 +122,13 @@ public class RenderStatue extends Render<EntityStatue> {
 		GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
 		GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, 5890);
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		}
+		else {
+			entity.entity.setInvisible(true);
+			//entity.entity.setHealth(health);
+			WeaponsCapability.get(entity.entity).setInvisible(true);
+			entity.entity.deathTime=0;
+		}
 	}
 
 	@Override

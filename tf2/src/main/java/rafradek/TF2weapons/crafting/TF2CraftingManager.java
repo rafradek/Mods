@@ -56,14 +56,17 @@ public class TF2CraftingManager {
 				new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmo, 8, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
-		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmo, 4, 14),
-				new Object[] { " P ", "P P", " P ", 'P', "paper" }));
+		addRecipe(new ShapedOreRecipe(new ItemStack(TF2weapons.itemAmmo, 8, 14),
+				new Object[] { "SLS", 'S', "string", 'L',"leather" }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemAmmoMedigun, 1),
 				new Object[] { Items.SPECKLED_MELON, Items.GHAST_TEAR, new ItemStack(Items.DYE, 1, 15) });
 		addRecipe(new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmoFire, 1),
 				new Object[] { "ingotIron", Items.MAGMA_CREAM, "ingotIron" }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(new ItemStack(TF2weapons.itemAmmo, 30, 9),
 				new Object[] { "ingotIron", "paper" }));
+		ItemStack cleaver = ItemFromData.getNewStack("cleaver");
+		cleaver.setCount(1);
+		addRecipe(new ShapedOreRecipe(cleaver, new Object[] { "I", "W", 'I', "ingotIron", 'W', "stickWood"}));
 		addRecipe(new AustraliumRecipe());
 		addRecipe(new JumperRecipe("rocketlauncher","rocketjumper"));
 		addRecipe(new JumperRecipe("stickybomblauncher","stickyjumper"));

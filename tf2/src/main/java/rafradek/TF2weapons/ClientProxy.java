@@ -350,10 +350,10 @@ public class ClientProxy extends CommonProxy {
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
 		fireSounds = HashBiMap.create();
 		ClientRegistry.registerKeyBinding(ClientProxy.reload);
-		/*disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
+		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
-		entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
+		/*entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
 				.get(EntityCreeper.class)).getMainModel());
 		textureDisguise.put("Creeper", new ResourceLocation("textures/entity/creeper/creeper.png"));
 		entityModel.put("Zombie", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
@@ -678,16 +678,22 @@ public class ClientProxy extends CommonProxy {
 		// ResourceLocation soundName=new
 		// ResourceLocation(ItemUsable.getData(stack).get("Reload
 		// Sound").getString());
-		ReloadSound sound = new ReloadSound(ItemFromData.getSound(stack, PropertyType.RELOAD_SOUND), player);
-		if (ClientProxy.reloadSounds.get(player) != null)
-			ClientProxy.reloadSounds.get(player).done = true;
-		ClientProxy.reloadSounds.put(player, sound);
-		Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+		SoundEvent event = ItemFromData.getSound(stack, PropertyType.RELOAD_SOUND);
+		if(event != null) {
+			ReloadSound sound = new ReloadSound(ItemFromData.getSound(stack, PropertyType.RELOAD_SOUND), player);
+			if (ClientProxy.reloadSounds.get(player) != null)
+				ClientProxy.reloadSounds.get(player).done = true;
+			ClientProxy.reloadSounds.put(player, sound);
+			Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+		}
 	}
 
 	public static WeaponSound playWeaponSound(EntityLivingBase living, SoundEvent playSound, boolean loop, int type,
 			ItemStack stack) {
 		// System.out.println(sound.type);
+		if(playSound == null)
+			return null;
+		
 		WeaponSound sound;
 		if (loop)
 			sound = new WeaponLoopSound(playSound, living, type < 2, ItemFromData.getData(stack), type == 1, type);
@@ -712,7 +718,7 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public static void playOnFireSound(Entity target, SoundEvent playSound) {
-		if (!Thread.currentThread().getName().equals("Client thread"))
+		if (!Thread.currentThread().getName().equals("Client thread") || playSound == null)
 			return;
 		Minecraft.getMinecraft().getSoundHandler().playSound(new OnFireSound(playSound, target));
 	}

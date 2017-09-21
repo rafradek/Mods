@@ -270,17 +270,19 @@ public abstract class EntityProjectileBase extends Entity
 						TF2weapons.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
 					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
 						this.setDead();
-					Vec3d pushvec=new Vec3d(this.motionX,this.motionY,this.motionZ).normalize();
-					pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
-							*  0.01625D*dmg);
-					if(target instanceof EntityLivingBase) {
-						pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
-						.getAttributeValue());
+					if(proceed) {
+						Vec3d pushvec=new Vec3d(this.motionX,this.motionY,this.motionZ).normalize();
+						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
+								*  0.01625D*dmg);
+						if(target instanceof EntityLivingBase) {
+							pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
+							.getAttributeValue());
+						}
+						target.addVelocity(pushvec.xCoord, pushvec.yCoord, pushvec.zCoord);
+						target.isAirBorne = target.isAirBorne || -(pushvec.yCoord) > 0.02D;
+						if(target instanceof EntityPlayerMP)
+							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,target.isAirBorne), (EntityPlayerMP) target);
 					}
-					target.addVelocity(pushvec.xCoord, pushvec.yCoord, pushvec.zCoord);
-					target.isAirBorne = target.isAirBorne || -(pushvec.yCoord) > 0.02D;
-					if(target instanceof EntityPlayerMP)
-						TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,target.isAirBorne), (EntityPlayerMP) target);
 				}
 			}
 		}
@@ -798,7 +800,7 @@ public abstract class EntityProjectileBase extends Entity
 		return 3;
 	}
 
-	protected double getGravity() {
+	public double getGravity() {
 		return 0.0381f;
 	}
 

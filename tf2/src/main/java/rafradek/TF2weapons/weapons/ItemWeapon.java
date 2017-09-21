@@ -378,30 +378,14 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	@Override
 	public boolean altFireTick(ItemStack stack, EntityLivingBase living, World world) {
-		if(!world.isRemote && living instanceof EntityPlayer && TF2Attribute.getModifier("Pick Building", stack, 0, living)>0) {
-			ItemStack wrench=ItemStack.EMPTY;
-			for(ItemStack stack2 : ((EntityPlayer)living).inventory.mainInventory) {
-				if(!stack2.isEmpty()) {
-				if(stack2.getItem() == MapList.weaponClasses.get("wrench") && stack2.getItemDamage()<=100) {
-					//stack2.damageItem(100, living);
-					wrench=stack2;
-					break;
-				}
-				else if(stack2.getItem() == Items.IRON_INGOT)
-					wrench=stack2;
-				}
-			}
-			if(!wrench.isEmpty()) {
-				Vec3d forward=living.getLookVec().scale(120).add(living.getPositionEyes(1));
-				RayTraceResult result=TF2weapons.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.xCoord, forward.yCoord, forward.zCoord, false, 0.5f, false).get(0);
-				if(result.entityHit != null && result.entityHit instanceof EntityBuilding && result.entityHit.isEntityAlive() && !((EntityBuilding)result.entityHit).isSapped() && ((EntityBuilding)result.entityHit).getOwner() == living) {
-					result.entityHit.setPosition(living.posX, living.posY, living.posZ);
-					((EntityBuilding) result.entityHit).grab();
-					if(wrench.getItem() == Items.IRON_INGOT)
-						wrench.shrink(1);
-					else
-						wrench.damageItem(100, living);
-				}
+		if(!world.isRemote && living instanceof EntityPlayer && living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= 100 
+				&& TF2Attribute.getModifier("Pick Building", stack, 0, living)>0) {
+			Vec3d forward=living.getLook(1f).scale(120).add(living.getPositionEyes(1));
+			RayTraceResult result=TF2weapons.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.xCoord, forward.yCoord, forward.zCoord, false, 0.5f, false).get(0);
+			if(result.entityHit != null && result.entityHit instanceof EntityBuilding && result.entityHit.isEntityAlive() && !((EntityBuilding)result.entityHit).isSapped() && ((EntityBuilding)result.entityHit).getOwner() == living) {
+				result.entityHit.setPosition(living.posX, living.posY, living.posZ);
+				((EntityBuilding) result.entityHit).grab();
+				living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-100);
 			}
 		}
 		return false;
@@ -614,6 +598,10 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			float healthHit=TF2Attribute.getModifier("Health Hit", stack, 0, attacker);
 			if (healthHit > 0)
 				attacker.heal(healthHit);
+			float bleed=TF2Attribute.getModifier("Bleed", stack, 0, attacker);
+			if (bleed > 0) {
+				((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
+			}
 			if (TF2Attribute.getModifier("Uber Hit", stack, 0, attacker) > 0)
 				if (attacker instanceof EntityPlayer)
 					for (ItemStack medigun : ((EntityPlayer) attacker).inventory.mainInventory)
@@ -643,9 +631,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		String[] result=new String[2];
-		if(TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0) {
-			return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
-		}
+		boolean metalammo=TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0;
+		
 		int holdTickMax=holdingMode(stack, player);
 		
 		if(holdTickMax > 0 && player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
@@ -662,7 +649,11 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			}
 		}
 		else {
-			result[0]="AMMO";
+			if(metalammo)
+				result[0] = "METAL";
+			else
+				result[0] = "AMMO";
+			
 			int focus=(int) TF2Attribute.getModifier("Focus", stack, 0, player);
 			int progress=0;
 			if(focus!=0){
@@ -679,6 +670,9 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			}
 		}
 		int ammoLeft=player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[getAmmoType(stack)];
+		if(metalammo)
+			ammoLeft=player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+		
 		if(hasClip(stack)){
 			int inClip=stack.getMaxDamage()-stack.getItemDamage();
 			

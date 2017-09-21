@@ -19,6 +19,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityEngineer;
@@ -119,10 +120,12 @@ public class EntityDispenser extends EntityBuilding {
 					if (cloak.getSecond().isEmpty())
 						cloak=new Tuple<>(-1,living.getHeldItemMainhand());
 
-					cloak.getSecond().setItemDamage(Math.max(cloak.getSecond().getItemDamage() - (2 + this.getLevel()), 0));
-					if (living instanceof EntityPlayerMP)
-						((EntityPlayerMP) living).connection.sendPacket(
-								new SPacketSetSlot(-2, cloak.getFirst(), cloak.getSecond()));
+					if(TF2Attribute.getModifier("No External Cloak", cloak.getSecond(), 0, living) == 0) {
+						cloak.getSecond().setItemDamage(Math.max(cloak.getSecond().getItemDamage() - (2 + this.getLevel()), 0));
+						if (living instanceof EntityPlayerMP)
+							((EntityPlayerMP) living).connection.sendPacket(
+									new SPacketSetSlot(-2, cloak.getFirst(), cloak.getSecond()));
+					}
 				}
 				if (this.dispenserTarget != null && !this.dispenserTarget.contains(living))
 					this.playSound(TF2Sounds.MOB_DISPENSER_HEAL, 0.75f, 1f);

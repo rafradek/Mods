@@ -121,7 +121,7 @@ public class EntityGrenade extends EntityProjectileBase {
 	}
 
 	@Override
-	protected double getGravity() {
+	public double getGravity() {
 		return 0.0381f;
 	}
 

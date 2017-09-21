@@ -106,7 +106,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	 */
 	@Override
 	public void resetTask() {
-		if (this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state != 0) {
+		if ((this.entityHost.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWeapon) &&this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state != 0) {
 			pressed = false;
 			((ItemWeapon) this.entityHost.getHeldItem(EnumHand.MAIN_HAND).getItem()).endUse(
 					this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
@@ -152,6 +152,9 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			return;
 
 		ItemStack item = this.entityHost.getHeldItem(EnumHand.MAIN_HAND);
+		
+		if (!(item.getItem() instanceof ItemWeapon))
+			return;
 		ItemWeapon weapon = ((ItemWeapon) item.getItem());
 
 		double d0 = this.entityHost.getDistanceSq(this.attackTarget.posX, this.attackTarget.getEntityBoundingBox().minY,
@@ -161,9 +164,9 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		double lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
 		double lookZ = this.attackTarget.posZ;
 		boolean shouldFireProj = true;
+		float dist = this.entityHost.getDistanceToEntity(this.attackTarget);
 		if (this.projSpeed > 0) {
 
-			float dist = this.entityHost.getDistanceToEntity(this.attackTarget);
 			float ticksToReach = dist / this.projSpeed;
 
 			lookX += (this.attackTarget.posX - this.entityHost.targetPrevPos[1]) * ticksToReach * 0.5;
@@ -218,7 +221,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget)
 				|| (this.projSpeed > 0 && this.attackTarget.motionY > 0);
 		boolean fire = stay && shouldFireProj && TF2weapons.lookingAt(this.entityHost,
-				(this.explosive && d0 < 16 ? 30 : 0) + weapon.getWeaponSpreadBase(item, this.entityHost) * 200 + 2,
+				(this.explosive && d0 < 16 ? 30 : 0) + weapon.getWeaponSpreadBase(item, this.entityHost) * 200 + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist)),
 				lookX, lookY, lookZ);
 		if (!this.reloading && (this.entityHost.world.getDifficulty() != EnumDifficulty.HARD || !fire)
 				&& item.getItemDamage() == item.getMaxDamage() && weapon.hasClip(item))

@@ -15,11 +15,14 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.util.text.TextFormatting;
+import rafradek.TF2weapons.TF2Attribute.State;
+import rafradek.TF2weapons.TF2Attribute.Type;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.weapons.ItemBulletWeapon;
 import rafradek.TF2weapons.weapons.ItemChargingTarge;
+import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMinigun;
@@ -126,7 +129,7 @@ public class TF2Attribute {
 			else {
 				Class<?> clazz = MapList.projectileClasses
 						.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE));
-				return clazz != null && clazz.isAssignableFrom(EntityProjectileSimple.class);
+				return clazz != null && EntityProjectileSimple.class.isAssignableFrom(clazz);
 			}
 		}
 
@@ -196,7 +199,16 @@ public class TF2Attribute {
 		}
 
 	};
+	public static final Predicate<ItemStack> WATCH = new Predicate<ItemStack>() {
 
+		@Override
+		public boolean apply(ItemStack input) {
+			// TODO Auto-generated method stub
+			return input.getItem() instanceof ItemCloak;
+		}
+
+	};
+	
 	/**
 	 * 
 	 * @param id
@@ -395,6 +407,20 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(86, "MetalOnHit", "Metal Hit", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(87, "CloakDurationBonus", "Cloak Duration", Type.PERCENTAGE, 1, State.POSITIVE,
+				WATCH, 0.25f, 3, 240, 1);
+		new TF2Attribute(88, "CloakRegenBonus", "Cloak Regen", Type.PERCENTAGE, 1, State.POSITIVE,
+				WATCH, 0.5f, 2, 160, 1);
+		new TF2Attribute(89, "CloakDrainActivate", "Cloak Drain", Type.PERCENTAGE, 1, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(90, "NoExternalCloak", "No External Cloak", Type.ADDITIVE, 0, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(91, "CritStunned", "Crit Stun", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(92, "BleedingDuration", "Bleed", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(93, "MiniCritDistance", "Minicrit Distance", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
@@ -507,8 +533,10 @@ public class TF2Attribute {
 		int baseCost = this.cost;
 		if (ItemFromData.getData(stack).getInt(PropertyType.COST) <= 12)
 			baseCost /= 2;
-		if (ItemFromData.getData(stack).getFloat(PropertyType.SPREAD) <= 0.025f)
+		if (this.effect.equals("Accuracy") && ItemFromData.getData(stack).getFloat(PropertyType.SPREAD) <= 0.025f)
 			baseCost /= 2;
+		if (stack.getMaxStackSize() > 1)
+			baseCost = (baseCost/3) * stack.getCount();
 		//int additionalCost = 0;
 		int lastUpgradesCost = stack.getTagCompound().getInteger("TotalCost");
 		/*if (lastUpgradesCost > 0) {

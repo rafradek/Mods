@@ -23,7 +23,7 @@ public class ItemCrate extends ItemFromData {
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand); 
-		if (itemStackIn.getTagCompound().getBoolean("Open")) {
+		if (!worldIn.isRemote && itemStackIn.getTagCompound().getBoolean("Open")) {
 			//ArrayList<String> list = new ArrayList<String>();
 			
 			
