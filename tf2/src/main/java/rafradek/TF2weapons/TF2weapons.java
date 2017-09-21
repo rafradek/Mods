@@ -239,7 +239,7 @@ import rafradek.TF2weapons.weapons.TF2Explosion;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.11", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.1.11.5", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -369,7 +369,7 @@ public class TF2weapons {
 	public static BannerPattern fastSpawn;
 	
 	public static int getCurrentWeaponVersion() {
-		return 24;
+		return 25;
 	}
 
 	@Mod.EventHandler
@@ -631,7 +631,7 @@ public class TF2weapons {
 				TF2weapons.MOD_ID + ":australium_ore");
 		registerBlock(blockAustralium = new Block(Material.IRON, MapColor.GOLD).setCreativeTab(tabsurvivaltf2).setHardness(9.0F).setResistance(20.0F)
 				.setUnlocalizedName("blockAustralium"), TF2weapons.MOD_ID + ":australium_block");
-		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(2.0F).setResistance(4.0F)
+		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(1.0F).setResistance(2.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
 		OreDictionary.registerOre("oreCopper", blockCopperOre);
@@ -1456,6 +1456,10 @@ public class TF2weapons {
 		if (target instanceof EntityEnderman && !(stack.getItem() instanceof ItemMeleeWeapon))
 			calculateddamage *= 0.4f;
 		
+		if (living != null && target instanceof EntityLivingBase && living.hasCapability(TF2weapons.WEAPONS_CAP, null) 
+				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotRemaining>0){
+			calculateddamage += Math.min(50, ((EntityLivingBase) target).getHealth()*calculateddamage*0.01f*TF2Attribute.getModifier("Focus", stack, 0, living));
+		}
 		/*
 		 * if (living instanceof IRangedWeaponAttackMob)
 		 * calculateddamage*=((IRangedWeaponAttackMob)living).

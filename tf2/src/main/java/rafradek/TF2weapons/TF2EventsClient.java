@@ -240,12 +240,8 @@ public class TF2EventsClient {
 			Iterator<EntityLivingBase> soundIterator = ClientProxy.soundsToStart.keySet().iterator();
 			while (soundIterator.hasNext()) {
 				EntityLivingBase living = soundIterator.next();
-				TF2weapons.proxy.playReloadSound(living, ClientProxy.soundsToStart.get(living));
+				
 				soundIterator.remove();
-			}
-			while (ClientProxy.weaponSoundsToStart.size() > 0) {
-				minecraft.getSoundHandler().playSound(ClientProxy.weaponSoundsToStart.get(0));
-				ClientProxy.weaponSoundsToStart.remove(0);
 			}
 			if(TF2weapons.dynamicLights){
 				removeSource();

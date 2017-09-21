@@ -282,10 +282,10 @@ public class ClientProxy extends CommonProxy {
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
 		fireSounds = HashBiMap.create();
 		ClientRegistry.registerKeyBinding(ClientProxy.reload);
-		/*disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
+		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
-		entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
+		/*entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
 				.get(EntityCreeper.class)).getMainModel());
 		textureDisguise.put("Creeper", new ResourceLocation("textures/entity/creeper/creeper.png"));
 		entityModel.put("Zombie", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
@@ -702,7 +702,7 @@ public class ClientProxy extends CommonProxy {
 		 * if(Thread.currentThread().getName().equals("Client thread")){
 		 * Minecraft.getMinecraft().getSoundHandler().playSound(sound); } else{
 		 */
-		weaponSoundsToStart.add(sound);
+		Minecraft.getMinecraft().getSoundHandler().playSound(sound);
 		// }
 		fireSounds.put(living, sound);
 		return sound;
@@ -714,7 +714,7 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public static void playOnFireSound(Entity target, SoundEvent playSound) {
-		if (!Thread.currentThread().getName().equals("Client thread"))
+		if (!Thread.currentThread().getName().equals("Client thread") || playSound == null)
 			return;
 		Minecraft.getMinecraft().getSoundHandler().playSound(new OnFireSound(playSound, target));
 	}

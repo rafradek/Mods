@@ -2,6 +2,7 @@ package rafradek.TF2weapons.weapons;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -13,6 +14,7 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.projectiles.EntityBall;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 
@@ -58,12 +60,14 @@ public class ItemProjectileWeapon extends ItemWeapon {
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding)
 				&& getData(stack).getName().equals("sandmanball")) {
 			EntityBall ball = (EntityBall) source.getImmediateSource();
+			double reduce=Math.max(0.5, (25-((EntityLivingBase) target).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue())/25D);
 			if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 1100) {
-				TF2weapons.stun((EntityLivingBase) target, 160, true);
+				TF2weapons.stun((EntityLivingBase) target, 
+						(int) (160 * reduce), true);
 				target.playSound(TF2Sounds.WEAPON_STUN_MAX, 4f, 1f);
-			} else if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 8) {
+			} else if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 12) {
 				TF2weapons.stun((EntityLivingBase) target,
-						(int) (ball.throwPos.distanceTo(target.getPositionVector()) * 8), false);
+						(int) (ball.throwPos.distanceTo(target.getPositionVector()) * 8 * reduce), false);
 				target.playSound(TF2Sounds.WEAPON_STUN, 1.6f, 1f);
 			}
 		}
@@ -80,6 +84,6 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				 * (((!(living instanceof EntityPlayer) || ) ||
 				 * TF2ProjectileHandler.nextShotPos.containsKey(living))||world.
 				 * isRemote
-				 */super.canFire(world, living, stack);
+				 */super.canFire(world, living, stack) && !(living instanceof EntityScout && ((EntityScout)living).usedSlot == 2 && ((EntityScout)living).ballCooldown > 0);
 	}
 }

@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.message;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -27,6 +28,7 @@ public class TF2UseHandler implements IMessageHandler<TF2Message.UseMessage, IMe
 			
 			if (((ItemWeapon) stack.getItem()).hasClip(stack)) {
 				stack.setItemDamage(message.value);
+				final ItemStack fstack=stack;
 				if (message.reload && message.value != 0)
 				/*
 				 * if(stack.getItemDamage()==0&&TF2ActionHandler.playerAction.
@@ -34,7 +36,11 @@ public class TF2UseHandler implements IMessageHandler<TF2Message.UseMessage, IMe
 				 * .get(player)&8)==0){
 				 * TF2ActionHandler.playerAction.get().put(player, arg1) }
 				 */
-				ClientProxy.soundsToStart.put(player, stack);
+				Minecraft.getMinecraft().addScheduledTask(()->
+				{
+						TF2weapons.proxy.playReloadSound(player, fstack);
+				});
+					
 			}
 		}
 		}

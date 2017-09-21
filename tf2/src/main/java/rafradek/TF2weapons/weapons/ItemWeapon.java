@@ -409,14 +409,12 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				damage = TF2Attribute.getModifier("Damage Non Burn", stack, damage, living);
 			if (target != null && target.isBurning())
 				damage = TF2Attribute.getModifier("Damage Burning", stack, damage, living);
-			if (living != null && target != null && target instanceof EntityLivingBase && living.hasCapability(TF2weapons.WEAPONS_CAP, null) && living.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotRemaining>0){
-				damage += Math.min(50, ((EntityLivingBase) target).getHealth()*damage*0.01f*TF2Attribute.getModifier("Focus", stack, 0, living));
-			}
 			if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE) != null){
 				//System.out.println("Pre "+damage);
 				damage=(float) calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE),ATTACK_DAMAGE_MODIFIER,damage,1D/9D);
 				//System.out.println("Post "+damage);
 			}
+			
 		}
 		return damage;
 	}

@@ -83,6 +83,7 @@ import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
+import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class EntityTF2Character extends EntityCreature implements IMob, IMerchant, IEntityTF2{
@@ -844,14 +845,16 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.attack.projSpeed=TF2Attribute.getModifier("Proj Speed", this.loadout.get(slot), data.getFloat(PropertyType.PROJECTILE_SPEED), this);
 			this.attack.fireAtFeet= slot==0 && this instanceof EntitySoldier ?TF2Attribute.getModifier("Explosion Radius", this.loadout.get(slot), 1, this):0;
 			this.attack.setRange(data.getFloat(PropertyType.EFFICIENT_RANGE));
-			String projName=data.getString(PropertyType.PROJECTILE);
-			try {
-				EntityProjectileBase proj=MapList.projectileClasses.get(projName)
-						.getConstructor(World.class, EntityLivingBase.class, EnumHand.class)
-						.newInstance(world, this, EnumHand.MAIN_HAND);
-				this.attack.gravity=(float) proj.getGravity();
-			} catch (Exception e) {
-				e.printStackTrace();
+			if(this.loadout.get(slot).getItem() instanceof ItemProjectileWeapon) {
+				String projName=data.getString(PropertyType.PROJECTILE);
+				try {
+					EntityProjectileBase proj=MapList.projectileClasses.get(projName)
+							.getConstructor(World.class, EntityLivingBase.class, EnumHand.class)
+							.newInstance(world, this, EnumHand.MAIN_HAND);
+					this.attack.gravity=(float) proj.getGravity();
+				} catch (Exception e) {
+					
+				}
 			}
 			/*if(projName.equals("grenade") || projName.equals("sticky")){
 				this.attack.gravity=0.0381f;
@@ -862,7 +865,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool=400;
 		}
 		this.usedSlot=slot;
-	}
+}
 
 	@Override
 	public void verifySellingItem(ItemStack stack) {

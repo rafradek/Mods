@@ -154,7 +154,7 @@ public class EntityHHH extends EntityTF2Boss {
 				}
 				if(this.scareTick<=0){
 					boolean one=false;
-					for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(10, 10, 10), new Predicate<EntityLivingBase>(){
+					List<EntityLivingBase> lists=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(10, 10, 10), new Predicate<EntityLivingBase>(){
 
 						@Override
 						public boolean apply(EntityLivingBase input) {
@@ -163,9 +163,12 @@ public class EntityHHH extends EntityTF2Boss {
 									&& input.getItemStackFromSlot(EntityEquipmentSlot.HEAD).getItem()==Item.getItemFromBlock(Blocks.PUMPKIN));
 						}
 						
-					})){
-						one=true;
-						TF2weapons.stun(living, 80, false);
+					});
+					if(lists.size()>1) {
+						for(EntityLivingBase living:lists){
+							one=true;
+							TF2weapons.stun(living, 80, false);
+						}
 					}
 					if(one)
 						this.playSound(TF2Sounds.MOB_HHH_ALERT, 1.75F, 1);
@@ -188,6 +191,7 @@ public class EntityHHH extends EntityTF2Boss {
 					this.setSneaking(false);
 					this.setNoAI(false);
 					if(this.getAttackTarget()!=null&&this.attemptTeleport(this.getAttackTarget().posX, this.getAttackTarget().posY, this.getAttackTarget().posZ)){
+						this.addPotionEffect(new PotionEffect(TF2weapons.stun, 30, 3));
 						for (int i = 0; i < 40; i++) {
 							Vec3d pos = TF2weapons.radiusRandom2D(2.7f, this.rand);
 							this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,

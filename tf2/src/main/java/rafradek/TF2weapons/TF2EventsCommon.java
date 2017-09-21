@@ -1041,7 +1041,7 @@ public class TF2EventsCommon {
 						@Override
 						public void run() {
 							GameProfile profile = TileEntitySkull
-									.updateGameprofile(new GameProfile(null, cap.getDisguiseType().substring(2)));
+									.updateGameprofile(new GameProfile(living.getUniqueID(), cap.getDisguiseType().substring(2)));
 							if (profile.getId() != null) {
 								cap.skinType = DefaultPlayerSkin.getSkinType(profile.getId());
 								cap.skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());

@@ -76,9 +76,7 @@ public class ItemKnife extends ItemMeleeWeapon {
 
 	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
-		if (this.isBackstab(living, target))
-			return Math.min(50, ((EntityLivingBase) target).getMaxHealth() * 2);
-		return super.getWeaponDamage(stack, living, target);
+		return super.getWeaponDamage(stack, living, target) * (this.isBackstab(living, target) ? 10 : 1);
 	}
 
 	@Override

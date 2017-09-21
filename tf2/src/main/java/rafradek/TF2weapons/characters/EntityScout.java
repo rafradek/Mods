@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -10,12 +11,14 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.weapons.ItemCleaver;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityScout extends EntityTF2Character {
 	public boolean doubleJumped;
 	private int jumpDelay;
 
+	public int ballCooldown;
 	public EntityScout(World par1World) {
 		super(par1World);
 		if (this.attack != null) {
@@ -37,6 +40,13 @@ public class EntityScout extends EntityTF2Character {
 	 * this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 	 * ItemFromData.getNewStack("scattergun")); }
 	 */
+	@Override
+	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
+		if(ItemFromData.getData(this.loadout.get(2)).getName().equals("sandmanball")) {
+			this.loadout.set(2, ItemFromData.getNewStack("sandman"));
+		}
+		super.dropEquipment(wasRecentlyHit, lootingModifier);
+	}
 	@Override
 	protected void addWeapons() {
 		super.addWeapons();
@@ -67,12 +77,14 @@ public class EntityScout extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
+		
 		if (jumpDelay > 0 && --jumpDelay == 0 && (this.onGround || !this.doubleJumped))
 			this.jump();
 		if (this.onGround)
 			this.doubleJumped = false;
 
 		if(!this.world.isRemote && TF2Attribute.getModifier("Crit Stun", this.loadout.get(1), 0, this) != 0) {
+			this.ballCooldown--;
 			if(this.getAttackTarget() == null || this.getAttackTarget().getActivePotionEffect(TF2weapons.stun) == null) {
 				this.switchSlot(2);
 				if(this.getAttackTarget() != null && this.getWepCapability().fire1Cool<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
@@ -111,6 +123,13 @@ public class EntityScout extends EntityTF2Character {
 		}
 	}
 
+	public float getAttributeModifier(String attribute) {
+		if (this.loadout.get(1).getItem() instanceof ItemCleaver)
+			if (attribute.equals("Fire Rate"))
+				return this.getDiff() == 1 ? 1.8f : (this.getDiff() == 3 ? 1f : 1.3f);
+		return super.getAttributeModifier(attribute);
+	}
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_SCOUT_SAY;
@@ -158,6 +177,12 @@ public class EntityScout extends EntityTF2Character {
 
 	@Override
 	public float getMotionSensitivity() {
-		return 0;
+		return this.getDiff() == 1 ? 0.12f : (this.getDiff() == 3 ? 0.05f : 0.08f);
+	}
+	
+	@Override
+	public void onShot() {
+		if (ItemFromData.getData(this.loadout.get(2)).getName().equals("sandmanball"))
+			this.ballCooldown = this.getDiff() == 1 ? 340 : (this.getDiff() == 3 ? 160 : 240);
 	}
 }

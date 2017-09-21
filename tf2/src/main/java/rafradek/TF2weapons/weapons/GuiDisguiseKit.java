@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
@@ -71,7 +72,7 @@ public class GuiDisguiseKit extends GuiScreen {
 
 	@Override
 	public void initGui() {
-		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(null, "name"));
+		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(mc.player.getUniqueID(), "name"));
 		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
 			Entity entity=EntityList.createEntityByIDFromName(entry, this.mc.world);
 			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss())||this.mc.player.capabilities.isCreativeMode)) {
@@ -286,7 +287,8 @@ public class GuiDisguiseKit extends GuiScreen {
 				@Override
 				public void run() {
 					GameProfile profile = TileEntitySkull
-							.updateGameprofile(new GameProfile(null, playerNameField.getText()));
+							.updateGameprofile(new GameProfile(mc.player.getUniqueID(), playerNameField.getText()));
+					
 					player = new EntityOtherPlayerMP(mc.world, profile);
 					WeaponsCapability.get(player).setDisguised(true);
 					WeaponsCapability.get(player).setDisguiseType("P:"+playerNameField.getText());

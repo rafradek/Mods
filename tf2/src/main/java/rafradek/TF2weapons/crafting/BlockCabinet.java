@@ -63,7 +63,6 @@ public class BlockCabinet extends Block{
 
 	}
 
-
 	/**
 	 * Returns the blockstate with the given mirror of the passed blockstate. If
 	 * inapplicable, returns the passed blockstate.
@@ -80,12 +79,12 @@ public class BlockCabinet extends Block{
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(meta & 7));
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 4)));
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex();
+		return state.getValue(FACING).getIndex()-2;
 	}
 
 	@Override

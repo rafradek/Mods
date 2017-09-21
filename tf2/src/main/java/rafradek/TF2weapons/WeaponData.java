@@ -534,23 +534,26 @@ public class WeaponData {
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {
-				NBTTagCompound attributelist=stack.getTagCompound().getCompoundTag("Attributes");
-				for(String name : attributelist.getKeySet()) {
-					NBTBase tag = attributelist.getTag(name);
-					if (tag instanceof NBTTagFloat) {
-						TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
-						
-						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
-							if (!cachedAttrAdd.containsKey(attribute.effect))
-								cachedAttrAdd.put(attribute.effect, 0f);
-							cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
-						}
-						else {
-							if (!cachedAttrMult.containsKey(attribute.effect))
-								cachedAttrMult.put(attribute.effect, 1f);
-							cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
-						}
+				NBTTagCompound attributelist;
+				if(stack.hasTagCompound()) {
+					attributelist=stack.getTagCompound().getCompoundTag("Attributes");
+					for(String name : attributelist.getKeySet()) {
+						NBTBase tag = attributelist.getTag(name);
+						if (tag instanceof NBTTagFloat) {
+							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
 							
+							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+								if (!cachedAttrAdd.containsKey(attribute.effect))
+									cachedAttrAdd.put(attribute.effect, 0f);
+								cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
+							}
+							else {
+								if (!cachedAttrMult.containsKey(attribute.effect))
+									cachedAttrMult.put(attribute.effect, 1f);
+								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
+							}
+								
+						}
 					}
 				}
 				attributelist=MapList.buildInAttributes.get(ItemFromData.getData(stack).getName());

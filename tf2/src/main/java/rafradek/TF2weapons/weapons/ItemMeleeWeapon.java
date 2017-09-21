@@ -8,6 +8,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemMeleeWeapon extends ItemBulletWeapon {
@@ -31,12 +32,18 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 		return TF2Attribute.getModifier("Ball Release", item, 0, player) > 0 ? 2000
 				: super.getAltFiringSpeed(item, player);
 	}
-
+	
+	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
+		return super.canAltFire(worldObj, player, item) && !(player instanceof EntityPlayer && ((EntityPlayer)player).getCooldownTracker().hasCooldown(this));
+	}
+	
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
 		if (TF2Attribute.getModifier("Ball Release", stack, 0, living) > 0) {
 			ItemStack ballStack = getNewStack("sandmanball");
 			if (!ItemAmmo.searchForAmmo(living, ballStack).isEmpty()) {
+				if (living instanceof EntityPlayer)
+					((EntityPlayer)living).getCooldownTracker().setCooldown(this, this.getFiringSpeed(ballStack, living)/50);
 				ItemStack oldHeldItem = living.getHeldItemMainhand();
 				living.setHeldItem(EnumHand.MAIN_HAND, ballStack);
 				((ItemProjectileWeapon) ballStack.getItem()).use(ballStack, living, world, EnumHand.MAIN_HAND, null);

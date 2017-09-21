@@ -461,7 +461,7 @@ public abstract class EntityProjectileBase extends Entity
 			}
 		}
 		if (this.world.isRemote)
-			for (int j = 0; j < 4; ++j) {
+			for (int j = 0; j < this.getSpeed(); ++j) {
 				double pX = this.posX - this.motionX * j / 4.0D - this.motionX;
 				double pY = this.posY + (this.useCollisionBox() ? this.height / 2 : 0) - this.motionY * j / 4.0D
 						- this.motionY;
