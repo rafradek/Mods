@@ -3,14 +3,14 @@ package rafradek.TF2weapons.weapons;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2EventsClient;
-import rafradek.TF2weapons.TF2weapons;
-
+import rafradek.TF2weapons.TF2Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -47,10 +47,11 @@ public class EntityBulletTracer extends Particle {
 		// TODO Auto-generated constructor stub
 		if (crits != 2)
 			this.setRBGColorF(0.97f, 0.76f, 0.51f);
-		else if (TF2weapons.getTeamForDisplay(shooter) == 0)
-			this.setRBGColorF(1f, 0.2f, 0.2f);
-		else
-			this.setRBGColorF(0.2f, 0.2f, 1f);
+		else {
+			int color = TF2Util.getTeamColor(shooter);
+			this.setRBGColorF(MathHelper.clamp((color >> 16) / 255f, 0.2f, 1f), 
+					MathHelper.clamp((color >> 8 & 255) / 255f, 0.2f, 1f), MathHelper.clamp((color & 255) / 255f, 0.2f, 1f));
+		}
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class BuildingSound extends MovingSound {
 	protected BuildingSound(EntityBuilding sentry, SoundEvent location, int state) {
 		super(location, SoundCategory.NEUTRAL);
 		this.sentry = sentry;
-		this.volume = 1f;
+		this.volume = 0.65f;
 		this.repeat = true;
 		this.state = state;
 	}

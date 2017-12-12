@@ -20,6 +20,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntitySniper;
@@ -40,7 +41,8 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 			PredictionMessage message) {
 		if (living instanceof EntityPlayer || stack.getTagCompound().getBoolean("WaitProper")) {
 			super.use(stack, living, world, hand, message);
-			this.disableZoom(stack, living);
+			if(TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 2)
+				this.disableZoom(stack, living);
 			stack.getTagCompound().setBoolean("WaitProper", false);
 			if(message != null &&(message.readData==null || message.readData.isEmpty()))
 				living.getCapability(TF2weapons.PLAYER_CAP, null).headshotsRow=0;
@@ -56,10 +58,8 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-		if (!cap.charging) {
-			cap.charging = true;
-			if (world.isRemote && living == Minecraft.getMinecraft().player)
-				Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 0.4f;
+		if (!cap.isCharging()) {
+			cap.setCharging(true);
 			if (living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(slowdownUUID) == null)
 				living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(slowdown);
 		} else
@@ -70,22 +70,20 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 
 	public void disableZoom(ItemStack stack, EntityLivingBase living) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-		if (living.world.isRemote && living == Minecraft.getMinecraft().player && cap.charging)
-			Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 2.5f;
-		cap.chargeTicks = 0;
-		cap.charging = false;
+		
+		cap.setCharging(false);
 		living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
 	}
 
 	@Override
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub
-		return living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks > 4;
+		return living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks > 4 || TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 2;
 	}
 
 	@Override
 	public boolean showTracer(ItemStack stack) {
-		return TF2Attribute.getModifier("Weapon Mode", stack, 0, null) == 1;
+		return TF2Attribute.getModifier("Weapon Mode", stack, 0, null) >= 1;
 	}
 	
 	@Override
@@ -128,7 +126,11 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 
-		if (cap.charging && par5)
+		
+		if (cap.reloadCool > 0 && par5 && cap.isCharging())
+			this.disableZoom(par1ItemStack, (EntityLivingBase) par3Entity);
+			
+		if (cap.isCharging() && par5 && !(TF2Attribute.getModifier("Weapon Mode", par1ItemStack, 0, (EntityLivingBase) par3Entity) == 2 && cap.fire1Cool <= 0 ))
 			if (cap.chargeTicks < getChargeTime(par1ItemStack, (EntityLivingBase) par3Entity))
 				cap.chargeTicks += 1;
 		// System.out.println("Charging: "+cap.chargeTicks);
@@ -159,8 +161,8 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	@Override
 	public boolean canFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		if(super.canFire(worldObj, player, item)) {
-			if(player instanceof EntityPlayer && TF2Attribute.getModifier("Weapon Mode", item, 0, player) == 1 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
-				TF2weapons.playSound(player,getSound(item, PropertyType.NO_FIRE_SOUND),0.7f,1);
+			if(player instanceof EntityPlayer && TF2Attribute.getModifier("Weapon Mode", item, 0, player) == 1 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
+				TF2Util.playSound(player,getSound(item, PropertyType.NO_FIRE_SOUND),0.7f,1);
 				return false;
 			}
 			return true;

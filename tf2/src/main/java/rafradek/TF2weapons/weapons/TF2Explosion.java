@@ -31,6 +31,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 
@@ -79,7 +81,7 @@ public class TF2Explosion extends Explosion {
 		HashSet<BlockPos> hashset = Sets.newHashSet();
 		int j;
 		int k;
-		if (TF2weapons.destTerrain==2 || (TF2weapons.destTerrain==1 && this.harvestDamage > 0))
+		if (TF2ConfigVars.destTerrain==2 || (TF2ConfigVars.destTerrain==1 && this.harvestDamage > 0))
 			for (int i = 0; i < 16; ++i)
 				for (j = 0; j < 16; ++j)
 					for (k = 0; k < 16; ++k)
@@ -91,14 +93,14 @@ public class TF2Explosion extends Explosion {
 							d0 /= d3;
 							d1 /= d3;
 							d2 /= d3;
-							float f = TF2weapons.destTerrain == 2
+							float f = TF2ConfigVars.destTerrain == 2
 									? this.explosionSize * (0.7F + this.world.rand.nextFloat() * 0.6F)
 									: (this.harvestDamage / 64);
 							double d4 = this.explosionX;
 							double d6 = this.explosionY;
 							double d8 = this.explosionZ;
 
-							if (TF2weapons.destTerrain == 2)
+							if (TF2ConfigVars.destTerrain == 2)
 								for (; f > 0.0F; f -= 0.22500001F) {
 									BlockPos blockpos = new BlockPos(d4, d6, d8);
 									IBlockState iblockstate = this.world.getBlockState(blockpos);
@@ -126,7 +128,7 @@ public class TF2Explosion extends Explosion {
 									IBlockState iblockstate = this.world.getBlockState(blockpos);
 
 									if (iblockstate.getMaterial() != Material.AIR)
-										f = TF2weapons.damageBlock(blockpos, (EntityLivingBase) null, world, ItemStack.EMPTY, 0,
+										f = TF2Util.damageBlock(blockpos, (EntityLivingBase) null, world, ItemStack.EMPTY, 0,
 												f, null, this);
 
 									d4 += d0 * 0.30000001192092896D;
@@ -142,13 +144,14 @@ public class TF2Explosion extends Explosion {
 		int l = MathHelper.floor(this.explosionY + f3 + 1.0D);
 		int k1 = MathHelper.floor(this.explosionZ - f3 - 1.0D);
 		int i1 = MathHelper.floor(this.explosionZ + f3 + 1.0D);
-		List<Entity> list = this.world.getEntitiesWithinAABB(TF2weapons.destTerrain == 2?Entity.class:EntityLivingBase.class,
+		List<Entity> list = this.world.getEntitiesWithinAABB(Entity.class,
 				new AxisAlignedBB(j, j1, k1, k, l, i1),new Predicate<Entity>(){
 
 					@Override
 					public boolean apply(Entity input) {
 						// TODO Auto-generated method stub
-						return input != exploder && !input.isImmuneToExplosions() && TF2weapons.canHit(getExplosivePlacedBy(), input);
+						return input != exploder && !input.isImmuneToExplosions() && (input.canBeAttackedWithItem() || TF2ConfigVars.destTerrain == 2) 
+								&& TF2Util.canHit(getExplosivePlacedBy(), input);
 					}
 			
 		});
@@ -160,7 +163,7 @@ public class TF2Explosion extends Explosion {
 				livingEntities++;
 		for (int l1 = 0; l1 < list.size(); ++l1) {
 			Entity entity = list.get(l1);
-			double d4 = TF2weapons.getDistanceBox(entity, this.explosionX, explosionY, explosionZ, 0, 0)/ this.getExplosionSize(entity) * 0.5;
+			double d4 = TF2Util.getDistanceBox(entity, this.explosionX, explosionY, explosionZ, 0, 0)/ this.getExplosionSize(entity) * 0.5;
 
 			if (d4 <= 0.5D) {
 				boolean isExploder = this.getExplosivePlacedBy() == entity;
@@ -225,7 +228,7 @@ public class TF2Explosion extends Explosion {
 	@Override
 	public void doExplosionB(boolean spawnParticles) {
 		this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ,
-				SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F,
+				SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F,
 				(1.0F + (this.world.rand.nextFloat() - this.world.rand.nextFloat()) * 0.2F) * 0.7F);
 
 		if (this.explosionSize >= 2.0F && this.isSmoking)
@@ -235,7 +238,7 @@ public class TF2Explosion extends Explosion {
 			this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, this.explosionX, this.explosionY,
 					this.explosionZ, 1.0D, 0.0D, 0.0D, new int[0]);
 
-		if (this.isSmoking && TF2weapons.destTerrain == 2)
+		if (this.isSmoking && TF2ConfigVars.destTerrain == 2)
 			for (BlockPos blockpos : this.affectedBlockPositions) {
 				IBlockState iblockstate = this.world.getBlockState(blockpos);
 				Block block = iblockstate.getBlock();

@@ -10,6 +10,7 @@ import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ContainerMerchant;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
@@ -28,13 +29,18 @@ import net.minecraftforge.fml.relauncher.Side;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Achievements;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityTeleporter;
+import rafradek.TF2weapons.building.TeleporterDim;
 import rafradek.TF2weapons.building.EntityTeleporter.TeleporterData;
 import rafradek.TF2weapons.characters.EntityStatue;
 import rafradek.TF2weapons.pages.Contract;
+import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemUsable;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
@@ -61,7 +67,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					if (message.value <= 15) {
 						handleMessage(message, player, false);
 						message.entity = player.getEntityId();
-						TF2weapons.sendTracking(message, player);
+						TF2Util.sendTracking(message, player);
 					} else if (message.value == 99) {
 						Entity wearer = ctx.getServerHandler().player.world.getEntityByID(message.entity);
 						// System.out.println("ID: "+message.entity+" "+wearer);
@@ -163,7 +169,20 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						player.fallDistance = 0;
 						player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped=true;
 						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
-					} else if (message.value >=32 && message.value <48) {
+					} else if (message.value == 25) {
+						ItemStack stack=player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+						if(!stack.isEmpty() && stack.getItem() instanceof ItemParachute) {
+							stack.getTagCompound().setBoolean("Deployed", !stack.getTagCompound().getBoolean("Deployed"));
+						}
+					} else if (message.value == 26) {
+						ItemStack stack = player.getHeldItemMainhand();
+						if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && !WeaponsCapability.get(player).knockbackActive && WeaponsCapability.get(player).getKnockbackRage() >= 1f) {
+							WeaponsCapability.get(player).knockbackActive = true;
+						}
+					} 
+
+					
+					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id).active=true;
@@ -221,10 +240,11 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							}
 							if (pos != null) {
 								if (dimension != player.dimension)
-									player.changeDimension(dimension);
+									player.world.getMinecraftServer().getPlayerList().transferPlayerToDimension(player, 
+											dimension, new TeleporterDim((WorldServer) player.world,pos));
 								player.setPositionAndUpdate(pos.getX()+0.5, pos.getY()+0.23, pos.getZ()+0.5);
 								player.getCooldownTracker().setCooldown(MapList.weaponClasses.get("wrench"), 200);
-								TF2weapons.playSound(player, TF2Sounds.MOB_TELEPORTER_SEND, 1.0F, 1.0F);
+								TF2Util.playSound(player, TF2Sounds.MOB_TELEPORTER_SEND, 1.0F, 1.0F);
 								player.resetActiveHand();
 								player.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-20);
 							}
@@ -258,7 +278,15 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						if (player != null && player.getHeldItemMainhand() != null
 								&& player.getHeldItemMainhand().hasTagCompound())
 							player.getHeldItemMainhand().getTagCompound().setByte("active", (byte) 2);
-					} 
+					} else if (message.value == 27) {
+						if (player != null) {
+							ItemStack stack = player.getHeldItemMainhand();
+							if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
+								//System.out.println("dd");
+								WeaponsCapability.get(player).fire1Cool-= ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, player)));
+							}
+						}
+					}
 				}
 
 			});
@@ -309,7 +337,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 			WeaponsCapability cap = player.getCapability(TF2weapons.WEAPONS_CAP, null);
 			ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 			int oldState = cap.state & 3;
-
+			//System.out.println("Action: "+message.value);
 			cap.state = message.value + (cap.state & 8);
 
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && oldState != (message.value & 3)

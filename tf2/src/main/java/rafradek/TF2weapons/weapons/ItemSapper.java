@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 
@@ -21,7 +22,7 @@ public class ItemSapper extends ItemBulletWeapon {
 		// System.out.println("Can hit: " + TF2weapons.canHit(attacker,
 		// target));
 		if (target instanceof EntityBuilding && !((EntityBuilding) target).isSapped()
-				&& TF2weapons.canHit(attacker, target)) {
+				&& TF2Util.canHit(attacker, target)) {
 			((EntityBuilding) target).setSapped(attacker, stack);
 			if(attacker instanceof EntityPlayer){
 			attacker.getCapability(TF2weapons.PLAYER_CAP, null).sapperTime=100;

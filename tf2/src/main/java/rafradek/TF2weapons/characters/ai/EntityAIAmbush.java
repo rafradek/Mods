@@ -4,6 +4,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.MathHelper;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.weapons.ItemDisguiseKit;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
@@ -65,7 +66,7 @@ public class EntityAIAmbush extends EntityAIBase {
 		 * this.host.cloak, this.host, this.host.world); }
 		 */
 		if (this.host.getAttackTarget() != null && this.host.getAttackTarget() instanceof EntityPlayer)
-			ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:Cow");
+			ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:"+TF2weapons.animals.get(this.host.getRNG().nextInt(TF2weapons.animals.size())));
 		else
 			ItemDisguiseKit.startDisguise(this.host, this.host.world, "T:Engineer");
 		// this.host.getNavigator().tryMoveToEntityLiving(target, 1);

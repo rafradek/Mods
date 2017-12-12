@@ -9,6 +9,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
@@ -52,14 +53,14 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 				float damage = this.damage;
 				if (damage == -1) {
-					damage = TF2weapons.calculateDamage(TF2weapons.dummyEnt, this.world, this.shootingEntity,
+					damage = TF2Util.calculateDamage(TF2weapons.dummyEnt, this.world, this.shootingEntity,
 							this.usedWeapon, this.getCritical(),
 							(float) this.shootingEntity.getPositionVector().distanceTo(mop.hitVec));
 					if (this.usedWeapon.getItem() instanceof ItemSniperRifle)
 						damage *= 2.52f;
 					damage *= TF2Attribute.getModifier("Destroy Block", this.usedWeapon, 0, this.shootingEntity);
 				}
-				this.damage = TF2weapons.damageBlock(mop.getBlockPos(), this.shootingEntity, this.world,
+				this.damage = TF2Util.damageBlock(mop.getBlockPos(), this.shootingEntity, this.world,
 						this.usedWeapon, this.getCritical(), damage, null, null);
 				if (this.damage <= 0)
 					this.setDead();

@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 
 public class RenderGrenade extends Render<EntityGrenade> {
@@ -30,7 +31,7 @@ public class RenderGrenade extends Render<EntityGrenade> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityGrenade entity) {
 
-		return entity.getBomb() > 0 ? TEXTURE_BOMB: TF2weapons.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
+		return entity.getBomb() > 0 ? TEXTURE_BOMB: TF2Util.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
 	}
 
 	@Override

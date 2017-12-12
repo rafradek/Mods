@@ -9,6 +9,7 @@ import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
@@ -62,7 +63,7 @@ public class EntityAIAirblast extends EntityAIBase {
 				// "+TF2weapons.getTeam(host));
 				airblast = entity.getDistanceSq(host.posX, host.posY + host.getEyeHeight(),
 						host.posZ) < (easier ? 16 : 25)
-						&& TF2weapons.lookingAt(host, (easier ? 40 : 60), entity.posX, entity.posY + entity.height / 2,
+						&& TF2Util.lookingAt(host, (easier ? 40 : 60), entity.posX, entity.posY + entity.height / 2,
 								entity.posZ);
 				if (airblast)
 					break;

@@ -17,6 +17,9 @@ import atomicstryker.dynamiclights.client.IDynamicLightSource;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2DamageSource;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.message.TF2Message;
@@ -45,6 +48,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.SPacketExplosion;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -66,13 +70,16 @@ public abstract class EntityProjectileBase extends Entity
 	public EntityLivingBase shootingEntity;
 	public ItemStack usedWeapon=ItemStack.EMPTY;
 	public ItemStack usedWeaponOrig=ItemStack.EMPTY;
-	public double gravity = 0.05d;
+	public double gravity = 0.05;
+	public float health = 4f;
 	public float distanceTravelled;
 	public BlockPos stickedBlock;
 	public EntitySentry sentry;
 
 	public boolean reflected;
 	public boolean infinite;
+	
+	public double cachedGravity = -1;
 	
 	private static final DataParameter<Byte> CRITICAL = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BYTE);
@@ -85,6 +92,8 @@ public abstract class EntityProjectileBase extends Entity
 	private static final DataParameter<Float> STICK_Y = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.FLOAT);
 	private static final DataParameter<Float> STICK_Z = EntityDataManager.createKey(EntityProjectileBase.class,
+			DataSerializers.FLOAT);
+	private static final DataParameter<Float> GRAVITY = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.FLOAT);
 	private static final DataParameter<Boolean> PENETRATE = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BOOLEAN);
@@ -113,8 +122,8 @@ public abstract class EntityProjectileBase extends Entity
 				* MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI);
 		this.motionY = (-MathHelper.sin(this.rotationPitch / 180.0F * (float) Math.PI));
 		this.setThrowableHeading(this.motionX, this.motionY, this.motionZ,
-				((ItemProjectileWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
-				((ItemProjectileWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter));
+				((ItemWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
+				((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter));
 		if(((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity)){
 			this.setPenetrate();
 		}
@@ -129,6 +138,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.dataManager.register(STICK_Y, 0f);
 		this.dataManager.register(STICK_Z, 0f);
 		this.dataManager.register(PENETRATE, false);
+		this.dataManager.register(GRAVITY, -1f);
 	}
 
 	public float getPitchAddition() {
@@ -205,8 +215,10 @@ public abstract class EntityProjectileBase extends Entity
 		if (world.isRemote || this.shootingEntity == null)
 			return;
 		this.setDead();
-		TF2weapons.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, this.getExplosionSize()
-						* TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity), damageMult, this.getCritical(), 
+		float size = this.getExplosionSize() * TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity);
+		if(TF2Attribute.getModifier("Airborne Bonus", this.usedWeapon, 0, this.shootingEntity) != 0) 
+			size *= 0.8f;
+		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult, this.getCritical(), 
 						(float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
 					.distanceTo(new Vec3d(x, y, z)));
 		/*float blockDmg=TF2Attribute.getModifier("Destroy Block", this.usedWeapon, 0, this.shootingEntity);
@@ -266,14 +278,14 @@ public abstract class EntityProjectileBase extends Entity
 		if (!this.world.isRemote) {
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
-				float distance = (float) TF2weapons.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
-				int critical = TF2weapons.calculateCritPost(target, shootingEntity, this.getCritical(),
+				float distance = (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
+				int critical = TF2Util.calculateCritPost(target, shootingEntity, this.getCritical(),
 						this.usedWeapon);
-				float dmg = TF2weapons.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
+				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
 						distance);
 				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical);
-				if(!proceed || TF2weapons.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
-						TF2weapons.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
+				if(!proceed || TF2Util.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
+						TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
 					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
 						this.setDead();
 					if(proceed) {
@@ -337,7 +349,7 @@ public abstract class EntityProjectileBase extends Entity
 		 * Vec3d(this.posX, this.posY, this.posZ))) { this.inGround = true; } }
 		 */
 
-		for(RayTraceResult target : TF2weapons.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
+		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
 				this.posY + this.motionY, this.posZ + this.motionZ, false, this.getCollisionSize(), this.canPenetrate()
 				)) {
 			/*Vec3d Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
@@ -391,7 +403,7 @@ public abstract class EntityProjectileBase extends Entity
 					continue;
 			}
 	
-			if (target.entityHit != null && !(TF2weapons.isOnSameTeam(this.shootingEntity, target.entityHit) && (this.ticksExisted < 3)))
+			if (target.entityHit != null && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) && (this.ticksExisted < 3)))
 				this.onHitMob(target.entityHit, target);
 			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
 				int attr = this.world.isRemote ? 0
@@ -434,13 +446,13 @@ public abstract class EntityProjectileBase extends Entity
 			} else
 				// this.setPosition(this.posX, this.posY, this.posZ);
 				this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
-			float f3 = (float) (1 - this.getGravity() / 5);
+			float f3 = (float) (1 - this.getGravityOverride() / 5);
 			this.motionX *= f3;
 			this.motionY *= f3;
 			this.motionZ *= f3;
-			this.motionY -= this.getGravity();
+			this.motionY -= this.getGravityOverride();
 			f2 = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-			if (f2 > 0.1 || Math.abs(this.motionY) > this.getGravity() * 3) {
+			if (f2 > 0.1 || Math.abs(this.motionY) > this.getGravityOverride() * 3) {
 				this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
 
 				for (this.rotationPitch = (float) (Math.atan2(this.motionY, f2) * 180.0D / Math.PI); this.rotationPitch
@@ -468,7 +480,7 @@ public abstract class EntityProjectileBase extends Entity
 				double pZ = this.posZ - this.motionZ * j / 4.0D - this.motionZ;
 				if (this.getCritical() == 2)
 					ClientProxy.spawnCritParticle(this.world, pX, pY, pZ,
-							TF2weapons.getTeamForDisplay(this.shootingEntity));
+							TF2Util.getTeamColor(this.shootingEntity));
 				this.spawnParticles(pX, pY, pZ);
 				// EntityFX
 				// ent=Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(EnumParticleTypes.EXPLOSION_NORMAL.getParticleID(),
@@ -810,6 +822,13 @@ public abstract class EntityProjectileBase extends Entity
 	public double getGravity() {
 		return 0.0381f;
 	}
+	
+	public double getGravityOverride() {
+		if(this.dataManager.get(GRAVITY) == -1f) {
+			this.dataManager.set(GRAVITY, TF2Attribute.getModifier("Gravity", this.usedWeapon, (float) this.getGravity(), shootingEntity));
+		}
+		return this.dataManager.get(GRAVITY);
+	}
 
 	@Override
 	public Entity getThrower() {
@@ -869,6 +888,24 @@ public abstract class EntityProjectileBase extends Entity
 		return true;
 	}
 	
+	public boolean attackEntityFrom(DamageSource source, float damage){
+		if (this.isEntityInvulnerable(source))
+        {
+            return false;
+        }
+		else if(source.getTrueSource() != null && source.getTrueSource() instanceof EntityLivingBase &&
+				!TF2Util.isOnSameTeam(source.getTrueSource(), this.shootingEntity)&& !(source.isExplosion() || source.isFireDamage())){
+			if (source instanceof TF2DamageSource) {
+				damage *= Math.max(1f,TF2Attribute.getModifier("Destroy Projectiles", ((TF2DamageSource)source).getWeapon(), 0, (EntityLivingBase) source.getTrueSource()));
+			}
+			this.health -= damage;
+			if (this.health <= 0)
+				this.setDead();
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean isInRangeToRenderDist(double distance) {
@@ -883,7 +920,7 @@ public abstract class EntityProjectileBase extends Entity
 
 	@Optional.Method(modid = "dynamiclights")
 	public void makeLit() {
-		if (TF2weapons.dynamicLightsProj)
+		if (TF2ConfigVars.dynamicLightsProj)
 			DynamicLights.addLightSource(this);
 	}
 

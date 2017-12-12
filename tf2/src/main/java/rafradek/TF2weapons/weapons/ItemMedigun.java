@@ -21,7 +21,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -80,7 +82,7 @@ public class ItemMedigun extends ItemUsable {
 		int lastHitTime = target.ticksExisted - target.getEntityData().getInteger("lasthit");
 		float heal = this.getHealAmount(stack, living);
 		if (!(target instanceof IEntityTF2))
-			heal *=TF2weapons.damageMultiplier;
+			heal *=TF2ConfigVars.damageMultiplier;
 		if (lastHitTime > 200)
 			heal *= 1 + Math.min(2, (lastHitTime - 200f) / 50f);
 		float overheal = heal + target.getMaxHealth() * 0.001666f;
@@ -183,7 +185,7 @@ public class ItemMedigun extends ItemUsable {
 									 */;
 		// System.out.println(startX+" "+startY+" "+startZ+" "+endX+" "+endY+"
 		// "+endZ);
-		List<RayTraceResult> list = TF2weapons.pierce(world, living, startX, startY, startZ, startX + endX,
+		List<RayTraceResult> list = TF2Util.pierce(world, living, startX, startY, startZ, startX + endX,
 				startY + endY, startZ + endZ, false, 0.2f, false);
 		return !list.isEmpty() && list.get(0).entityHit != null ? list.get(0) : null;
 
@@ -206,7 +208,7 @@ public class ItemMedigun extends ItemUsable {
 			if (par1ItemStack.getTagCompound().getFloat("ubercharge") == 0) {
 
 				par1ItemStack.getTagCompound().setBoolean("Activated", false);
-				TF2weapons.playSound(par3Entity,ItemFromData.getSound(par1ItemStack, PropertyType.UBER_STOP_SOUND), 1.5f, 1);
+				TF2Util.playSound(par3Entity,ItemFromData.getSound(par1ItemStack, PropertyType.UBER_STOP_SOUND), 1.5f, 1);
 				((EntityLivingBase)par3Entity).removePotionEffect(effect);
 				
 				// TF2weapons.sendTracking(new
@@ -243,7 +245,7 @@ public class ItemMedigun extends ItemUsable {
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.setHealTarget(-1);
 		living.removePotionEffect(TF2weapons.uber);
-		super.draw(cap, stack, living, world);
+		super.holster(cap, stack, living, world);
 	}
 
 	@Override
@@ -316,7 +318,7 @@ public class ItemMedigun extends ItemUsable {
 		if (!world.isRemote && ((newState & 2) - (oldState & 2)) == 2
 				&& stack.getTagCompound().getFloat("ubercharge") == 1f) {
 			stack.getTagCompound().setBoolean("Activated", true);
-			TF2weapons.playSound(living,ItemFromData.getSound(stack, PropertyType.UBER_START_SOUND), 0.75f, 1);
+			TF2Util.playSound(living,ItemFromData.getSound(stack, PropertyType.UBER_START_SOUND), 0.75f, 1);
 			
 			if (stack.getTagCompound().getBoolean("Strange")) {
 				stack.getTagCompound().setInteger("Ubercharges", stack.getTagCompound().getInteger("Ubercharges") + 1);
@@ -331,7 +333,7 @@ public class ItemMedigun extends ItemUsable {
 
 	@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
-		if (world.isRemote && !TF2weapons.medigunLock && (oldState & 1 - newState & 1) == 1) {
+		if (world.isRemote && !TF2ConfigVars.medigunLock && (oldState & 1 - newState & 1) == 1) {
 			living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 		}

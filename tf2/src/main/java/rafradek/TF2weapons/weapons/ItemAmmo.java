@@ -104,6 +104,8 @@ public class ItemAmmo extends Item {
 	public static void consumeAmmoGlobal(EntityLivingBase living, ItemStack stack, int amount) {
 		if (EntityDispenser.isNearDispenser(living.world, living))
 			return;
+		if (living instanceof EntityTF2Character)
+			((EntityTF2Character)living).useAmmo(((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, amount));
 		if (!(living instanceof EntityPlayer))
 			return;
 		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
@@ -129,17 +131,22 @@ public class ItemAmmo extends Item {
 	}
 
 	public static ItemStack searchForAmmo(EntityLivingBase owner, ItemStack stack) {
-		if (EntityDispenser.isNearDispenser(owner.world, owner))
-			return STACK_FILL;
-
-		if (!(owner instanceof EntityPlayer) || ((EntityPlayer)owner).capabilities.isCreativeMode)
+		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
 			return STACK_FILL;
 
 		int type = ((ItemUsable) stack.getItem()).getAmmoType(stack);
 
 		if (type == 0)
 			return STACK_FILL;
-
+		
+		if (owner instanceof EntityTF2Character) {
+			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getData(stack).getInt(PropertyType.SLOT)) > 0 ? STACK_FILL : ItemStack.EMPTY;
+		}
+			
+		if (owner.world.isRemote && owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[type] > 0)
+			return STACK_FILL;
+		
+		
 		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
 		if (metalammo != 0) {
 			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= metalammo ? STACK_FILL : ItemStack.EMPTY;
@@ -173,7 +180,7 @@ public class ItemAmmo extends Item {
 			return 999;
 
 		if (owner instanceof EntityTF2Character)
-			return ((EntityTF2Character) owner).ammoLeft;
+			return (int) (((EntityTF2Character) owner).getAmmo() / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
 
 		if(TF2Attribute.getModifier("Ball Release", stack, 0, owner)>0)
 			stack=ItemFromData.getNewStack("sandmanball");

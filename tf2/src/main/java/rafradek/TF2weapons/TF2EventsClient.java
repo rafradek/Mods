@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 import atomicstryker.dynamiclights.client.DynamicLights;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiIngame;
@@ -54,8 +55,10 @@ import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -78,6 +81,7 @@ import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemMinigun;
+import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
@@ -102,22 +106,30 @@ public class TF2EventsClient {
 		// "+event.getMap().getGlTextureId());
 		pelletIcon = event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/pellet3"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/ammo_belt_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/refill_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_0"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_1"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_2"));
 		// }
 	}
 
 	@SubscribeEvent
 	public void keyJumpPress(InputEvent.KeyInputEvent event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
-		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isKeyDown() && !minecraft.player.onGround
-				&& minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null
-				&& minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots
+		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isKeyDown() && !minecraft.player.onGround) {
+			
+			if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots
 				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
-			minecraft.player.jump();
-			float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 3 : 1);
-			minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
-			minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
-			minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
-			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
+				minecraft.player.jump();
+				float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 3 : 1);
+				minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
+				minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
+				minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
+				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
+			}
+			else if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute && minecraft.player.motionY<0 ) {
+				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(25));
+			}
 		}
 		if(minecraft.currentScreen == null && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
 				&& minecraft.player.getItemInUseCount()<770) {
@@ -129,6 +141,10 @@ public class TF2EventsClient {
 				}
 			}
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
+		}
+		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
+				&& TF2Attribute.getModifier("Knockback Rage", minecraft.player.getHeldItemMainhand(), 0, null) != 0) {
+			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(26));
 		}
 		if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
 			if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
@@ -149,6 +165,16 @@ public class TF2EventsClient {
 		}
 	}
 
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs) {
+		// TF2weapons.syncConfig();
+		if (eventArgs.getModID().equals("rafradek_tf2_weapons")) {
+			TF2ConfigVars.createConfig();
+			if(Minecraft.getMinecraft().player != null)
+				TF2weapons.network.sendToServer(new TF2Message.InitClientMessage(TF2weapons.conf));
+		}
+	}
+	
 	public void keyPressUpdate(boolean attackKeyDown, boolean altAttackKeyDown) {
 		Minecraft minecraft = Minecraft.getMinecraft();
 
@@ -243,13 +269,21 @@ public class TF2EventsClient {
 				
 				soundIterator.remove();
 			}
-			if(TF2weapons.dynamicLights){
+			if(TF2ConfigVars.dynamicLights){
 				removeSource();
 			}
 			// ItemUsable.tick(true);
 		}
 	}
 
+	@SubscribeEvent
+	public void entityConstructing(final EntityEvent.EntityConstructing event) {
+
+		if (event.getEntity() instanceof EntityPlayerSP) {
+			//System.out.println("Constructing player");
+		}
+	}
+	
 	@Optional.Method(modid = "dynamiclights")
 	public static void removeSource(){
 		Iterator<MuzzleFlashLightSource> iterator = muzzleFlashes.iterator();
@@ -266,6 +300,8 @@ public class TF2EventsClient {
 	}
 	public int getActionType(boolean attackKeyDown, boolean altAttackKeyDown) {
 		int value = 0;
+		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+		
 		if (attackKeyDown) {
 			value++;
 		}
@@ -275,13 +311,13 @@ public class TF2EventsClient {
 		if (ClientProxy.reload.isKeyDown()) {
 			value += 4;
 		}
-		return value;
+		return ((ItemUsable)stack.getItem()).getStateOverride(stack, Minecraft.getMinecraft().player, value);
 	}
 
 	@SubscribeEvent
 	public void getFov(FOVUpdateEvent event) {
 		if (event.getEntity().getHeldItem(EnumHand.MAIN_HAND) != null && event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemUsable)
-			if (event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemSniperRifle && event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+			if (event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemSniperRifle && event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
 				event.setNewfov(event.getFov() * 0.55f);
 			} else if (event.getEntity().getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemMinigun.slowdownUUID) != null) {
 				event.setNewfov(event.getFov() * 1.4f);
@@ -348,15 +384,14 @@ public class TF2EventsClient {
 	}
 
 	public static void setColorTeam(Entity ent,float alpha){
-		if(TF2weapons.getTeamForDisplay(ent)==0)
-			GlStateManager.color(0.8F, 0.25F, 0.25F, alpha);
-		else
-			GlStateManager.color(0.25F, 0.25F, 0.8F, alpha);
+		ClientProxy.setColor(TF2Util.getTeamColor(ent), 0.7f, 0, 0.25f, 0.8f);
 	}
 
 	@SubscribeEvent
 	public void renderOverlay(RenderGameOverlayEvent.Pre event) {
 		EntityPlayer player = Minecraft.getMinecraft().player;
+		if (player == null)
+			return;
 		WeaponsCapability cap = player.getCapability(TF2weapons.WEAPONS_CAP, null);
 		ItemWeapon.inHand = event.getType() != ElementType.HOTBAR;
 		ClientProxy.renderCritGlow=0;
@@ -364,697 +399,488 @@ public class TF2EventsClient {
 		ItemStack held=player.getHeldItem(EnumHand.MAIN_HAND);
 		int width=event.getResolution().getScaledWidth();
 		int height=event.getResolution().getScaledHeight();
-		if (event.getType() == ElementType.HELMET && player != null && player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770){
-			
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder renderer = tessellator.getBuffer();
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-			
-			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2-80, height/2-32, 64, 192, 64, 64);
-			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2+16, height/2-32, 0, 192, 64, 64);
-			
-			gui.drawCenteredString(gui.getFontRenderer(), "(1-8)", width/2-48, height/2+40, 0xFFFFFFFF);
-			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.selectlocation"), width/2, height/2-50, 0xFFFFFFFF);
-			gui.drawCenteredString(gui.getFontRenderer(), "(9)", width/2+48, height/2+40, 0xFFFFFFFF);
-			
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		}
-		if (event.getType() == ElementType.HELMET && player != null && (player.getCapability(TF2weapons.PLAYER_CAP, null).newContracts || player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards)){
-			String line1;
-			String line2;
-			if( player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards) {
-				line1="You can claim your contract reward";
-				line2="Hold R to continue";
-			}
-			else {
-				line1="You have a new contract";
-				line2="Hold R to view it";
-			}
-			gui.getFontRenderer().drawString(line1, event.getResolution().getScaledWidth()-
-					gui.getFontRenderer().getStringWidth(line1), 50, 0xFFFFFF);
-			gui.getFontRenderer().drawString(line2, event.getResolution().getScaledWidth()-
-					gui.getFontRenderer().getStringWidth(line2), 65, 0xFFFFFF);
-		}
-		if (event.getType() == ElementType.HELMET && player != null && player.getActivePotionEffect(TF2weapons.uber)!=null){
-			GlStateManager.disableDepth();
-	        GlStateManager.depthMask(false);
-	        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-	        setColorTeam(player,1f);
-	        Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.VIGNETTE);
-	        Tessellator tessellator = Tessellator.getInstance();
-	        BufferBuilder BufferBuilder = tessellator.getBuffer();
-	        BufferBuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
-	        BufferBuilder.pos(0.0D, (double)event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
-	        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), (double)event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
-	        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
-	        BufferBuilder.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
-	        tessellator.draw();
-	        GlStateManager.depthMask(true);
-	        GlStateManager.enableDepth();
-	        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-	        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-		}
-		if (event.getType() == ElementType.HELMET && player != null && held != null
-				&& held.getItem() instanceof ItemSniperRifle && cap.charging) {
-			// System.out.println("drawing");
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			// gui.drawTexturedModalRect(x,
-			// y, textureSprite, widthIn, heightIn);
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.scopeTexture);
-			double widthDrawStart = (double) (event.getResolution().getScaledWidth() - event.getResolution().getScaledHeight()) / 2;
-			double widthDrawEnd = widthDrawStart + event.getResolution().getScaledHeight();
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder renderer = tessellator.getBuffer();
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(widthDrawStart, event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
-			renderer.pos(widthDrawEnd, event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
-			renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
-			renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
-			tessellator.draw();
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blackTexture);
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(0, event.getResolution().getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
-			renderer.pos(widthDrawStart, event.getResolution().getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
-			renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(1d, 0d).endVertex();
-			renderer.pos(0, 0.0D, -90.0D).tex(0d, 0d).endVertex();
-			tessellator.draw();
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(widthDrawEnd, event.getResolution().getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth(), event.getResolution().getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1d, 0d).endVertex();
-			renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(0d, 0d).endVertex();
-			tessellator.draw();
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.chargeTexture);
-			GL11.glColor4f(0.5F, 0.5F, 0.5F, 0.7F);
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 100, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0.508d, 0.25d)
-					.endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 100, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0.508d, 0d).endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
-			tessellator.draw();
-			if (cap.chargeTicks >= 20) {
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
-						.endVertex();
-				tessellator.draw();
-			}
-			double progress = cap.chargeTicks / ItemSniperRifle.getChargeTime(held, player);
-			GL11.glColor4f(1F, 1F, 1F, 1F);
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50 + progress * 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D)
-					.tex(progress * 0.508d, 0.25d).endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50 + progress * 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D)
-					.tex(progress * 0.508d, 0d).endVertex();
-			renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
-			tessellator.draw();
-			if (progress == 1d) {
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
-						.endVertex();
-				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
-						.endVertex();
-				tessellator.draw();
-			}
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		}
-		if (event.getType() == ElementType.HOTBAR && player != null && held != null
-				&& held.getItem() instanceof ItemFromData && ((ItemFromData)held.getItem()).showInfoBox(held, player)) {
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder renderer = tessellator.getBuffer();
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			
-			if(TF2weapons.getTeamForDisplay(player)==0)
-				GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
-			else
-				GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
-			
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(event.getResolution().getScaledWidth() - 74, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.01D, 0.99D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 74, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.0D, 0.99D).endVertex();
-			tessellator.draw();
-			
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(event.getResolution().getScaledWidth() - 76, event.getResolution().getScaledHeight() - 18, 0.0D).tex(0.5D, 0.265625D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 18, 0.0D).tex(1.0D, 0.265625D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 52, 0.0D).tex(1.0D, 0.53125D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 76, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.5D, 0.53125D).endVertex();
-			tessellator.draw();
-			String[] text=((ItemFromData)held.getItem()).getInfoBoxLines(held, player);
-			gui.drawString(gui.getFontRenderer(), text[0],
-					event.getResolution().getScaledWidth() - 66, event.getResolution().getScaledHeight() - 48, 16777215);
-			gui.drawString(gui.getFontRenderer(), text[1],
-					event.getResolution().getScaledWidth() - 66, event.getResolution().getScaledHeight() - 30, 16777215);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-			
-		}
-		if (event.getType() == ElementType.HOTBAR && player != null && player.getActivePotionEffect(TF2weapons.it) != null) {
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.markedit"),
-					event.getResolution().getScaledWidth()/2, event.getResolution().getScaledHeight()/4, 16777215);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-		}
-		if (event.getType() == ElementType.HOTBAR && player != null && player.getActivePotionEffect(TF2weapons.bombmrs) != null) {
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.bombmrs"),
-					event.getResolution().getScaledWidth()/2, event.getResolution().getScaledHeight()/4, 16777215);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-		}
-		if (event.getType() == ElementType.HOTBAR && player != null && held != null
-				&& held.getItem() instanceof ItemMedigun) {
-			
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder renderer = tessellator.getBuffer();
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			
-			if(TF2weapons.getTeamForDisplay(player)==0)
-				GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
-			else
-				GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
-			
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(event.getResolution().getScaledWidth() - 138, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.01D, 0.99D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 138, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.0D, 0.99D).endVertex();
-			tessellator.draw();
-			
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 18, 0.0D).tex(0.0D, 0.265625D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 18, 0.0D).tex(1.0D, 0.265625D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 52, 0.0D).tex(1.0D, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.0D, 0.0D).endVertex();
-			tessellator.draw();
-
-			Entity healTarget = player.world.getEntityByID(cap.getHealTarget());
-			if (healTarget != null && healTarget instanceof EntityLivingBase) {
-				EntityLivingBase living = (EntityLivingBase) healTarget;
+		if (event.getType() == ElementType.HELMET) {
+			if (player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770){
 				
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-				// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
-				setColorTeam(player,0.7f);
 				
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.0D, 1D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.01D, 1D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.01D, 0.99D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.0D, 0.99D).endVertex();
-				tessellator.draw();
+				Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2-80, height/2-32, 64, 192, 64, 64);
+				Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(width/2+16, height/2-32, 0, 192, 64, 64);
 				
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+				gui.drawCenteredString(gui.getFontRenderer(), "(1-8)", width/2-48, height/2+40, 0xFFFFFFFF);
+				gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.selectlocation"), width/2, height/2-50, 0xFFFFFFFF);
+				gui.drawCenteredString(gui.getFontRenderer(), "(9)", width/2+48, height/2+40, 0xFFFFFFFF);
+				
+				GL11.glEnable(GL11.GL_TEXTURE_2D);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			}
+			if ((player.getCapability(TF2weapons.PLAYER_CAP, null).newContracts || player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards)){
+				String line1;
+				String line2;
+				if( player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards) {
+					line1="You can claim your contract reward";
+					line2="Hold reload key to continue";
+				}
+				else {
+					line1="You have a new contract";
+					line2="Hold reload key to view it";
+				}
+				gui.getFontRenderer().drawString(line1, event.getResolution().getScaledWidth()-
+						gui.getFontRenderer().getStringWidth(line1), 50, 0xFFFFFF);
+				gui.getFontRenderer().drawString(line2, event.getResolution().getScaledWidth()-
+						gui.getFontRenderer().getStringWidth(line2), 65, 0xFFFFFF);
+			}
+			if (player.getActivePotionEffect(TF2weapons.uber)!=null){
+				GlStateManager.disableDepth();
+		        GlStateManager.depthMask(false);
+		        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+		        ClientProxy.setColor(TF2Util.getTeamColor(player), 1f, 0, 0f, 1f);
+		        Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.VIGNETTE);
+		        Tessellator tessellator = Tessellator.getInstance();
+		        BufferBuilder BufferBuilder = tessellator.getBuffer();
+		        BufferBuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+		        BufferBuilder.pos(0.0D, (double)event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
+		        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), (double)event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
+		        BufferBuilder.pos((double)event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
+		        BufferBuilder.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
+		        tessellator.draw();
+		        GlStateManager.depthMask(true);
+		        GlStateManager.enableDepth();
+		        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+			}
+			if (held != null && held.getItem() instanceof ItemSniperRifle && cap.isCharging()) {
+				// System.out.println("drawing");
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				// gui.drawTexturedModalRect(x,
+				// y, textureSprite, widthIn, heightIn);
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.scopeTexture);
+				double widthDrawStart = (double) (event.getResolution().getScaledWidth() - event.getResolution().getScaledHeight()) / 2;
+				double widthDrawEnd = widthDrawStart + event.getResolution().getScaledHeight();
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(0.0D, 0.265625D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(1.0D, 0.265625D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(1.0D, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(0.0D, 0.0D).endVertex();
+				renderer.pos(widthDrawStart, event.getResolution().getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
+				renderer.pos(widthDrawEnd, event.getResolution().getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
+				renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
+				renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
 				tessellator.draw();
-				float overheal = 1f + living.getAbsorptionAmount() / living.getMaxHealth();
-				if (overheal > 1f) {
-					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.4F);
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blackTexture);
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(0, event.getResolution().getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
+				renderer.pos(widthDrawStart, event.getResolution().getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
+				renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(1d, 0d).endVertex();
+				renderer.pos(0, 0.0D, -90.0D).tex(0d, 0d).endVertex();
+				tessellator.draw();
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(widthDrawEnd, event.getResolution().getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth(), event.getResolution().getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth(), 0.0D, -90.0D).tex(1d, 0d).endVertex();
+				renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(0d, 0d).endVertex();
+				tessellator.draw();
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.chargeTexture);
+				GL11.glColor4f(0.5F, 0.5F, 0.5F, 0.7F);
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 100, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0.508d, 0.25d)
+						.endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 100, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0.508d, 0d).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
+				tessellator.draw();
+				if (cap.chargeTicks >= 20) {
 					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
-							.tex(0.0D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
-							.tex(0.28125D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
-							.tex(0.28125D, 0.3125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
-							.tex(0.0D, 0.3125D).endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
+							.endVertex();
 					tessellator.draw();
 				}
-				GL11.glColor4f(0.12F, 0.12F, 0.12F, 1F);
+				double progress = cap.chargeTicks / ItemSniperRifle.getChargeTime(held, player);
+				GL11.glColor4f(1F, 1F, 1F, 1F);
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.0D, 0.59375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.28125D, 0.59375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.28125D, 0.3125D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.0D, 0.3125D).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50 + progress * 50, (double) event.getResolution().getScaledHeight() / 2 + 15, -90.0D)
+						.tex(progress * 0.508d, 0.25d).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50 + progress * 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D)
+						.tex(progress * 0.508d, 0d).endVertex();
+				renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 50, (double) event.getResolution().getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
 				tessellator.draw();
-				float health = living.getHealth() / living.getMaxHealth();
-				if (health > 0.33f) {
-					GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
-				} else {
-					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+				if (progress == 1d) {
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 121, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
+							.endVertex();
+					renderer.pos((double) event.getResolution().getScaledWidth() / 2 + 110, (double) event.getResolution().getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
+							.endVertex();
+					tessellator.draw();
 				}
-				int tf2health=Math.round((living.getHealth()/TF2weapons.damageMultiplier)*overheal*10);
-				
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.0D, 0.59375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.28125D, 0.59375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
-						.tex(0.28125D, 0.59375D - 0.28125D * health).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
-						.tex(0.0D, 0.59375D - 0.28125D * health).endVertex();
-				tessellator.draw();
-				
-				gui.getFontRenderer().drawString(Integer.toString(tf2health), event.getResolution().getScaledWidth() / 2 - 47 - gui.getFontRenderer().getStringWidth(Integer.toString(tf2health)) / 2,
-						event.getResolution().getScaledHeight() / 2 + 52, 0x101010);
-				gui.drawString(gui.getFontRenderer(), "Healing:", event.getResolution().getScaledWidth() / 2 - 28,
-						event.getResolution().getScaledHeight() / 2 + 42, 16777215);
-				gui.drawString(gui.getFontRenderer(), living.getDisplayName().getFormattedText(),
-						event.getResolution().getScaledWidth() / 2 - 28, event.getResolution().getScaledHeight() / 2 + 54, 16777215);
-
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 			}
-
-			float uber = held.getTagCompound().getFloat("ubercharge");
-			gui.drawString(gui.getFontRenderer(), "UBERCHARGE: " + Math.round(uber * 100f) + "%",
-					event.getResolution().getScaledWidth() - 130, event.getResolution().getScaledHeight() - 48, 16777215);
-			GL11.glDisable(GL11.GL_TEXTURE_2D);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 20, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 20, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
-			tessellator.draw();
-
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 132 + 112 * uber, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 132 + 112 * uber, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
-			renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
-			tessellator.draw();
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		}
-		Entity mouseTarget = Minecraft.getMinecraft().objectMouseOver != null ? Minecraft.getMinecraft().objectMouseOver.entityHit : null;
-		if (event.getType() == ElementType.HOTBAR && player != null && mouseTarget != null && mouseTarget instanceof EntityBuilding
-				&& TF2weapons.isOnSameTeam(player, mouseTarget)) {
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder renderer = tessellator.getBuffer();
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-			if (mouseTarget instanceof EntitySentry) {
-				EntitySentry sentry = (EntitySentry) mouseTarget;
-				// GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-				// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
-				if(TF2weapons.getTeamForDisplay(player)==0)
-					GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
-				else
-					GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 52, event.getResolution().getScaledHeight() / 2 + 22, 0, 112,124, 60);
+		if (event.getType() == ElementType.HOTBAR) {
+			if (held != null
+					&& held.getItem() instanceof ItemFromData && ((ItemFromData)held.getItem()).showInfoBox(held, player)) {
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				
+				ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+				
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(event.getResolution().getScaledWidth() - 74, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.01D, 0.99D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 74, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.0D, 0.99D).endVertex();
+				tessellator.draw();
+				
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 20, 0, 48, 144, 64);
-				/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 84, 0.0D).tex(0.0D, 0.4375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 84, 0.0D).tex(0.5625D, 0.4375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 20, 0.0D).tex(0.5625D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 20, 0.0D).tex(0.0D, 0.1875D).endVertex();
-				tessellator.draw();*/
-				double imagePos = sentry.getLevel() == 1 ? 0.375D : sentry.getLevel() == 2 ? 0.1875D : 0D;
-
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.75D, imagePos + 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.9375D, imagePos + 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.9375D, imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.75D, imagePos).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 76, event.getResolution().getScaledHeight() - 18, 0.0D).tex(0.5D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 18, 0.0D).tex(1.0D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 52, 0.0D).tex(1.0D, 0.53125D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 76, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.5D, 0.53125D).endVertex();
 				tessellator.draw();
-
-				imagePos = sentry.getLevel() == 3 ? 0D : 0.0625D;
+				String[] text=((ItemFromData)held.getItem()).getInfoBoxLines(held, player);
+				gui.drawString(gui.getFontRenderer(), text[0],
+						event.getResolution().getScaledWidth() - 66, event.getResolution().getScaledHeight() - 48, 16777215);
+				gui.drawString(gui.getFontRenderer(), text[1],
+						event.getResolution().getScaledWidth() - 66, event.getResolution().getScaledHeight() - 30, 16777215);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				
+			}
+			if (player.getActivePotionEffect(TF2weapons.it) != null) {
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.markedit"),
+						event.getResolution().getScaledWidth()/2, event.getResolution().getScaledHeight()/4, 16777215);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+			}
+			if (player.getActivePotionEffect(TF2weapons.bombmrs) != null) {
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.bombmrs"),
+						event.getResolution().getScaledWidth()/2, event.getResolution().getScaledHeight()/4, 16777215);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+			}
+			if (held != null && held.getItem() instanceof ItemMedigun) {
+				
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				
+				ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+				
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 77, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 77, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 61, 0.0D).tex(1D, imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 61, 0.0D).tex(0.9375D, imagePos).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 138, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 14, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.01D, 0.99D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 138, event.getResolution().getScaledHeight() - 50, 0.0D).tex(0.0D, 0.99D).endVertex();
 				tessellator.draw();
-
+				
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 41, 0.0D).tex(0.9375D, 0.25D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 41, 0.0D).tex(1D, 0.25D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 25, 0.0D).tex(1D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 25, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 18, 0.0D).tex(0.0D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 18, 0.0D).tex(1.0D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 12, event.getResolution().getScaledHeight() - 52, 0.0D).tex(1.0D, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.0D, 0.0D).endVertex();
 				tessellator.draw();
-
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 59, 0.0D).tex(0.9375D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 59, 0.0D).tex(1D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 43, 0.0D).tex(1D, 0.125D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 43, 0.0D).tex(0.9375D, 0.125D).endVertex();
-				tessellator.draw();
-
-				imagePos = sentry.getLevel() == 1 ? 0.3125D : sentry.getLevel() == 2 ? 0.375D : 0.4375D;
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 22, 0.0D).tex(1D, imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 22, 0.0D).tex(0.9375D, imagePos).endVertex();
-				tessellator.draw();
-
-				gui.drawString(gui.getFontRenderer(), Integer.toString(sentry.getKills()),
-						event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 29, 16777215);
-				float health = sentry.getHealth() / sentry.getMaxHealth();
-				if (health > 0.33f) {
-					GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
-				} else {
-					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
-				}
-				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				for (int i = 0; i < health * 11; i++) {
-
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 75 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 75 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 79 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 79 - i * 5, 0.0D).endVertex();
+	
+				Entity healTarget = player.world.getEntityByID(cap.getHealTarget());
+				if (healTarget != null && healTarget instanceof EntityLivingBase) {
+					EntityLivingBase living = (EntityLivingBase) healTarget;
+					
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+					// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+					// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+					setColorTeam(player,0.7f);
+					
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.0D, 1D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.01D, 1D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.01D, 0.99D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.0D, 0.99D).endVertex();
 					tessellator.draw();
+					
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(0.0D, 0.265625D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(1.0D, 0.265625D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(1.0D, 0.0D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(0.0D, 0.0D).endVertex();
+					tessellator.draw();
+					float overheal = 1f + living.getAbsorptionAmount() / living.getMaxHealth();
+					if (overheal > 1f) {
+						GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.4F);
+						renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
+								.tex(0.0D, 0.59375D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
+								.tex(0.28125D, 0.59375D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
+								.tex(0.28125D, 0.3125D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
+								.tex(0.0D, 0.3125D).endVertex();
+						tessellator.draw();
+					}
+					GL11.glColor4f(0.12F, 0.12F, 0.12F, 1F);
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.0D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.28125D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.28125D, 0.3125D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.0D, 0.3125D).endVertex();
+					tessellator.draw();
+					float health = living.getHealth() / living.getMaxHealth();
+					if (health > 0.33f) {
+						GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+					} else {
+						GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+					}
+					int tf2health=Math.round((living.getHealth()/TF2ConfigVars.damageMultiplier)*overheal*10);
+					
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.0D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.28125D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
+							.tex(0.28125D, 0.59375D - 0.28125D * health).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
+							.tex(0.0D, 0.59375D - 0.28125D * health).endVertex();
+					tessellator.draw();
+					
+					gui.getFontRenderer().drawString(Integer.toString(tf2health), event.getResolution().getScaledWidth() / 2 - 47 - gui.getFontRenderer().getStringWidth(Integer.toString(tf2health)) / 2,
+							event.getResolution().getScaledHeight() / 2 + 52, 0x101010);
+					gui.drawString(gui.getFontRenderer(), "Healing:", event.getResolution().getScaledWidth() / 2 - 28,
+							event.getResolution().getScaledHeight() / 2 + 42, 16777215);
+					gui.drawString(gui.getFontRenderer(), living.getDisplayName().getFormattedText(),
+							event.getResolution().getScaledWidth() / 2 - 28, event.getResolution().getScaledHeight() / 2 + 54, 16777215);
+	
 				}
-
+	
+				float uber = held.getTagCompound().getFloat("ubercharge");
+				gui.drawString(gui.getFontRenderer(), "UBERCHARGE: " + Math.round(uber * 100f) + "%",
+						event.getResolution().getScaledWidth() - 130, event.getResolution().getScaledHeight() - 48, 16777215);
+				GL11.glDisable(GL11.GL_TEXTURE_2D);
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
 				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 58, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 58, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 44, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 44, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 20, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 20, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
 				tessellator.draw();
-
-				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 62, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 62, 0.0D).endVertex();
-				tessellator.draw();
-
+	
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
 				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 58, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + (double) sentry.getAmmo() / (double) sentry.getMaxAmmo() * 55D,
-						event.getResolution().getScaledHeight() / 2 + 58, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + (double) sentry.getAmmo() / (double) sentry.getMaxAmmo() * 55D,
-						event.getResolution().getScaledHeight() / 2 + 44, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 44, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132 + 112 * uber, event.getResolution().getScaledHeight() - 22, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132 + 112 * uber, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() - 132, event.getResolution().getScaledHeight() - 36, 0.0D).endVertex();
 				tessellator.draw();
-
-				double xOffset = sentry.getLevel() < 3 ? sentry.getProgress() * 0.275D : sentry.getRocketAmmo() * 2.75D;
-				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + xOffset, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + xOffset, event.getResolution().getScaledHeight() / 2 + 62, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 62, 0.0D).endVertex();
-				tessellator.draw();
-			} else if (mouseTarget instanceof EntityDispenser) {
-				EntityDispenser dispenser = (EntityDispenser) mouseTarget;
-				// GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-				// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
-				if(TF2weapons.getTeamForDisplay(player)==0)
-					GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
-				else
-					GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 52, event.getResolution().getScaledHeight() / 2 + 30, 0, 112,124, 44);
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0, 0, 144, 48);
-				/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.0D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D, 0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.0D, 0D).endVertex();
-				tessellator.draw();*/
-
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.75D, 0.75D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.9375D, 0.75D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.9375D, 0.5625D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.75D, 0.5625D).endVertex();
-				tessellator.draw();
-
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(0.9375D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(1D, 0.1875D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(1D, 0.125D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(0.9375D, 0.125D).endVertex();
-				tessellator.draw();
-
-				double imagePos = dispenser.getLevel() == 1 ? 0.3125D : dispenser.getLevel() == 2 ? 0.375D : 0.4375D;
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(1D, imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(0.9375D, imagePos).endVertex();
-				tessellator.draw();
-
-				if (dispenser.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.9375D, 0.125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(1D, 0.125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(1D, 0.0625).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(0.9375D, 0.0625).endVertex();
-					tessellator.draw();
-				}
-				float health = dispenser.getHealth() / dispenser.getMaxHealth();
-				if (health > 0.33f) {
-					GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
-				} else {
-					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
-				}
-				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				for (int i = 0; i < health * 8; i++) {
-
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
-					tessellator.draw();
-				}
-
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
-				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-				tessellator.draw();
-
-				if (dispenser.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					tessellator.draw();
-				}
-
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
-				renderer.begin(7, DefaultVertexFormats.POSITION);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + dispenser.getMetal() * 0.1375D, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + dispenser.getMetal() * 0.1375D, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-				tessellator.draw();
-
-				if (dispenser.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + dispenser.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 69, 0.0D)
-							.endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + dispenser.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 55, 0.0D)
-							.endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					tessellator.draw();
-				}
-
-			} else if (mouseTarget instanceof EntityTeleporter) {
-				EntityTeleporter teleporter = (EntityTeleporter) mouseTarget;
-				// GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-				// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
-				if(TF2weapons.getTeamForDisplay(player)==0)
-					GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
-				else
-					GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 52, event.getResolution().getScaledHeight() / 2 + 30, 0, 112,124, 44);
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-				gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0, 0, 144, 48);
-
-				double imagePos = teleporter.isExit() ? 0.1875D : 0;
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D + imagePos, 0.9375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.75D + imagePos, 0.9375D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.75D + imagePos, 0.75D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D + imagePos, 0.75D).endVertex();
-				tessellator.draw();
-
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(0.9375D, 0.3125D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(1D, 0.3125D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(1D, 0.25D).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(0.9375D, 0.25D).endVertex();
-				tessellator.draw();
-
-				imagePos = teleporter.getLevel() == 1 ? 0.3125D : teleporter.getLevel() == 2 ? 0.375D : 0.4375D;
-				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(1D, imagePos).endVertex();
-				renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(0.9375D, imagePos).endVertex();
-				tessellator.draw();
-
-				if (teleporter.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.9375D, 0.125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(1D, 0.125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(1D, 0.0625).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(0.9375D, 0.0625).endVertex();
-					tessellator.draw();
-				}
-				if (teleporter.getTPprogress() <= 0) {
-					gui.drawString(gui.getFontRenderer(),
-							teleporter.getTeleports() + " (ID: " + (teleporter.getID() + 1) + ")", event.getResolution().getScaledWidth() / 2 + 13,
-							event.getResolution().getScaledHeight() / 2 + 38, 16777215);
-				}
-				float health = teleporter.getHealth() / teleporter.getMaxHealth();
-				if (health > 0.33f) {
-					GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
-				} else {
-					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
-				}
-				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				for (int i = 0; i < health * 8; i++) {
-
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
-					tessellator.draw();
-				}
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
-				if (teleporter.getTPprogress() > 0) {
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-					tessellator.draw();
-				}
-				if (teleporter.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					tessellator.draw();
-				}
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
-				if (teleporter.getTPprogress() > 0) {
-					double tpProgress = (1 - ((double) teleporter.getTPprogress() / (teleporter.getLevel() == 1 ? 200 : (teleporter.getLevel() == 2 ? 100 : 60)))) * 55;
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
-					tessellator.draw();
-				}
-				if (teleporter.getLevel() < 3) {
-					renderer.begin(7, DefaultVertexFormats.POSITION);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 69, 0.0D)
-							.endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 55, 0.0D)
-							.endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
-					tessellator.draw();
-				}
+				GL11.glEnable(GL11.GL_TEXTURE_2D);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 			}
-			/*
-			 * float
-			 * uber=player.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().
-			 * getFloat("ubercharge");
-			 * gui.drawString(Minecraft.
-			 * getMinecraft().ingameGUI.getFontRenderer(), "UBERCHARGE: "
-			 * +Math.round(uber*100f)+"%",
-			 * event.getResolution().getScaledWidth()-130,
-			 * event.getResolution().getScaledHeight()-48, 16777215);
-			 * GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glColor4f(1.0F, 1.0F,
-			 * 1.0F, 0.33F); renderer.begin(7, DefaultVertexFormats.POSITION);
-			 * renderer.pos(event.getResolution().getScaledWidth()-132,
-			 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-20,
-			 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-20,
-			 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-132,
-			 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-			 * tessellator.draw();
-			 * 
-			 * GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F); renderer.begin(7,
-			 * DefaultVertexFormats.POSITION);
-			 * renderer.pos(event.getResolution().getScaledWidth()-132,
-			 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
-			 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
-			 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-			 * renderer.pos(event.getResolution().getScaledWidth()-132,
-			 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-			 * tessellator.draw();
-			 */
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			
+			Entity mouseTarget = Minecraft.getMinecraft().objectMouseOver != null ? Minecraft.getMinecraft().objectMouseOver.entityHit : null;
+			if (mouseTarget != null && mouseTarget instanceof EntityBuilding
+					&& TF2Util.isOnSameTeam(player, mouseTarget)) {
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+				EntityBuilding building = (EntityBuilding) mouseTarget;
+				GlStateManager.translate(width/2-72, height/2+52-building.getGuiHeight()/2, 0);
+				building.renderGUI(renderer, tessellator, player, width, height, gui);
+				GlStateManager.translate(-width/2+72, -height/2-52+building.getGuiHeight()/2, 0);
+				if (mouseTarget instanceof EntityTeleporter) {
+					EntityTeleporter teleporter = (EntityTeleporter) mouseTarget;
+					// GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+					// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+					// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+					if(TF2Util.getTeamColor(player)==0)
+						GL11.glColor4f(0.8F, 0.25F, 0.25F, 0.7F);
+					else
+						GL11.glColor4f(0.25F, 0.25F, 0.8F, 0.7F);
+					gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 52, event.getResolution().getScaledHeight() / 2 + 30, 0, 112,124, 44);
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+					gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0, 0, 144, 48);
+	
+					double imagePos = teleporter.isExit() ? 0.1875D : 0;
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D + imagePos, 0.9375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.75D + imagePos, 0.9375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.75D + imagePos, 0.75D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D + imagePos, 0.75D).endVertex();
+					tessellator.draw();
+	
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(0.9375D, 0.3125D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(1D, 0.3125D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(1D, 0.25D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(0.9375D, 0.25D).endVertex();
+					tessellator.draw();
+	
+					imagePos = teleporter.getLevel() == 1 ? 0.3125D : teleporter.getLevel() == 2 ? 0.375D : 0.4375D;
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(1D, imagePos).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(0.9375D, imagePos).endVertex();
+					tessellator.draw();
+	
+					if (teleporter.getLevel() < 3) {
+						renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.9375D, 0.125D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(1D, 0.125D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(1D, 0.0625).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(0.9375D, 0.0625).endVertex();
+						tessellator.draw();
+					}
+					if (teleporter.getTPprogress() <= 0) {
+						gui.drawString(gui.getFontRenderer(),
+								teleporter.getTeleports() + " (ID: " + (teleporter.getID() + 1) + ")", event.getResolution().getScaledWidth() / 2 + 13,
+								event.getResolution().getScaledHeight() / 2 + 38, 16777215);
+					}
+					float health = teleporter.getHealth() / teleporter.getMaxHealth();
+					if (health > 0.33f) {
+						GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+					} else {
+						GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+					}
+					GL11.glDisable(GL11.GL_TEXTURE_2D);
+					for (int i = 0; i < health * 8; i++) {
+	
+						renderer.begin(7, DefaultVertexFormats.POSITION);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
+						tessellator.draw();
+					}
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
+					if (teleporter.getTPprogress() > 0) {
+						renderer.begin(7, DefaultVertexFormats.POSITION);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+						tessellator.draw();
+					}
+					if (teleporter.getLevel() < 3) {
+						renderer.begin(7, DefaultVertexFormats.POSITION);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+						tessellator.draw();
+					}
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
+					if (teleporter.getTPprogress() > 0) {
+						double tpProgress = (1 - ((double) teleporter.getTPprogress() / (teleporter.getLevel() == 1 ? 200 : (teleporter.getLevel() == 2 ? 100 : 60)))) * 55;
+						renderer.begin(7, DefaultVertexFormats.POSITION);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+						tessellator.draw();
+					}
+					if (teleporter.getLevel() < 3) {
+						renderer.begin(7, DefaultVertexFormats.POSITION);
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 69, 0.0D)
+								.endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 55, 0.0D)
+								.endVertex();
+						renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+						tessellator.draw();
+					}
+				}
+				/*
+				 * float
+				 * uber=player.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().
+				 * getFloat("ubercharge");
+				 * gui.drawString(Minecraft.
+				 * getMinecraft().ingameGUI.getFontRenderer(), "UBERCHARGE: "
+				 * +Math.round(uber*100f)+"%",
+				 * event.getResolution().getScaledWidth()-130,
+				 * event.getResolution().getScaledHeight()-48, 16777215);
+				 * GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glColor4f(1.0F, 1.0F,
+				 * 1.0F, 0.33F); renderer.begin(7, DefaultVertexFormats.POSITION);
+				 * renderer.pos(event.getResolution().getScaledWidth()-132,
+				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-20,
+				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-20,
+				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-132,
+				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
+				 * tessellator.draw();
+				 * 
+				 * GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F); renderer.begin(7,
+				 * DefaultVertexFormats.POSITION);
+				 * renderer.pos(event.getResolution().getScaledWidth()-132,
+				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
+				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
+				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
+				 * renderer.pos(event.getResolution().getScaledWidth()-132,
+				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
+				 * tessellator.draw();
+				 */
+				GL11.glEnable(GL11.GL_TEXTURE_2D);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			}
 		}
 	}
 
@@ -1107,12 +933,12 @@ public class TF2EventsClient {
 
 		EntityPlayer player=Minecraft.getMinecraft().player;
 		if (!player.getHeldItemMainhand().isEmpty()){
-			ClientProxy.renderCritGlow=TF2weapons.calculateCritPre(player.getHeldItemMainhand(),player)*2+TF2weapons.getTeamForDisplay(player);
+			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(player.getHeldItemMainhand(),player)*2+TF2Util.getTeamForDisplay(player);
 		}
 		else{
 			ClientProxy.renderCritGlow=0;
 		}
-		if (WeaponsCapability.get(player).isInvisible() ||player.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+		if (WeaponsCapability.get(player).isInvisible() ||player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
 			/*
 			 * GL11.glEnable(GL11.GL_BLEND); GlStateManager.clear(256);
 			 * OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -1170,11 +996,12 @@ public class TF2EventsClient {
 			GlStateManager.disableLighting();
 			GL11.glEnable(GL11.GL_BLEND);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			if (TF2weapons.getTeamForDisplay(ent) == 0) {
+			ClientProxy.setColor(TF2Util.getTeamColor(ent), 0.23f, 0, 0f, 1f);
+			/*if (TF2Util.getTeamForDisplay(ent) == 0) {
 				GL11.glColor4f(1.0F, 0.0F, 0.0F, 0.23F);
 			} else {
 				GL11.glColor4f(0.0F, 0.0F, 1.0F, 0.23F);
-			}
+			}*/
 			renderer.begin(7, DefaultVertexFormats.POSITION);
 			renderer.pos(-0.04, -0.04, 0).endVertex();
 			renderer.pos(0.04, 0.04, 0).endVertex();
@@ -1250,7 +1077,7 @@ public class TF2EventsClient {
 		if(Minecraft.getMinecraft().player != null && WeaponsCapability.get(event.getEntityPlayer()).isDisguised()) {
 			String username=WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().substring(2);
 			
-			if(TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
+			if(TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
 				event.setDisplayname(event.getDisplayname()+" ["+username+"]");
 			}
 			else {
@@ -1281,7 +1108,7 @@ public class TF2EventsClient {
 	        GlStateManager.disableLighting();
 	        GlStateManager.disableCull();
 	        GlStateManager.disableBlend();
-	        AxisAlignedBB head=TF2weapons.getHead(event.getEntity()).offset(-event.getEntity().posX, -event.getEntity().posY, -event.getEntity().posZ);
+	        AxisAlignedBB head=TF2Util.getHead(event.getEntity()).offset(-event.getEntity().posX, -event.getEntity().posY, -event.getEntity().posZ);
 	        /*double ymax = event.getEntity().getEntityBoundingBox().maxY-event.getEntity().posY;
 	        AxisAlignedBB head = new AxisAlignedBB(- 0.32, ymax - 0.24, - 0.32,  0.32, ymax + 0.48, 0.32);
 	        if (event.getEntity().width > event.getEntity().height * 0.65) {
@@ -1300,7 +1127,7 @@ public class TF2EventsClient {
 			return;
 
 		if (!event.getEntity().getHeldItemMainhand().isEmpty()){
-			ClientProxy.renderCritGlow=TF2weapons.calculateCritPre(event.getEntity().getHeldItemMainhand(),event.getEntity())*2+TF2weapons.getTeamForDisplay(event.getEntity());
+			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(event.getEntity().getHeldItemMainhand(),event.getEntity())*2+TF2Util.getTeamForDisplay(event.getEntity());
 		}
 		else{
 			ClientProxy.renderCritGlow=0;
@@ -1309,7 +1136,7 @@ public class TF2EventsClient {
 		int visTick = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks;
 
 		if (visTick > 0) {
-			if(Minecraft.getMinecraft().player != null && TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player,event.getEntity()))
+			if(Minecraft.getMinecraft().player != null && TF2Util.isOnSameTeam(event.getEntity(),Minecraft.getMinecraft().player))
 				visTick=8;
 			if (visTick >= 20) {
 				event.setCanceled(true);
@@ -1332,12 +1159,12 @@ public class TF2EventsClient {
 				&& event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemUsable
 				&& !(event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemMeleeWeapon) && event.getRenderer().getMainModel() instanceof ModelBiped) {
 			((ModelBiped) event.getRenderer().getMainModel()).rightArmPose = ((event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) > 0)
-					|| event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).charging ? ModelBiped.ArmPose.BOW_AND_ARROW : ModelBiped.ArmPose.ITEM;
+					|| event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() ? ModelBiped.ArmPose.BOW_AND_ARROW : ModelBiped.ArmPose.ITEM;
 		}
 		
 		if (event.getEntity().getActivePotionEffect(TF2weapons.uber)!=null){
 			// GlStateManager.disableLighting();
-			if (TF2weapons.getTeamForDisplay(event.getEntity()) == 0) {
+			if (TF2Util.getTeamColor(event.getEntity()) == 0) {
 			GL11.glColor4f(1.0F, 0.33F, 0.33F, 1F);
 			} else {
 			GL11.glColor4f(0.33F, 0.33F, 1.0F, 1F);
@@ -1443,10 +1270,10 @@ public class TF2EventsClient {
 					entToRender = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise =
 						(EntityLivingBase) EntityList.createEntityByIDFromName(new ResourceLocation(mobType), event.getEntity().world);
 					if(entToRender instanceof EntityTF2Character) {
-						((EntityTF2Character)entToRender).setEntTeam(1-TF2weapons.getTeamForDisplay(event.getEntity()));
+						((EntityTF2Character)entToRender).setEntTeam(1-TF2Util.getTeamColor(event.getEntity()));
 					}
 					if(entToRender instanceof EntityBuilding)
-						((EntityBuilding)entToRender).setEntTeam(1-TF2weapons.getTeamForDisplay(event.getEntity()));
+						((EntityBuilding)entToRender).setEntTeam(1-TF2Util.getTeamColor(event.getEntity()));
 					if(entToRender instanceof EntitySpy)
 						entToRender.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
 				}

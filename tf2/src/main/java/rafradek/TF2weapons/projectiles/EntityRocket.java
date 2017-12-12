@@ -7,7 +7,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2ConfigVars;
 
 public class EntityRocket extends EntityProjectileBase {
 
@@ -15,7 +15,7 @@ public class EntityRocket extends EntityProjectileBase {
 		super(p_i1756_1_);
 		if (p_i1756_1_.isRemote)
 			ClientProxy.spawnRocketParticle(this.world, this);
-		if (TF2weapons.dynamicLights)
+		if (TF2ConfigVars.dynamicLights)
 			this.makeLit();
 	}
 

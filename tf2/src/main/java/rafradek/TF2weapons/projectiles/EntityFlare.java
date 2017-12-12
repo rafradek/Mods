@@ -5,13 +5,13 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2ConfigVars;
 
 public class EntityFlare extends EntityProjectileSimple {
 
 	public EntityFlare(World world) {
 		super(world);
-		if (TF2weapons.dynamicLights)
+		if (TF2ConfigVars.dynamicLights)
 			this.makeLit();
 	}
 

@@ -2,7 +2,7 @@ package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.building.EntitySentry;
 
 public class EntityAISentryAttack extends EntityAIBase {
@@ -49,7 +49,7 @@ public class EntityAISentryAttack extends EntityAIBase {
 			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ, 30, 75);
 		else
 			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ, 5f + this.host.getLevel() * 2.25f, 50);
-		if (TF2weapons.lookingAt(this.host, 24, lookX, lookY, lookZ)) {
+		if (TF2Util.lookingAt(this.host, 24, lookX, lookY, lookZ)) {
 			this.lockTarget = true;
 			this.host.shootBullet(owner);
 			this.host.shootRocket(owner);

@@ -60,14 +60,16 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 		// EntityLivingBase ?
 		// ((EntityLivingBase)this.damageSourceEntity).getHeldItem(EnumHand.MAIN_HAND)
 		// : null;
+		if (this.getTrueSource() == TF2weapons.dummyEnt)
+			return new TextComponentTranslation("death.attack.explosion", p_151519_1_.getDisplayName());
 		String s = "death.attack." + this.damageType;
 		String s1 = s + ".item";
 		return weapon != null && I18n.canTranslate(s1)
 				? new TextComponentTranslation(s1,
-						new Object[] { p_151519_1_.getDisplayName(), this.getEntity().getDisplayName(),
+						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName(),
 								weapon.getDisplayName() })
 				: new TextComponentTranslation(s,
-						new Object[] { p_151519_1_.getDisplayName(), this.getEntity().getDisplayName() });
+						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName() });
 	}
 
 	/*
@@ -91,9 +93,10 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 		return super.isProjectile() && !this.notProjectile;
 	}
 
-	public Entity getEntity(){
+	public Entity getTrueSource(){
 		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
 	}
+	
 	public void setAttackSelf(){
 		this.selfdmg=true;
 	}

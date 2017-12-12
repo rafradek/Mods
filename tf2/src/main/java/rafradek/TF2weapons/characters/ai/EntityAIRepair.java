@@ -8,6 +8,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
@@ -85,7 +86,7 @@ public class EntityAIRepair extends EntityAIBase {
 
 					@Override
 					public boolean apply(EntityDispenser input) {
-						return TF2weapons.isOnSameTeam(input, entityHost) && !input.isDisabled() &&input.getMetal()>0;
+						return TF2Util.isOnSameTeam(input, entityHost) && !input.isDisabled() &&input.getMetal()>0;
 					}
 
 				});
@@ -111,7 +112,7 @@ public class EntityAIRepair extends EntityAIBase {
 
 						@Override
 						public boolean apply(EntityBuilding input) {
-							return TF2weapons.isOnSameTeam(input, entityHost) && isValidTarget(input);
+							return TF2Util.isOnSameTeam(input, entityHost) && isValidTarget(input);
 						}
 
 					})) {
@@ -144,7 +145,7 @@ public class EntityAIRepair extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 0);
 			this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-			TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+			TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 		}
 		this.entityHost.getNavigator().clearPathEntity();
 		this.attackTarget = null;
@@ -226,7 +227,7 @@ public class EntityAIRepair extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
 				// System.out.println("coœdo");
 			}
 
@@ -236,7 +237,7 @@ public class EntityAIRepair extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 0);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 				// System.out.println("coœz");
 			}
 			pressed = false;

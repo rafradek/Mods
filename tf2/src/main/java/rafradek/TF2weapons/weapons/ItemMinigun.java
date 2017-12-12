@@ -28,6 +28,7 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
@@ -73,12 +74,12 @@ public class ItemMinigun extends ItemBulletWeapon {
 	 */
 	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
-		return super.getWeaponDamage(stack, living, target)*(living != null?TF2weapons.lerp(0.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+		return super.getWeaponDamage(stack, living, target)*(living != null?TF2Util.lerp(0.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
 	}
 	
 	@Override
 	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
-		return super.getWeaponSpreadBase(stack, living)*(living != null?TF2weapons.lerp(1.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+		return super.getWeaponSpreadBase(stack, living)*(living != null?TF2Util.lerp(1.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
 	}
 	
 	@Override
@@ -107,12 +108,11 @@ public class ItemMinigun extends ItemBulletWeapon {
 	@Override
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
 		if (world.isRemote && this.canFire(world, living, stack)) {
-			WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-			if (cap.getCritTime() <= 0
+			if (TF2Util.calculateCritPre(stack, living) != 2
 					&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 0))
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.FIRE_LOOP_SOUND), true, 0,
 						stack);
-			else if (cap.getCritTime() > 0
+			else if (TF2Util.calculateCritPre(stack, living) == 2
 					&& (!ClientProxy.fireSounds.containsKey(living) || ClientProxy.fireSounds.get(living).type != 1)) {
 				ResourceLocation playSoundCrit = new ResourceLocation(
 						ItemFromData.getData(stack).getString(PropertyType.FIRE_LOOP_SOUND) + ".crit");
@@ -179,13 +179,13 @@ public class ItemMinigun extends ItemBulletWeapon {
 								@Override
 								public boolean apply(EntityLivingBase input) {
 									// TODO Auto-generated method stub
-									return input != living && TF2weapons.canHit(living, input) && input.getDistanceSqToEntity(living)<16;
+									return input != living && TF2Util.canHit(living, input) && input.getDistanceSqToEntity(living)<16;
 								}
 								
 							})){
 								
-								TF2weapons.dealDamage(target, world, living, stack, 0, flamedmg, TF2weapons.causeDirectDamage(stack, living, 0).setFireDamage());
-								TF2weapons.igniteAndAchievement(target, living, 7);
+								TF2Util.dealDamage(target, world, living, stack, 0, flamedmg, TF2Util.causeDirectDamage(stack, living, 0).setFireDamage());
+								TF2Util.igniteAndAchievement(target, living, 7);
 							}
 						}
 					}
@@ -222,10 +222,22 @@ public class ItemMinigun extends ItemBulletWeapon {
 	}
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
-		if(attacker instanceof EntityPlayer && !target.isEntityAlive() && target instanceof EntityLivingBase && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
+		if(attacker instanceof EntityPlayer && !target.isEntityAlive() && target instanceof EntityLivingBase && TF2Util.isEnemy(attacker, (EntityLivingBase) target)){
 			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).killsSpinning++;
 			/*if(attacker.getCapability(TF2weapons.WEAPONS_CAP, null).killsSpinning>=8)
 				((EntityPlayer)attacker).addStat(TF2Achievements.REVOLUTION);*/
 		}
+	}
+	
+	@Override
+	public boolean showDurabilityBar(ItemStack stack) {
+		return super.showDurabilityBar(stack) || (TF2Attribute.getModifier("Knockback Rage", stack, 0, null) != 0 
+				&& Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getKnockbackRage() < 1f);
+	}
+
+	@Override
+	public double getDurabilityForDisplay(ItemStack stack) {
+		return TF2Attribute.getModifier("Knockback Rage", stack, 0, null)==1 ? (1D - Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getKnockbackRage())/1D 
+				: super.getDurabilityForDisplay(stack);
 	}
 }

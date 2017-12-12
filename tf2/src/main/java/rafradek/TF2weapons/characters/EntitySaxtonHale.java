@@ -43,6 +43,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -224,7 +225,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 					this.rage = 0;
 					this.playSound(TF2Sounds.MOB_SAXTON_RAGE, 2.5F, 1F);
 					for (EntityLivingBase living : list)
-						TF2weapons.stun(living, 160, false);
+						TF2Util.stun(living, 160, false);
 					this.superJump = true;
 					this.jump();
 				}

@@ -54,7 +54,7 @@ public class ItemWrangler extends ItemUsable {
 						@Override
 						public boolean apply(EntitySentry input) {
 							// TODO Auto-generated method stub
-							return input.getOwner() == living;
+							return input.getOwner() == living && !input.isDisabled();
 						}
 
 					});

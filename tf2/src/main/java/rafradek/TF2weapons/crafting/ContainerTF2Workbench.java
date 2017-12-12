@@ -19,6 +19,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.ItemBuildingBox;
 
@@ -70,21 +72,21 @@ public class ContainerTF2Workbench extends Container {
 		List<IRecipe> recipes = TF2CraftingManager.INSTANCE.getRecipeList();
 		if (currentRecipe >= 0 && currentRecipe < recipes.size()
 				&& recipes.get(currentRecipe).matches(this.craftMatrix, world))
-			stack = getReplacement(recipes.get(currentRecipe).getCraftingResult(this.craftMatrix));
+			stack = getReplacement(player, recipes.get(currentRecipe).getCraftingResult(this.craftMatrix));
 		// ?TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe)TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix,
 		// this.world);
 		else
-			stack = getReplacement(TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world));
+			stack = getReplacement(player, TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world));
 		this.craftResult.setInventorySlotContents(0, stack);
 	}
 
-	public ItemStack getReplacement(ItemStack stack) {
+	public static ItemStack getReplacement(EntityPlayer player, ItemStack stack) {
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox
-				&& this.player.getTeam() == this.player.world.getScoreboard().getTeam("BLU"))
+				&& player.getTeam() == player.world.getScoreboard().getTeam("BLU"))
 			stack.setItemDamage(stack.getItemDamage() + 1);
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemBanner){
 			NBTTagCompound pattern=new NBTTagCompound();
-			if(this.player.getTeam() == this.player.world.getScoreboard().getTeam("BLU")){
+			if(player.getTeam() == player.world.getScoreboard().getTeam("BLU")){
 				stack.setItemDamage(EnumDyeColor.BLUE.getDyeDamage());
 				pattern.setString("Pattern", "bb");
 				pattern.setInteger("Color", 15);
@@ -95,6 +97,14 @@ public class ContainerTF2Workbench extends Container {
 			}
 			
 			stack.getSubCompound("BlockEntityTag").getTagList("Patterns", 10).appendTag(pattern);
+		}
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox && stack.getItemDamage()/2 == 11) {
+			ItemStack wrench=TF2Util.getFirstItem(player.inventory, stackL ->{
+				return TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1;
+			});
+			if(!wrench.isEmpty()) {
+				stack.setCount((int) TF2Attribute.getModifier("Teleporter Cost", wrench, 1, player));
+			}
 		}
 		return stack;
 	}

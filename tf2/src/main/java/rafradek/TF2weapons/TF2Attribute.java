@@ -26,6 +26,7 @@ import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMinigun;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemWeapon;
+import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
 import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -122,7 +123,7 @@ public class TF2Attribute {
 		@Override
 		public boolean apply(ItemStack input) {
 			// TODO Auto-generated method stub
-			if (input.getItem() instanceof ItemBulletWeapon)
+			if (input.getItem() instanceof ItemBulletWeapon && !ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
 				return true;
 			else {
 				Class<?> clazz = MapList.projectileClasses
@@ -137,7 +138,7 @@ public class TF2Attribute {
 		@Override
 		public boolean apply(ItemStack input) {
 			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemProjectileWeapon;
+			return input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE);
 		}
 
 	};
@@ -164,7 +165,7 @@ public class TF2Attribute {
 		@Override
 		public boolean apply(ItemStack input) {
 			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemProjectileWeapon && !(input.getItem() instanceof ItemFlameThrower
+			return (input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE) )&& !(input.getItem() instanceof ItemFlameThrower
 					|| (MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null 
 					&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
 		}
@@ -206,6 +207,15 @@ public class TF2Attribute {
 		}
 
 	};
+	public static final Predicate<ItemStack> WRENCH = new Predicate<ItemStack>() {
+
+		@Override
+		public boolean apply(ItemStack input) {
+			// TODO Auto-generated method stub
+			return input.getItem() instanceof ItemWrench;
+		}
+
+	};
 	/**
 	 * 
 	 * @param id
@@ -243,7 +253,7 @@ public class TF2Attribute {
 	}
 
 	public static void initAttributes() {
-		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_WEAPON, 0.20f, 5, 160,
+		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_WEAPON, 0.20f, 5, 180,
 				4);
 		new TF2Attribute(1, "DamagePenalty", "Damage", Type.PERCENTAGE, 1f, State.NEGATIVE, ITEM_WEAPON, 0.15f, 2, -140,
 				1);
@@ -267,7 +277,9 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(11, "PelletPenalty", "Pellet Count", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, WITH_CLIP,
+		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, Predicates.and(WITH_CLIP, stack -> {
+			return !ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_FULL_CLIP);
+			}),
 				-0.2f, 3, 100, 2);
 		new TF2Attribute(13, "ReloadRatePenalty", "Reload Time", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_CLIP, 0.2f,
 				3, -200, 1);
@@ -307,7 +319,7 @@ public class TF2Attribute {
 				2);
 		new TF2Attribute(32, "BurnTimePenalty", "Burn Time", Type.PERCENTAGE, 1f, State.NEGATIVE, IGNITE, -0.5f, 4, 1,
 				2);
-		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE, ITEM_WEAPON, 2.5f, 4, 80,
+		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE, ITEM_WEAPON, 2.0f, 4, 80,
 				2);
 		new TF2Attribute(34, "AccuracyBonus", "Accuracy", Type.PERCENTAGE, 1f, State.POSITIVE, WITH_SPREAD, 0.25f, 3,
 				160, 2);
@@ -347,7 +359,7 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(52, "DamageNonBurnPenalty", "Damage Non Burn", Type.PERCENTAGE, 1, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(53, "CollectHeads", "Kill Count", Type.ADDITIVE, 0, State.POSITIVE,
+		new TF2Attribute(53, "CollectHeads", "Kill Count", Type.ADDITIVE, 0, State.HIDDEN,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(54, "ExplodeDeath", "Explode Death", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
@@ -417,6 +429,42 @@ public class TF2Attribute {
 		new TF2Attribute(92, "BleedingDuration", "Bleed", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(93, "MiniCritDistance", "Minicrit Distance", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(94, "MaxHealthOnKill", "Max Health Kill", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(95, "SpeedOnKill", "Speed Kill", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(96, "ClipOnKill", "Clip Kill", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(97, "AirborneBonus", "Airborne Bonus", Type.ADDITIVE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(98, "DestroyProjectiles", "Destroy Projectiles", Type.ADDITIVE, 0, State.POSITIVE,
+				ITEM_MINIGUN, 1, 2, 160, 2);
+		new TF2Attribute(99, "KnockbackRage", "Knockback Rage", Type.ADDITIVE, 0, State.POSITIVE,
+				ITEM_MINIGUN, 1, 3, 120, 1);
+		new TF2Attribute(100, "DeployTimeBonus", "Deploy Time", Type.PERCENTAGE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(101, "FireRateHealthBonus", "Fire Rate Health", Type.PERCENTAGE, 0, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(102, "SpreadHealthPenalty", "Spread Health", Type.PERCENTAGE, 0, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(103, "AutoFireClip", "Auto Fire", Type.ADDITIVE, 0, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(104, "HealthRegen", "Health Regen", Type.ADDITIVE, 0f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(105, "Gravity", "Gravity", Type.ADDITIVE, 0f, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(106, "FireRateHitBonus", "Fire Rate Hit", Type.PERCENTAGE, 1f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(107, "ConstructionRateBonus", "Construction Rate", Type.PERCENTAGE, 1f, State.POSITIVE,
+				WRENCH, 0.4f, 3, 160, 1);
+		new TF2Attribute(108, "ConstructionRatePenalty", "Construction Rate", Type.PERCENTAGE, 1f, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(109, "UpgradeRatePenalty", "Upgrade Rate", Type.PERCENTAGE, 1f, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(110, "TeleportCost", "Teleporter Cost", Type.PERCENTAGE, 1f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(111, "MetalUsedOnHitPenalty", "Metal Used", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
@@ -508,19 +556,23 @@ public class TF2Attribute {
 
 					if (!tag.hasKey(key))
 						tag.setFloat(key, attr.defaultValue);
-					tag.setFloat(key, tag.getFloat(key) + attr.perLevel);
+					tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack));
 				}
 			}
 		}
 	}
 
+	public float getPerLevel(ItemStack stack) {
+		return this.perLevel * (stack.getItem() instanceof ItemMinigun && this.effect.equals("Damage") ? 0.5f : 1f);
+	}
+	
 	public int calculateCurrLevel(ItemStack stack) {
 		if (stack.isEmpty())
 			return 0;
 		if (!stack.getTagCompound().getCompoundTag("Attributes").hasKey(String.valueOf(this.id)))
 			return 0;
 		float valueOfAttr = stack.getTagCompound().getCompoundTag("Attributes").getFloat(String.valueOf(this.id));
-		float floatVal=(valueOfAttr - this.defaultValue) / this.perLevel;
+		float floatVal=(valueOfAttr - this.defaultValue) / this.getPerLevel(stack);
 		return Math.round(floatVal-0.3f);
 	}
 

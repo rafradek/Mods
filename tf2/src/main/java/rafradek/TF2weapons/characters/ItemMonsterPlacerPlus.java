@@ -63,8 +63,10 @@ public class ItemMonsterPlacerPlus extends Item {
 			if (facing == EnumFacing.UP && iblockstate.getBlock() instanceof BlockFence)
 				d0 = 0.5D;
 
+			boolean hastag = stack.getTagCompound() != null && stack.getTagCompound().hasKey("SavedEntity");
+			
 			EntityLivingBase entity = spawnCreature(worldIn, stack.getItemDamage(), pos.getX() + 0.5D, pos.getY() + d0,
-					pos.getZ() + 0.5D, stack.getTagCompound() != null && stack.getTagCompound().hasKey("SavedEntity")
+					pos.getZ() + 0.5D, hastag 
 							? stack.getTagCompound().getCompoundTag("SavedEntity") : null);
 
 			if (entity != null) {
@@ -75,6 +77,10 @@ public class ItemMonsterPlacerPlus extends Item {
 					stack.shrink(1);
 				if (entity instanceof EntityBuilding) {
 					((EntityBuilding) entity).setOwner(playerIn);
+					if(hastag) {
+						((EntityBuilding) entity).setConstructing(true);
+						((EntityBuilding) entity).redeploy = true;
+					}
 					entity.rotationYaw = playerIn.rotationYawHead;
 					entity.renderYawOffset = playerIn.rotationYawHead;
 					entity.rotationYawHead = playerIn.rotationYawHead;
@@ -108,9 +114,12 @@ public class ItemMonsterPlacerPlus extends Item {
 					return new ActionResult<ItemStack>(EnumActionResult.PASS, itemStackIn);
 				else if (worldIn.isBlockModifiable(playerIn, blockpos)
 						&& playerIn.canPlayerEdit(blockpos, raytraceresult.sideHit, itemStackIn)) {
+					
+					boolean hastag = itemStackIn.getTagCompound() != null && itemStackIn.getTagCompound().hasKey("SavedEntity");
+					
 					EntityLivingBase entity = spawnCreature(worldIn, itemStackIn.getItemDamage(),
 							blockpos.getX() + 0.5D, blockpos.getY() + 0.5D, blockpos.getZ() + 0.5D,
-							itemStackIn.getTagCompound() != null && itemStackIn.getTagCompound().hasKey("SavedEntity")
+							hastag
 									? itemStackIn.getTagCompound().getCompoundTag("SavedEntity") : null);
 
 					if (entity == null)
@@ -123,9 +132,14 @@ public class ItemMonsterPlacerPlus extends Item {
 							itemStackIn.shrink(1);
 						if (entity instanceof EntityBuilding) {
 							((EntityBuilding) entity).setOwner(playerIn);
+							if(hastag) {
+								((EntityBuilding) entity).setConstructing(true);
+								((EntityBuilding) entity).redeploy = true;
+							}
 							entity.rotationYaw = playerIn.rotationYawHead;
 							entity.renderYawOffset = playerIn.rotationYawHead;
 							entity.rotationYawHead = playerIn.rotationYawHead;
+							
 							/*
 							 * if(entity instanceof EntityTeleporter){
 							 * ((EntityTeleporter)

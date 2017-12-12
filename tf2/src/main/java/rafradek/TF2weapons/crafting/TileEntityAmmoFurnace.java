@@ -265,12 +265,13 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	 * destination stack isn't full, etc.
 	 */
 	private boolean canSmelt() {
-		int[] ammoTypesCount = new int[14];
+		int[] ammoTypesCount = new int[ItemAmmo.AMMO_TYPES.length];
 		for (int i = 0; i < 9; i++) {
 			ItemStack base = this.furnaceItemStacks.get(i);
 			// System.out.println("Base: "+i+" "+base+"
 			// "+ItemAmmo.AMMO_RECIPES[base.getItemDamage()]);
-			if (base != null && base.getItem() instanceof ItemAmmo && !(base.getItem() instanceof ItemFireAmmo)
+			if (base != null && base.getMetadata() < TF2CraftingManager.AMMO_RECIPES.length 
+					&& base.getItem() instanceof ItemAmmo && !(base.getItem() instanceof ItemFireAmmo)
 					&& TF2CraftingManager.AMMO_RECIPES[base.getItemDamage()] != null) {
 				/*
 				 * &&
@@ -491,7 +492,7 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 
 	@Override
 	public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-		return new ContainerFurnace(playerInventory, this);
+		return new ContainerAmmoFurnace(playerInventory, this);
 	}
 
 	@Override

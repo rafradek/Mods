@@ -2,6 +2,8 @@ package rafradek.TF2weapons;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -12,7 +14,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.Filter.Result;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.appender.OutputStreamAppender;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.BiMap;
@@ -25,7 +38,9 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -65,6 +80,7 @@ import net.minecraft.util.MovementInput;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
@@ -102,6 +118,7 @@ import rafradek.TF2weapons.characters.RenderStatue;
 import rafradek.TF2weapons.characters.RenderTF2Character;
 import rafradek.TF2weapons.decoration.LayerWearables;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.projectiles.EntityBall;
 import rafradek.TF2weapons.projectiles.EntityCritEffect;
 import rafradek.TF2weapons.projectiles.EntityFlameEffect;
@@ -133,6 +150,7 @@ import rafradek.TF2weapons.weapons.WeaponLoopSound;
 import rafradek.TF2weapons.weapons.WeaponSound;
 
 public class ClientProxy extends CommonProxy {
+	
 	public static HashMap<String, ModelBase> entityModel = new HashMap<String, ModelBase>();
 	public static HashMap<String, ResourceLocation> textureDisguise = new HashMap<String, ResourceLocation>();
 	public static RenderCustomModel disguiseRender;
@@ -157,6 +175,7 @@ public class ClientProxy extends CommonProxy {
 	public static boolean inRenderHand;
 	public static boolean inRenderHandTicked;
 
+	public static final Logger LOGGER = (Logger) LogManager.getLogger();
 	@Override
 	public void registerItemBlock(ItemBlock item) {
 		for (int i = 0; i < 16; i++)
@@ -347,6 +366,47 @@ public class ClientProxy extends CommonProxy {
 		// Minecraft.getMinecraft().renderEngine.loadTextureMap(new
 		// ResourceLocation("textures/tfatlas/particles.png"), particleMap=new
 		// TF2TextureMap("textures/particle"));
+		try {
+					//System.out.println("Is Class: "+logger.getClass().getCanonicalName());
+					Filter filter= new AbstractFilter() {
+						 @Override
+						    public Result filter(final LogEvent event) {
+							 	if(event.getLoggerName().equals("net.minecraft.client.multiplayer.GuiConnecting")) {
+							 		//System.out.println(event.getMessage().getParameters()[0]);
+							 		//System.out.println(event.getLoggerName());
+							 		TF2UdpClient.addressToUse = (String) event.getMessage().getParameters()[0];
+							 	}
+						        return Result.NEUTRAL;
+						    }
+					};
+					filter.start();
+					/*Writer writer =new Writer() {
+
+						@Override
+						public void close() throws IOException {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void flush() throws IOException {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void write(char[] arg0, int arg1, int arg2) throws IOException {
+							//System.out.println(new String(arg0));
+						}
+						
+					};
+					WriterAppender app=WriterAppender.createAppender(null, filter, writer, "lel", true, false);
+					app.start();*/
+					LOGGER.get().addFilter(filter);
+					//logger.get().addAppender(app, org.apache.logging.log4j.Level.ALL, null);
+		} catch (Exception e) {
+			
+		}
 	}
 
 	@Override
@@ -815,4 +875,10 @@ public class ClientProxy extends CommonProxy {
 	public static void removeSprint() {
 		KeyBinding.setKeyBindState(Minecraft.getMinecraft().gameSettings.keyBindSprint.getKeyCode(), false);
 	}
+	
+	public static void setColor(int color, float alpha, float darken, float min, float max) {
+		GlStateManager.color(MathHelper.clamp((color >> 16) / 255f + darken, min, max), 
+				MathHelper.clamp((color >> 8 & 255) / 255f + darken, min, max), MathHelper.clamp((color & 255) / 255f + darken, min, max), alpha);
+	}
+	
 }

@@ -34,6 +34,7 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -107,13 +108,13 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			 * getSoundHandler().isSoundPlaying(ClientProxy.fireSounds.get(
 			 * living))+" "+ClientProxy.fireSounds.get(living).type); }
 			 */
-			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() <= 0 && (!ClientProxy.fireSounds
+			if (TF2Util.calculateCritPre(stack, living) != 2 && (!ClientProxy.fireSounds
 					.containsKey(living)
 					|| !Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(ClientProxy.fireSounds.get(living))
 					|| (ClientProxy.fireSounds.get(living).type != 0 && ClientProxy.fireSounds.get(living).type != 2)))
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.FIRE_LOOP_SOUND), true, 0,
 						stack);
-			else if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() > 0
+			else if (TF2Util.calculateCritPre(stack, living) == 2
 					&& (!ClientProxy.fireSounds.containsKey(living)
 							|| !Minecraft.getMinecraft().getSoundHandler()
 									.isSoundPlaying(ClientProxy.fireSounds.get(living))
@@ -132,7 +133,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		return !(target instanceof EntityBuilding) && !(target instanceof EntityProjectileBase && !((EntityProjectileBase)target).isPushable())
 				&& !(target instanceof EntityArrow && target.onGround)
 				&& !(target instanceof IThrowableEntity && ((IThrowableEntity) target).getThrower() == living)
-				&& !TF2weapons.isOnSameTeam(living, target);
+				&& !TF2Util.isOnSameTeam(living, target);
 	}
 
 	@Override
@@ -156,7 +157,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		ItemAmmo.consumeAmmoGlobal(living, stack, 15);
 		// String airblastSound=getData(stack).get("Airblast
 		// Sound").getString();
-		TF2weapons.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
+		TF2Util.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
 
 		Vec3d lookVec = living.getLook(1f);
 		Vec3d eyeVec = new Vec3d(living.posX, living.posY + living.getEyeHeight(), living.posZ);
@@ -171,7 +172,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			// living.posY + (double)living.getEyeHeight(), living.posZ));
 			if (!isPushable(living, entity)
 					|| entity.getDistanceSq(living.posX, living.posY + living.getEyeHeight(), living.posZ) > size * size
-					|| !TF2weapons.lookingAt(living, 60, entity.posX, entity.posY + entity.height / 2, entity.posZ))
+					|| !TF2Util.lookingAt(living, 60, entity.posX, entity.posY + entity.height / 2, entity.posZ))
 				continue;
 			if (entity instanceof IThrowableEntity && !(entity instanceof EntityStickybomb))
 				((IThrowableEntity) entity).setThrower(living);
@@ -184,7 +185,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 				float speed = (float) Math.sqrt(entity.motionX * entity.motionX + entity.motionY * entity.motionY
 						+ entity.motionZ * entity.motionZ)
 						* (0.65f + TF2Attribute.getModifier("Flame Range", stack, 0.5f, living));
-				List<RayTraceResult> rayTraces = TF2weapons.pierce(world, living, eyeVec.x, eyeVec.y,
+				List<RayTraceResult> rayTraces = TF2Util.pierce(world, living, eyeVec.x, eyeVec.y,
 						eyeVec.z, eyeVec.x + lookVec.x * 256, eyeVec.y + lookVec.y * 256,
 						eyeVec.z + lookVec.z * 256, false, 0.08f, false);
 				if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
@@ -235,7 +236,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		if(target instanceof EntityLivingBase && TF2Attribute.getModifier("Rage Crit", stack, 0, attacker)!=0 && !stack.getTagCompound().getBoolean("RageActive")){
 			
 			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(Math.min(20, attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()+amount
-					*(target instanceof EntityPlayer?1f:TF2weapons.isEnemy(attacker, (EntityLivingBase) target)?0.4f:0.1f)));
+					*(target instanceof EntityPlayer?1f:TF2Util.isEnemy(attacker, (EntityLivingBase) target)?0.4f:0.1f)));
 		}
 	}
 	

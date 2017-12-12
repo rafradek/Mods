@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.characters;
 
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -23,7 +24,7 @@ public class EntityEngineer extends EntityTF2Character {
 
 	public EntityEngineer(World p_i1738_1_) {
 		super(p_i1738_1_);
-		this.ammoLeft = 24;
+		//this.ammoLeft = 24;
 		this.experienceValue = 15;
 		this.rotation = 15;
 		this.tasks.addTask(3, new EntityAIRepair(this, 1, 2f));
@@ -92,7 +93,7 @@ public class EntityEngineer extends EntityTF2Character {
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
-		if (this.sentry != null && this.sentry.isEntityAlive()) {
+		/*if (this.sentry != null && this.sentry.isEntityAlive()) {
 			NBTTagCompound sentryTag = new NBTTagCompound();
 			this.sentry.writeToNBTAtomically(sentryTag);
 			par1NBTTagCompound.setTag("Sentry", sentryTag);
@@ -101,22 +102,25 @@ public class EntityEngineer extends EntityTF2Character {
 			NBTTagCompound dispenserTag = new NBTTagCompound();
 			this.dispenser.writeToNBTAtomically(dispenserTag);
 			par1NBTTagCompound.setTag("Dispenser", dispenserTag);
-		}
+		}*/
 
 	}
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readEntityFromNBT(par1NBTTagCompound);
-		if (par1NBTTagCompound.hasKey("Sentry"))
+		/*if (par1NBTTagCompound.hasKey("Sentry") && this.sentry == null) {
 			// System.out.println(par1NBTTagCompound.getCompoundTag("Sentry"));
-			this.sentry = (EntitySentry) AnvilChunkLoader.readWorldEntityPos(
-					par1NBTTagCompound.getCompoundTag("Sentry"), this.world, this.posX, this.posY, this.posZ, true);
+			this.sentry = (EntitySentry) EntityList.createEntityFromNBT(par1NBTTagCompound.getCompoundTag("Sentry"), this.world);
+			this.sentry.forceSpawn=true;
+			this.world.spawnEntity(sentry);
+		}
 		// this.world.spawnEntity(sentry);
-		if (par1NBTTagCompound.hasKey("Dispenser"))
+		if (par1NBTTagCompound.hasKey("Dispenser") && this.dispenser == null)
 			this.dispenser = (EntityDispenser) AnvilChunkLoader.readWorldEntityPos(
 					par1NBTTagCompound.getCompoundTag("Dispenser"), this.world, this.posX, this.posY, this.posZ,
 					true);
+		*/
 		// dispenser.readFromNBT(par1NBTTagCompound.getCompoundTag("Dispenser"));
 		// this.world.spawnEntity(dispenser);
 	}

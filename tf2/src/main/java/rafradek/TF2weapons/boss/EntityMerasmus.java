@@ -49,6 +49,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.boss.BlockProp.EnumBlockType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -146,7 +147,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 			this.rotationPitch=90;
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
-				Vec3d pos = TF2weapons.radiusRandom2D(2.2f, this.rand);
+				Vec3d pos = TF2Util.radiusRandom2D(2.2f, this.rand);
 				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
 						pos.y + this.posZ, 0, 0, 0, new int[0]);
 			}
@@ -180,14 +181,14 @@ public class EntityMerasmus extends EntityTF2Boss {
 						@Override
 						public boolean apply(EntityPlayer input) {
 							// TODO Auto-generated method stub
-							return getDistanceSqToEntity(input)<900&&!TF2weapons.isOnSameTeam(EntityMerasmus.this, input)&&EntityAITarget.isSuitableTarget(EntityMerasmus.this, input, false, false);
+							return getDistanceSqToEntity(input)<900&&!TF2Util.isOnSameTeam(EntityMerasmus.this, input)&&EntityAITarget.isSuitableTarget(EntityMerasmus.this, input, false, false);
 						}
 						
 					});
 					if(!list.isEmpty()){
 						EntityPlayer living=list.get(this.rand.nextInt(list.size()));
 						living.addPotionEffect(new PotionEffect(TF2weapons.bombmrs,300));
-						TF2weapons.stun(living, 300, false);
+						TF2Util.stun(living, 300, false);
 						((EntityPlayerMP)living).connection.sendPacket(new SPacketSoundEffect(TF2Sounds.MOB_MERASMUS_HEADBOMB, this.getSoundCategory(), living.posX, living.posY, living.posZ, 4F, 1f));
 						//this.teleportCooldown=90;
 					}
@@ -213,7 +214,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						if (this.attemptTeleport(x, y, z)) {
 							this.playSound(TF2Sounds.MOB_MERASMUS_APPEAR, 1F, 1f);
 							for (int j = 0; j < 40; j++) {
-								Vec3d pos = TF2weapons.radiusRandom3D(2.7f, this.rand);
+								Vec3d pos = TF2Util.radiusRandom3D(2.7f, this.rand);
 								this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX,
 										pos.y + this.posY, pos.z + this.posZ, 0, 0, 0, new int[0]);
 							}
@@ -506,7 +507,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						@Override
 						public boolean apply(EntityLivingBase input) {
 							// TODO Auto-generated method stub
-							return input.getDistanceSqToEntity(host)<144&&!TF2weapons.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
+							return input.getDistanceSqToEntity(host)<144&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
 						}
 						
 					})){

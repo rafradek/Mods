@@ -12,6 +12,8 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget.Sorter;
 import net.minecraft.entity.ai.EntityAITarget;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.Team;
+import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityMedic;
@@ -27,8 +29,8 @@ public class EntityAINearestChecked extends EntityAITarget {
 	private boolean targetLock;
 	private int targetUnseenTicks;
 
-	public EntityAINearestChecked(EntityCreature p_i1665_1_, Class<? extends EntityLivingBase> p_i1665_2_,
-			boolean p_i1665_4_, boolean p_i1665_5_, final Predicate<EntityLivingBase> p_i1665_6_, boolean targetLock) {
+	public <A extends EntityLivingBase> EntityAINearestChecked(EntityCreature p_i1665_1_, Class<A> p_i1665_2_,
+			boolean p_i1665_4_, boolean p_i1665_5_, final Predicate<A> p_i1665_6_, boolean targetLock) {
 		super(p_i1665_1_, p_i1665_4_, p_i1665_5_);
 		this.targetClass = p_i1665_2_;
 		this.theNearestAttackableTargetSorter = new EntityAINearestAttackableTarget.Sorter(p_i1665_1_);
@@ -37,7 +39,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 		this.targetEntitySelector = new Predicate<EntityLivingBase>() {
 			@Override
 			public boolean apply(EntityLivingBase target) {
-				if (p_i1665_6_ != null && !p_i1665_6_.apply(target))
+				if (p_i1665_6_ != null && !p_i1665_6_.apply((A) target))
 					return false;
 				else {
 					// System.out.println("found "+target.getClass().getName()+"
@@ -61,10 +63,10 @@ public class EntityAINearestChecked extends EntityAITarget {
 										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = taskOwner instanceof EntityBuilding ? 0 : 1;
 						boolean fastCheck = taskOwner instanceof EntityBuilding || (!(target instanceof EntityPlayer)
-								&& (TF2weapons.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
+								&& (TF2ConfigVars.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
 										&& ((EntityTF2Character) taskOwner).natural));
 						if (target.getDistanceToEntity(taskOwner) > d0
-								|| (!fastCheck && !TF2weapons.lookingAtFast(taskOwner, 105,
+								|| (!fastCheck && !TF2Util.lookingAtFast(taskOwner, 105,
 										target.posX, target.posY + target.getEyeHeight(), target.posZ)))
 							return false;
 
@@ -79,10 +81,10 @@ public class EntityAINearestChecked extends EntityAITarget {
 	@Override
 	public boolean shouldExecute() {
 		double d0 = this.getTargetDistance() / 2;
-		if (!this.targetLock || ((this.taskOwner.getAttackTarget() == null)
+		if (((this.taskOwner.getAttackTarget() == null)
 				|| this.taskOwner.getAttackTarget().getDistanceSqToEntity(taskOwner) > d0 * d0))
 			this.targetChoosen++;
-		if (((this.taskOwner.getAttackTarget() == null) && this.targetChoosen > 1) || this.targetChoosen > 5) {
+		if (((this.taskOwner.getAttackTarget() == null) && this.targetChoosen > 1) || this.targetChoosen > 5 || !this.targetLock) {
 			// System.out.println("executing
 			// "+this.taskOwner.getClass().getName());
 			this.targetChoosen = 0;
@@ -127,6 +129,8 @@ public class EntityAINearestChecked extends EntityAITarget {
 			return false;
 		else if (!entitylivingbase.isEntityAlive())
 			return false;
+		else if(!this.targetLock && this.taskOwner.ticksExisted % 13 == 0)
+			return this.shouldExecute();
 		else {
 			Team team = this.taskOwner.getTeam();
 			Team team1 = entitylivingbase.getTeam();

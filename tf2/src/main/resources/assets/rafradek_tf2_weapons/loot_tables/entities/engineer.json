@@ -41,6 +41,11 @@
         {
         	"name": "building_engineer_raf",	
             "rolls": 1,
+            "conditions": [
+             	{
+                    "condition": "killed_by_player_team"
+                }
+            ],
             "entries": [
                 {
                     "type": "item",

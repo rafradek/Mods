@@ -16,7 +16,7 @@ public class EntityAISentryIdle extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 		// TODO Auto-generated method stub
-		return this.host.getAttackTarget() == null;
+		return this.host.getAttackTarget() == null && !this.host.isDisabled();
 	}
 
 	@Override

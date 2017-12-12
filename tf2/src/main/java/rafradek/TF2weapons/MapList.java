@@ -27,6 +27,7 @@ import rafradek.TF2weapons.weapons.ItemKnife;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemMinigun;
+import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemSapper;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
@@ -79,6 +80,7 @@ public class MapList {
 		weaponClasses.put("wrangler", new ItemWrangler());
 		weaponClasses.put("shield", new ItemChargingTarge());
 		weaponClasses.put("cleaver", new ItemCleaver());
+		weaponClasses.put("parachute", new ItemParachute());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());

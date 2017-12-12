@@ -11,11 +11,14 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2EventsClient;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
@@ -66,12 +69,13 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		super(renderManager, new ModelBiped(), 0.5F);
 		this.modelMain=(ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
+		this.addLayer(new LayerBipedArmor(this));
 	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityTF2Character par1EntityLiving) {
 		String clazz = null;
-		boolean sameTeam=Minecraft.getMinecraft().player != null && TF2weapons.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
+		boolean sameTeam=Minecraft.getMinecraft().player != null && TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
 		if ( !sameTeam && WeaponsCapability.get(par1EntityLiving).isDisguised()
 				&& WeaponsCapability.get(par1EntityLiving).getDisguiseType().startsWith("T:"))
 			clazz = WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2);
@@ -131,7 +135,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		boolean sniperZoomed = false;
 		if (living.getHeldItemMainhand() != null
 				&& !(living.getHeldItemMainhand().getItem() instanceof ItemMeleeWeapon)) {
-			sniperZoomed = living.getCapability(TF2weapons.WEAPONS_CAP, null).charging;
+			sniperZoomed = living.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging();
 			// System.out.println("pos: "+p_76986_2_+" "+p_76986_4_+"
 			// "+p_76986_8_);
 			((ModelBiped)this.mainModel).rightArmPose = ((living.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) > 0)
@@ -157,10 +161,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 				GlStateManager.disableLighting();
 				GL11.glEnable(GL11.GL_BLEND);
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-				if (TF2weapons.getTeamForDisplay(living) == 0)
-					GL11.glColor4f(1.0F, 0.0F, 0.0F, 0.28F);
-				else
-					GL11.glColor4f(0.0F, 0.0F, 1.0F, 0.28F);
+				ClientProxy.setColor(TF2Util.getTeamColor(living), 0.28f, 0, 0f, 1f);
 				renderer.begin(7, DefaultVertexFormats.POSITION);
 				renderer.pos(-0.03, -0.03, 0).endVertex();
 				renderer.pos(0.03, 0.03, 0).endVertex();

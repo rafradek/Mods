@@ -21,7 +21,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2DamageSource;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.building.EntityBuilding;
 
 public class ItemKnife extends ItemMeleeWeapon {
@@ -98,7 +98,7 @@ public class ItemKnife extends ItemMeleeWeapon {
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if(attacker instanceof EntityPlayerMP&& isBackstab(attacker,target)&& target instanceof EntityLivingBase 
-				&& !target.isEntityAlive() && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
+				&& !target.isEntityAlive() && TF2Util.isEnemy(attacker, (EntityLivingBase) target)){
 			((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_BACKSTAB);
 			/*if(((EntityPlayerMP) attacker).getStatFile().readStat(TF2Achievements.KILLED_BACKSTAB)>=400)
 				((EntityPlayerMP) attacker).addStat(TF2Achievements.SPYMASTER);

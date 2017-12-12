@@ -22,6 +22,7 @@
 		"Reload time first": 1000,
 		"Reload time": 500,
 		"Clip size": 6,
+		"Max ammo": 32,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Ammo type": 1,
@@ -65,6 +66,7 @@
 		"Reload time first": 760,
 		"Reload time": 560,
 		"Clip size": 6,
+		"Max ammo": 32,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Ammo type": 1,
@@ -98,6 +100,7 @@
 		"Reload time first": 1160,
 		"Reload time": 1160,
 		"Clip size": 6,
+		"Max ammo": 24,
 		"Knockback": 3,
 		"Spread recovery": true,
 		"Dual wield speed": 0.65,
@@ -133,6 +136,7 @@
 		"Reload time first": 0,
 		"Reload time": 0,
 		"Clip size": 1,
+		"Max ammo": 200,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Ammo type": 2,
@@ -165,6 +169,7 @@
 		"Reload time first": 1360,
 		"Reload time": 1360,
 		"Clip size": 12,
+		"Max ammo": 60,
 		"Knockback": 3,
 		"Spread recovery": true,
 		"Dual wield speed": 0.7,
@@ -198,6 +203,7 @@
 		"Reload time first": 1100,
 		"Reload time": 1100,
 		"Clip size": 25,
+		"Max ammo": 75,
 		"Knockback": 3,
 		"Spread recovery": true,
 		"Dual wield speed": 0.7,
@@ -231,6 +237,7 @@
 		"Reload time first": 0,
 		"Reload time": 0,
 		"Clip size": 1,
+		"Max ammo": 25,
 		"Knockback": 5,
 		"Spread recovery": true,
 		"Ammo type": 6,
@@ -265,6 +272,7 @@
 		"Reload time first": 920,
 		"Reload time": 800,
 		"Clip size": 4,
+		"Max ammo": 20,
 		"Knockback": 5,
 		"Spread recovery": false,
 		"Ammo type": 7,
@@ -303,6 +311,7 @@
 		"Reload time first": 0,
 		"Reload time": 0,
 		"Clip size": 1,
+		"Max ammo": 350,
 		"Knockback": 0,
 		"Spread recovery": false,
 		"Ammo type": 10,
@@ -337,6 +346,7 @@
 		"Reload time first": 1240,
 		"Reload time": 600,
 		"Clip size": 4,
+		"Max ammo": 16,
 		"Knockback": 5,
 		"Spread recovery": false,
 		"Ammo type": 8,
@@ -372,6 +382,7 @@
 		"Reload time first": 1090,
 		"Reload time": 670,
 		"Clip size": 8,
+		"Max ammo": 32,
 		"Knockback": 5,
 		"Spread recovery": false,
 		"Ammo type": 11,
@@ -406,6 +417,7 @@
 		"Reload time first": 1600,
 		"Reload time": 1600,
 		"Clip size": 40,
+		"Max ammo": 150,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Dual wield speed": 0.7,
@@ -433,6 +445,7 @@
 		"Max overheal": 0.5,
 		"Range": 8,
 		"Ammo type": 12,
+		"Max ammo": 700,
 		"Drop chance": 0.07,
 		"Stock": true,
 		"Effect type": "rafradek_tf2_weapons:uberEff",
@@ -723,6 +736,7 @@
 		"Reload time first": 0,
 		"Reload time": 0,
 		"Clip size": 1,
+		"Max ammo": 16,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Dual wield speed": 0.6,
@@ -979,6 +993,7 @@
 		"Reload time": 0,
 		"Efficient range": 25,
 		"Clip size": 1,
+		"Max ammo": 8,
 		"Knockback": 3,
 		"Ammo type": 14,
 		"Spread recovery": false,
@@ -1329,6 +1344,7 @@
 		"Reload time first": 1000,
 		"Reload time": 500,
 		"Clip size": 6,
+		"Max ammo": 32,
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Ammo type": 1,
@@ -1408,6 +1424,7 @@
 		"Reload time first": 600,
 		"Reload time": 600,
 		"Clip size": 1,
+		"Max ammo": 150,
 		"Knockback": 4,
 		"Spread recovery": false,
 		"Dual wield speed": 1,
@@ -1478,7 +1495,10 @@
 		"Stock": false,
 		"Attributes": 
 		{
-			"WeaponMode": 1
+			"WeaponMode": 1,
+			"ConstructionRatePenalty": 0.5,
+			"UpgradeRatePenalty": 0.8,
+			"TeleportCost": 2
 		}
 	},
 	"widowmaker": 
@@ -1555,6 +1575,23 @@
 			"CritStunned": 1,
 			"BleedingDuration": 5,
 			"MiniCritDistance": 24
+		}
+	},
+	"startwrench": 
+	{
+		"Name": "Homemade Wrench",
+		"Class": "wrench",
+		"Based on": "wrench",
+		"Render": "rafradek_tf2_weapons:wrench",
+		"Drop chance": 0,
+		"Roll hidden": true,
+		"Cost": 9,
+		"Stock": false,
+		"Attributes": 
+		{
+			"ConstructionRatePenalty": 0.2,
+			"MetalUsedOnHitPenalty": 0.6,
+			"NoRandomCrit": 1
 		}
 	}
 }

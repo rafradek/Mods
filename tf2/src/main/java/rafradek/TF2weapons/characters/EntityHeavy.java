@@ -15,11 +15,11 @@ public class EntityHeavy extends EntityTF2Character {
 	public EntityHeavy(World par1World) {
 		super(par1World);
 		if (this.attack != null) {
-			this.attack.setDodge(true, true);
+			this.moveAttack.setDodge(true, true);
 			this.attack.dodgeSpeed = 1.25f;
 		}
 		this.rotation = 10;
-		this.ammoLeft = 133;
+		//this.ammoLeft = 133;
 		this.experienceValue = 15;
 		this.setSize(0.6F, 1.99F);
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -49,7 +49,7 @@ public class EntityHeavy extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
-		if (this.ammoLeft > 0 && this.getAttackTarget() != null
+		if (this.getAmmo() > 0 && this.getAttackTarget() != null
 				&& this.getDistanceSqToEntity(this.getAttackTarget()) <= 350
 				&& (this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 2) == 0)
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).state += 2;
@@ -89,7 +89,7 @@ public class EntityHeavy extends EntityTF2Character {
 
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (this.getAttackTarget() != null && this.getAttackTarget() instanceof EntityPlayer){
+		if (shouldScaleAttributes()){
 			if (attribute.equals("Minigun Spinup"))
 				return this.getDiff() == 1 ? 2f : (this.getDiff() == 3 ? 1.2f : 1.55f);
 			if (attribute.equals("Damage"))

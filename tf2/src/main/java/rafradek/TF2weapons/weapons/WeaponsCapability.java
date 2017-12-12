@@ -1,9 +1,15 @@
 package rafradek.TF2weapons.weapons;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import io.netty.buffer.Unpooled;
+import io.netty.channel.socket.DatagramPacket;
+
+import java.util.Queue;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
@@ -16,6 +22,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -29,12 +36,14 @@ import net.minecraftforge.common.util.INBTSerializable;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
 
@@ -57,7 +66,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int chargeTicks;
 	public boolean charging;
 	public int critTimeCool;
-	public ArrayList<TF2Message.PredictionMessage> predictionList = new ArrayList<TF2Message.PredictionMessage>();
+	public Queue<TF2Message.PredictionMessage> predictionList = new ArrayDeque<TF2Message.PredictionMessage>();
 	public float recoil;
 	public int invisTicks;
 	public int disguiseTicks;
@@ -85,6 +94,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int focusShotTicks;
 	public int focusShotRemaining;
 	public int fanCool;
+	public boolean knockbackActive;
+	public boolean appliedMouseSlow;
+	
+	public int sentryTargets = 1;
+	public boolean dispenserPlayer;
+	public boolean teleporterPlayer;
+	public boolean teleporterEntity;
 	
 	public EntityDataManager dataManager;
 	
@@ -92,6 +108,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
 	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
 	private static final DataParameter<Boolean> DISGUISED = new DataParameter<Boolean>(8, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> INVIS = new DataParameter<Boolean>(9, DataSerializers.BOOLEAN);
@@ -101,6 +118,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Integer> HEAL_TARGET= new DataParameter<Integer>(2, DataSerializers.VARINT);
 	private static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
 	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
+	private static final DataParameter<Float> KNOCKBACK_RAGE= new DataParameter<Float>(5, DataSerializers.FLOAT);
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -121,12 +139,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(HEADS, 0);
 		this.dataManager.register(HEAL_TARGET, -1);
 		this.dataManager.register(PHLOG_RAGE, 0f);
+		this.dataManager.register(KNOCKBACK_RAGE, 0f);
 		this.dataManager.register(METAL, MAX_METAL);
 		this.dataManager.register(FEIGN, false);
 		this.dataManager.register(INVIS, false);
 		this.dataManager.register(DISGUISED, false);
 		this.dataManager.register(DISGUISE_TYPE, "");
 		this.dataManager.register(EXP_JUMP, false);
+		this.dataManager.register(CHARGING, false);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -166,6 +186,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.set(PHLOG_RAGE, rage);
 	}
 	
+	public float getKnockbackRage() {
+		return this.dataManager.get(KNOCKBACK_RAGE);
+	}
+	
+	public void setKnockbackRage(float rage) {
+		this.dataManager.set(KNOCKBACK_RAGE, rage);
+	}
 	public boolean isInvisible() {
 		return this.dataManager.get(INVIS);
 	}
@@ -206,7 +233,16 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		return this.dataManager.get(FEIGN);
 	}
 	
-	public void addHead() {
+	public void setCharging(boolean val) {
+		this.dataManager.set(CHARGING, val);
+		if(!val)
+			this.chargeTicks = 0;
+	}
+	
+	public boolean isCharging() {
+		return this.dataManager.get(CHARGING);
+	}
+	public void addHead(ItemStack weapon) {
 
 		this.collectedHeadsTime = owner.ticksExisted;
 		this.dataManager.set(HEADS, this.dataManager.get(HEADS) + 1);
@@ -214,12 +250,18 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				.applyModifier(new AttributeModifier(HEADS_HEALTH, "Heads modifier", collectedHeads, 0));
 		this.owner.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MOVEMENT_SPEED)
 				.applyModifier(new AttributeModifier(HEADS_SPEED, "Heads modifier", collectedHeads * 0.04, 2));*/
-		this.owner.heal(2);
+		this.owner.heal(TF2Attribute.getModifier("Max Health Kill", weapon, 0, this.owner));
 	}
 
 	public boolean focusedShot(ItemStack stack){
 		int stackLevel=(int) TF2Attribute.getModifier("Focus", stack, 0, owner);
 		return stackLevel>0 && this.focusShotTicks>68-stackLevel*21+((ItemUsable)stack.getItem()).getFiringSpeed(stack, owner)/50;
+	}
+	
+	public void onChangeValue(DataParameter<?> param, Object newValue) {
+		if(param.getId() == 11 && !((Boolean)newValue)){
+			this.chargeTicks = 0;
+		}
 	}
 	public void tick() {
 		// System.out.println("graczin"+state);
@@ -257,8 +299,19 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		if(this.doubleJumped && this.owner.onGround){
 			this.doubleJumped=false;
 		}
-		if (!this.owner.world.isRemote && this.dataManager.isDirty()) {
-			TF2weapons.sendTracking(new TF2Message.CapabilityMessage(this.owner, true), this.owner);
+		
+		if(this.owner.world.isRemote && this.owner == Minecraft.getMinecraft().player) {
+			if(this.owner.getHeldItemMainhand().getItem() instanceof ItemSniperRifle && this.isCharging() && !this.appliedMouseSlow) {
+				Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 0.4f;
+				this.appliedMouseSlow = true;
+			}
+			else if(!this.isCharging() && this.appliedMouseSlow) {
+				Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 2.5f;
+				this.appliedMouseSlow = false;
+			}
+		}
+		if(this.knockbackActive && this.getKnockbackRage() >= 0f && this.owner.ticksExisted % 2 == 0) {
+			this.setKnockbackRage(this.getKnockbackRage() - 0.05f);
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
 			ItemUsable item = (ItemUsable) stack.getItem();
@@ -314,7 +367,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			this.stateDo(owner, stack);
 			if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
 					&& stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)
-					&& (!(owner instanceof EntityPlayer) || !ItemAmmo.searchForAmmo(owner, stack).isEmpty()
+					&& (!ItemAmmo.searchForAmmo(owner, stack).isEmpty()
 							|| owner.world.isRemote)) {
 				if (((state & 4) != 0 || stack.getItemDamage() == stack.getMaxDamage()) && (state & 8) == 0
 						&& stack.getItemDamage() != 0 && this.reloadCool <= 0
@@ -372,6 +425,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		} else {
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemMinigun.slowdown);
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemSniperRifle.slowdown);
+		}
+		
+		if (!this.owner.world.isRemote && this.dataManager.isDirty()) {
+			TF2Util.sendTracking(new TF2Message.CapabilityMessage(this.owner, false), this.owner);
 		}
 	}
 
@@ -478,10 +535,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	 * removeModifier(ItemSniperRifle.slowdown); } map.put(player, state); } }
 	 */
 	public boolean shouldShoot(EntityLivingBase player, int state) {
-		return TF2weapons.canInteract(player) && (!(!player.world.isRemote
+		return TF2Util.canInteract(player) && (!(!player.world.isRemote
 				&& player instanceof EntityPlayer
 				&& (this.predictionList.isEmpty()
-						|| (this.predictionList.get(0) != null && (this.predictionList.get(0).state & state) != state)))
+						|| (this.predictionList.peek() != null && (this.predictionList.peek().state & state) != state)))
 				&& !((player.world.isRemote || !(player instanceof EntityPlayer)) && (this.state & state) != state));
 	}
 
@@ -496,7 +553,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			// System.out.println("PLAJERRRR: "+player);
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer)
-				message = this.predictionList.remove(0);
+				message = this.predictionList.poll();
 
 			if (message == null) {
 				boolean canFire = item.canFire(player.world, player, stack);
@@ -508,6 +565,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				if (this.mainHand && !canFire)
 					break;
 			} else {
+				
 				this.mainHand = message.hand == EnumHand.MAIN_HAND;
 				if (!((ItemUsable) player.getHeldItem(message.hand).getItem()).canFire(player.world, player,
 						player.getHeldItem(message.hand)))
@@ -535,9 +593,18 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 			player.removePotionEffect(TF2weapons.charging);
 
-			if (player.world.isRemote && player == ClientProxy.getLocalPlayer())
+			if (player.world.isRemote && player == ClientProxy.getLocalPlayer()) {
 				// System.out.println("Shoot Res: "+message.target);
 				TF2weapons.network.sendToServer(message);
+				/*TF2UdpClient client = TF2UdpClient.instance;
+				PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+				buffer.writeShort(player.getCapability(TF2weapons.PLAYER_CAP, null).udpServerId);
+				buffer.writeShort(0);
+				buffer.writeByte(0);
+				buffer.writeLong(System.currentTimeMillis());
+				TF2weapons.network.sendToServer(new TF2Message.AttackSyncMessage(System.currentTimeMillis()));
+				client.channel.writeAndFlush(new DatagramPacket(buffer, client.address));*/
+			}
 
 			player.posX = oldX;
 			player.posY = oldY;
@@ -557,6 +624,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				if ((this.state & 8) != 0)
 					this.state -= 8;
 			}
+			
 		}
 		if ((this.state & 2) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 			((ItemUsable) stack.getItem()).altFireTick(stack, player, player.world);
@@ -565,7 +633,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			// System.out.println("PLAJERRRR: "+player);
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer)
-				message = this.predictionList.remove(0);
+				message = this.predictionList.poll();
 
 			if (item.getAltFiringSpeed(stack, player) == Short.MAX_VALUE
 					|| !item.canAltFire(player.world, player, stack))

@@ -7,11 +7,13 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -114,8 +116,8 @@ public abstract class ItemUsable extends ItemFromData {
 				float addHealth=(float) living.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH).getModifier(ItemWeapon.HEALTH_MODIFIER).getAmount();
 				living.setHealth((living.getMaxHealth())/(living.getMaxHealth()-addHealth)*living.getHealth());
 			}
-			cap.fire1Cool = 750;
-			cap.fire2Cool = 750;
+			cap.fire1Cool = this.getDeployTime(stack, living);
+			cap.fire2Cool = this.getDeployTime(stack, living);
 		} else if (stackcap.active > 0
 				&& stack != living.getHeldItemOffhand() && !par5) {
 			if (stackcap.active == 2 && (cap.state & 3) > 0)
@@ -132,12 +134,14 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public void draw(WeaponsCapability weaponsCapability, ItemStack stack, EntityLivingBase living, World world) {
-		
+		if(living instanceof EntityPlayerMP)
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(living.getHeldItemMainhand().getItemDamage(), 
+					false,ItemAmmo.getAmmoAmount(living, living.getHeldItemMainhand()), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
 	}
 
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.chargeTicks = 0;
-		cap.charging = false;
+		cap.setCharging(false);
 
 	}
 	public static double calculateModifiers(IAttributeInstance attribute, UUID except,double initial,double additionToMult){
@@ -199,11 +203,15 @@ public abstract class ItemUsable extends ItemFromData {
 		int speed=(int) (TF2Attribute.getModifier("Fire Rate", stack,
 				ItemFromData.getData(stack).getInt(PropertyType.FIRE_SPEED), living));
 		if(living != null && this.isDoubleWielding(living))
-			speed*=this.getDoubleWieldBonus(stack, living);
+			speed *= this.getDoubleWieldBonus(stack, living);
+		if(TF2Attribute.getModifier("Fire Rate Health", stack, 1f, living) != 1f)
+			speed *= this.getHealthBasedBonus(stack, living, TF2Attribute.getModifier("Fire Rate Health", stack, 1f, living));
+		if(living != null && (WeaponsCapability.get(living).isExpJump() || living.isElytraFlying()) && TF2Attribute.getModifier("Airborne Bonus", stack, 0, living) != 0)
+			speed *= 0.35f;
 		if(living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED)!=null){
 			//System.out.println("Pre speed "+speed+" "+living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue());
 			double modifiers=calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED),ATTACK_SPEED_MODIFIER,living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue(),1.4);
-			speed*= (living instanceof EntityPlayer? 4:living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue())/modifiers;
+			speed *= (living instanceof EntityPlayer? 4:living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue())/modifiers;
 			//System.out.println("Post speed "+speed);
 		}
 		return speed;
@@ -240,6 +248,13 @@ public abstract class ItemUsable extends ItemFromData {
 
 	}
 
+	public float getHealthBasedBonus(ItemStack item, EntityLivingBase living, float maxbonus) {
+		if(living != null && living.getHealth()<living.getMaxHealth()*0.8f) {
+			float multiplier=1f -((living.getHealth()/(living.getMaxHealth()*0.8f)));
+			return TF2Util.lerp(1, maxbonus, multiplier);
+		}
+		return 1f;
+	}
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
 		return Short.MAX_VALUE;
 	}
@@ -248,5 +263,26 @@ public abstract class ItemUsable extends ItemFromData {
 		if(newStack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null) && !slotChanged)
 			newStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active=oldStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active;
 		return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
+	}
+	
+	public int getDeployTime(ItemStack stack, EntityLivingBase living) {
+		return (int) TF2Attribute.getModifier("Deploy Time", stack, 750, living);
+	}
+	
+	public int getStateOverride(ItemStack stack, EntityLivingBase living, int original) {
+		if(TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
+			//System.out.println("Act pre: "+original);
+			original = original | 4;
+			if((original & 1) == 0)
+				original = original | 1;
+			else if(WeaponsCapability.get(living).fire1Cool == 0)
+				original = original & 6;
+			//System.out.println("Act post: "+original);
+		}
+		return original;
+	}
+	
+	public boolean isAmmoSufficient(ItemStack stack, EntityLivingBase living, boolean all) {
+		return true;
 	}
 }

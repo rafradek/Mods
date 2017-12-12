@@ -22,6 +22,7 @@ public class TF2ProjectileHandler implements IMessageHandler<TF2Message.Predicti
 			@Override
 			public void run() {
 				shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList.add(message);
+				message.time=shooter.world.getTotalWorldTime();
 			}
 
 		});

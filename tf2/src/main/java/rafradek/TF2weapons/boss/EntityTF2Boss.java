@@ -35,6 +35,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
@@ -156,7 +157,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		return flag;
 	}
 	public float getSoundVolume(){
-		return 4f;
+		return TF2ConfigVars.bossVolume;
 	}
 	public AxisAlignedBB getBreakingBB(){
 		return this.getEntityBoundingBox();

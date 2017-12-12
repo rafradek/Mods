@@ -25,12 +25,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.decoration.ItemWearable;
 
-public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
+public class ItemSoldierBackpack extends ItemFromData {
 	public ItemSoldierBackpack() {
 		this.addPropertyOverride(new ResourceLocation("bodyModel"), new IItemPropertyGetter() {
 			@Override
@@ -60,6 +60,9 @@ public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
 			multimap.put(SharedMonsterAttributes.ARMOR.getName(),
 					new AttributeModifier(UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"), "Armor modifier",
 							getData(stack).getFloat(PropertyType.ARMOR), 0));
+			multimap.put(SharedMonsterAttributes.MAX_HEALTH.getName(),
+					new AttributeModifier(UUID.fromString("D8499B04-0E66-4726-AB29-64469D734BCD"), "Health modifier",
+							TF2Attribute.getModifier("Health", stack, 0, null), 0));
 			multimap.put(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(),
 					new AttributeModifier(UUID.fromString("D8499B04-0E66-4726-AB29-64469D734AB7"),
 							"Armor toughness modifier", getData(stack).getFloat(PropertyType.ARMOR_TOUGHNESS), 0));
@@ -99,6 +102,18 @@ public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
 	@Override
 	public void onArmorTick(World world, final EntityPlayer player, ItemStack itemStack) {
 		if (!world.isRemote) {
+			if (player.ticksExisted % 20 == 0) {
+				float heal = TF2Attribute.getModifier("Health Regen", itemStack, 0, player);
+				if(heal > 0) {
+					int lastHitTime = player.ticksExisted - player.getEntityData().getInteger("lasthit");
+					if (lastHitTime >= 120)
+						player.heal(heal);
+					else if(lastHitTime >= 60)
+						player.heal(TF2Util.lerp(heal, heal/4f, (lastHitTime-60)/60f));
+					else
+						player.heal(heal/4f);
+				}
+			}
 			if (player.ticksExisted % 5 == 0 && itemStack.getTagCompound().getBoolean("Active")) {
 				itemStack.getTagCompound().setFloat("Rage",
 						Math.max(0,
@@ -113,7 +128,7 @@ public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
 							@Override
 							public boolean apply(EntityLivingBase input) {
 								// TODO Auto-generated method stub
-								return TF2weapons.isOnSameTeam(player, input);
+								return TF2Util.isOnSameTeam(player, input);
 							}
 
 						}))
@@ -124,26 +139,4 @@ public class ItemSoldierBackpack extends ItemFromData implements ISpecialArmor {
 				itemStack.getTagCompound().setFloat("Rage", 1);
 		}
 	}
-
-	@Override
-	public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source, double damage,
-			int slot) {
-		return new ArmorProperties(0,
-				(getData(armor).getFloat(PropertyType.ARMOR) + getData(armor).getFloat(PropertyType.ARMOR_TOUGHNESS))
-						/ 25,
-				Integer.MAX_VALUE);
-	}
-
-	@Override
-	public int getArmorDisplay(EntityPlayer player, ItemStack armor, int slot) {
-		// TODO Auto-generated method stub
-		return (int) (getData(armor).getFloat(PropertyType.ARMOR)
-				+ getData(armor).getFloat(PropertyType.ARMOR_TOUGHNESS));
-	}
-
-	@Override
-	public void damageArmor(EntityLivingBase entity, ItemStack stack, DamageSource source, int damage, int slot) {
-
-	}
-
 }

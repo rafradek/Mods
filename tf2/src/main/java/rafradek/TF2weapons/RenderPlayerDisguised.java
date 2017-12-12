@@ -77,7 +77,7 @@ public class RenderPlayerDisguised extends RenderPlayer {
 	@Override
 	protected boolean canRenderName(AbstractClientPlayer entity) {
 		EntityPlayerSP entityplayersp = Minecraft.getMinecraft().player;
-		if (TF2weapons.isOnSameTeam(entity, entityplayersp))
+		if (TF2Util.isOnSameTeam(entity, entityplayersp))
 			return super.canRenderName(entity);
 		else {
 			boolean flag = !entity.isInvisibleToPlayer(entityplayersp);

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 
 public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
@@ -29,7 +30,7 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityProjectileSimple entity) {
 
-		return TF2weapons.getTeamForDisplay(entity.shootingEntity) == 0 ? texturered : textureblu;
+		return TF2Util.getTeamForDisplay(entity.shootingEntity) == 0 ? texturered : textureblu;
 	}
 
 	@Override

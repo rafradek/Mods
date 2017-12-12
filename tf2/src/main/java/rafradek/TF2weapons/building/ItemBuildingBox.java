@@ -20,6 +20,9 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 		this.setMaxStackSize(1);
 	}
 
+	public int getItemStackLimit(ItemStack stack) {
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("MaxStack")? stack.getTagCompound().getInteger("MaxStack"): 1;
+	}
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
 		if(!this.isInCreativeTab(par2CreativeTabs))

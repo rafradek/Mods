@@ -69,8 +69,8 @@ public class GuiTF2Crafting extends GuiContainer {
 		for (int i = 0; i < 12; i++)
 			// System.out.println("Buttons: "+buttonsItem[i]+" "+firstIndex);
 			if (i + firstIndex < TF2CraftingManager.INSTANCE.getRecipeList().size()) {
-				buttonsItem[i].stackToDraw = TF2CraftingManager.INSTANCE.getRecipeList().get(i + firstIndex)
-						.getRecipeOutput();
+				buttonsItem[i].stackToDraw = ContainerTF2Workbench.getReplacement(this.mc.player, TF2CraftingManager.INSTANCE.getRecipeList().get(i + firstIndex)
+						.getRecipeOutput().copy());
 				buttonsItem[i].selected = i + firstIndex == ((ContainerTF2Workbench) this.inventorySlots).currentRecipe;
 			} else {
 				buttonsItem[i].stackToDraw = ItemStack.EMPTY;
@@ -80,6 +80,7 @@ public class GuiTF2Crafting extends GuiContainer {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		this.drawDefaultBackground();
 		boolean flag = Mouse.isButtonDown(0);
 		int i = this.guiLeft;
 		int j = this.guiTop;

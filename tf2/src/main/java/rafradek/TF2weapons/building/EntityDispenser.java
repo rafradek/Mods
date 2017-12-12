@@ -3,8 +3,14 @@ package rafradek.TF2weapons.building;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+
 import com.google.common.base.Predicate;
 
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,13 +26,20 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemWrench;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityDispenser extends EntityBuilding {
 
@@ -63,20 +76,20 @@ public class EntityDispenser extends EntityBuilding {
 					public boolean apply(EntityLivingBase input) {
 
 						return !(input instanceof EntityBuilding) && EntityDispenser.this != input
-								&& ((TF2weapons.dispenserHeal && input instanceof EntityPlayer && getTeam() == null
+								&& ((getOwner() != null && WeaponsCapability.get(getOwner()).dispenserPlayer && input instanceof EntityPlayer
 										&& input.getTeam() == null)
-										|| TF2weapons.isOnSameTeam(EntityDispenser.this, input));
+										|| TF2Util.isOnSameTeam(EntityDispenser.this, input));
 					}
 
 				});
 		if (!this.world.isRemote) {
 			this.reloadTimer--;
 			if (this.reloadTimer <= 0 && this.getMetal() < 400) {
-				int metalAmount = TF2weapons.fastMetalProduction ? 30 : 21;
+				int metalAmount = TF2ConfigVars.fastMetalProduction ? 30 : 21;
 				this.setMetal(Math.min(400, this.getMetal() + metalAmount + this.getLevel() * (metalAmount / 3)));
 				// System.out.println("MetalGenerated "+this.getMetal());
 				this.playSound(TF2Sounds.MOB_DISPENSER_GENERATE_METAL, 1.55f, 1f);
-				this.reloadTimer = TF2weapons.fastMetalProduction ? 100 : 200;
+				this.reloadTimer = TF2ConfigVars.fastMetalProduction ? 100 : 200;
 			}
 			this.giveAmmoTimer--;
 
@@ -91,16 +104,21 @@ public class EntityDispenser extends EntityBuilding {
 						this.setMetal(this.getMetal() - metalUse);
 						living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metal + metalUse);
 					}
-					if (!living.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
-							&& living.getHeldItem(EnumHand.MAIN_HAND).getItem().isRepairable()
-							&& living.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() != 0) {
+					if (living instanceof EntityTF2Character) {
+						((EntityTF2Character)living).restoreAmmo(0.1f+this.getLevel()*0.1f);
+					
+					}
+					ItemStack heldItem = living.getHeldItem(EnumHand.MAIN_HAND);
+					if (!heldItem.isEmpty()
+							&& heldItem.getItem().isRepairable()
+							&& heldItem.getItemDamage() != 0 && !TF2ConfigVars.repairBlacklist.contains(heldItem.getItem().getRegistryName())) {
 
-						float repairMult = 3f;
+						float repairMult = TF2ConfigVars.dispenserRepair;
 						NBTTagList list = living.getHeldItem(EnumHand.MAIN_HAND).getEnchantmentTagList();
 						if (list != null) {
 							for (int i = 0; i < list.tagCount(); i++)
-								repairMult -= list.getCompoundTagAt(i).getShort("lvl") * 0.2f;
-							if (repairMult <= 1f)
+								repairMult -= list.getCompoundTagAt(i).getShort("lvl") * TF2ConfigVars.dispenserRepair / 15f;
+							if (repairMult <= TF2ConfigVars.dispenserRepair / 3f)
 								repairMult = 1f;
 						}
 						int metalUse = Math.min(15 + this.getLevel() * 10,
@@ -192,6 +210,10 @@ public class EntityDispenser extends EntityBuilding {
 		return TF2Sounds.MOB_DISPENSER_DEATH;
 	}
 
+	public int getIronDrop() {
+		return 0 + this.getLevel();
+	}
+	
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
@@ -204,5 +226,106 @@ public class EntityDispenser extends EntityBuilding {
 		super.readEntityFromNBT(par1NBTTagCompound);
 
 		this.setMetal(par1NBTTagCompound.getShort("Metal"));
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
+        // GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+        // gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+        // event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+		ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+        gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+        gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
+        /*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.0D, 0.1875D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D, 0.1875D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D, 0D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.0D, 0D).endVertex();
+        tessellator.draw();*/
+
+
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(19, 48, 0.0D).tex(0.75D, 0.75D).endVertex();
+        renderer.pos(65, 48, 0.0D).tex(0.9375D, 0.75D).endVertex();
+        renderer.pos(65, 0, 0.0D).tex(0.9375D, 0.5625D).endVertex();
+        renderer.pos(19, 0, 0.0D).tex(0.75D, 0.5625D).endVertex();
+        tessellator.draw();
+
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+        renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
+        renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
+        renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
+        tessellator.draw();
+
+        double imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
+        renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
+        tessellator.draw();
+
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+            renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
+            renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
+            renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
+            renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
+            tessellator.draw();
+        }
+        float health = this.getHealth() / this.getMaxHealth();
+        if (health > 0.33f) {
+            GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+        } else {
+            GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+        }
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        for (int i = 0; i < health * 8; i++) {
+
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
+            renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
+            tessellator.draw();
+        }
+
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
+        renderer.begin(7, DefaultVertexFormats.POSITION);
+        renderer.pos(85, 21, 0.0D).endVertex();
+        renderer.pos(140, 21, 0.0D).endVertex();
+        renderer.pos(140, 7, 0.0D).endVertex();
+        renderer.pos(85, 7, 0.0D).endVertex();
+        tessellator.draw();
+
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(140, 41, 0.0D).endVertex();
+            renderer.pos(140, 27, 0.0D).endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
+        renderer.begin(7, DefaultVertexFormats.POSITION);
+        renderer.pos(85, 21, 0.0D).endVertex();
+        renderer.pos(85 + this.getMetal() * 0.1375D, 21, 0.0D).endVertex();
+        renderer.pos(85 + this.getMetal() * 0.1375D, 7, 0.0D).endVertex();
+        renderer.pos(85, 7, 0.0D).endVertex();
+        tessellator.draw();
+
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
+                    .endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
+                    .endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
 	}
 }

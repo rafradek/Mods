@@ -4,6 +4,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 
@@ -26,8 +27,8 @@ public class WeaponLoopSound extends WeaponSound {
 		if (this.endsnextTick || this.donePlaying)
 			return;
 		ItemStack stack = this.entity.getHeldItem(EnumHand.MAIN_HAND);
-		boolean playThis = (entity.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() > 0 && crit)
-				|| (entity.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() <= 0 && !crit);
+		boolean boost=TF2Util.calculateCritPre(stack, entity) == 2;
+		boolean playThis = (boost && crit) || (!boost && !crit);
 		if (((ItemUsable) stack.getItem()).canFire(entity.world, entity,
 				stack)/*
 						 * stack.getTagCompound().getShort("minigunticks")>=17*

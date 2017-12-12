@@ -3,11 +3,13 @@ package rafradek.TF2weapons.weapons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.WeaponData;
 
 public class WeaponSound extends MovingSound {
@@ -22,7 +24,7 @@ public class WeaponSound extends MovingSound {
 		this.type = type;
 		this.entity = entity;
 		this.conf = conf;
-		this.volume = 2f;
+		this.volume = entity instanceof EntityPlayer ? TF2ConfigVars.gunVolume : TF2ConfigVars.mercenaryVolume;
 	}
 
 	@Override

@@ -1,41 +1,52 @@
 package rafradek.TF2weapons.characters;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAIUseMedigun;
+import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class EntityMedic extends EntityTF2Character {
 
-	public boolean melee;
+	//public boolean melee;
 
+	public EntityAIUseMedigun useMedigun = new EntityAIUseMedigun(this, 1.0F, 20.0F);
 	public EntityMedic(World par1World) {
 		super(par1World);
 		this.targetTasks.taskEntries.clear();
 		this.targetTasks.addTask(1, this.findplayer = new EntityAINearestChecked(this, EntityLivingBase.class, true,
-				false, this.getEntitySelector(), true));
-		this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, true));
-		this.targetTasks.addTask(3,
-				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super.getEntitySelector(), true));
+				false, Predicates.and(this::isValidTarget, target -> {
+					return target.getHealth()<target.getMaxHealth();
+				}), false));
+		this.targetTasks.addTask(2, new EntityAINearestChecked(this, EntityLivingBase.class, true,
+				false, this::isValidTarget, true));
+		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true));
+		this.targetTasks.addTask(4,
+				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super::isValidTarget, true));
 		this.unlimitedAmmo = true;
-		this.ammoLeft = 1;
+		//this.ammoLeft = 1;
 		this.experienceValue = 15;
 		this.rotation = 15;
 		this.tasks.removeTask(attack);
 
 		if (par1World != null) {
-			this.tasks.addTask(4, this.attack = new EntityAIUseMedigun(this, 1.0F, 20.0F));
+			this.tasks.addTask(4, useMedigun);
 			//attack.setRange(7f);
 			this.setCombatTask(true);
 			this.friendly = true;
@@ -74,7 +85,7 @@ public class EntityMedic extends EntityTF2Character {
 	@Override
 	public void setAttackTarget(EntityLivingBase entity) {
 		this.alert = true;
-		if (TF2weapons.isOnSameTeam(this, entity)) {
+		if (TF2Util.isOnSameTeam(this, entity)) {
 			// System.out.println("friendly");
 			if (!friendly) {
 				this.friendly = true;
@@ -86,6 +97,7 @@ public class EntityMedic extends EntityTF2Character {
 			this.friendly = false;
 			this.setCombatTask(false);
 		}
+		this.switchSlot(this.getDefaultSlot());
 		//System.out.println("Attack Target Set: "+entity);
 		super.setAttackTarget(entity);
 	}
@@ -98,7 +110,7 @@ public class EntityMedic extends EntityTF2Character {
 	@Override
 	public int getDefaultSlot() {
 		// TODO Auto-generated method stub
-		return 1;
+		return this.friendly ? 1 : 0;
 	}
 
 	/**
@@ -134,10 +146,12 @@ public class EntityMedic extends EntityTF2Character {
 
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (attribute.equals("Heal"))
-			return this.getDiff() == 1 ? 0.75f : (this.getDiff() == 3 ? 1f : 0.9f);
-		if (attribute.equals("Overheal"))
-			return this.getDiff() == 1 ? 0.55f : (this.getDiff() == 3 ? 0.85f : 0.7f);
+		if (!(this.getAttackTarget() instanceof EntityPlayer || (this.getAttackTarget() instanceof IEntityOwnable && ((IEntityOwnable) this.getAttackTarget()).getOwnerId() != null))) {
+			if (attribute.equals("Heal"))
+				return this.getDiff() == 1 ? 0.75f : (this.getDiff() == 3 ? 1f : 0.9f);
+			if (attribute.equals("Overheal"))
+				return this.getDiff() == 1 ? 0.55f : (this.getDiff() == 3 ? 0.85f : 0.7f);
+		}
 		return super.getAttributeModifier(attribute);
 	}
 
@@ -145,19 +159,20 @@ public class EntityMedic extends EntityTF2Character {
 	public float getMotionSensitivity() {
 		return 0f;
 	}
+	
+	public boolean isValidTarget(EntityLivingBase target) {
+		return !((target instanceof EntityMedic && target.getHealth() >= target.getMaxHealth()) || target instanceof EntityBuilding)
+				&& TF2Util.isOnSameTeam(EntityMedic.this, target);
+	}
+	public void setCombatTask(boolean ranged) {
+		this.tasks.removeTask(this.attack);
+		this.tasks.removeTask(this.useMedigun);
+		this.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
+		// System.out.println(TF2ActionHandler.playerAction.get(this.world.isRemote).size());
 
-	@Override
-	public Predicate<EntityLivingBase> getEntitySelector() {
-		return new Predicate<EntityLivingBase>() {
-			@Override
-			public boolean apply(EntityLivingBase target) {
-				// System.out.println("Valid target: "+target+"
-				// "+TF2weapons.isOnSameTeam(EntityMedic.this,target)+"
-				// "+!(target instanceof EntityMedic||target instanceof
-				// EntityBuilding));
-				return !(target instanceof EntityMedic || target instanceof EntityBuilding)
-						&& TF2weapons.isOnSameTeam(EntityMedic.this, target);
-			}
-		};
+		if (ranged)
+			this.tasks.addTask(4, this.useMedigun);
+		else
+			this.tasks.addTask(4, this.attack);
 	}
 }

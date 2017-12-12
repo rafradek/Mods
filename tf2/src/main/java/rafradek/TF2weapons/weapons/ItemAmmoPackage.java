@@ -50,12 +50,12 @@ public class ItemAmmoPackage extends Item{
 		
 		if(stack.getMetadata()==10){
 			stack=new ItemStack(TF2weapons.itemAmmoFire,1);
-			stack.setItemDamage((int)(stack.getMaxDamage()*(0.4f+player.getRNG().nextFloat()*0.4f)));
+			stack.setItemDamage((int)(stack.getMaxDamage()*(0.3f+player.getRNG().nextFloat()*0.3f)));
 			return stack;
 		}
 		else if(stack.getMetadata()==12){
 			stack=new ItemStack(TF2weapons.itemAmmoMedigun,1,(int)(stack.getMaxDamage()*(0.4f+player.getRNG().nextFloat()*0.4f)));
-			stack.setItemDamage((int)(stack.getMaxDamage()*(0.4f+player.getRNG().nextFloat()*0.4f)));
+			stack.setItemDamage((int)(stack.getMaxDamage()*(0.3f+player.getRNG().nextFloat()*0.3f)));
 			return stack;
 		}
 		else{

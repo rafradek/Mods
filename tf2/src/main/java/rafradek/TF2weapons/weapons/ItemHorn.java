@@ -14,6 +14,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
@@ -49,7 +50,7 @@ public class ItemHorn extends Item {
 		ItemStack backpack = getBackpack(playerIn);
 		if (!backpack.isEmpty() && (backpack.getTagCompound().getFloat("Rage") >= 1 || playerIn.isCreative())) {
 			playerIn.setActiveHand(hand);
-			if (TF2weapons.getTeamForDisplay(playerIn) == 1)
+			if (TF2Util.getTeamForDisplay(playerIn) == 1)
 				playerIn.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_BLU_SOUND), 0.8f, 1f);
 			else
 				playerIn.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_RED_SOUND), 0.8f, 1f);

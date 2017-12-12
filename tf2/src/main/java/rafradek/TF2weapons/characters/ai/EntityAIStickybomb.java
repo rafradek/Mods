@@ -7,6 +7,7 @@ import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityDemoman;
@@ -67,8 +68,8 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		return this.entityHost.loadout.get(1)!=null && !(this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
-				&&this.entityHost.loadout.get(1).getItem() instanceof ItemStickyLauncher && this.entityHost.getAttackTarget()==null;
+		return this.entityHost.loadout.getStackInSlot(1)!=null && !(this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
+				&&this.entityHost.loadout.getStackInSlot(1).getItem() instanceof ItemStickyLauncher && this.entityHost.getAttackTarget()==null;
 	}
 
 	/**
@@ -91,7 +92,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 0);
 			this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-			TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+			TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 		}
 		this.entityHost.getNavigator().clearPathEntity();
 		this.attackTarget=null;
@@ -165,7 +166,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
 				// System.out.println("coœdo");
 			}
 
@@ -175,7 +176,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 0);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 				// System.out.println("coœz");
 			}
 			pressed = false;

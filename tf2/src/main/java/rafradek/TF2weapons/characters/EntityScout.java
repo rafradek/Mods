@@ -22,12 +22,12 @@ public class EntityScout extends EntityTF2Character {
 	public EntityScout(World par1World) {
 		super(par1World);
 		if (this.attack != null) {
-			this.attack.setDodge(true, true);
+			this.moveAttack.setDodge(true, true);
 			this.attack.jump = true;
 			this.attack.jumprange = 40;
 			this.attack.dodgeSpeed = 1.25f;
 		}
-		this.ammoLeft = 24;
+		//this.ammoLeft = 24;
 		this.experienceValue = 15;
 
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -42,16 +42,16 @@ public class EntityScout extends EntityTF2Character {
 	 */
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
-		if(ItemFromData.getData(this.loadout.get(2)).getName().equals("sandmanball")) {
-			this.loadout.set(2, ItemFromData.getNewStack("sandman"));
+		if(ItemFromData.getData(this.loadout.getStackInSlot(2)).getName().equals("sandmanball")) {
+			this.loadout.setStackInSlot(2, ItemFromData.getNewStack("sandman"));
 		}
 		super.dropEquipment(wasRecentlyHit, lootingModifier);
 	}
 	@Override
 	protected void addWeapons() {
 		super.addWeapons();
-		if(TF2Attribute.getModifier("Crit Stun", this.loadout.get(1), 0, this) != 0) {
-			this.loadout.set(2, ItemFromData.getNewStack("sandmanball"));
+		if(TF2Attribute.getModifier("Crit Stun", this.loadout.getStackInSlot(1), 0, this) != 0) {
+			this.loadout.setStackInSlot(2, ItemFromData.getNewStack("sandmanball"));
 		}
 	}
 	
@@ -83,7 +83,7 @@ public class EntityScout extends EntityTF2Character {
 		if (this.onGround)
 			this.doubleJumped = false;
 
-		if(!this.world.isRemote && TF2Attribute.getModifier("Crit Stun", this.loadout.get(1), 0, this) != 0) {
+		if(!this.world.isRemote && TF2Attribute.getModifier("Crit Stun", this.loadout.getStackInSlot(1), 0, this) != 0) {
 			this.ballCooldown--;
 			if(this.getAttackTarget() == null || this.getAttackTarget().getActivePotionEffect(TF2weapons.stun) == null) {
 				this.switchSlot(2);
@@ -124,7 +124,7 @@ public class EntityScout extends EntityTF2Character {
 	}
 
 	public float getAttributeModifier(String attribute) {
-		if (this.loadout.get(1).getItem() instanceof ItemCleaver)
+		if (this.loadout.getStackInSlot(1).getItem() instanceof ItemCleaver && shouldScaleAttributes())
 			if (attribute.equals("Fire Rate"))
 				return this.getDiff() == 1 ? 1.8f : (this.getDiff() == 3 ? 1f : 1.3f);
 		return super.getAttributeModifier(attribute);
@@ -177,12 +177,12 @@ public class EntityScout extends EntityTF2Character {
 
 	@Override
 	public float getMotionSensitivity() {
-		return this.getDiff() == 1 ? 0.12f : (this.getDiff() == 3 ? 0.05f : 0.08f);
+		return this.getDiff() == 3 || this.getOwnerId() != null ? 0.05f : (this.getDiff() == 1 ? 0.12f : 0.08f);
 	}
 	
 	@Override
 	public void onShot() {
-		if (ItemFromData.getData(this.loadout.get(2)).getName().equals("sandmanball"))
+		if (ItemFromData.getData(this.loadout.getStackInSlot(2)).getName().equals("sandmanball"))
 			this.ballCooldown = this.getDiff() == 1 ? 340 : (this.getDiff() == 3 ? 160 : 240);
 	}
 }

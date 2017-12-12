@@ -15,6 +15,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2PlayerCapability;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -128,7 +129,7 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 			}
 			for (int i = 0; i < list.size(); i++) {
 				EntityStickybomb bomb = list.get(i);
-				if (bomb.ticksExisted > bomb.getArmTime() && (bomb.getType()!=1 || living.getEntityBoundingBox().grow(1, 0, 1).offset(0, -1.25, 0).contains(bomb.getPositionVector()) || TF2weapons.lookingAt(living, 30, bomb.posX, bomb.posY, bomb.posZ))) {
+				if (bomb.ticksExisted > bomb.getArmTime() && (bomb.getType()!=1 || living.getEntityBoundingBox().grow(1.5, 0.25, 1.5).offset(0, -1.25, 0).contains(bomb.getPositionVector()) || TF2Util.lookingAt(living, 30, bomb.posX, bomb.posY, bomb.posZ))) {
 					bomb.explode(bomb.posX, bomb.posY + bomb.height / 2, bomb.posZ, null, 1);
 					i--;
 					exploded = true;

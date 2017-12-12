@@ -17,6 +17,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemAmmo;
@@ -84,7 +85,7 @@ public class ContainerWearables extends Container {
 					super.onSlotChanged();
 					if (!ContainerWearables.this.player.world.isRemote)
 						// System.out.println("changed");
-						TF2weapons.sendTracking(
+						TF2Util.sendTracking(
 								new TF2Message.WearableChangeMessage(ContainerWearables.this.player, this.getSlotIndex(), this.getStack()),ContainerWearables.this.player);
 				}
 

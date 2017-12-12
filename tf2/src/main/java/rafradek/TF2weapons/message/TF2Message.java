@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.message;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import io.netty.buffer.ByteBuf;
+import io.netty.util.internal.SocketUtils;
+import net.minecraftforge.common.config.ConfigCategory;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
@@ -126,6 +130,7 @@ public abstract class TF2Message implements IMessage {
 		public double z;
 		public float pitch;
 		public float yaw;
+		public long time;
 		// public int slot;
 		public EnumHand hand;
 		public List<RayTraceResult> target;
@@ -337,6 +342,7 @@ public abstract class TF2Message implements IMessage {
 			healTarget = buf.readInt();
 			try {
 				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
+				//System.out.println("Entries rec: "+(entries != null ? entries.size() : 0));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -352,6 +358,7 @@ public abstract class TF2Message implements IMessage {
 		public void toBytes(ByteBuf buf) {
 			buf.writeInt(entityID);
 			buf.writeInt(healTarget);
+			//System.out.println("Entries: "+entries.size());
 			try {
 				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -665,5 +672,104 @@ public abstract class TF2Message implements IMessage {
 			buf.writeBoolean(airborne);
 		}
 
+	}
+	
+	public static class AttackSyncMessage extends TF2Message {
+		long time;
+		int entity;
+
+		public AttackSyncMessage() {
+
+		}
+
+		public AttackSyncMessage(long value, EntityLivingBase entity) {
+			this.time = value;
+			this.entity = entity.getEntityId();
+		}
+
+		public AttackSyncMessage(long value) {
+			this.time = value;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.time=buf.readLong();
+			if (buf.readableBytes() > 0)
+				this.entity = buf.readInt();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeLong(this.time);
+			if (this.entity != 0)
+				buf.writeInt(this.entity);
+		}
+	}
+	
+	public static class InitMessage extends TF2Message {
+		
+		int port;
+
+		int id;
+		
+		public InitMessage() {
+
+		}
+
+		public InitMessage(int port, int id) {
+			this.port = port;
+			this.id = id;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.port = buf.readUnsignedShort();
+			this.id = buf.readShort();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeShort(this.port);
+			buf.writeShort(id);
+		}
+	}
+	
+	public static class InitClientMessage extends TF2Message {
+		
+		int sentryTargets;
+		boolean dispenserPlayer;
+		boolean teleporterPlayer;
+		boolean teleporterEntity;
+		
+		public InitClientMessage() {
+
+		}
+
+		public InitClientMessage(Configuration conf) {
+			ConfigCategory cat = conf.getCategory("default building targets");
+			this.sentryTargets = cat.get("Attack on hurt").getBoolean() ? 1 : 0;
+			this.sentryTargets += cat.get("Attack other players").getBoolean() ? 2 : 0;
+			this.sentryTargets += cat.get("Attack hostile mobs").getBoolean() ? 4 : 0;
+			this.sentryTargets += cat.get("Attack friendly creatures").getBoolean() ? 8 : 0;
+			this.dispenserPlayer = cat.get("Dispensers heal neutral players").getBoolean();
+			this.teleporterPlayer = cat.get("Neutral players can teleport").getBoolean();
+			this.teleporterEntity = cat.get("Entities can teleport").getBoolean();
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.sentryTargets = buf.readByte();
+			this.dispenserPlayer = buf.readBoolean();
+			this.teleporterPlayer = buf.readBoolean();
+			this.teleporterEntity = buf.readBoolean();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeByte(this.sentryTargets);
+			buf.writeBoolean(this.dispenserPlayer);
+			buf.writeBoolean(this.teleporterPlayer);
+			buf.writeBoolean(this.teleporterEntity);
+		}
 	}
 }

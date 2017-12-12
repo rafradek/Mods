@@ -11,7 +11,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityScout;
@@ -62,21 +62,18 @@ public class ItemProjectileWeapon extends ItemWeapon {
 			EntityBall ball = (EntityBall) source.getImmediateSource();
 			double reduce=Math.max(0.5, (25-((EntityLivingBase) target).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue())/25D);
 			if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 1100) {
-				TF2weapons.stun((EntityLivingBase) target, 
+				TF2Util.stun((EntityLivingBase) target, 
 						(int) (160 * reduce), true);
 				target.playSound(TF2Sounds.WEAPON_STUN_MAX, 4f, 1f);
 			} else if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 12) {
-				TF2weapons.stun((EntityLivingBase) target,
+				TF2Util.stun((EntityLivingBase) target,
 						(int) (ball.throwPos.distanceTo(target.getPositionVector()) * 8 * reduce), false);
 				target.playSound(TF2Sounds.WEAPON_STUN, 1.6f, 1f);
 			}
 		}
 	}
 
-	public float getProjectileSpeed(ItemStack stack, EntityLivingBase living) {
-		return TF2Attribute.getModifier("Proj Speed", stack,
-				ItemFromData.getData(stack).getFloat(PropertyType.PROJECTILE_SPEED), living);
-	}
+	
 
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {

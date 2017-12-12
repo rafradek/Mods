@@ -126,6 +126,7 @@ public class TF2CraftingManager {
 		ItemStack banner=new ItemStack(Items.BANNER,1,EnumDyeColor.RED.getDyeDamage());
 		banner.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", new NBTTagList());
 		banner.setCount(2);
+		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("startwrench"), new Object[] { " II", " S ", "I  ", 'I', "ingotIron", 'S', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
 		addRecipe(new ShapedOreRecipe(null,banner,
 				new Object[] { "WWW", "WWW", "AS ", 'W',new ItemStack(Blocks.WOOL), 'A',new ItemStack(TF2weapons.itemTF2, 1, 2),'S', Items.STICK }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),

@@ -16,7 +16,7 @@ public class EntitySniper extends EntityTF2Character {
 
 	public EntitySniper(World par1World) {
 		super(par1World);
-		this.ammoLeft = 18;
+		//this.ammoLeft = 18;
 		this.experienceValue = 15;
 		this.rotation = 3;
 		if (this.attack != null)
@@ -51,18 +51,19 @@ public class EntitySniper extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 		if (!this.world.isRemote && (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
-				&& this.getCapability(TF2weapons.WEAPONS_CAP, null).charging)
+				&& this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging())
 			((ItemSniperRifle) this.getHeldItem(EnumHand.MAIN_HAND).getItem())
 					.disableZoom(this.getHeldItem(EnumHand.MAIN_HAND), this);
 		if (this.getHeldItem(EnumHand.MAIN_HAND) != null
-				&& !this.getCapability(TF2weapons.WEAPONS_CAP, null).charging) {
+				&& !this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
 			this.ignoreFrustumCheck = false;
 			this.rotation = 15;
 		} else {
 			this.ignoreFrustumCheck = true;
 			this.rotation = 3;
 		}
-		if(world.isRemote && this.getCapability(TF2weapons.WEAPONS_CAP, null).charging && 
+		
+		if(world.isRemote && this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() && 
 				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemSniperRifle.slowdownUUID) == null){
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks = 0;
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).charging = false;
@@ -82,6 +83,9 @@ public class EntitySniper extends EntityTF2Character {
 		 * altUse(getHeldItem(EnumHand.MAIN_HAND), this, worldObj); }
 		 */
 		super.onLivingUpdate();
+		if(this.getRevengeTimer() == this.ticksExisted - 1) {
+			this.lastRotation[0]+=4;
+		}
 
 	}
 
@@ -123,14 +127,11 @@ public class EntitySniper extends EntityTF2Character {
 
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (this.getAttackTarget() != null && this.getAttackTarget() instanceof EntityPlayer)
-			if (attribute.equals("Spread"))
-				return super.getAttributeModifier(attribute);
 		return super.getAttributeModifier(attribute);
 	}
 
 	@Override
 	public float getMotionSensitivity() {
-		return this.getDiff() == 1 ? 0.75f : (this.getDiff() == 3 ? 0.45f : 0.55f);
+		return this.getDiff() == 3 || this.getOwnerId() != null ? 0.45f : (this.getDiff() == 1 ? 0.75f : 0.55f);
 	}
 }

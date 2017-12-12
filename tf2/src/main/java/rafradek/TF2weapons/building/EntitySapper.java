@@ -9,7 +9,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.weapons.ItemWrench;
 
 public class EntitySapper extends EntityBuilding {
@@ -38,8 +38,8 @@ public class EntitySapper extends EntityBuilding {
 				this.setDead();
 				return;
 			}
-			TF2weapons.dealDamage(this.sappedBuilding, this.world, this.getOwner(), sapperItem, 0, 0.25f,
-					TF2weapons.causeBulletDamage(sapperItem, this.getOwner(), 0, this));
+			TF2Util.dealDamage(this.sappedBuilding, this.world, this.getOwner(), sapperItem, 0, 0.25f,
+					TF2Util.causeBulletDamage(sapperItem, this.getOwner(), 0, this));
 
 			if (!this.isEntityAlive() && this.sappedBuilding != null)
 				this.sappedBuilding.sapper = null;

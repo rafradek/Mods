@@ -79,7 +79,7 @@ public class BlockCabinet extends Block{
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 4)));
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3)));
 	}
 
 	@Override

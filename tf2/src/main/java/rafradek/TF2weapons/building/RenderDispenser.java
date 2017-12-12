@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 
 public class RenderDispenser extends RenderLiving<EntityDispenser> {
@@ -21,31 +23,43 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 			"textures/entity/tf2/red/Dispenser.png");
 	private static final ResourceLocation DISPENSER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Dispenser.png");
+	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/red/box.png");
+	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/blu/box.png");
+	
 	public ModelBase level1;
 	public ModelBase level2;
 	public ModelBase level3;
-
+	public ModelBase box;
+	
 	public RenderDispenser(RenderManager renderManager) {
 		super(renderManager, new ModelDispenser(), 0.8f);
 		level1 = this.mainModel;
 		level2 = new ModelDispenser2();
 		level3 = new ModelDispenser3();
+		box = new ModelBuild();
 	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityDispenser par1EntityLiving) {
-		return par1EntityLiving.getEntTeam() == 0 ? DISPENSER_RED : DISPENSER_BLU;
+		boolean constr=par1EntityLiving.isConstructing();
+		return par1EntityLiving.getEntTeam() == 0 ? constr ? BOX_RED : DISPENSER_RED : constr ? BOX_BLU : DISPENSER_BLU;
 	}
 
 	@Override
 	public void doRender(EntityDispenser living, double p_76986_2_, double p_76986_4_, double p_76986_6_,
 			float p_76986_8_, float p_76986_9_) {
-		if (living.getLevel() == 1)
-			this.mainModel = this.level1;
-		else if (living.getLevel() == 2)
-			this.mainModel = this.level2;
-		else
-			this.mainModel = this.level3;
+		if (living.isConstructing())
+			this.mainModel = this.box;
+		else {
+			if (living.getLevel() == 1)
+				this.mainModel = this.level1;
+			else if (living.getLevel() == 2)
+				this.mainModel = this.level2;
+			else
+				this.mainModel = this.level3;
+		}
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder renderer = tessellator.getBuffer();
@@ -69,10 +83,7 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 				GlStateManager.disableLighting();
 				GL11.glEnable(GL11.GL_BLEND);
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-				if (TF2weapons.getTeamForDisplay(living) == 0)
-					GL11.glColor4f(1.0F, 0.0F, 0.0F, 0.23F);
-				else
-					GL11.glColor4f(0.0F, 0.0F, 1.0F, 0.23F);
+				ClientProxy.setColor(TF2Util.getTeamColor(living), 0.23f, 0, 0f, 1f);
 				renderer.begin(7, DefaultVertexFormats.POSITION);
 				renderer.pos(-0.04, -0.04, 0).endVertex();
 				renderer.pos(0.04, 0.04, 0).endVertex();

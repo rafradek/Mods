@@ -88,6 +88,11 @@ weaponAttribute.NoExternalCloak=No cloak from dispensers
 weaponAttribute.CritStunned=100%% crit chance vs stunned
 weaponAttribute.BleedingDuration=On hit: Bleed for %1$s seconds
 weaponAttribute.MiniCritDistance=Mini-crit long distance targets
+weaponAttribute.TeleportCost=+%1$s more teleporters on craft
+weaponAttribute.ConstructionRateBonus=+%1$s construction boost on hit
+weaponAttribute.ConstructionRatePenalty=%1$s construction boost on hit
+weaponAttribute.UpgradeRatePenalty=%1$s upgrade rate penalty
+weaponAttribute.MetalUsedOnHitPenalty=%1$s metal used on hit
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

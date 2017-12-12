@@ -1,22 +1,20 @@
 package rafradek.TF2weapons.projectiles;
 
 import net.minecraft.client.particle.Particle;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityCritEffect extends Particle {
 
-	public EntityCritEffect(World worldIn, double p_i46352_2_, double p_i46352_4_, double p_i46352_6_, int team) {
+	public EntityCritEffect(World worldIn, double p_i46352_2_, double p_i46352_4_, double p_i46352_6_, int color) {
 		super(worldIn, p_i46352_2_, p_i46352_4_, p_i46352_6_);
 		this.setParticleTextureIndex(65);
 		this.setPosition(this.posX + this.rand.nextFloat() * 0.15f - 0.075f,
 				this.posY + this.rand.nextFloat() * 0.15f - 0.075f, this.posZ + this.rand.nextFloat() * 0.15f - 0.075f);
 		this.particleScale *= this.rand.nextFloat() * 0.5F + 0.5F;
-		if (team == 0)
-			this.setRBGColorF(1, 0, 0);
-		else
-			this.setRBGColorF(0, 0, 1);
+		this.setRBGColorF((color >> 16) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
 		this.motionY += 0.03;
 		//this.particleAlpha = Math.min(1 / this.particleScale * 3, 1);
 		this.particleMaxAge = 20;

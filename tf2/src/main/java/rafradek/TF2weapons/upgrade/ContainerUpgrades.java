@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemCleaver;
 
@@ -147,7 +148,7 @@ public class ContainerUpgrades extends Container {
 
 		int cost = attr.getUpgradeCost(stack);
 
-		int expPoints = TF2weapons.getExperiencePoints(playerIn);
+		int expPoints = TF2Util.getExperiencePoints(playerIn);
 		if (adding && applicable[idEnch] && attr.calculateCurrLevel(stack) < this.station.attributes.get(attr)
 				&& expPoints >= cost) {
 			NBTTagCompound tag = stack.getTagCompound().getCompoundTag("Attributes");
@@ -155,9 +156,9 @@ public class ContainerUpgrades extends Container {
 
 			if (!tag.hasKey(key))
 				tag.setFloat(key, attr.defaultValue);
-			tag.setFloat(key, tag.getFloat(key) + attr.perLevel);
+			tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack));
 			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") + attr.cost);
-			TF2weapons.setExperiencePoints(playerIn, expPoints - cost);
+			TF2Util.setExperiencePoints(playerIn, expPoints - cost);
 			this.transactions[idEnch]++;
 			this.transactionsCost[idEnch] += cost;
 
@@ -172,9 +173,9 @@ public class ContainerUpgrades extends Container {
 
 			if (!tag.hasKey(key))
 				return false;
-			tag.setFloat(key, tag.getFloat(key) - attr.perLevel * count);
+			tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * count);
 			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") - attr.cost * count);
-			TF2weapons.setExperiencePoints(playerIn, expPoints + cost);
+			TF2Util.setExperiencePoints(playerIn, expPoints + cost);
 			this.transactions[idEnch]=0;
 			this.transactionsCost[idEnch]=0;
 		}

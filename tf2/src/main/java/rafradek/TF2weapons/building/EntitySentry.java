@@ -6,8 +6,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.lwjgl.opengl.GL11;
+
 import com.google.common.base.Predicate;
 
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -27,12 +33,16 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Achievements;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
@@ -43,6 +53,7 @@ import rafradek.TF2weapons.characters.ai.EntityAISentryOwnerHurt;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntitySentry extends EntityBuilding {
 
@@ -123,7 +134,7 @@ public class EntitySentry extends EntityBuilding {
 
 	@Override
 	public void setAttackTarget(EntityLivingBase target) {
-		if (TF2weapons.isOnSameTeam(this.getOwner(), target))
+		if (TF2Util.isOnSameTeam(this.getOwner(), target))
 			return;
 		if (target != this.getAttackTarget())
 			this.playSound(TF2Sounds.MOB_SENTRY_SPOT, 1.5f, 1f);
@@ -144,8 +155,8 @@ public class EntitySentry extends EntityBuilding {
 								|| ((getAttackFlags() & 4) == 4 && target instanceof IMob && getOwnerId() != null)
 								|| ((getAttackFlags() & 4) == 4 && target instanceof EntityLiving && ((EntityLiving) target).getAttackTarget() == getOwner()))
 								|| ((getAttackFlags() & 8) == 8 && !(target instanceof EntityPlayer) && !(target instanceof IMob) && getOwnerId() != null))
-								&& (!TF2weapons.isOnSameTeam(EntitySentry.this, target))
-								&& (!(target instanceof EntityTF2Character && TF2weapons.naturalCheck.equals("Never"))
+								&& (!TF2Util.isOnSameTeam(EntitySentry.this, target))
+								&& (!(target instanceof EntityTF2Character && TF2ConfigVars.naturalCheck.equals("Never"))
 										|| !((EntityTF2Character) target).natural);
 
 					}
@@ -157,6 +168,8 @@ public class EntitySentry extends EntityBuilding {
 	@Override
 	public void onLivingUpdate() {
 
+		if (!this.world.isRemote && this.ticksExisted == 1)
+			this.getAttackFlags();
 		if (this.rotationDefault == 0)
 			this.rotationDefault = this.rotationYawHead;
 		if (this.attackDelay > 0)
@@ -164,9 +177,9 @@ public class EntitySentry extends EntityBuilding {
 		if (this.attackDelayRocket > 0)
 			this.attackDelayRocket--;
 		this.ignoreFrustumCheck = this.isControlled();
-		if (this.isControlled()) {
+		if (this.isControlled() && !this.world.isRemote) {
 			Vec3d lookVec = this.getOwner().getLookVec().scale(200);
-			List<RayTraceResult> trace = TF2weapons.pierce(world, this.getOwner(), this.getOwner().posX,
+			List<RayTraceResult> trace = TF2Util.pierce(world, this.getOwner(), this.getOwner().posX,
 					this.getOwner().posY + this.getOwner().getEyeHeight(), this.getOwner().posZ,
 					this.getOwner().posX + lookVec.x,
 					this.getOwner().posY + this.getOwner().getEyeHeight() + lookVec.y,
@@ -248,21 +261,23 @@ public class EntitySentry extends EntityBuilding {
 						this.getLookHelper().getLookPosZ())
 				: this.getAttackTarget().getPositionVector().addVector(0, this.getAttackTarget().getEyeHeight(), 0);
 		while (this.attackDelay <= 0 && this.getAmmo() > 0) {
+			if(this.getOwnerId() != null && this.ticksExisted % 10 == 0)
+				TF2Util.attractMobs(this, this.world);
 			this.attackDelay += this.getLevel() > 1 ? 2.5f : 5f;
 			if (this.isControlled())
 				this.attackDelay /= 2;
 			this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
 					1f);
-			List<RayTraceResult> list = TF2weapons.pierce(this.world, this, this.posX,
+			List<RayTraceResult> list = TF2Util.pierce(this.world, this, this.posX,
 					this.posY + this.getEyeHeight(), this.posZ, attackPos.x, attackPos.y, attackPos.z,
 					false, 0.08f, false);
 			for (RayTraceResult bullet : list)
 				if (bullet.entityHit != null) {
 
-					DamageSource src = TF2weapons.causeDirectDamage(sentryBullet, owner, 0).setProjectile();
+					DamageSource src = TF2Util.causeDirectDamage(sentryBullet, owner, 0).setProjectile();
 
-					if (TF2weapons.dealDamage(bullet.entityHit, this.world, owner, this.sentryBullet,
-							TF2weapons.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), 1.6f, src)) {
+					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.sentryBullet,
+							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), 1.6f, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();
 						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
@@ -343,7 +358,9 @@ public class EntitySentry extends EntityBuilding {
 
 	public int getAttackFlags() {
 		if (this.getTargetInfo() == -1)
-			return this.getOwner() != null && this.getOwner() instanceof EntityPlayer ? 5 : 1;
+			this.setTargetInfo(this.getOwner() != null && this.getOwner() instanceof EntityPlayer ? 
+					WeaponsCapability.get(this.getOwner()).sentryTargets
+					: 1);
 		return this.getTargetInfo();
 	}
 
@@ -435,6 +452,118 @@ public class EntitySentry extends EntityBuilding {
 		}*/
 	}
 	
+	@SideOnly(Side.CLIENT)
+	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
+		ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+		
+		gui.drawTexturedModalRect(20, 2, 0, 112,124, 60);
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+		gui.drawTexturedModalRect(0, 0, 0, 48, 144, 64);
+		/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(width / 2 - 72, height / 2 + 84, 0.0D).tex(0.0D, 0.4375D).endVertex();
+		renderer.pos(width / 2 + 72, height / 2 + 84, 0.0D).tex(0.5625D, 0.4375D).endVertex();
+		renderer.pos(width / 2 + 72, height / 2 + 20, 0.0D).tex(0.5625D, 0.1875D).endVertex();
+		renderer.pos(width / 2 - 72, height / 2 + 20, 0.0D).tex(0.0D, 0.1875D).endVertex();
+		tessellator.draw();*/
+		double imagePos = this.getLevel() == 1 ? 0.375D : this.getLevel() == 2 ? 0.1875D : 0D;
+
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(19, 56, 0.0D).tex(0.75D, imagePos + 0.1875D).endVertex();
+		renderer.pos(67, 56, 0.0D).tex(0.9375D, imagePos + 0.1875D).endVertex();
+		renderer.pos(67, 8, 0.0D).tex(0.9375D, imagePos).endVertex();
+		renderer.pos(19, 8, 0.0D).tex(0.75D, imagePos).endVertex();
+		tessellator.draw();
+
+		imagePos = this.getLevel() == 3 ? 0D : 0.0625D;
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(67, 57, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+		renderer.pos(83, 57, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+		renderer.pos(83, 41, 0.0D).tex(1D, imagePos).endVertex();
+		renderer.pos(67, 41, 0.0D).tex(0.9375D, imagePos).endVertex();
+		tessellator.draw();
+
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(67, 21, 0.0D).tex(0.9375D, 0.25D).endVertex();
+		renderer.pos(83, 21, 0.0D).tex(1D, 0.25D).endVertex();
+		renderer.pos(83, 5, 0.0D).tex(1D, 0.1875D).endVertex();
+		renderer.pos(67, 5, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+		tessellator.draw();
+
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(67, 39, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+		renderer.pos(83, 39, 0.0D).tex(1D, 0.1875D).endVertex();
+		renderer.pos(83, 23, 0.0D).tex(1D, 0.125D).endVertex();
+		renderer.pos(67, 23, 0.0D).tex(0.9375D, 0.125D).endVertex();
+		tessellator.draw();
+
+		imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+		renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+		renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
+		renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
+		tessellator.draw();
+
+		gui.drawString(gui.getFontRenderer(), Integer.toString(this.getKills()),
+				85, 9, 16777215);
+		float health = this.getHealth() / this.getMaxHealth();
+		if (health > 0.33f) {
+			GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+		} else {
+			GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+		}
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		for (int i = 0; i < health * 11; i++) {
+
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(19, 55 - i * 5, 0.0D).endVertex();
+			renderer.pos(9, 55 - i * 5, 0.0D).endVertex();
+			renderer.pos(9, 59 - i * 5, 0.0D).endVertex();
+			renderer.pos(19, 59 - i * 5, 0.0D).endVertex();
+			tessellator.draw();
+		}
+
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(85, 38, 0.0D).endVertex();
+		renderer.pos(140, 38, 0.0D).endVertex();
+		renderer.pos(140, 24, 0.0D).endVertex();
+		renderer.pos(85, 24, 0.0D).endVertex();
+		tessellator.draw();
+
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(85, 56, 0.0D).endVertex();
+		renderer.pos(140, 56, 0.0D).endVertex();
+		renderer.pos(140, 42, 0.0D).endVertex();
+		renderer.pos(85, 42, 0.0D).endVertex();
+		tessellator.draw();
+
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(85, 38, 0.0D).endVertex();
+		renderer.pos(85 + (double) this.getAmmo() / (double) this.getMaxAmmo() * 55D,
+				38, 0.0D).endVertex();
+		renderer.pos(85 + (double) this.getAmmo() / (double) this.getMaxAmmo() * 55D,
+				24, 0.0D).endVertex();
+		renderer.pos(85, 24, 0.0D).endVertex();
+		tessellator.draw();
+
+		double xOffset = this.getLevel() < 3 ? this.getProgress() * 0.275D : this.getRocketAmmo() * 2.75D;
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(85, 56, 0.0D).endVertex();
+		renderer.pos(85 + xOffset, 56, 0.0D).endVertex();
+		renderer.pos(85 + xOffset, 42, 0.0D).endVertex();
+		renderer.pos(85, 42, 0.0D).endVertex();
+		tessellator.draw();
+	}
+	
+	public int getGuiHeight() {
+		return 64;
+	}
+	
+	public int getConstructionTime() {
+		return 10500;
+	}
 	/*public EntityLookHelper getLookHelper() {
 		return lookHelper;
 	}*/

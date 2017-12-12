@@ -3,6 +3,7 @@ package rafradek.TF2weapons.message;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.network.datasync.EntityDataManager.DataEntry;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -27,9 +28,12 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 					if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
 						WeaponsCapability cap = ent.getCapability(TF2weapons.WEAPONS_CAP, null);
 						int prevHealTarget=cap.getHealTarget();
-						
-						cap.dataManager.setEntryValues(message.entries);
-						
+						if(message.entries != null) {
+							for(DataEntry<?> param: message.entries) {
+								cap.onChangeValue(param.getKey(), param.getValue());
+							}
+							cap.dataManager.setEntryValues(message.entries);
+						}
 						if (prevHealTarget != cap.getHealTarget() && message.healTarget > 0) {
 							SoundEvent sound = ItemFromData.getSound(
 									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),

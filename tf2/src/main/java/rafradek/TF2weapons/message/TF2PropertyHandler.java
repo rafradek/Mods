@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.message.TF2Message.PropertyMessage;
@@ -65,7 +66,7 @@ public class TF2PropertyHandler implements IMessageHandler<TF2Message.PropertyMe
 			// System.out.println("send: "+message.name+" "+message.intValue+"
 			// "+message.floatValue);
 			message.entityID = ctx.getServerHandler().player.getEntityId();
-			TF2weapons.sendTracking(message, ctx.getServerHandler().player);
+			TF2Util.sendTracking(message, ctx.getServerHandler().player);
 		}
 		return null;
 	}

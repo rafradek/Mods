@@ -12,6 +12,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemStickyLauncher;
 
@@ -34,18 +35,7 @@ public class EntityStickybomb extends EntityProjectileBase {
 		return 3;
 	}
 
-	public boolean attackEntityFrom(DamageSource source, float damage){
-		if (this.isEntityInvulnerable(source))
-        {
-            return false;
-        }
-		else if(source.getTrueSource() != null && source.getTrueSource() instanceof EntityLivingBase &&
-				!TF2weapons.isOnSameTeam(source.getTrueSource(), this.shootingEntity)&& !(source.isExplosion() || source.isFireDamage())){
-			this.setDead();
-			return true;
-		}
-		return false;
-	}
+	
 	
 	@Override
 	protected void entityInit() {
@@ -57,7 +47,7 @@ public class EntityStickybomb extends EntityProjectileBase {
 	}
 	public boolean canBeCollidedWith()
     {
-        return this.isCollided;
+        return this.isSticked();
     }
 	
 	@Override
@@ -141,6 +131,6 @@ public class EntityStickybomb extends EntityProjectileBase {
 	
 	public boolean isGlowing()
     {
-        return super.isGlowing() || (this.getType() == 1 && this.world.isRemote && this.shootingEntity==ClientProxy.getLocalPlayer() && this.ticksExisted >= this.getArmTime()&& TF2weapons.lookingAt(this.shootingEntity, 30, this.posX, this.posY, this.posZ));
+        return super.isGlowing() || (this.getType() == 1 && this.world.isRemote && this.shootingEntity==ClientProxy.getLocalPlayer() && this.ticksExisted >= this.getArmTime()&& TF2Util.lookingAt(this.shootingEntity, 30, this.posX, this.posY, this.posZ));
     }
 }

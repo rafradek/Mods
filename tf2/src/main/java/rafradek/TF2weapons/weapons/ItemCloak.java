@@ -102,7 +102,7 @@ public class ItemCloak extends ItemFromData {
 
 	public static Tuple<Integer, ItemStack> searchForWatches(EntityLivingBase living) {
 		if (living instanceof EntitySpy)
-			return new Tuple<>(3, ((EntitySpy)living).loadout.get(3));
+			return new Tuple<>(3, ((EntitySpy)living).loadout.getStackInSlot(3));
 		if (living instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) living;
 			if (!player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem() instanceof ItemCloak

@@ -7,6 +7,8 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 
 public class RenderRocket extends Render<EntityRocket> {
@@ -45,10 +47,7 @@ public class RenderRocket extends Render<EntityRocket> {
 		if (((EntityProjectileBase) entity).getCritical() == 2) {
 			GlStateManager.disableTexture2D();
 			GlStateManager.disableLighting();
-			if (TF2weapons.getTeamForDisplay(((EntityProjectileBase) entity).shootingEntity) == 0)
-				GL11.glColor4f(1.0F, 0.0F, 0.0F, 1F);
-			else
-				GL11.glColor4f(0.0F, 0.0F, 1.0F, 1F);
+			ClientProxy.setColor(TF2Util.getTeamColor(((EntityProjectileBase) entity).shootingEntity), 1f, 0f, 0f, 1f);
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
 			GlStateManager.enableTexture2D();

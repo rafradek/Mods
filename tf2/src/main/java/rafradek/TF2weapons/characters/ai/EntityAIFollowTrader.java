@@ -1,7 +1,9 @@
 package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.ai.EntityAIBase;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 
 public class EntityAIFollowTrader extends EntityAIBase {
 
@@ -10,13 +12,14 @@ public class EntityAIFollowTrader extends EntityAIBase {
 
 	public EntityAIFollowTrader(EntityTF2Character entity) {
 		this.owner = entity;
+		this.setMutexBits(1);
 	}
 
 	@Override
 	public boolean shouldExecute() {
 		// TODO Auto-generated method stub
-		return this.owner.lastTrader != null && this.owner.traderFollowTicks > 0 && this.owner.getAttackTarget() == null
-				&& this.owner.getDistanceSqToEntity(owner.lastTrader) > 100;
+		return this.owner.getOwner() != null && this.owner.getDistanceSqToEntity(this.owner.getOwner()) > 100 && this.owner.isEntityAlive() && this.owner.getOrder() == Order.FOLLOW && 
+				!(this.owner.getAttackTarget() != null && this.owner.getOwner().getDistanceSqToEntity(this.owner) < 600);
 	}
 
 	@Override
@@ -24,22 +27,24 @@ public class EntityAIFollowTrader extends EntityAIBase {
 		this.timeToRecalcPath = 0;
 	}
 
+	public void resetTask() {
+		this.owner.getNavigator().clearPathEntity();
+	}
 	@Override
 	public boolean shouldContinueExecuting() {
-		return !this.owner.getNavigator().noPath() && this.owner.getDistanceSqToEntity(this.owner.lastTrader) > (100);
+		return !this.owner.getNavigator().noPath() && this.owner.getDistanceSqToEntity(this.owner.getOwner()) > 100;
 	}
 
 	@Override
 	public void updateTask() {
-		// System.out.println("Up");
-		if (this.owner.lastTrader.getRevengeTarget() != null)
-			this.owner.setAttackTarget(owner.lastTrader.getRevengeTarget());
-		this.owner.getLookHelper().setLookPositionWithEntity(this.owner.lastTrader, 10.0F, 10F);
+
+		if(this.owner.getAttackTarget() == null || (this.owner.getAttackTarget().getDistanceSqToEntity(this.owner) < this.owner.getAttackTarget().getDistanceSqToEntity(this.owner.getOwner())))
+			this.owner.getLookHelper().setLookPositionWithEntity(this.owner.getOwner(), 10.0F, 10F);
 
 		if (--this.timeToRecalcPath <= 0) {
 			this.timeToRecalcPath = 8;
 
-			this.owner.getNavigator().tryMoveToEntityLiving(this.owner.lastTrader, 1);
+			this.owner.getNavigator().tryMoveToEntityLiving(this.owner.getOwner(), 1.2f);
 		}
 	}
 }

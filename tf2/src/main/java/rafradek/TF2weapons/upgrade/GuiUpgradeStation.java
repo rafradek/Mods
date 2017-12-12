@@ -19,6 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Attribute.Type;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 
 public class GuiUpgradeStation extends GuiContainer {
@@ -80,6 +82,7 @@ public class GuiUpgradeStation extends GuiContainer {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		this.drawDefaultBackground();
 		boolean flag = Mouse.isButtonDown(0);
 		int i = this.guiLeft;
 		int j = this.guiTop;
@@ -125,7 +128,7 @@ public class GuiUpgradeStation extends GuiContainer {
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		int expPoints = TF2weapons.getExperiencePoints(mc.player);
+		int expPoints = TF2Util.getExperiencePoints(mc.player);
 		for (int i = 0; i < 6; i++) {
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.mc.getTextureManager().bindTexture(UPGRADES_GUI_TEXTURES);
@@ -143,7 +146,7 @@ public class GuiUpgradeStation extends GuiContainer {
 			if(currLevel < this.station.attributes.get(attr))
 				this.fontRenderer.drawString(String.valueOf(attr.getUpgradeCost(stack)), 56 + xOffset, 50 + yOffset,
 						16777215);
-			this.fontRenderer.drawSplitString(attr.getTranslatedString(1 + attr.perLevel, false), 9 + xOffset,
+			this.fontRenderer.drawSplitString(attr.getTranslatedString((attr.typeOfValue == Type.ADDITIVE ? 0 : 1) + attr.getPerLevel(stack), false), 9 + xOffset,
 					32 + yOffset, 98, 16777215);
 			if (!attr.canApply(stack) || currLevel >= this.station.attributes.get(attr)
 					|| attr.getUpgradeCost(stack) > expPoints) {

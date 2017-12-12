@@ -26,9 +26,9 @@ public class EntitySoldier extends EntityTF2Character {
 			attack.fireAtFeet = 1;
 			attack.projSpeed = 1.04f;
 			attack.explosive = true;
-			attack.setDodge(true, this.rocketJumper);
+			moveAttack.setDodge(true, this.rocketJumper);
 		}
-		this.ammoLeft = 20;
+		//this.ammoLeft = 20;
 		this.experienceValue = 15;
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 		// ItemUsable.getNewStack("Minigun"));
@@ -64,11 +64,10 @@ public class EntitySoldier extends EntityTF2Character {
 			if (this.rocketJumper && this.getHealth() > 7f
 					&& !this.airborne && this.onGround && this.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == 0)
 				this.rocketJump = true;
-			if(this.getDiff()>1 && this.loadout.get(1).getItem() instanceof ItemWeapon){
-				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.get(1).getItemDamage()!=this.loadout.get(1).getMaxDamage() && this.getDistanceSqToEntity(this.getAttackTarget())<36){
+			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
+				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.getStackInSlot(1).getItemDamage()!=this.loadout.getStackInSlot(1).getMaxDamage() && this.getDistanceSqToEntity(this.getAttackTarget())<36){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
-					this.ammoLeft++;
 				}
 				else if(this.usedSlot==1 && (this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() || this.getDistanceSqToEntity(this.getAttackTarget())>40)){
 					this.switchSlot(0);

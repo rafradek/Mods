@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAIAmbush;
@@ -29,7 +30,6 @@ public class EntitySpy extends EntityTF2Character {
 	public float prevHealth;
 	public EntitySpy(World p_i1738_1_) {
 		super(p_i1738_1_);
-		this.ammoLeft = 16;
 		this.experienceValue = 15;
 		this.rotation = 20;
 		this.tasks.addTask(3, new EntityAIAmbush(this));
@@ -66,14 +66,14 @@ public class EntitySpy extends EntityTF2Character {
 			this.prevHealth=this.getHealth();
 			this.cloakCounter--;
 			EntityLivingBase target = this.getAttackTarget();
-			if (target != null && this.loadout.get(3).getTagCompound().getBoolean("Active")) {
+			if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
 				boolean useKnife = false;
 				if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
 						|| (useKnife = (this.getDistanceSqToEntity(target) < 13
-								&& !TF2weapons.lookingAtFast(target, 105, this.posX, this.posY, this.posZ)))) {
+								&& !TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ)))) {
 
-					((ItemCloak) this.loadout.get(3).getItem()).setCloak(
-							!this.getWepCapability().isInvisible(), this.loadout.get(3), this,
+					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
+							!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
 							this.world);
 					if (useKnife) {
 						this.weaponCounter = 8;
@@ -90,16 +90,16 @@ public class EntitySpy extends EntityTF2Character {
 				 */
 			}
 
-			//System.out.println(this.loadout.get(3));
-			if (this.cloakCounter <= 0 && !this.loadout.get(3).getTagCompound().getBoolean("Active"))
-				((ItemCloak) this.loadout.get(3).getItem()).setCloak(true, this.loadout.get(3), this, this.world);
+			//System.out.println(this.loadout.getStackInSlot(3));
+			if (this.cloakCounter <= 0 && !this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
+				((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);
 			this.weaponCounter--;
 
 			if (this.weaponCounter <= 0 && this.getAttackTarget() != null
 					&& this.getDistanceSqToEntity(this.getAttackTarget()) < 4) {
 				this.setCombatTask(false);
 				this.weaponCounter = 8;
-			} else if (this.weaponCounter <= 0 && this.getHeldItemMainhand() == this.loadout.get(2)) {
+			} else if (this.weaponCounter <= 0 && this.getHeldItemMainhand() == this.loadout.getStackInSlot(2)) {
 				this.setCombatTask(true);
 				this.weaponCounter = 3;
 			}
@@ -117,18 +117,18 @@ public class EntitySpy extends EntityTF2Character {
 
 	@Override
 	protected void addWeapons() {
-		this.loadout.set(0,ItemFromData.getRandomWeaponOfSlotMob("spy", 0, this.rand, false, true));
-		this.loadout.set(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true));
-		this.loadout.set(2,ItemFromData.getRandomWeaponOfSlotMob("spy", 2, this.rand, false, true));
-		this.loadout.set(3,ItemFromData.getRandomWeaponOfSlotMob("spy", 3, this.rand, false, true));
-		this.loadout.get(1).setCount( 64);
+		this.loadout.setStackInSlot(0,ItemFromData.getRandomWeaponOfSlotMob("spy", 0, this.rand, false, true));
+		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true));
+		this.loadout.setStackInSlot(2,ItemFromData.getRandomWeaponOfSlotMob("spy", 2, this.rand, false, true));
+		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("spy", 3, this.rand, false, true));
+		this.loadout.getStackInSlot(1).setCount( 64);
 	}
 
 	public String getName() {
 		if(this.world.isRemote && ClientProxy.getLocalPlayer() != null && this.getWepCapability().isDisguised()) {
 			String username=this.getWepCapability().getDisguiseType().substring(2);
 			
-			if(TF2weapons.isOnSameTeam(ClientProxy.getLocalPlayer(), this)) {
+			if(TF2Util.isOnSameTeam(ClientProxy.getLocalPlayer(), this)) {
 				return super.getName()+" ["+username+"]";
 			}
 			else {
@@ -167,7 +167,6 @@ public class EntitySpy extends EntityTF2Character {
 	/**
 	 * Plays step sound at given x, y, z for the entity
 	 */
-	@Override
 	public void setCombatTask(boolean ranged) {
 		this.ranged = ranged;
 		if (ranged) {

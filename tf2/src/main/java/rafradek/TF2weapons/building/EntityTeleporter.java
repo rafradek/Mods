@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Predicate;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -25,10 +26,14 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
+import scala.reflect.internal.Trees.This;
 
 public class EntityTeleporter extends EntityBuilding {
 	// public static ArrayList<BlockPosDimension> teleportersData=new
@@ -47,6 +52,7 @@ public class EntityTeleporter extends EntityBuilding {
 	public float spinRender;
 
 	public long timestamp;
+	
 	private static final DataParameter<Integer> TELEPORTS = EntityDataManager.createKey(EntityTeleporter.class,
 			DataSerializers.VARINT);
 	private static final DataParameter<Integer> TPPROGRESS = EntityDataManager.createKey(EntityTeleporter.class,
@@ -72,8 +78,9 @@ public class EntityTeleporter extends EntityBuilding {
 	public AxisAlignedBB getCollisionBox(Entity entityIn) {
 		if (!this.world.isRemote && !this.isExit() && this.getTPprogress() <= 0 && entityIn != null
 				&& entityIn instanceof EntityLivingBase && !(entityIn instanceof EntityBuilding)
-				&& ((TF2weapons.dispenserHeal && getTeam() == null && ((EntityLivingBase) entityIn).getTeam() == null)
-						|| TF2weapons.isOnSameTeam(EntityTeleporter.this, entityIn))
+				&& ((this.getOwner() != null && ((WeaponsCapability.get(this.getOwner()).teleporterEntity && !(entityIn instanceof EntityPlayer)) || 
+						(WeaponsCapability.get(this.getOwner()).teleporterPlayer && entityIn instanceof EntityPlayer && entityIn.getTeam() == null)))
+						|| TF2Util.isOnSameTeam(EntityTeleporter.this, entityIn))
 				&& entityIn.getEntityBoundingBox()
 						.intersects(this.getEntityBoundingBox().grow(0, 0.5, 0).offset(0, 0.5D, 0)))
 			if (ticksToTeleport <= 0)
@@ -82,8 +89,27 @@ public class EntityTeleporter extends EntityBuilding {
 				else {
 					TeleporterData exit = this.getTeleportExit();
 					if (exit != null) {
-						if (exit.dimension != this.dimension)
-							entityIn.changeDimension(exit.dimension);
+						if (exit.dimension != this.dimension) {
+							if(entityIn instanceof EntityPlayerMP && net.minecraftforge.common.ForgeHooks.onTravelToDimension(this, exit.dimension)) {
+								this.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) entityIn, 
+										exit.dimension, new TeleporterDim((WorldServer) this.world,exit));
+								
+							}
+							else {
+								World destworld = this.world.getMinecraftServer().getWorld(exit.dimension);
+								Entity newent = EntityList.newEntity(entityIn.getClass(), destworld);
+								if(newent != null) {
+									NBTTagCompound data = entityIn.writeToNBT(new NBTTagCompound());
+									data.removeTag("Dimension");
+									newent.readFromNBT(data);
+									entityIn.setDead();
+									newent.forceSpawn = true;
+									entityIn.moveToBlockPosAndAngles(exit, entityIn.rotationYaw, entityIn.rotationPitch);
+									destworld.spawnEntity(newent);
+									entityIn = newent;
+								}
+							}
+						}
 						entityIn.setPositionAndUpdate(exit.getX() + 0.5, exit.getY() + 0.23, exit.getZ() + 0.5);
 						this.setTeleports(this.getTeleports() + 1);
 						this.setTPprogress(this.getLevel() == 1 ? 200 : (this.getLevel() == 2 ? 100 : 60));
@@ -351,6 +377,10 @@ public class EntityTeleporter extends EntityBuilding {
 		return 1f;
 	}
 
+	public int getIronDrop() {
+		return 1 + this.getLevel()/2;
+	}
+	
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);

@@ -36,7 +36,7 @@ import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
@@ -224,7 +224,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		super.onLivingUpdate();
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
-				Vec3d pos = TF2weapons.radiusRandom2D(2.7f, this.rand);
+				Vec3d pos = TF2Util.radiusRandom2D(2.7f, this.rand);
 				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
 						pos.y + this.posZ, 0, 0, 0, new int[0]);
 			}
@@ -273,7 +273,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 					y = Math.min(y, this.world.getTopSolidOrLiquidBlock(new BlockPos(x, y, z)).getY() + 16);
 					if (this.attemptTeleport(x, y, z)) {
 						for (int j = 0; j < 40; j++) {
-							Vec3d pos = TF2weapons.radiusRandom3D(2.7f, this.rand);
+							Vec3d pos = TF2Util.radiusRandom3D(2.7f, this.rand);
 							this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX,
 									pos.y + this.posY, pos.z + this.posZ, 0, 0, 0, new int[0]);
 						}

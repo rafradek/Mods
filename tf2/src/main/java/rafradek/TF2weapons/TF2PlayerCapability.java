@@ -74,6 +74,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public int fastKillTimer;
 	public float healed;
 	public boolean sendContractsNextTick;
+	
+	public short udpServerId;
+	
+	
 	public TF2PlayerCapability(EntityPlayer entity) {
 		this.owner = entity;
 		this.lostItems=new ItemStackHandler(27);
@@ -102,7 +106,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				}
 			
 			int contractDay;
-			if(!TF2weapons.disableContracts && this.contracts.size()<2 && (contractDay=((EntityPlayerMP) this.owner).getStatFile().readStat(TF2Achievements.CONTRACT_DAY)) != 0  
+			if(!TF2ConfigVars.disableContracts && this.contracts.size()<2 && (contractDay=((EntityPlayerMP) this.owner).getStatFile().readStat(TF2Achievements.CONTRACT_DAY)) != 0  
 					&&this.owner.world.getWorldTime()%24000 > 1000 && this.owner.world.getWorldTime()/24000>=contractDay) {
 				String name="kill";
 				do{

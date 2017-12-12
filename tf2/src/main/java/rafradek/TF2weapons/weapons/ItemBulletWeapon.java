@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Predicates;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -25,12 +27,16 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.projectiles.EntityFlame;
+import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 
 public class ItemBulletWeapon extends ItemWeapon {
 	public static double lastStartX = 90;
@@ -46,7 +52,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 
 	public void handleShoot(EntityLivingBase living, ItemStack stack, World world, HashMap<Entity, float[]> map,
 			int critical, int flags) {
-		DamageSource var22 = TF2weapons.causeDirectDamage(stack, living, critical);
+		DamageSource var22 = TF2Util.causeDirectDamage(stack, living, critical);
 		((TF2DamageSource)var22).addAttackFlag(flags);
 		
 		if (!(this instanceof ItemMeleeWeapon))
@@ -60,7 +66,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 			Vec3d pushvec = entity.getPositionVector().subtract(living.getPositionVector()).normalize();
 			
 			if (map.get(entity) != null && map.get(entity)[1] != 0
-					&& TF2weapons.dealDamage(entity, world, living, stack, critical, map.get(entity)[1], var22)) {
+					&& TF2Util.dealDamage(entity, world, living, stack, critical, map.get(entity)[1], var22)) {
 				// System.out.println("Damage: "+map.get(entity)[1]);
 				//distance = ((ItemBulletWeapon) stack.getItem()).getMaxRange(stack) / distance;
 				/*double distX = (living.posX - entity.posX) * distance;
@@ -105,7 +111,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 				if (message.readData == null)
 					return false;
 				int flags=0;
-				int totalCrit = TF2weapons.calculateCritPre(stack, living);
+				int totalCrit = TF2Util.calculateCritPre(stack, living);
 				HashMap<Entity, float[]> shotInfo = new HashMap<Entity, float[]>();
 				for (Object[] obj : message.readData) {
 					Entity target = world.getEntityByID((Integer) obj[0]);
@@ -127,7 +133,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 					float[] values = shotInfo.get(target);
 					// System.out.println(obj[2]+" "+critical);
 					values[0]++;
-					values[1] += TF2weapons.calculateDamage(target, world, living, stack, critical, (Float) obj[2]);
+					values[1] += TF2Util.calculateDamage(target, world, living, stack, critical, (Float) obj[2]);
 				}
 				
 				// living.getCapability(TF2weapons.WEAPONS_CAP,
@@ -173,6 +179,12 @@ public class ItemBulletWeapon extends ItemWeapon {
 	@Override
 	public void shoot(ItemStack stack, EntityLivingBase living, World world, int critical, EnumHand hand) {
 
+		if (getData(stack).hasProperty(PropertyType.PROJECTILE)) {
+			if(!world.isRemote) {
+				new ItemProjectileWeapon().shoot(stack, living, world, critical, hand);
+			}
+			return;
+		}
 		boolean removeBlocks = TF2Attribute.getModifier("Destroy Block", stack, 0, living) > 0;
 		if (!world.isRemote && living instanceof EntityPlayer && !removeBlocks)
 			return;
@@ -184,7 +196,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 		double endY = 0;
 		double endZ = 0;
 
-		Vec3d rand = TF2weapons.radiusRandom3D(this.getWeaponSpread(stack, living), world.rand);
+		Vec3d rand = TF2Util.radiusRandom3D(this.getWeaponSpread(stack, living), world.rand);
 
 		// if(target==null){
 		startX = living.posX;// - (double)(MathHelper.cos(living.rotationYaw /
@@ -290,13 +302,17 @@ public class ItemBulletWeapon extends ItemWeapon {
 		}
 		// System.out.println(startX+" "+startY+" "+startZ+" "+endX+" "+endY+"
 		// "+endZ);
-		List<RayTraceResult> list = TF2weapons.pierce(world, living, startX, startY, startZ, endX, endY, endZ,
-				this.canHeadshot(living, stack), this.getBulletSize(stack, living), this.canPenetrate(stack, living));
+		
+		List<RayTraceResult> list = TF2Util.pierce(world, living, startX, startY, startZ, endX, endY, endZ,
+				this.canHeadshot(living, stack), this.getBulletSize(stack, living), this.canPenetrate(stack, living), 
+				TF2Attribute.getModifier("Destroy Projectiles", stack, 0, living) == 0 ? TF2Util.TARGETABLE : Predicates.or(target ->{
+					return target instanceof EntityProjectileBase && !(target instanceof EntityFlame);
+				}, TF2Util.TARGETABLE));
 		for (RayTraceResult var4 : list)
 			if (var4.entityHit != null) {
 				float distance = 0;
 				if (living != null) {
-					distance = (float) TF2weapons.getDistanceBox(living, var4.entityHit.posX, var4.entityHit.posY, var4.entityHit.posZ, var4.entityHit.width,var4.entityHit.height);
+					distance = (float) TF2Util.getDistanceBox(living, var4.entityHit.posX, var4.entityHit.posY, var4.entityHit.posZ, var4.entityHit.width,var4.entityHit.height);
 					//distance -= living.width / 2 + var4.entityHit.width / 2;
 
 					//if (distance < 0)
@@ -314,7 +330,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 					ItemWeapon.critical = critical;
 					float[] values = lastShot.get(var4.entityHit);
 					values[0]++;
-					values[1] += TF2weapons.calculateDamage(var4.entityHit, world, living, stack, critical, distance);
+					values[1] += TF2Util.calculateDamage(var4.entityHit, world, living, stack, critical, distance);
 					// values[2]=distance;
 				} else if (world.isRemote) {
 					// System.out.println(var4.hitInfo);
@@ -335,17 +351,17 @@ public class ItemBulletWeapon extends ItemWeapon {
 					}
 				} else if (!world.isRemote) {
 					if(TF2Attribute.getModifier("Explode Bullet", stack, 0, living)!=0){
-						TF2weapons.explosion(world, living, stack, living, null, var4.hitVec.x + var4.sideHit.getFrontOffsetX() * 0.05,
+						TF2Util.explosion(world, living, stack, living, null, var4.hitVec.x + var4.sideHit.getFrontOffsetX() * 0.05,
 								var4.hitVec.y + var4.sideHit.getFrontOffsetY() * 0.05,
 								var4.hitVec.z + var4.sideHit.getFrontOffsetZ() * 0.05, TF2Attribute.getModifier("Explode Bullet", stack, 0, living), 1, critical, (float) living.getPositionVector().distanceTo(var4.hitVec));
 					}
 					else if(removeBlocks){
-						float damage = TF2weapons.calculateDamage(TF2weapons.dummyEnt, world, living, stack, critical,
+						float damage = TF2Util.calculateDamage(TF2weapons.dummyEnt, world, living, stack, critical,
 								(float) living.getPositionVector().distanceTo(var4.hitVec));
 						if (stack.getItem() instanceof ItemSniperRifle)
 							damage *= 2.52f;
 						damage *= TF2Attribute.getModifier("Destroy Block", stack, 0, living);
-						TF2weapons.damageBlock(var4.getBlockPos(), living, world, stack, critical, damage,
+						TF2Util.damageBlock(var4.getBlockPos(), living, world, stack, critical, damage,
 								new Vec3d(endX, endY, endZ), null);
 					}
 				}
@@ -395,6 +411,6 @@ public class ItemBulletWeapon extends ItemWeapon {
 	}
 
 	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old) {
-		return TF2weapons.calculateCritPost(target, shooter, old, stack);
+		return TF2Util.calculateCritPost(target, shooter, old, stack);
 	}
 }

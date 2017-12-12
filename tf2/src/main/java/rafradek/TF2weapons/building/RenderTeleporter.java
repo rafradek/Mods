@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -20,20 +21,32 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			"textures/entity/tf2/red/Teleporter.png");
 	private static final ResourceLocation TELEPORTER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Teleporter.png");
-
+	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/red/box.png");
+	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/blu/box.png");
+	public ModelBase box;
+	public ModelBase main;
 	public RenderTeleporter(RenderManager renderManager) {
 		super(renderManager, new ModelTeleporter(), 0.6f);
+		main = this.mainModel;
+		box = new ModelBuild();
 	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityTeleporter par1EntityLiving) {
 		// System.out.println("class: "+clazz);
-
-		return par1EntityLiving.getEntTeam() == 0 ? TELEPORTER_RED : TELEPORTER_BLU;
+		boolean constr=par1EntityLiving.isConstructing();
+		return par1EntityLiving.getEntTeam() == 0 ? constr ? BOX_RED : TELEPORTER_RED : constr ? BOX_BLU : TELEPORTER_BLU;
 	}
 
 	@Override
 	public void doRender(EntityTeleporter living, double x, double y, double z, float rot, float partial) {
+		if (living.isConstructing())
+			this.mainModel = this.box;
+		else
+			this.mainModel = this.main;
+		
 		if (living.getSoundState() == 1)
 			living.spinRender = living.spin
 					+ ((float) Math.PI * (living.getLevel() == 1 ? 0.25f : (living.getLevel() == 2 ? 0.325f : 0.4f)))

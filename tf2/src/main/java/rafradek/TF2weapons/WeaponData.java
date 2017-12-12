@@ -133,6 +133,8 @@ public class WeaponData {
 		public static final PropertyType NO_FIRE_SOUND = new PropertyType(73, "No fire sound", Type.STRING);
 		public static final PropertyType CHARGED_FIRE_SOUND = new PropertyType(73, "Charged fire sound", Type.STRING);
 		public static final PropertyType PENETRATE = new PropertyType(74, "Penetrate", Type.BOOLEAN);
+		public static final PropertyType OVERRIDE = new PropertyType(75, "Weapon override", Type.STRING);
+		public static final PropertyType MAX_AMMO = new PropertyType(76, "Max ammo", Type.INTEGER);
 		public Type type;
 		public int id;
 		public String name;

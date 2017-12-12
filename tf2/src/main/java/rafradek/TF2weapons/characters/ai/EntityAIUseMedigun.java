@@ -4,6 +4,7 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
@@ -28,34 +29,17 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 
 	@Override
 	public void resetTask() {
-		TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+		this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
+		this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
+		TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+		TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 		if (this.jump)
 			this.entityHost.jump = false;
 		this.entityHost.getNavigator().clearPathEntity();
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;
-	}
-
-	/**
-	 * Updates the task
-	 */
-	@Override
-	public double lookingAtMax() {
-		if (this.attackTarget == null)
-			return 0;
-		double d0 = this.attackTarget.posX - this.entityHost.posX;
-		double d1 = (this.attackTarget.posY + this.attackTarget.getEyeHeight())
-				- (this.entityHost.posY + this.entityHost.getEyeHeight());
-		double d2 = this.attackTarget.posZ - this.entityHost.posZ;
-		double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
-		float f = (float) (Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-		float f1 = (float) (-(Math.atan2(d1, d3) * 180.0D / Math.PI));
-		float compareyaw = Math
-				.abs(180 - Math.abs(Math.abs(f - MathHelper.wrapDegrees(this.entityHost.rotationYawHead)) - 180));
-		float comparepitch = Math.abs(180 - Math.abs(Math.abs(f1 - this.entityHost.rotationPitch) - 180));
-		// System.out.println("Angled: "+compareyaw+" "+comparepitch);
-		return Math.max(compareyaw, comparepitch);
+		this.pressed = false;
 	}
 
 	@Override
@@ -72,7 +56,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		double lookX = this.attackTarget.posX;
 		double lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
 		double lookZ = this.attackTarget.posZ;
-		boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget);
+		/*boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget);
 		this.entityHost.setJumping(true);
 		if (stay) {
 			++this.comeCloser;
@@ -89,7 +73,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		} else {
 			this.dodging = false;
 			this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget, this.entityMoveSpeed);
-		}
+		}*/
 
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		// this.entityHost.getLookHelper().setLookPositionWithEntity(this.attackTarget,
@@ -101,8 +85,8 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				pressed = true;
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(this.attackTarget.getEntityId());
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				// System.out.println("coœdo");
 			}
 
@@ -112,8 +96,8 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 					this.entityHost.jump = false;
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-				TF2weapons.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
-				TF2weapons.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
+				TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
+				TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				//System.out.println("coœz");
 			}
 			pressed = false;

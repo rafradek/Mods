@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Sounds;
-import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
 public class EntityJar extends EntityProjectileBase {
@@ -35,11 +35,11 @@ public class EntityJar extends EntityProjectileBase {
 			for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
 					this.getEntityBoundingBox().grow(5, 5, 5)))
 				if (living.canBeHitWithPotion() && living.getDistanceSqToEntity(this) < 25
-						&& living != this.shootingEntity && !TF2weapons.isOnSameTeam(this.shootingEntity, living)){
+						&& living != this.shootingEntity && !TF2Util.isOnSameTeam(this.shootingEntity, living)){
 					living.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation(
 							ItemFromData.getData(this.usedWeapon).getString(PropertyType.EFFECT_TYPE)),
 							300));
-					if(TF2weapons.isEnemy(this.shootingEntity,living))
+					if(TF2Util.isEnemy(this.shootingEntity,living))
 						coatedCount++;
 				}
 				else

@@ -33,6 +33,7 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.TF2Attribute.State;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -141,8 +142,8 @@ public class ItemWearable extends ItemFromData {
 			Iterator<Entity> affectedIterator = explosion.affectedEntities.keySet().iterator();
 			while (affectedIterator.hasNext()) {
 				Entity ent = affectedIterator.next();
-				TF2weapons.dealDamage(ent, living.world, living, ItemStack.EMPTY, 2, explosion.affectedEntities.get(ent) * 26,
-						TF2weapons.causeDirectDamage(stack, living, 2).setExplosion());
+				TF2Util.dealDamage(ent, living.world, living, ItemStack.EMPTY, 2, explosion.affectedEntities.get(ent) * 26,
+						TF2Util.causeDirectDamage(stack, living, 2).setExplosion());
 			}
 			Iterator<EntityPlayer> iterator = living.world.playerEntities.iterator();
 

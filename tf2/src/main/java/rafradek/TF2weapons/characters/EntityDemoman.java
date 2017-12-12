@@ -39,10 +39,10 @@ public class EntityDemoman extends EntityTF2Character {
 			this.attack.setRange(20F);
 			this.attack.projSpeed = 1.16205f;
 			this.attack.gravity = 0.0381f;
-			this.attack.setDodge(true, false);
+			this.moveAttack.setDodge(true, false);
 		}
 		this.rotation = 10;
-		this.ammoLeft = 20;
+		//this.ammoLeft = 20;
 		this.experienceValue = 15;
 
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -51,7 +51,7 @@ public class EntityDemoman extends EntityTF2Character {
 	}
 	protected void addWeapons() {
 		super.addWeapons();
-		if(this.rand.nextFloat() > 0.18f && !this.loadout.get(1).isEmpty() && this.loadout.get(1).getItem() instanceof ItemChargingTarge){
+		if(this.rand.nextFloat() > 0.18f && !this.loadout.getStackInSlot(1).isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
 			ItemStack sword=ItemFromData.getRandomWeapon(this.rand, Predicates.and(ItemFromData.VISIBLE_WEAPON,new Predicate<WeaponData>(){
 
 				@Override
@@ -62,7 +62,7 @@ public class EntityDemoman extends EntityTF2Character {
 				
 			}));
 			if(!sword.isEmpty())
-				this.loadout.set(2,sword); 
+				this.loadout.setStackInSlot(2,sword); 
 		}
 	}
 	/*
@@ -90,7 +90,7 @@ public class EntityDemoman extends EntityTF2Character {
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance p_180482_1_, IEntityLivingData data) {
 		data=super.onInitialSpawn(p_180482_1_, data);
-		if(!this.loadout.get(1).isEmpty() && this.loadout.get(1).getItem() instanceof ItemChargingTarge){
+		if(!this.loadout.getStackInSlot(1).isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
 			this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier("ShieldHP", 3, 0));
 			this.heal(3);
 			this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(new AttributeModifier("ShieldMove", 0.02, 2));
@@ -98,7 +98,7 @@ public class EntityDemoman extends EntityTF2Character {
 		return data;
 	}
 	public int getDefaultSlot(){
-		return !this.loadout.get(1).isEmpty() && this.loadout.get(1).getItem() instanceof ItemChargingTarge ? 1:0;
+		return !this.loadout.getStackInSlot(1).isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge ? 1:0;
 	}
 	
 	public void onLivingUpdate(){
@@ -108,14 +108,14 @@ public class EntityDemoman extends EntityTF2Character {
 			if(!this.getWepCapability().activeBomb.isEmpty()){
 				EntityStickybomb bomb=this.getWepCapability().activeBomb.get(this.rand.nextInt(this.getWepCapability().activeBomb.size()));
 				if(this.getAttackTarget() != null && this.getAttackTarget().getDistanceSqToEntity(bomb)<7&&this.getEntitySenses().canSee(this.getAttackTarget())&&this.getAttackTarget().canEntityBeSeen(bomb))
-					((ItemWeapon)this.loadout.get(1).getItem()).altFireTick(this.loadout.get(1), this, world);
+					((ItemWeapon)this.loadout.getStackInSlot(1).getItem()).altFireTick(this.loadout.getStackInSlot(1), this, world);
 			}
-			if(this.ticksExisted%4==0&&this.loadout.get(1) != null && this.loadout.get(1).getItem() instanceof ItemChargingTarge){
-				this.setHeldItem(EnumHand.OFF_HAND, this.loadout.get(1));
+			if(this.ticksExisted%4==0&&this.loadout.getStackInSlot(1) != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
+				this.setHeldItem(EnumHand.OFF_HAND, this.loadout.getStackInSlot(1));
 				this.switchSlot(2);
 				if(this.getAttackTarget() != null && this.getEntitySenses().canSee(this.getAttackTarget())){
 					if(this.chargeCool<0){
-						this.attack.setDodge(false, false);
+						this.moveAttack.setDodge(false, false);
 						this.chargeCool=300;
 						this.playSound(TF2Sounds.WEAPON_SHIELD_CHARGE, 2F, 1F);
 						this.addPotionEffect(new PotionEffect(TF2weapons.charging, 40));
@@ -129,7 +129,7 @@ public class EntityDemoman extends EntityTF2Character {
     {
 		super.onFinishedPotionEffect(effect);
 		if(effect.getPotion()==TF2weapons.charging)
-			this.attack.setDodge(true, false);
+			this.moveAttack.setDodge(true, false);
     }
 	@Override
 	protected SoundEvent getAmbientSound() {

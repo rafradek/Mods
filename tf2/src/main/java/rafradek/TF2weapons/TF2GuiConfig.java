@@ -1,5 +1,6 @@
 package rafradek.TF2weapons;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -14,8 +15,18 @@ public class TF2GuiConfig extends GuiConfig {
 	}
 
 	public static List<IConfigElement> getElements() {
-		List<IConfigElement> list = new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements();
+		ArrayList<IConfigElement> configElements = new ArrayList<>();
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("modcompatibility")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("spawn rate")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("world gen")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("default building targets")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("sound volume")));
+		configElements.addAll(new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements());
+		return configElements;
+		
+		
+		/*List<IConfigElement> list = new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements();
 		list.addAll(new ConfigElement(TF2weapons.conf.getCategory("modcompatibility")).getChildElements());
-		return list;
+		return list;*/
 	}
 }

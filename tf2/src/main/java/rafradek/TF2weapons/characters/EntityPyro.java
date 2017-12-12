@@ -20,13 +20,13 @@ public class EntityPyro extends EntityTF2Character {
 		super(par1World);
 		this.tasks.addTask(3, new EntityAIAirblast(this));
 		if (this.attack != null) {
-			this.attack.setDodge(true, true);
+			this.moveAttack.setDodge(true, true);
 			this.attack.dodgeSpeed = 1.2f;
 			this.attack.setRange(6.2865F);
 			this.attack.projSpeed = 1.2570f;
 		}
 		this.rotation = 16;
-		this.ammoLeft = 250;
+		//this.ammoLeft = 250;
 		this.experienceValue = 15;
 		// ((PathNavigateGround)this.getNavigator()).set(true);
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -64,11 +64,11 @@ public class EntityPyro extends EntityTF2Character {
 	public void onLivingUpdate() {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
-			if(this.getDiff()>1 && this.loadout.get(1).getItem() instanceof ItemProjectileWeapon){
+			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon){
 				if(this.usedSlot==0 && this.getDistanceSqToEntity(this.getAttackTarget())>64){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
-					this.ammoLeft++;
+					//this.ammoLeft++;
 				}
 				else if(this.usedSlot==1 && this.getDistanceSqToEntity(this.getAttackTarget())<44){
 					this.switchSlot(0);
@@ -131,7 +131,7 @@ public class EntityPyro extends EntityTF2Character {
 	}
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (this.getAttackTarget() != null && this.getAttackTarget() instanceof EntityPlayer)
+		if (shouldScaleAttributes())
 			if (attribute.equals("Damage"))
 				return 0.93f;
 		return super.getAttributeModifier(attribute);
