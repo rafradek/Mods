@@ -1,11 +1,9 @@
 package rafradek.TF2weapons.boss;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 import com.google.common.base.Predicate;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
@@ -14,7 +12,6 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityMoveHelper;
-import net.minecraft.entity.boss.EntityWither;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,18 +26,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
-import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
-import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
-import rafradek.TF2weapons.weapons.ItemMinigun;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 

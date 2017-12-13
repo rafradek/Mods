@@ -1,10 +1,7 @@
 package rafradek.TF2weapons.building;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import org.lwjgl.opengl.GL11;
 
@@ -18,7 +15,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityLookHelper;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -38,9 +34,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2ConfigVars;
-import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -49,7 +43,6 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAISentryAttack;
 import rafradek.TF2weapons.characters.ai.EntityAISentryIdle;
-import rafradek.TF2weapons.characters.ai.EntityAISentryOwnerHurt;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;

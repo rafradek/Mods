@@ -38,11 +38,9 @@ import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
-import rafradek.TF2weapons.projectiles.EntityFlame;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
 import rafradek.TF2weapons.projectiles.EntityRocket;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
-import rafradek.TF2weapons.projectiles.EntityStickProjectile;
 
 public class ItemFlameThrower extends ItemProjectileWeapon {
 

@@ -22,7 +22,6 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -64,19 +63,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.building.EntityBuilding;
-import rafradek.TF2weapons.building.EntityDispenser;
-import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.building.EntityTeleporter;
 import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
-import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.GuiContracts;
-import rafradek.TF2weapons.pages.GuiPages;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
@@ -142,10 +135,10 @@ public class TF2EventsClient {
 			}
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
 		}
-		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
+		/*if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
 				&& TF2Attribute.getModifier("Knockback Rage", minecraft.player.getHeldItemMainhand(), 0, null) != 0) {
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(26));
-		}
+		}*/
 		if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
 			if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
 				keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());

@@ -3,8 +3,6 @@ package rafradek.TF2weapons.pages;
 import java.util.ArrayList;
 import java.util.Random;
 
-import net.minecraft.item.ItemStack;
-
 public class Contract {
 
 	public String className;

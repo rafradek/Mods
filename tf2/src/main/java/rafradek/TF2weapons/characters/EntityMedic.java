@@ -1,6 +1,5 @@
 package rafradek.TF2weapons.characters;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -8,7 +7,6 @@ import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -20,7 +18,6 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAIUseMedigun;
-import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class EntityMedic extends EntityTF2Character {
 

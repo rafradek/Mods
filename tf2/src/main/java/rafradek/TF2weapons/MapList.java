@@ -13,7 +13,6 @@ import rafradek.TF2weapons.projectiles.EntityFlare;
 import rafradek.TF2weapons.projectiles.EntityGrenade;
 import rafradek.TF2weapons.projectiles.EntityJar;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
-import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.projectiles.EntityRocket;
 import rafradek.TF2weapons.projectiles.EntityStickProjectile;
 import rafradek.TF2weapons.weapons.ItemBonk;

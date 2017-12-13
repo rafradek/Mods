@@ -1,7 +1,5 @@
 package rafradek.TF2weapons.characters.ai;
 
-import com.google.common.base.Predicate;
-
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.EnumHand;
@@ -9,9 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityDemoman;
-import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.ItemStickyLauncher;

@@ -1,6 +1,5 @@
 package rafradek.TF2weapons.upgrade;
 
-import java.util.List;
 import java.util.Random;
 
 import javax.annotation.Nullable;

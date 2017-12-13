@@ -38,14 +38,22 @@
                 }
             ]
         },
+        
         {
         	"name": "stuff",	
             "rolls": 1,
+            "conditions": [
+             	{
+                    "condition": "killed_by_player_team",
+                    "team": true
+                }
+            ],
             "entries": [
                 {
                     "type": "item",
                     "name": "rafradek_tf2_weapons:jar",
                     "weight": 1,
+                    
                     "functions": [
                         {
                             "function": "set_nbt",

@@ -11,7 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.crafting.ItemTF2;
 
 public class ContainerRecover extends Container {
 

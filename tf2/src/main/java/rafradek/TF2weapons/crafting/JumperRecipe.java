@@ -2,19 +2,11 @@ package rafradek.TF2weapons.crafting;
 
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.weapons.ItemCloak;
-import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 

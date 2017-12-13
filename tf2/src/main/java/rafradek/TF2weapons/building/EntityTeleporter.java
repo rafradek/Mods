@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.Predicate;
 
 import net.minecraft.entity.Entity;
@@ -13,9 +11,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemDye;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -29,11 +25,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
-import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
-import scala.reflect.internal.Trees.This;
 
 public class EntityTeleporter extends EntityBuilding {
 	// public static ArrayList<BlockPosDimension> teleportersData=new

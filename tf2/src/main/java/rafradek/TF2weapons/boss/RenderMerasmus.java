@@ -5,12 +5,9 @@ import net.minecraft.client.model.ModelBiped.ArmPose;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.characters.EntityHeavy;
-import rafradek.TF2weapons.characters.EntityTF2Character;
 
 public class RenderMerasmus extends RenderBiped<EntityMerasmus> {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TF2weapons.MOD_ID,

@@ -6,18 +6,29 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.IEntityOwnable;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootContext.EntityTarget;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
-import rafradek.TF2weapons.TF2weapons;
 
 public class KilledByTeam implements LootCondition {
+
+	public boolean team;
+
+	public KilledByTeam(boolean team) {
+		this.team = team;
+	}
 
 	@Override
 	public boolean testCondition(Random rand, LootContext context) {
 
-		return context.getKillerPlayer() != null && context.getKillerPlayer().getTeam() != null && !context.getKillerPlayer().isOnSameTeam(context.getLootedEntity());
+		Entity player = this.team ? context.getKiller() : context.getKillerPlayer();
+		if(player instanceof IEntityOwnable && ((IEntityOwnable)player).getOwner() instanceof EntityPlayer)
+			player = ((IEntityOwnable)player).getOwner();
+		return player != null && player.getTeam() != null && !player.isOnSameTeam(context.getLootedEntity());
 	}
 
 	public static class Serializer extends LootCondition.Serializer<KilledByTeam> {
@@ -27,12 +38,12 @@ public class KilledByTeam implements LootCondition {
 
 		@Override
 		public void serialize(JsonObject json, KilledByTeam value, JsonSerializationContext context) {
-			// json.addProperty("inverse", Boolean.valueOf(value));
+			json.addProperty("team", value.team);
 		}
 
 		@Override
 		public KilledByTeam deserialize(JsonObject json, JsonDeserializationContext context) {
-			return new KilledByTeam();
+			return new KilledByTeam(JsonUtils.getBoolean(json, "team", false));
 		}
 	}
 }

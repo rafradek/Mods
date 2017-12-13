@@ -1,6 +1,5 @@
 package rafradek.TF2weapons.characters;
 
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,10 +7,10 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.ai.EntityAIRepair;
@@ -75,6 +74,23 @@ public class EntityEngineer extends EntityTF2Character {
 		return TF2Sounds.MOB_ENGINEER_DEATH;
 	}
 
+	public void onLivingUpdate() {
+		if(!this.world.isRemote &&this.ticksExisted == 3) {
+			for(EntityBuilding building : this.world.getEntitiesWithinAABB(EntityBuilding.class, this.getEntityBoundingBox().grow(16), building -> {
+				return building.getOwnerId() == null && building.getOwner() == null;
+			})){
+				if(building instanceof EntitySentry && this.sentry == null) {
+					this.sentry = (EntitySentry) building;
+					building.setOwner(this);
+				}
+				else if(building instanceof EntityDispenser && this.dispenser == null) {
+					this.dispenser = (EntityDispenser) building;
+					building.setOwner(this);
+				}
+			};
+		}
+		super.onLivingUpdate();
+	}
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */

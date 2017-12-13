@@ -1,6 +1,5 @@
 package rafradek.TF2weapons.characters;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,11 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -24,10 +19,9 @@ import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.ai.EntityAIAvoidEntity;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAIMoveTowardsRestriction;
-import net.minecraft.entity.ai.EntityAIOwnerHurtByTarget;
-import net.minecraft.entity.ai.EntityAIOwnerHurtTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
@@ -53,7 +47,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityBanner;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -64,7 +57,6 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
@@ -80,7 +72,7 @@ import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
-import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.ai.EntityAIFindDispenser;
 import rafradek.TF2weapons.characters.ai.EntityAIFollowTrader;
 import rafradek.TF2weapons.characters.ai.EntityAIMoveAttack;
@@ -89,10 +81,7 @@ import rafradek.TF2weapons.characters.ai.EntityAIOwnerHurt;
 import rafradek.TF2weapons.characters.ai.EntityAISeek;
 import rafradek.TF2weapons.characters.ai.EntityAIUseRangedWeapon;
 import rafradek.TF2weapons.decoration.ItemWearable;
-import rafradek.TF2weapons.pages.Contract;
-import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
-import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import rafradek.TF2weapons.weapons.ItemAmmo;
@@ -153,6 +142,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		super(p_i1738_1_);
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIMoveTowardsRestriction(this, 1.25f));
+		this.tasks.addTask(2, new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
+			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSqToEntity(this) < 435;
+		}, 21, 1.0f, 1.0f));
 		this.tasks.addTask(3, new EntityAIFindDispenser(this, 20f));
 		this.tasks.addTask(3, new EntityAIFollowTrader(this));
 		this.tasks.addTask(6, wander = new EntityAIWander(this, 1.0D));

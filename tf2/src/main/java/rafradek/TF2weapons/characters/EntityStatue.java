@@ -1,23 +1,23 @@
 package rafradek.TF2weapons.characters;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
-public class EntityStatue extends Entity{
+public class EntityStatue extends Entity /*implements IEntityAdditionalSpawnData*/{
 
 	public EntityLivingBase entity;
+	public NBTTagCompound data;
 	public boolean isFeign;
 	public float renderYawOffset ;
 
@@ -32,6 +32,7 @@ public class EntityStatue extends Entity{
 		this.width = toCopy.width;
 		this.height = toCopy.height;
 		this.entity = toCopy;
+		//this.data = this.entity.serializeNBT();
 		this.isFeign = isFeign;
 		if(!isFeign) {
 			this.entity.deathTime = 0;
@@ -61,6 +62,10 @@ public class EntityStatue extends Entity{
 
 	}
 
+	public AxisAlignedBB getEntityBoundingBox() {
+		return this.entity != null ? this.entity.getEntityBoundingBox() : super.getEntityBoundingBox();
+	}
+	
 	@Override
 	public void onUpdate() {
 		if(this.onGround) {
@@ -98,13 +103,44 @@ public class EntityStatue extends Entity{
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound compound) {
-		// TODO Auto-generated method stub
-
+		this.data = compound.getCompoundTag("Entity");
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound compound) {
-		// TODO Auto-generated method stub
-
+		try {
+			NBTTagCompound tag= this.entity.serializeNBT();
+			if (tag != null)
+			compound.setTag("Entity", tag);
+		}
+		catch(Exception e){
+			
+		}
 	}
+
+	/*@Override
+	public void writeSpawnData(ByteBuf buffer) {
+		new PacketBuffer(buffer).writeCompoundTag(data);
+	}
+
+	@Override
+	public void readSpawnData(ByteBuf additionalData) {
+		try {
+			this.entity = (EntityLivingBase) EntityList.createEntityFromNBT(new PacketBuffer(additionalData).readCompoundTag(), this.world);
+			if(this.entity == null) {
+				this.setDead();
+				return;
+			}
+			this.entity.deathTime = 0;
+			this.entity.hurtTime = 0;
+			this.entity.limbSwingAmount = 1.5f;
+			this.entity.limbSwing += this.rand.nextFloat()*10;
+			//this.prevRotationYaw = this.entity.prevRotationYaw;
+			//this.rotationYaw = this.entity.rotationYaw;
+			//this.renderYawOffset = this.entity.renderYawOffset;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}*/
 }

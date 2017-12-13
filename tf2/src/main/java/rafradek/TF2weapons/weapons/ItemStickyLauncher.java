@@ -1,8 +1,6 @@
 package rafradek.TF2weapons.weapons;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,9 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2Util;
@@ -22,7 +18,6 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
-import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
 
 public class ItemStickyLauncher extends ItemProjectileWeapon {

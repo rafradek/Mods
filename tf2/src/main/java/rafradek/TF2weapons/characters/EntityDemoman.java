@@ -6,7 +6,6 @@ import com.google.common.base.Predicates;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
@@ -15,7 +14,6 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
@@ -25,7 +23,6 @@ import rafradek.TF2weapons.projectiles.EntityStickybomb;
 import rafradek.TF2weapons.weapons.ItemChargingTarge;
 import rafradek.TF2weapons.weapons.ItemStickyLauncher;
 import rafradek.TF2weapons.weapons.ItemWeapon;
-import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityDemoman extends EntityTF2Character {
 

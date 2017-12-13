@@ -1,13 +1,8 @@
 package rafradek.TF2weapons;
 
-import java.util.ArrayList;
-
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatBasic;
 import net.minecraft.util.text.TextComponentTranslation;
-import rafradek.TF2weapons.crafting.AustraliumRecipe;
 
 public class TF2Achievements{
 

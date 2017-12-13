@@ -5,7 +5,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemCleaver extends ItemProjectileWeapon {

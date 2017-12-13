@@ -9,7 +9,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;

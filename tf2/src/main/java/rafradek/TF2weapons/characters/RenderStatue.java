@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
@@ -26,6 +25,9 @@ public class RenderStatue extends Render<EntityStatue> {
 	@SuppressWarnings("unchecked")
 	public void doRender(EntityStatue entity, double x, double y, double z, float entityYaw, float partialTicks) {
 		//float health=entity.entity.getHealth();
+		
+		if(entity.entity == null)
+			return;
 		if(!entity.isFeign) {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 		GlStateManager.enableTexture2D();

@@ -12,7 +12,6 @@ import com.google.common.base.Predicate;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
@@ -21,9 +20,7 @@ import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,10 +30,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketExplosion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.util.CombatRules;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -50,7 +45,6 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 import rafradek.TF2weapons.TF2EventsCommon.DestroyBlockEntry;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -58,11 +52,8 @@ import rafradek.TF2weapons.boss.EntityMerasmus;
 import rafradek.TF2weapons.boss.EntityTF2Boss;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntitySentry;
-import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
-import rafradek.TF2weapons.weapons.ItemCloak;
-import rafradek.TF2weapons.weapons.ItemJar;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -149,7 +140,7 @@ public class TF2Util {
 
 	public static AxisAlignedBB getHead(EntityLivingBase target){
 		double ymax = target.posY + target.getEyeHeight();
-		AxisAlignedBB head = new AxisAlignedBB(target.posX - 0.25, ymax - 0.20, target.posZ - 0.25, target.posX + 0.25, ymax + 0.25, target.posZ + 0.25);
+		AxisAlignedBB head = new AxisAlignedBB(target.posX - 0.25, ymax - 0.16, target.posZ - 0.25, target.posX + 0.25, ymax + 0.25, target.posZ + 0.25);
 		//if (target instanceof EntityCreeper || target instanceof EntityEnderman || target instanceof EntityIronGolem)
 		//	head=head.offset(0, -0.2, 0);
 		if (target.width >= 0.63) {

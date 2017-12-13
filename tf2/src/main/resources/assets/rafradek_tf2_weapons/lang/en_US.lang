@@ -93,6 +93,8 @@ weaponAttribute.ConstructionRateBonus=+%1$s construction boost on hit
 weaponAttribute.ConstructionRatePenalty=%1$s construction boost on hit
 weaponAttribute.UpgradeRatePenalty=%1$s upgrade rate penalty
 weaponAttribute.MetalUsedOnHitPenalty=%1$s metal used on hit
+weaponAttribute.DestroyProjectiles=Destroy Projectiles
+weaponAttribute.KnockbackRage=Charge by dealing damage. Reload to receive knockback bonus
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

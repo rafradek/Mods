@@ -2,8 +2,6 @@ package rafradek.TF2weapons.characters;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.Predicate;
 
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -40,7 +38,6 @@ import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
@@ -50,7 +47,6 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAISeek;
 import rafradek.TF2weapons.weapons.ItemKnife;
-import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant {
 

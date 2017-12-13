@@ -7,7 +7,6 @@ import net.minecraft.inventory.SlotCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2weapons;
 
 public class SlotCraftingTF2 extends SlotCrafting {

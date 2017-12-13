@@ -2,16 +2,10 @@ package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2EventsCommon;
-import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
-import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
-import rafradek.TF2weapons.weapons.ItemDisguiseKit;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityAISwitchWeapons extends EntityAIBase {

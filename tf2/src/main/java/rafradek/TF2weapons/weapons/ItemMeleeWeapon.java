@@ -8,7 +8,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemMeleeWeapon extends ItemBulletWeapon {

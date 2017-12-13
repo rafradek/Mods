@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Multimap;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
@@ -15,33 +14,25 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.IWeaponItem;
 import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.MapList;
-import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsClient;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
-import rafradek.TF2weapons.characters.EntitySniper;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
@@ -54,7 +45,6 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 
@@ -491,8 +481,9 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	}
 
 	public double getWeaponKnockback(ItemStack stack, EntityLivingBase living) {
-		return TF2Attribute.getModifier("Knockback", stack, ItemFromData.getData(stack).getInt(PropertyType.KNOCKBACK),
-				living) * (living.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(living).knockbackActive ? 5 : 1);
+		return TF2Attribute.getModifier("Knockback", stack, ItemFromData.getData(stack).getInt(PropertyType.KNOCKBACK),living) 
+				* (living.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(living).knockbackActive 
+						&& TF2Attribute.getModifier("Knockback Rage", stack, 0, living) != 0? 4.5 : 1);
 	}
 
 	public boolean rapidFireCrits(ItemStack stack) {
@@ -563,7 +554,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0)
 			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Time", stack,
 					TF2Attribute.getModifier("Burn Hit", stack, 0, attacker), attacker) + 1);
-		if (target instanceof EntityLivingBase){
+		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
 			boolean enemy = TF2Util.isEnemy(attacker, (EntityLivingBase) target);
 			/*if (attacker instanceof EntityPlayerMP && !target.isEntityAlive() && 
 			if (attacker instanceof EntityPlayerMP && target instanceof EntitySniper && !target.isEntityAlive() && 
@@ -588,8 +579,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
 			}
 			int rage = (int) TF2Attribute.getModifier("Knockback Rage", stack, 0, attacker);
-			if (rage > 0) {
-				WeaponsCapability.get(attacker).setKnockbackRage(WeaponsCapability.get(attacker).getKnockbackRage()+amount*(0.5f+rage*0.5f));
+			if (enemy && !WeaponsCapability.get(attacker).knockbackActive && rage > 0) {
+				WeaponsCapability.get(attacker).setKnockbackRage(Math.min(1, WeaponsCapability.get(attacker).getKnockbackRage()+amount*(0.025f+rage*0.017f)));
 			}
 			if (enemy && TF2Attribute.getModifier("Uber Hit", stack, 0, attacker) > 0)
 				if (attacker instanceof EntityPlayer)

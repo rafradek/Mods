@@ -8,8 +8,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
-import rafradek.TF2weapons.weapons.ItemBulletWeapon;
-import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 
 public class DamageSourceDirect extends EntityDamageSource implements TF2DamageSource {
 	public ItemStack weapon;

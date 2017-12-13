@@ -1,9 +1,7 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -12,7 +10,6 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.ai.EntityAIAirblast;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
-import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntityPyro extends EntityTF2Character {
 

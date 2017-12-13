@@ -1,7 +1,6 @@
 package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.ai.EntityAIBase;
-import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 

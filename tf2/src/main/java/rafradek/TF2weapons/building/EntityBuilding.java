@@ -2,16 +2,11 @@ package rafradek.TF2weapons.building;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-import org.lwjgl.opengl.GL11;
-
 import com.google.common.base.Optional;
 
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
@@ -24,7 +19,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.network.play.server.SPacketEntity;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
@@ -32,7 +26,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
@@ -72,6 +65,9 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	public boolean redeploy;
 	public String ownerName;
 
+	public int ticksNoOwner;
+	private boolean engMade;
+	
 	public EntityBuilding(World worldIn) {
 		super(worldIn);
 		this.applyTasks();
@@ -229,6 +225,8 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 			this.dataManager.set(OWNER_UUID, Optional.of(owner.getUniqueID()));
 			this.enablePersistence();
 		}
+		else if(owner != null)
+			this.engMade = true;
 	}
 
 	@Override
@@ -237,6 +235,10 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		this.motionX = 0;
 		this.motionZ = 0;
 
+		if (!this.world.isRemote && this.engMade && this.getOwnerId() == null && (this.owner == null || this.owner.isDead) && this.ticksNoOwner++ >= 120)
+			this.setHealth(0);
+		else
+			this.ticksNoOwner = 0;
 		if (this.motionY > 0)
 			this.motionY = 0;
 		if (!this.world.isRemote && this.isSapped())
@@ -382,6 +384,8 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		par1NBTTagCompound.setShort("Construction", this.dataManager.get(CONSTRUCTING).shortValue());
 		par1NBTTagCompound.setByte("WrenchBonus", (byte) this.wrenchBonusTime);
 		par1NBTTagCompound.setBoolean("Redeploy", this.redeploy);
+		par1NBTTagCompound.setBoolean("EngMade", this.engMade);
+		par1NBTTagCompound.setByte("TicksOwnerless", (byte) this.ticksNoOwner);
 		if (this.getOwnerId() != null) {
 			par1NBTTagCompound.setUniqueId("Owner", this.getOwnerId());
 			par1NBTTagCompound.setString("OwnerName", this.ownerName);
@@ -398,6 +402,8 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		this.dataManager.set(CONSTRUCTING, (int)tag.getShort("Construction"));
 		this.wrenchBonusTime=tag.getByte("WrenchBonus");
 		this.redeploy=tag.getBoolean("Redeploy");
+		this.ticksNoOwner=tag.getByte("Ownerless");
+		this.engMade=tag.getBoolean("EngMade");
 		if (tag.getByte("Sapper") != 0)
 			this.setSapped(this, ItemStack.EMPTY);
 		

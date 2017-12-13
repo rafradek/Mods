@@ -2,8 +2,6 @@ package rafradek.TF2weapons.building;
 
 import java.io.IOException;
 
-import com.google.common.base.Predicate;
-
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;

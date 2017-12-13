@@ -9,7 +9,6 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
@@ -20,7 +19,6 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAIAmbush;
 import rafradek.TF2weapons.weapons.ItemCloak;
-import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntitySpy extends EntityTF2Character {
 

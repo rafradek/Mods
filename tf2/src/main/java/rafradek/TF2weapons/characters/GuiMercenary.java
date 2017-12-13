@@ -2,18 +2,13 @@ package rafradek.TF2weapons.characters;
 
 import java.io.IOException;
 
-import javax.swing.plaf.basic.BasicComboBoxUI.ItemHandler;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.village.MerchantRecipe;
-import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;

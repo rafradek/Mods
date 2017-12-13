@@ -41,6 +41,12 @@
         {
         	"name": "bonk",	
             "rolls": 1,
+            "conditions": [
+             	{
+                    "condition": "killed_by_player_team",
+                    "team": true
+                }
+            ],
             "entries": [
                 {
                     "type": "item",

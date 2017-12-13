@@ -7,8 +7,6 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.characters.EntityHeavy;
-import rafradek.TF2weapons.characters.EntityTF2Character;
 
 public class RenderHHH extends RenderBiped<EntityHHH> {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TF2weapons.MOD_ID,

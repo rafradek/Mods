@@ -1,18 +1,15 @@
 package rafradek.TF2weapons;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -22,12 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import io.netty.util.internal.SocketUtils;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.material.MapColor;
@@ -39,23 +31,17 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.passive.EntityAnimal;
-import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
-import net.minecraft.inventory.ContainerMerchant;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemArmor.ArmorMaterial;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFood;
@@ -70,9 +56,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatBasic;
 import net.minecraft.tileentity.BannerPattern;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -81,26 +65,16 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootEntry;
-import net.minecraft.world.storage.loot.LootPool;
-import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableList;
-import net.minecraft.world.storage.loot.RandomValueRange;
-import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
-import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.util.EnumHelper;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.IFuelHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
@@ -115,20 +89,15 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
-import net.minecraftforge.registries.IForgeRegistry;
-import rafradek.TF2weapons.TF2EventsCommon.TF2ContainerListener;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.boss.BlockProp;
 import rafradek.TF2weapons.boss.EntityHHH;
@@ -150,9 +119,9 @@ import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.characters.EntitySniper;
 import rafradek.TF2weapons.characters.EntitySoldier;
 import rafradek.TF2weapons.characters.EntitySpy;
+import rafradek.TF2weapons.characters.EntityStatue;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.GuiMercenary;
-import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.characters.ItemMonsterPlacerPlus;
 import rafradek.TF2weapons.crafting.BlockAmmoFurnace;
 import rafradek.TF2weapons.crafting.BlockCabinet;
@@ -203,7 +172,6 @@ import rafradek.TF2weapons.projectiles.EntityRocket;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
 import rafradek.TF2weapons.projectiles.EntityStickProjectile;
 import rafradek.TF2weapons.upgrade.BlockUpgradeStation;
-import rafradek.TF2weapons.upgrade.ContainerRecover;
 import rafradek.TF2weapons.upgrade.ContainerUpgrades;
 import rafradek.TF2weapons.upgrade.GuiUpgradeStation;
 import rafradek.TF2weapons.upgrade.MannCoBuilding;
@@ -215,12 +183,9 @@ import rafradek.TF2weapons.weapons.ItemAmmoPackage;
 import rafradek.TF2weapons.weapons.ItemDisguiseKit;
 import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemHorn;
-import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
-import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
-import scala.actors.threadpool.Arrays;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.2", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.2.1.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -561,6 +526,7 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"merasmus"),EntityMerasmus.class, "merasmus", 25, this, 80, 3, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"cleaver"),EntityCleaver.class, "cleaver", 27, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"target"),EntityTarget.class, "target", 28, this, 80, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"statue"),EntityStatue.class, "statue", 29, this, 80, 20, false);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
 		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
@@ -1100,9 +1066,10 @@ public class TF2weapons {
 
 		EntityTeleporter.teleporters.clear();
 		EntityTeleporter.tpCount = 0;
-		
-		udpServer.stopServer();
-		udpServer = null;
+		if(udpServer != null) {
+			udpServer.stopServer();
+			udpServer = null;
+		}
 	}
 
 	/*

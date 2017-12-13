@@ -1,6 +1,5 @@
 package rafradek.TF2weapons;
 
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 
 public interface TF2DamageSource {

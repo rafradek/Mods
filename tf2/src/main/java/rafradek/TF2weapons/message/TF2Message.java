@@ -1,12 +1,9 @@
 package rafradek.TF2weapons.message;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,14 +15,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import io.netty.buffer.ByteBuf;
-import io.netty.util.internal.SocketUtils;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.WeaponData;
-import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.weapons.WeaponsCapability;

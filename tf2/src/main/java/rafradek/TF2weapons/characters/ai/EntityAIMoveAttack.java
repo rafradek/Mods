@@ -1,20 +1,12 @@
 package rafradek.TF2weapons.characters.ai;
 
-import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.EnumDifficulty;
-import rafradek.TF2weapons.TF2Util;
-import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.characters.EntityHeavy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
-import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;

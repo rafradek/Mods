@@ -26,7 +26,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
@@ -38,7 +37,6 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemCloak;
-import rafradek.TF2weapons.weapons.ItemWrench;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityDispenser extends EntityBuilding {

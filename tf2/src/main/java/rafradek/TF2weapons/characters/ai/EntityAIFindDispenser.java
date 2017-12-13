@@ -1,7 +1,5 @@
 package rafradek.TF2weapons.characters.ai;
 
-import com.google.common.base.Predicate;
-
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.Path;
 import rafradek.TF2weapons.TF2Util;

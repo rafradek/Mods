@@ -9,6 +9,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 
 public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
@@ -19,7 +20,7 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
 			ItemStack stack = inv.getStackInSlot(x);
 			if (!stack.isEmpty())
-				if (stacks.size() < 2 && stack.getItem() instanceof ItemFromData)
+				if (stacks.size() < 2 && stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6)
 					stacks.add(stack);
 				else
 					return false;

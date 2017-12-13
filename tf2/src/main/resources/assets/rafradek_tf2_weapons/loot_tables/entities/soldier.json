@@ -42,6 +42,10 @@
         	"name": "boots",	
             "rolls": 1,
             "conditions": [
+             	{
+                    "condition": "killed_by_player_team",
+                    "team": true
+                },
                 {
                     "condition": "random_chance_with_looting",
                     "chance": 0.1,

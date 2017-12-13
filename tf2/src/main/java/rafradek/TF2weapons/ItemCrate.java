@@ -1,12 +1,10 @@
 package rafradek.TF2weapons;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;

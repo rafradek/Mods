@@ -3,10 +3,6 @@ package rafradek.TF2weapons.projectiles;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -14,7 +10,6 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.weapons.ItemStickyLauncher;
 
 public class EntityStickybomb extends EntityProjectileBase {
 

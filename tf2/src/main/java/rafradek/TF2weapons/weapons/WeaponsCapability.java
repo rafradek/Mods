@@ -6,23 +6,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import io.netty.buffer.Unpooled;
-import io.netty.channel.socket.DatagramPacket;
-
 import java.util.Queue;
-import java.util.UUID;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -43,8 +35,6 @@ import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
-import rafradek.TF2weapons.message.udp.TF2UdpClient;
-import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
 
 public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
@@ -311,7 +301,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			}
 		}
 		if(this.knockbackActive && this.getKnockbackRage() >= 0f && this.owner.ticksExisted % 2 == 0) {
-			this.setKnockbackRage(this.getKnockbackRage() - 0.05f);
+			this.setKnockbackRage(this.getKnockbackRage() - 0.007f);
+			this.knockbackActive = this.getKnockbackRage() > 0f;
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
 			ItemUsable item = (ItemUsable) stack.getItem();
@@ -365,6 +356,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				}
 			}
 			this.stateDo(owner, stack);
+
+			if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.knockbackActive && this.getKnockbackRage() >= 1f) {
+				this.knockbackActive = true;
+			}
+			
 			if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
 					&& stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)
 					&& (!ItemAmmo.searchForAmmo(owner, stack).isEmpty()
@@ -707,6 +703,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		tag.setInteger("KnockbackFANCool", this.fanCool);
 		tag.setInteger("Metal", this.getMetal());
 		tag.setFloat("Phlog", this.getPhlogRage());
+		tag.setFloat("Knockback", this.getKnockbackRage());
 		//tag.setBoolean("Uber", this.owner.getDataManager().get(TF2EventBusListener.ENTITY_UBER));
 		//tag.setFloat("DodgedDmg", this.dodgedDmg);
 		//tag.setInteger("KillsSpinning", this.killsSpinning);
@@ -735,6 +732,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		//this.dodgedDmg=nbt.getFloat("DodgedDmg");
 		this.setPhlogRage(nbt.getFloat("Phlog"));
 		this.setMetal(nbt.getInteger("Metal"));
+		this.setKnockbackRage(nbt.getFloat("KnockbackRage"));
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
 	}
 	

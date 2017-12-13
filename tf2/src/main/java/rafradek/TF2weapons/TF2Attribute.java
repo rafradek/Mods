@@ -1,7 +1,6 @@
 package rafradek.TF2weapons;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -262,7 +261,7 @@ public class TF2Attribute {
 		new TF2Attribute(3, "ClipSizePenalty", "Clip Size", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_CLIP, 0.25f, 2,
 				-8, 1);
 		new TF2Attribute(4, "MinigunSpinBonus", "Minigun Spinup", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
-				ITEM_MINIGUN, -0.15f, 4, 80, 1);
+				Predicates.<ItemStack>alwaysFalse(), -0.15f, 4, 80, 1);
 		new TF2Attribute(5, "MinigunSpinPenalty", "Minigun Spinup", Type.PERCENTAGE, 1f, State.NEGATIVE, ITEM_MINIGUN,
 				0.1f, 2, -200, 1);
 		new TF2Attribute(6, "FireRateBonus", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
@@ -439,7 +438,7 @@ public class TF2Attribute {
 		new TF2Attribute(97, "AirborneBonus", "Airborne Bonus", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(98, "DestroyProjectiles", "Destroy Projectiles", Type.ADDITIVE, 0, State.POSITIVE,
-				ITEM_MINIGUN, 1, 2, 160, 2);
+				ITEM_BULLET, 1, 2, 180, 2);
 		new TF2Attribute(99, "KnockbackRage", "Knockback Rage", Type.ADDITIVE, 0, State.POSITIVE,
 				ITEM_MINIGUN, 1, 3, 120, 1);
 		new TF2Attribute(100, "DeployTimeBonus", "Deploy Time", Type.PERCENTAGE, 0, State.POSITIVE,
