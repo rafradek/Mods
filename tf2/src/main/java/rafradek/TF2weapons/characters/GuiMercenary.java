@@ -20,6 +20,7 @@ public class GuiMercenary extends GuiMerchant {
 	
 	public EntityTF2Character mercenary;
 	public GuiButton hireBtn;
+	public GuiButton shareBtn;
 	public GuiButton orderBtn;
 	public InventoryPlayer inv;
 	public GuiMercenary(InventoryPlayer inv, EntityTF2Character mercenary, World worldIn) {
@@ -35,6 +36,7 @@ public class GuiMercenary extends GuiMerchant {
 	public void initGui() {
 		super.initGui();
 		this.buttonList.add(hireBtn = new GuiButton(60, this.guiLeft+(this.xSize/2)-75, this.guiTop - 25, 150, 20, "Hire mercenary (1 Australium ingot)"));
+		this.buttonList.add(shareBtn = new GuiButton(62, this.guiLeft+(this.xSize/2)-75, this.guiTop + this.ySize + 5, 150, 20, "Share loot (1 Australium ingot)"));
 		this.buttonList.add(orderBtn = new GuiButton(61, this.guiLeft+179, this.guiTop+ 123, 48, 20, "Order"));
 		this.updateButtons();
 	}
@@ -45,17 +47,21 @@ public class GuiMercenary extends GuiMerchant {
 			hireBtn.enabled=inv.hasItemStack(new ItemStack(TF2weapons.itemTF2,1,2));
 			hireBtn.displayString="Hire this mercenary (1 Australium ingot)";
 			orderBtn.enabled=false;
+			shareBtn.visible=false;
 		}
 		else if(mercenary.getOwnerId().equals(mc.player.getUniqueID())) {
 			hireBtn.enabled=true;
 			hireBtn.displayString="Fire this mercenary";
 			orderBtn.enabled=true;
 			orderBtn.displayString = this.mercenary.getOrder().toString();
+			shareBtn.visible=true;
+			shareBtn.enabled= !this.mercenary.isSharing() && inv.hasItemStack(new ItemStack(TF2weapons.itemTF2,1,2));
 		}
 		else{
 			hireBtn.enabled=false;
 			hireBtn.displayString=mercenary.getOwner() == null ? "Hired mercenary" : "Hired by: "+mercenary.getOwner().getName();
 			orderBtn.enabled=false;
+			shareBtn.visible=false;
 		}
 		
 	}
@@ -71,11 +77,26 @@ public class GuiMercenary extends GuiMerchant {
 		}
 		else if(button.id == 60) {
 			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, 256);
-			this.mercenary.setOwner(mc.player);
+			if(this.mercenary.getOwnerId() == null)
+				this.mercenary.setOwner(mc.player);
+			else
+				this.mercenary.setOwner(null);
+		}
+		else if(button.id == 62) {
+			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, 257);
+			this.mercenary.setSharing(true);
 		}
 		this.updateButtons();
 	}
 	
+	public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    {
+		super.drawScreen(mouseX, mouseY, partialTicks);
+		if(this.hireBtn.isMouseOver())
+			this.drawHoveringText("Lost australium can be recovered at Mann Co store", mouseX, mouseY);
+		else if(this.shareBtn.isMouseOver())
+			this.drawHoveringText("Allows the owner to collect loot from enemies", mouseX, mouseY);
+    }
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
 		super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);

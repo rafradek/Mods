@@ -9,12 +9,14 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.EntityEquipmentSlot.Type;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Util;
@@ -138,6 +140,9 @@ public class ContainerMercenary extends ContainerMerchant {
 					return false;
 				if (TF2Util.isOre("ingotLead", stack))
 					return true;
+				if (stack.getItem() instanceof ItemFood) {
+					return true;
+				}
 				if (stack.getItem() instanceof ItemAmmo) {
 					int type = ((ItemAmmo)stack.getItem()).getTypeInt(stack);
 					return type == ItemFromData.getData(merc.loadout.getStackInSlot(0)).getInt(PropertyType.AMMO_TYPE) ||
@@ -146,12 +151,12 @@ public class ContainerMercenary extends ContainerMerchant {
 				return false;
 			}
 			
-			@Override
+			/*@Override
 			@Nullable
 			@SideOnly(Side.CLIENT)
 			public String getSlotTexture() {
 				return TF2weapons.MOD_ID + ":items/refill_empty";
-			}
+			}*/
 		});
 		// TODO Auto-generated constructor stub
 	}
@@ -187,11 +192,18 @@ public class ContainerMercenary extends ContainerMerchant {
 	public boolean enchantItem(EntityPlayer playerIn, int id) {
 		if(id == 256) {
 			if(mercenary.getOwner() == playerIn) {
-				playerIn.inventory.addItemStackToInventory(new ItemStack(TF2weapons.itemTF2, 1, 2));
+				ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack(TF2weapons.itemTF2, 1, 2));
+				this.mercenary.setOwner(null);
 			}
 			else if(mercenary.getOwnerId() == null && playerIn.inventory.hasItemStack(new ItemStack(TF2weapons.itemTF2, 1, 2))) {
 				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 2, 1, null);
 				this.mercenary.setOwner(playerIn);
+			}
+		}
+		if(id == 257) {
+			if(mercenary.getOwner() == playerIn) {
+				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 2, 1, null);
+				this.mercenary.setSharing(true);
 			}
 		}
 		else if(id >= 260 && mercenary.getOwner() == playerIn) {

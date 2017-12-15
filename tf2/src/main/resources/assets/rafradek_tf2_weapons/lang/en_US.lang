@@ -95,6 +95,7 @@ weaponAttribute.UpgradeRatePenalty=%1$s upgrade rate penalty
 weaponAttribute.MetalUsedOnHitPenalty=%1$s metal used on hit
 weaponAttribute.DestroyProjectiles=Destroy Projectiles
 weaponAttribute.KnockbackRage=Charge by dealing damage. Reload to receive knockback bonus
+weaponAttribute.Looting=+%1$s Looting
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
@@ -146,6 +147,8 @@ item.tf2ammo.sticky.name=Stickybomb
 item.tf2ammo.medigun.name=Medicine
 item.tf2ammo.flare.name=Flare
 item.tf2ammo.ball.name=Ball
+item.statue.name=statue
+item.statue.player.name=Statue of a moron
 
 commands.resetbossstat.usage=/resetbossstat <player>
 commands.resetbossstat.success=Boss level progress reset for %s
@@ -228,8 +231,8 @@ gui.contracts.spy=Spy
 gui.contracts.objectives=Objectives:
 gui.contracts.objectives_t=(requires %1$s weaponry)
 gui.contracts.rewards=Awards:
-gui.contracts.reward1=50 CP: 1 Australium bar or a random weapon
-gui.contracts.reward2=150 CP: 4 Australium bars or a key
+gui.contracts.reward1=40 CP: 1 Australium bar or a random weapon
+gui.contracts.reward2=135 CP: 4 Australium bars or a key
 gui.contracts.require=To access contracts, join a team and kill at least 5 mercenaries
 gui.contracts.contractDay=Days to a new contract: %1$s
 gui.contracts.reject=Reject

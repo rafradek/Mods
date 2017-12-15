@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -26,6 +27,14 @@ public class EntityHeavy extends EntityTF2Character {
 
 	}
 
+	protected void addWeapons() {
+		super.addWeapons();
+		float chance = this.rand.nextFloat();
+		if (chance < 0.2f)
+			this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemSandvich));
+		else if(chance < 0.3f)
+			this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemChocolate));
+	}
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootHeavy;

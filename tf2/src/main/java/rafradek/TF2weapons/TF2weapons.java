@@ -136,6 +136,7 @@ import rafradek.TF2weapons.decoration.ContainerWearables;
 import rafradek.TF2weapons.decoration.EntityTarget;
 import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.decoration.InventoryWearables;
+import rafradek.TF2weapons.decoration.ItemStatue;
 import rafradek.TF2weapons.loot.EntityBuildingFunction;
 import rafradek.TF2weapons.loot.EntityOfClassFunction;
 import rafradek.TF2weapons.loot.KilledByTeam;
@@ -185,7 +186,7 @@ import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemHorn;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.2.1.1", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.2.2", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
 	public static final String MOD_ID = "rafradek_tf2_weapons";
@@ -275,7 +276,8 @@ public class TF2weapons {
 	public static Item itemMantreads;
 	public static Item itemTF2;
 	public static Item itemHorn;
-
+	public static Item itemStatue;
+	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
 	public static ResourceLocation lootSpy;
@@ -304,7 +306,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 26;
+		return 27;
 	}
 
 	@Mod.EventHandler
@@ -546,6 +548,7 @@ public class TF2weapons {
 				.setUnlocalizedName("scoutBoots").setRegistryName(TF2weapons.MOD_ID + ":scout_shoes").setCreativeTab(tabutilitytf2));
 		ForgeRegistries.ITEMS.register(itemMantreads = new ItemArmorTF2(ArmorMaterial.IRON, 0, EntityEquipmentSlot.FEET,"Deals 1.8x falling damage to the player you land on",0.75f)
 				.setUnlocalizedName("mantreads").setRegistryName(TF2weapons.MOD_ID + ":mantreads").setCreativeTab(tabutilitytf2));
+		ForgeRegistries.ITEMS.register(itemStatue = new ItemStatue().setRegistryName(TF2weapons.MOD_ID +":statue"));
 		// GameRegistry.register(itemCopperIngot=new
 		// Item().setUnlocalizedName("ingotCopper").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotCopper"));
 		// GameRegistry.register(itemLeadIngot=new

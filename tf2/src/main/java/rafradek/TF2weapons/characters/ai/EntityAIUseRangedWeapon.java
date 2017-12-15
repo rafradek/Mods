@@ -73,7 +73,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			return false;
 		else {
 			this.attackTarget = EntityLivingBase;
-			return !this.entityHost.getHeldItemMainhand().isEmpty()
+			return !this.entityHost.getHeldItemMainhand().isEmpty() && this.entityHost.eating <= 0
 					&& (this.entityHost.getHeldItemMainhand().getItem() instanceof ItemWeapon || this.entityHost.getHeldItemMainhand().getItem() instanceof ItemMedigun);
 		}
 	}
@@ -101,7 +101,6 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		}
 		if (this.jump)
 			this.entityHost.jump = false;
-		this.entityHost.getNavigator().clearPathEntity();
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;

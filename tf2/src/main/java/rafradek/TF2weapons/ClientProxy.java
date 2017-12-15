@@ -425,6 +425,8 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":sandvich", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoBelt, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_belt", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemStatue, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":statue", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemBlock.getItemFromBlock(TF2weapons.blockCabinet),
 		// 0, new
 		// ModelResourceLocation(TF2weapons.MOD_ID+":tf2workbench","inventory"));

@@ -1,5 +1,6 @@
 package rafradek.TF2weapons;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -332,7 +333,7 @@ public class TF2Util {
 		// "+(ent!=shooter)+" "+!(shooter instanceof
 		// EntityBuilding&&((EntityBuilding)shooter).getOwner()==ent));
 		return ent.isEntityAlive() && !(ent instanceof EntityLivingBase && isOnSameTeam(shooter, ent) && !(shooter.getTeam() != null && shooter.getTeam().getAllowFriendlyFire())
-				&& (ent != shooter) && !(shooter instanceof IEntityOwnable && ((IEntityOwnable) shooter).getOwner() == ent));
+				&& (ent != shooter) /*&& !(shooter instanceof IEntityOwnable && ((IEntityOwnable) shooter).getOwner() == ent)*/);
 	}
 
 	public static boolean lookingAt(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {
@@ -451,10 +452,30 @@ public class TF2Util {
 					ItemUsable.lastDamage.put(living, new float[20]);
 				ItemUsable.lastDamage.get(living)[0] += damage;
 			}
+			
 			if (entity instanceof EntityLivingBase) {
 	
 				EntityLivingBase livingTarget = (EntityLivingBase) entity;
 				
+				try {
+					if (living instanceof EntityTF2Character && ((EntityTF2Character) living).isSharing()) {
+						for(Field field :EntityLivingBase.class.getDeclaredFields()) {
+							if(field.getName().equals("recentlyHit") || field.getName().equals("field_70718_bc")) {
+								field.setAccessible(true);
+								field.setInt(entity, 100);
+							}
+							else if(((EntityTF2Character) living).getOwner() != null && 
+									(field.getName().equals("attackingPlayer") || field.getName().equals("field_70717_bb"))) {
+								field.setAccessible(true);
+								field.set(entity, ((EntityTF2Character) living).getOwner());
+							}
+						}
+					}
+				}
+				catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				// System.out.println(livingTarget.getHealth());
 				// System.out.println("Scaled"+source.isDifficultyScaled()+"
 				// "+damage);

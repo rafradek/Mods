@@ -444,6 +444,7 @@
 		"Heal": 0.12,
 		"Max overheal": 0.5,
 		"Range": 8,
+		"Efficient range": 6.7,
 		"Ammo type": 12,
 		"Max ammo": 700,
 		"Drop chance": 0.07,

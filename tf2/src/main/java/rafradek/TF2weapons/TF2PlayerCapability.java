@@ -139,14 +139,14 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					int oldProgress=contract.progress;
 					contract.progress+=objective.getPoints();
 					
-					if(oldProgress<50 && contract.progress>=50) {
+					if(oldProgress<40 && contract.progress>=40) {
 						contract.rewards+=1;
 					}
-					if(oldProgress<150 && contract.progress>=150) {
+					if(oldProgress<135 && contract.progress>=135) {
 						contract.rewards+=2;
 					}
-					if(contract.progress>150)
-						contract.progress=150;
+					if(contract.progress>135)
+						contract.progress=135;
 					
 					((EntityPlayerMP)this.owner).sendMessage(new TextComponentString(contract.className +" contract progress: "+contract.progress+" CP"));
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, contract), (EntityPlayerMP) this.owner);

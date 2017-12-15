@@ -465,6 +465,8 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(111, "MetalUsedOnHitPenalty", "Metal Used", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(112, "Looting", "Looting", Type.ADDITIVE, 0, State.POSITIVE,
+				ITEM_WEAPON, 1, 3, 220, 2);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 

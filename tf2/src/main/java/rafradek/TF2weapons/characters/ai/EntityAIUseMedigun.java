@@ -4,6 +4,7 @@ import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.weapons.ItemMedigun;
 
 public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 
@@ -31,7 +32,6 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 		if (this.jump)
 			this.entityHost.jump = false;
-		this.entityHost.getNavigator().clearPathEntity();
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;
@@ -84,6 +84,10 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
 				TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				// System.out.println("coœdo");
+			}
+			else {
+				if(this.attackTarget.getHealth()/this.attackTarget.getMaxHealth() < 0.35F && (this.attackTarget.ticksExisted - this.attackTarget.getRevengeTimer()) < 25)
+					((ItemMedigun)this.entityHost.getHeldItemMainhand().getItem()).startUse(this.entityHost.getHeldItemMainhand(), this.entityHost, this.entityHost.world, 0, 2);
 			}
 
 		} else {

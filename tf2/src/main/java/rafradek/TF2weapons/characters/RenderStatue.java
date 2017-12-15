@@ -85,7 +85,11 @@ public class RenderStatue extends Render<EntityStatue> {
 			entity.entity.renderYawOffset=entity.renderYawOffset;
 			entity.entity.deathTime=entity.ticksExisted;
 		}
-		renderManager.getEntityRenderObject(entity.entity).doRender(entity.entity, x, y, z, entityYaw, entity.isFeign ? partialTicks : 0);
+		GlStateManager.pushMatrix();
+		//GlStateManager.rotate(23f, 1, 0.5f, 0);
+		//entity.entity.renderYawOffset=entity.entity.getRNG().nextFloat()*180f;
+		renderManager.getEntityRenderObject(entity.entity).doRender(entity.entity, x, y, z, entityYaw, entity.isFeign ? partialTicks : 1);
+		GlStateManager.popMatrix();
 		if(!entity.isFeign) {
 		GlStateManager.color(1.0f, 1f, 1f);
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);

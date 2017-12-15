@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Achievements;
@@ -97,6 +98,18 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					} else if (message.value == 18 && player.openContainer != null && player.openContainer instanceof ContainerMerchant &&
 							player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.containsKey(player.getName())) {
 						player.closeScreen();
+						final MerchantRecipeList listg = player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.get(player.getName()); 
+						if(listg != null) {
+							Iterator<MerchantRecipe> iterator=listg.iterator();
+							while(iterator.hasNext()){
+								MerchantRecipe recipe = iterator.next();
+								if(recipe != null && recipe.getItemToBuy().isEmpty()) {
+									ItemHandlerHelper.giveItemToPlayer(player, recipe.getItemToSell());
+									iterator.remove();
+								}
+							}
+						}
+						player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.get(player.getName());
 						player.displayVillagerTradeGui(new IMerchant(){
 
 							MerchantRecipeList list;
@@ -124,7 +137,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							public MerchantRecipeList getRecipes(EntityPlayer player) {
 								// TODO Auto-generated method stub
 								if(list==null)
-									list=player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.get(player.getName());
+									list=listg;
 								return list;
 							}
 

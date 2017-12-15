@@ -22,13 +22,13 @@ public class EntityAIFindDispenser extends EntityAIBase {
 		this.host=host;
 		this.range=range;
 		this.rangeSq=range*range;
-		this.setMutexBits(3);
+		this.setMutexBits(1);
 	}
 
 	@Override
 	public boolean shouldExecute() {
 		// TODO Auto-generated method stub
-		if(this.host.getAmmo() <= 0 || (this.host.getAttackTarget() == null && this.host.getHealth()<this.host.getMaxHealth() || !this.host.isAmmoFull())) {
+		if(this.host.getAmmo() <= 0 || (this.host.getAttackTarget() == null && (this.host.getHealth()<this.host.getMaxHealth() || !this.host.isAmmoFull()))) {
 			for(EntityDispenser disp : host.world.getEntitiesWithinAABB(EntityDispenser.class, this.host.getEntityBoundingBox().grow(range, range/4f, range), disp -> {
 				return disp.isEntityAlive() && host.getDistanceSqToEntity(disp) <= rangeSq && TF2Util.isOnSameTeam(host, disp);
 			})) {
@@ -59,6 +59,7 @@ public class EntityAIFindDispenser extends EntityAIBase {
 					this.target=null;
 					return;
 				}
+			if (this.host.getAttackTarget() == null)
 			this.host.getLookHelper().setLookPositionWithEntity(this.target, 30, 15);
 		}
 		else

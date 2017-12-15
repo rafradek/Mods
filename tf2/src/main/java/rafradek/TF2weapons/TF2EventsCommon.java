@@ -155,6 +155,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerDropsEvent;
@@ -483,7 +484,7 @@ public class TF2EventsCommon {
 
 		event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).udpServerId = event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).udpServerId;
 		
-		if (event.getEntityPlayer() instanceof EntityPlayerMP)
+		if (event.getEntityPlayer() instanceof EntityPlayerMP && TF2weapons.udpServer != null)
 			TF2weapons.udpServer.playerList.put(event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).udpServerId, (EntityPlayerMP) event.getEntityPlayer());
 		
 		event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).contracts=event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).contracts;
@@ -807,7 +808,8 @@ public class TF2EventsCommon {
 	@SubscribeEvent
 	public void cleanPlayer(PlayerLoggedOutEvent event) {
 		ItemUsable.lastDamage.remove(event.player);
-		TF2weapons.udpServer.playerList.remove(event.player.getCapability(TF2weapons.PLAYER_CAP, null).udpServerId);
+		if(TF2weapons.udpServer != null)
+			TF2weapons.udpServer.playerList.remove(event.player.getCapability(TF2weapons.PLAYER_CAP, null).udpServerId);
 	}
 
 	@SubscribeEvent
@@ -1122,6 +1124,9 @@ public class TF2EventsCommon {
 						iterator.remove();
 					}
 				}
+			}
+			if (!living.world.isRemote && living.ticksExisted % 10 == 0 && cap.isFeign() && ItemCloak.getFeignDeathWatch(living).isEmpty()) {
+				cap.setFeign(false);
 			}
 			if (!living.world.isRemote && living.fallDistance > 0 && living.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null
 					&& living.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemMantreads) {
@@ -1789,7 +1794,13 @@ public class TF2EventsCommon {
 			event.getRegistry().register(sevent);
 		}
 	}
-	
+	@SubscribeEvent
+	public void looting(LootingLevelEvent event) {
+		if(event.getDamageSource() instanceof TF2DamageSource) {
+			event.setLootingLevel(event.getLootingLevel() + 
+					(int) TF2Attribute.getModifier("Looting",((TF2DamageSource) event.getDamageSource()).getWeapon(),0,(EntityLivingBase) event.getDamageSource().getTrueSource()));
+		}
+	}
 	@SubscribeEvent
 	public void containerOpen(PlayerContainerEvent.Open event) {
 		if(!event.getEntityPlayer().world.isRemote && event.getContainer() instanceof ContainerMercenary) {

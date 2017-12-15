@@ -43,8 +43,11 @@ public class CommandGiveWeapon extends CommandBase {
 				if(attr.length==2){
 					if(attr[0].equals("u"))
 						item.getTagCompound().setByte("UEffect", Byte.parseByte(attr[1]));
+					else if(MapList.nameToAttribute.containsKey(attr[0]))
+						attributes.setFloat(Integer.toString(MapList.nameToAttribute.get(attr[0]).id), Float.parseFloat(attr[1]));
 					else if(TF2Attribute.attributes[Integer.parseInt(attr[0])]!=null)
 						attributes.setFloat(attr[0], Float.parseFloat(attr[1]));
+					
 				}
 				else if(attr[0].equals("a"))
 					item.getTagCompound().setBoolean("Australium", true);

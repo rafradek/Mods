@@ -56,6 +56,7 @@ public class GuiWearables extends InventoryEffectRenderer {
 	 */
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		this.drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		this.oldMouseX = mouseX;
 		this.oldMouseY = mouseY;

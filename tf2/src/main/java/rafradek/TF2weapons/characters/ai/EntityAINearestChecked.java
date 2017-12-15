@@ -166,14 +166,14 @@ public class EntityAINearestChecked extends EntityAITarget {
 			return false;
 		else if (!this.taskOwner.canAttackClass(target.getClass()))
 			return false;
-		else {
+		else{
 			Team team = this.taskOwner.getTeam();
 			Team team1 = target.getTeam();
-
-			if ((team != null && team1 == team) && !(this.taskOwner instanceof EntityMedic))
+			boolean medic = (this.taskOwner instanceof EntityMedic);
+			if ((team != null && team1 == team) && !medic)
 				return false;
 			else {
-				if (this.taskOwner instanceof IEntityOwnable
+				if (!medic && this.taskOwner instanceof IEntityOwnable
 						&& ((IEntityOwnable) this.taskOwner).getOwnerId() != null) {
 					if (target instanceof IEntityOwnable && ((IEntityOwnable) this.taskOwner).getOwnerId()
 							.equals(((IEntityOwnable) target).getOwnerId()))
