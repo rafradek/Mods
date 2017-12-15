@@ -926,7 +926,7 @@ public class TF2EventsClient {
 
 		EntityPlayer player=Minecraft.getMinecraft().player;
 		if (!player.getHeldItemMainhand().isEmpty()){
-			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(player.getHeldItemMainhand(),player)*2+TF2Util.getTeamForDisplay(player);
+			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(player.getHeldItemMainhand(),player)*16+TF2Util.getTeamColorNumber(player);
 		}
 		else{
 			ClientProxy.renderCritGlow=0;
@@ -1120,7 +1120,7 @@ public class TF2EventsClient {
 			return;
 
 		if (!event.getEntity().getHeldItemMainhand().isEmpty()){
-			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(event.getEntity().getHeldItemMainhand(),event.getEntity())*2+TF2Util.getTeamForDisplay(event.getEntity());
+			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(event.getEntity().getHeldItemMainhand(),event.getEntity())*16+TF2Util.getTeamColorNumber(event.getEntity());
 		}
 		else{
 			ClientProxy.renderCritGlow=0;
@@ -1157,11 +1157,7 @@ public class TF2EventsClient {
 		
 		if (event.getEntity().getActivePotionEffect(TF2weapons.uber)!=null){
 			// GlStateManager.disableLighting();
-			if (TF2Util.getTeamColor(event.getEntity()) == 0) {
-			GL11.glColor4f(1.0F, 0.33F, 0.33F, 1F);
-			} else {
-			GL11.glColor4f(0.33F, 0.33F, 1.0F, 1F);
-			}
+			ClientProxy.setColor(TF2Util.getTeamColor(event.getEntity()), 1f, 0f, 0.33f, 1f);
 		}
 		if (event.getRenderer() != ClientProxy.disguiseRender && event.getRenderer() != ClientProxy.disguiseRenderPlayer
 				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && WeaponsCapability.get(event.getEntity()).isDisguised()) {

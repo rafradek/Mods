@@ -129,7 +129,7 @@ public class EntitySentry extends EntityBuilding {
 	public void setAttackTarget(EntityLivingBase target) {
 		if (TF2Util.isOnSameTeam(this.getOwner(), target))
 			return;
-		if (target != this.getAttackTarget())
+		if (target != this.getAttackTarget() && target != null)
 			this.playSound(TF2Sounds.MOB_SENTRY_SPOT, 1.5f, 1f);
 		super.setAttackTarget(target);
 	}
@@ -180,7 +180,7 @@ public class EntitySentry extends EntityBuilding {
 			this.getLookHelper().setLookPosition(trace.get(0).hitVec.x, trace.get(0).hitVec.y,
 					trace.get(0).hitVec.z, 30, 75);
 		}
-		if (this.getAttackTarget() != null && !this.getAttackTarget().isEntityAlive())
+		if (this.getAttackTarget() != null && (!this.getAttackTarget().isEntityAlive() || !this.canEntityBeSeen(this.getAttackTarget())))
 			this.setAttackTarget(null);
 		super.onLivingUpdate();
 	}

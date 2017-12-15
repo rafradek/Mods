@@ -69,7 +69,7 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 			}
 			this.first = true;
 			this.ticksLeft = toCopy instanceof EntityPlayer ? -1 : 5200;
-			this.useHand = toCopy.hasCapability(TF2weapons.WEAPONS_CAP, null) && (toCopy.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) != 0;
+			this.useHand = toCopy.hasCapability(TF2weapons.WEAPONS_CAP, null) && ((WeaponsCapability.get(toCopy).state & 3) != 0 || WeaponsCapability.get(toCopy).isCharging());
 		}
 		else
 			this.clientOnly = true;

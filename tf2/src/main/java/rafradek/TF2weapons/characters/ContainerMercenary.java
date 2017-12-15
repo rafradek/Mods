@@ -3,11 +3,13 @@ package rafradek.TF2weapons.characters;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ContainerMerchant;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.EntityEquipmentSlot.Type;
 import net.minecraft.inventory.IContainerListener;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,7 @@ import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 import rafradek.TF2weapons.decoration.ItemWearable;
 import rafradek.TF2weapons.weapons.ItemAmmo;
+import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class ContainerMercenary extends ContainerMerchant {
@@ -145,8 +148,8 @@ public class ContainerMercenary extends ContainerMerchant {
 				}
 				if (stack.getItem() instanceof ItemAmmo) {
 					int type = ((ItemAmmo)stack.getItem()).getTypeInt(stack);
-					return type == ItemFromData.getData(merc.loadout.getStackInSlot(0)).getInt(PropertyType.AMMO_TYPE) ||
-							type == ItemFromData.getData(merc.loadout.getStackInSlot(1)).getInt(PropertyType.AMMO_TYPE);
+					return true/*type == ItemFromData.getData(merc.loadout.getStackInSlot(0)).getInt(PropertyType.AMMO_TYPE) ||
+							type == ItemFromData.getData(merc.loadout.getStackInSlot(1)).getInt(PropertyType.AMMO_TYPE)*/;
 				}
 				return false;
 			}
@@ -223,7 +226,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
 	        	}
 	        }
-	        this.mercenary.switchSlot(this.mercenary.usedSlot);
+	        this.mercenary.switchSlot(this.mercenary.preferredSlot);
 	        
 	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
 	        	if(slot.getSlotType() == Type.ARMOR) {
@@ -237,5 +240,73 @@ public class ContainerMercenary extends ContainerMerchant {
 	        	this.mercenary.loadoutHeld.setStackInSlot(3, ItemStack.EMPTY);
 	        }
         }
+    }
+	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index)
+    {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack itemstack1 = slot.getStack();
+            itemstack = itemstack1.copy();
+            EntityEquipmentSlot equip = EntityLiving.getSlotForItemStack(itemstack);
+            
+            if (index == 2)
+            {
+                if (!this.mergeItemStack(itemstack1, 3, 39, true))
+                {
+                    return ItemStack.EMPTY;
+                }
+
+                slot.onSlotChange(itemstack1, itemstack);
+            }
+            else if (index != 0 && index != 1)
+            {
+            	if (equip.getSlotType() == EntityEquipmentSlot.Type.ARMOR && !(index >= 40 && index < 44)) {
+            		if(!this.mergeItemStack(itemstack1, 43-equip.getIndex(), 44-equip.getIndex(), false))
+            			return ItemStack.EMPTY;
+            	}
+            	else if (itemstack1.getItem() instanceof ItemUsable && !(index >= 44 && index < 47) ) {
+            		for(int i = 0; i < 3; i++) {
+            			if(!this.getSlot(i + 44).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, i + 44, i + 45, false))
+            				return ItemStack.EMPTY;
+            		}
+            	}
+            	else if (index >= 3 && index < 30)
+                {
+                    if (!this.mergeItemStack(itemstack1, 30, 39, false))
+                    {
+                        return ItemStack.EMPTY;
+                    }
+                }
+                else if (index >= 30 && index < 39 && !this.mergeItemStack(itemstack1, 3, 30, false))
+                {
+                    return ItemStack.EMPTY;
+                }
+            }
+            else if (!this.mergeItemStack(itemstack1, 3, 39, false))
+            {
+                return ItemStack.EMPTY;
+            }
+
+            if (itemstack1.isEmpty())
+            {
+                slot.putStack(ItemStack.EMPTY);
+            }
+            else
+            {
+                slot.onSlotChanged();
+            }
+
+            if (itemstack1.getCount() == itemstack.getCount())
+            {
+                return ItemStack.EMPTY;
+            }
+
+            slot.onTake(playerIn, itemstack1);
+        }
+
+        return itemstack;
     }
 }

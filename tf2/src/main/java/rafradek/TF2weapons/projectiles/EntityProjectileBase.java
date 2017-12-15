@@ -325,65 +325,9 @@ public abstract class EntityProjectileBase extends Entity
 			this.prevRotationPitch = this.rotationPitch = (float) (Math.atan2(this.motionY, f) * 180.0D / Math.PI);
 		}
 
-		/*
-		 * BlockPos blockpos = new BlockPos(this.field_145791_d,
-		 * this.field_145792_e, this.field_145789_f); IBlockState iblockstate =
-		 * this.world.getBlockState(blockpos); Block block =
-		 * iblockstate.getBlock();
-		 * 
-		 * if (block.getMaterial() != Material.air) {
-		 * block.setBlockBoundsBasedOnState(this.world, blockpos);
-		 * AxisAlignedBB axisalignedbb =
-		 * block.getCollisionBoundingBox(this.world, blockpos, iblockstate);
-		 * 
-		 * if (axisalignedbb != null && axisalignedbb.isVecInside(new
-		 * Vec3d(this.posX, this.posY, this.posZ))) { this.inGround = true; } }
-		 */
-
 		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
 				this.posY + this.motionY, this.posZ + this.motionZ, false, this.getCollisionSize(), this.canPenetrate()
 				)) {
-			/*Vec3d Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-			 Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-			RayTraceResult RayTraceResult = this.world.rayTraceBlocks(Vec3d1, Vec3d, false, true, false);
-			Vec3d1 = new Vec3d(this.posX, this.posY, this.posZ);
-			Vec3d = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-	
-			if (RayTraceResult != null)
-				Vec3d = new Vec3d(RayTraceResult.hitVec.x, RayTraceResult.hitVec.y, RayTraceResult.hitVec.z);
-	
-			Entity entity = null;
-			Vec3d result = null;
-			List<?> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox()
-					.addCoord(this.motionX, this.motionY, this.motionZ).grow(1.0D, 1.0D, 1.0D));
-			double d0 = 0.0D;
-			int i;
-			float f1;
-	
-			for (i = 0; i < list.size(); ++i) {
-				Entity entity1 = (Entity) list.get(i);
-	
-				if (entity1.canBeCollidedWith() && entity1.isEntityAlive() && entity1 != this.sentry
-						&& entity1 != this.shootingEntity) {
-					f1 = this.getCollisionSize();
-					AxisAlignedBB axisalignedbb1 = entity1.getEntityBoundingBox().grow(f1, f1, f1);
-					RayTraceResult RayTraceResult1 = axisalignedbb1.calculateIntercept(Vec3d1, Vec3d);
-	
-					if (RayTraceResult1 != null) {
-						double d1 = Vec3d1.distanceTo(RayTraceResult1.hitVec);
-	
-						if (d1 < d0 || d0 == 0.0D) {
-							entity = entity1;
-							d0 = d1;
-							result = RayTraceResult1.hitVec;
-						}
-					}
-				}
-			}
-	
-			if (entity != null)
-				RayTraceResult = new RayTraceResult(entity, result);*/
-	
 			
 			if (target.entityHit != null
 					&& target.entityHit instanceof EntityPlayer) {
@@ -394,12 +338,15 @@ public abstract class EntityProjectileBase extends Entity
 					continue;
 			}
 	
-			if (target.entityHit != null && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) && (this.ticksExisted < 3)))
+			if (target.entityHit != null && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
+					&& (this.ticksExisted < 3)) && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target)) {
 				this.onHitMob(target.entityHit, target);
+			}
+				
 			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
 				int attr = this.world.isRemote ? 0
 						: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
-				if (attr == 0) {
+				if (attr == 0 && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target)) {
 					BlockPos blpos = target.getBlockPos();
 					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
 				} else if (attr == 2)
@@ -409,18 +356,7 @@ public abstract class EntityProjectileBase extends Entity
 					this.setDead();
 			}
 		}
-		/*
-		 * if (this.getIsCritical()) { for (i = 0; i < 4; ++i) {
-		 * this.world.spawnParticle("crit", this.posX + this.motionX *
-		 * (double)i / 4.0D, this.posY + this.motionY * (double)i / 4.0D,
-		 * this.posZ + this.motionZ * (double)i / 4.0D, -this.motionX,
-		 * -this.motionY + 0.2D, -this.motionZ); } }
-		 */
-		/*
-		 * if(!this.world.isRemote&&this.isSticked()&&(this.stickedBlock==
-		 * null||this.world.isAirBlock(this.stickedBlock))){
-		 * this.setSticked(false); this.stickedBlock=null; }
-		 */
+		
 		float f2;
 		if (this.isSticked()) {
 			this.setPosition(this.dataManager.get(STICK_X), this.dataManager.get(STICK_Y),
@@ -435,7 +371,6 @@ public abstract class EntityProjectileBase extends Entity
 				this.posY += this.motionY;
 				this.posZ += this.motionZ;
 			} else
-				// this.setPosition(this.posX, this.posY, this.posZ);
 				this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
 			float f3 = (float) (1 - this.getGravityOverride() / 5);
 			this.motionX *= f3;
@@ -473,14 +408,8 @@ public abstract class EntityProjectileBase extends Entity
 					ClientProxy.spawnCritParticle(this.world, pX, pY, pZ,
 							TF2Util.getTeamColor(this.shootingEntity));
 				this.spawnParticles(pX, pY, pZ);
-				// EntityFX
-				// ent=Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(EnumParticleTypes.EXPLOSION_NORMAL.getParticleID(),
-				// pX, pY, pZ, 0, 0, 0);
 
 			}
-		// ClientProxy.spawnParticle(this.world,new
-		// EntityRocketEffect(worldObj, this.posX, this.posY, this.posZ));
-
 		if (this.isWet())
 			this.extinguish();
 
@@ -488,16 +417,6 @@ public abstract class EntityProjectileBase extends Entity
 			this.setPosition(this.posX, this.posY, this.posZ);
 			this.doBlockCollisions();
 		}
-		/*
-		 * if(!this.world.isRemote&&MinecraftServer.getServer().
-		 * isSinglePlayer()&&Minecraft.getMinecraft().player!=null){ Entity
-		 * fentity=Minecraft.getMinecraft().theWorld.getEntityByID(this.
-		 * getEntityId()); if(fentity!=null){
-		 * fentity.setVelocity(this.motionX,this.motionY,this.motionZ);
-		 * fentity.setPosition(this.posX, this.posY, this.posZ);
-		 * fentity.prevPosX=this.prevPosX; fentity.prevPosY=this.prevPosY;
-		 * fentity.prevPosZ=this.prevPosZ; } }
-		 */
 	}
 	// @SideOnly(Side.CLIENT)
 	@Override

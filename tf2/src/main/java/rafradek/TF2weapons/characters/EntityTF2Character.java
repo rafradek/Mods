@@ -141,15 +141,17 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public int tradeLevel;
 	private String ownerName;
 	private int[] ammoCount;
-	private int preferredSlot = 0;
+	int preferredSlot = 0;
 	public float eating = 0;
-	
+	public EntityAIAvoidEntity<EntitySentry> avoidSentry;
+	private int alertTime;
+	private EntityLivingBase alertTarget;
 	
 	public EntityTF2Character(World p_i1738_1_) {
 		super(p_i1738_1_);
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIMoveTowardsRestriction(this, 1.25f));
-		this.tasks.addTask(2, new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
+		this.tasks.addTask(2, avoidSentry = new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
 			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSqToEntity(this) < 435;
 		}, 21, 1.0f, 1.0f));
 		this.tasks.addTask(3, new EntityAIFindDispenser(this, 20f));
@@ -290,7 +292,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public void setAttackTarget(EntityLivingBase target) {
 
 		super.setAttackTarget(target);
-		if (this.isTrading() && target != null) {
+		if (this.isTrading() && target != null && this.getCustomer() != this.getOwner()) {
 			this.setCustomer(null);
 			//System.out.println(target);
 		}
@@ -301,8 +303,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				if (TF2Util.isOnSameTeam(this, ent) && !TF2Util.isOnSameTeam(this, target)
 						&& (ent.getAttackTarget() == null || ent.getAttackTarget().isDead)) {
 					ent.alert = true;
-					ent.setAttackTarget(target);
-					ent.alert = false;
+					ent.alertTarget=target;
+					ent.alertTime=ent.ticksExisted + 8 + this.getRNG().nextInt(14);
+					
 				}
 	}
 
@@ -381,7 +384,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				//this.noAmmo = true;
 			}
 			if (this.preferredSlot != this.usedSlot) {
-				this.switchSlot(this.getFirstSlotWithAmmo());
+				this.switchSlot(this.preferredSlot);
 			}
 			if(this.traderFollowTicks>0){
 				this.traderFollowTicks--;
@@ -419,6 +422,10 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				this.playSound(SoundEvents.PLAYER, volume, pitch);
 				this.eating -=Math.min(3, this.eating);
 			}*/
+			if(this.alert && this.alertTarget != null && this.alertTime == this.ticksExisted) {
+				this.setAttackTarget(this.alertTarget);
+				this.alert = false;
+			}
 		}
 		if (this.getHeldItem(EnumHand.MAIN_HAND) != null
 				&& this.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemUsable)
@@ -585,7 +592,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.tradeOffers.readRecipiesFromTags(tag.getCompoundTag("Offers"));
 		}
 		this.preferredSlot = tag.getByte("PSlot");
-		this.switchSlot(tag.getByte("Slot"));
+		this.switchSlot(tag.getByte("Slot"), true);
 		if(tag.hasKey("FollowTrader")){
 			this.followID=tag.getUniqueId("FollowTrader");
 			this.traderFollowTicks=tag.getInteger("FollowTraderTicks");
@@ -991,12 +998,17 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (slot != this.usedSlot && stack.getItem() instanceof ItemUsable && !((ItemUsable)stack.getItem()).isAmmoSufficient(stack, this, true))
 			return;
 		
-		if(this.getHeldItemMainhand().getItem() instanceof ItemUsable)
+		if(this.getHeldItemMainhand().getItem() instanceof ItemUsable && slot != this.usedSlot)
 			((ItemUsable)this.getHeldItemMainhand().getItem()).holster(getWepCapability(), stack, this, world);
 		
 		this.setHeldItem(EnumHand.MAIN_HAND, stack);
 		
 		if(slot != this.usedSlot && !stack.isEmpty() && stack.getItem() instanceof ItemUsable){
+			if(!((ItemUsable)stack.getItem()).isAmmoSufficient(stack, this, true)) 
+				if (!this.refill(this.usedSlot)) {
+					this.switchSlot(this.getFirstSlotWithAmmo(), true);
+					return;
+				}
 			WeaponData data = ItemFromData.getData(stack);
 			this.attack.explosive = TF2Attribute.EXPLOSIVE.apply(stack);
 			this.attack.projSpeed = TF2Attribute.getModifier("Proj Speed", stack, data.getFloat(PropertyType.PROJECTILE_SPEED), this);
@@ -1056,14 +1068,14 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				this.entityDropItem(stack, 0);
 			else {
 				Map<String, MerchantRecipeList> map = this.getWorld().getCapability(TF2weapons.WORLD_CAP, null).lostItems;
-				if(map.containsKey(this.ownerName))
+				if(!map.containsKey(this.ownerName))
 					map.put(ownerName, new MerchantRecipeList());
 				map.get(ownerName).add(new MerchantRecipe(ItemStack.EMPTY, ItemStack.EMPTY, stack, 0, 1));
 			}
 		}
 		
 		EntityLivingBase attacker=this.getAttackingEntity();
-		if(!this.refill.getStackInSlot(0).isEmpty() && attacker == this.getOwner()) {
+		if(!this.refill.getStackInSlot(0).isEmpty() && (attacker == this.getOwner() || !TF2Util.isOnSameTeam(attacker, this))) {
 			this.entityDropItem(this.refill.getStackInSlot(0), 0);
 		}
 		if ((attacker instanceof EntityPlayer || (attacker instanceof IEntityOwnable && ((IEntityOwnable)attacker).getOwnerId() != null ))
@@ -1083,8 +1095,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 					this.entityDropItem(stack, 0);
 				}
 			}
-		else{
-			Arrays.fill(this.inventoryArmorDropChances,0f);
+		else if(this.inventoryArmorDropChances[0] < 1){
+			this.inventoryArmorDropChances[0]=0;
 		}
 		super.dropEquipment(wasRecentlyHit, lootingModifier);
 	}

@@ -129,11 +129,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 		double lookX = this.attackTarget.x;
 		double lookY = this.attackTarget.y;
 		double lookZ = this.attackTarget.z;
-		// System.out.println("raytracing:"+this.entityHost.world.rayTraceBlocks(new
-		// Vec3d(this.entityHost.posX,this.entityHost.posY+this.entityHost.getEyeHeight(),this.entityHost.posZ),
-		// new Vec3d(lookX,this.attackTarget.posY,lookZ)));
-		// boolean flag =
-		// comeCloser&&TF2weapons.lookingAt(this.entityHost,15,lookX,lookY,lookZ);
+
 		if (d0 <= this.attackRangeSquared) {
 			if (!this.dodging) {
 				this.entityHost.getNavigator().clearPathEntity();
@@ -141,13 +137,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 			}
 		} else {
 			this.dodging = false;
-			/*
-			 * if(this.entityHost.onGround&&this.entityHost instanceof
-			 * EntitySoldier&&this.entityHost.getHeldItem(EnumHand.MAIN_HAND).
-			 * getItemDamage()<this.entityHost.getHeldItem(EnumHand.MAIN_HAND).
-			 * getMaxDamage()-1){
-			 * ((EntitySoldier)this.entityHost).rocketJump=true; }
-			 */
+
 			this.entityHost.getNavigator().tryMoveToXYZ(this.attackTarget.x,this.attackTarget.y,this.attackTarget.z, this.entityMoveSpeed);
 		}
 		// if(!(this.entityHost instanceof

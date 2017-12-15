@@ -22,7 +22,7 @@ compileJava {
 	targetCompatibility = 1.8
 }
 minecraft {
-    version = "1.12-14.21.1.2387"
+    version = "1.12.2-14.23.1.2555"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.

@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "1.12-1.2.2"
+version = "1.12-1.2.3"
 group= "rafradek.TF2weapons" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "rafradek_tf2_weapons"
 
@@ -22,7 +22,7 @@ compileJava {
 	targetCompatibility = 1.8
 }
 minecraft {
-    version = "1.12-14.21.1.2387"
+    version = "1.12.2-14.23.1.2555"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.

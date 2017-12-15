@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -390,6 +391,10 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 			par1NBTTagCompound.setUniqueId("Owner", this.getOwnerId());
 			par1NBTTagCompound.setString("OwnerName", this.ownerName);
 		}
+		if (this.isDisabled())
+        {
+			par1NBTTagCompound.setBoolean("NoAI", false);
+        }
 	}
 
 	@Override

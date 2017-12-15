@@ -350,7 +350,7 @@
 		"Knockback": 5,
 		"Spread recovery": false,
 		"Ammo type": 8,
-		"Efficient range": 20,
+		"Efficient range": 21.5,
 		"Drop chance": 0.065,
 		"Stock": true,
 		"Cost": 25

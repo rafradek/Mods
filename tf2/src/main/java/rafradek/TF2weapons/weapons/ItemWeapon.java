@@ -126,8 +126,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		// boolean mainHand=living instanceof
 		// EntityPlayer&&living.getEntityData().getCompoundTag("TF2").getBoolean("mainhand");
 		WeaponsCapability cap=living.getCapability(TF2weapons.WEAPONS_CAP, null);
-		if (this.holdingMode(stack, living) > 0 && !cap.charging) {
-			cap.charging = true;
+		if (this.holdingMode(stack, living) > 0 && !cap.isCharging() && living instanceof EntityPlayer) {
+			cap.setCharging(true);
 			cap.chargeTicks = 0;
 			if (world.isRemote)
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.CHARGE_SOUND), false, 0,
@@ -267,7 +267,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				ClientProxy.fireSounds.get(living).setDone();
 			// Minecraft.getMinecraft().getSoundHandler().stopSound(ClientProxy.fireSounds.get(living));
 			this.use(stack, living, world, EnumHand.MAIN_HAND, null);
-			cap.charging = false;
+			cap.setCharging(false);
 			cap.lastFire = 1250;
 			if (world.isRemote)
 				sps++;
@@ -523,7 +523,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				removeHealth+=entry.getValue().getAmount();
             //IAttributeInstance iattributeinstance = livinggetAttributeInstanceByName((String)entry.getKey());
         }
-		living.setHealth((living.getMaxHealth()/(removeHealth+living.getMaxHealth())*living.getHealth()));
+		if(removeHealth != 0)
+			living.setHealth((living.getMaxHealth()/(removeHealth+living.getMaxHealth())*living.getHealth()));
 	}
 	
 	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {

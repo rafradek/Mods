@@ -199,20 +199,24 @@ public class ClientProxy extends CommonProxy {
 
 			@Override
 			public int getColorFromItemstack(ItemStack stack, int tintIndex) {
-				if (renderCritGlow>1){
-					int color;
-					if (renderCritGlow==2)
+				if (renderCritGlow > 15){
+					int color=TF2Util.colorCode[renderCritGlow % 16];
+					if(renderCritGlow < 32)
+						color|=0x7F7F7F;
+					if (renderCritGlow==28)
 						color=0xFFB060;
-					else if (renderCritGlow==3)
+					else if (renderCritGlow==25)
 						color=0x60B0FF;
-					else if (renderCritGlow==4)
+					else if (renderCritGlow==44)
 						color=0xFF5050;
-					else
+					else if (renderCritGlow==41)
 						color=0x5050FF;
 					return color;
 				}
 				else if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium"))
 					return 0xFFD400;
+				if (stack.getItem() instanceof ItemUsable && tintIndex == 1)
+					return TF2Util.colorCode[renderCritGlow % 16];
 				else
 					return 0xFFFFFF;
 			}

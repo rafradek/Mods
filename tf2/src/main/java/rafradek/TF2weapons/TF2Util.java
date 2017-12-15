@@ -70,7 +70,7 @@ public class TF2Util {
 		return target.canBeCollidedWith() && (!(target instanceof EntityLivingBase) || (target instanceof EntityLivingBase && ((EntityLivingBase) target).deathTime <= 0));
 	};
 	
-	private static int[] colorCode = new int[32];
+	public static int[] colorCode = new int[32];
 	
 	public static List<RayTraceResult> pierce(World world, Entity living, double startX, double startY, double startZ, double endX, double endY, double endZ,
 			boolean headshot, float size, boolean pierce, Predicate<Entity> selector) {
@@ -309,10 +309,7 @@ public class TF2Util {
 			return ((EntityPlayer) living).getTeam() == living.world.getScoreboard().getTeam("BLU") ? 1 : 0;
 		else if (living instanceof IThrowableEntity)
 			return getTeamForDisplay(((IThrowableEntity) living).getThrower());*/
-		if(getTeam(living) != null && getTeam(living).getColor().getColorIndex() >= 0)
-			return colorCode[getTeam(living).getColor().getColorIndex()];
-		else 
-			return colorCode[living.world.getScoreboard().getTeam("BLU").getColor().getColorIndex()];
+		return colorCode[getTeamColorNumber(living)];
 	}
 	
 	public static int getTeamForDisplay(Entity living) {
@@ -325,6 +322,13 @@ public class TF2Util {
 		else if (living instanceof IThrowableEntity)
 			return getTeamForDisplay(((IThrowableEntity) living).getThrower());
 		return 0;
+	}
+	
+	public static int getTeamColorNumber(Entity living) {
+		if(getTeam(living) != null && getTeam(living).getColor().getColorIndex() >= 0)
+			return getTeam(living).getColor().getColorIndex();
+		else 
+			return living.world.getScoreboard().getTeam("BLU").getColor().getColorIndex();
 	}
 	
 	public static boolean canHit(EntityLivingBase shooter, Entity ent) {

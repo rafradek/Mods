@@ -65,7 +65,7 @@ public class EntitySniper extends EntityTF2Character {
 		if(world.isRemote && this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() && 
 				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemSniperRifle.slowdownUUID) == null){
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks = 0;
-			this.getCapability(TF2weapons.WEAPONS_CAP, null).charging = false;
+			this.getCapability(TF2weapons.WEAPONS_CAP, null).setCharging(false);
 		}
 		// System.out.println("state:
 		// "+this.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().getBoolean("Zoomed")+"

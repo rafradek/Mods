@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.common.base.Predicate;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;

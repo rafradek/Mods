@@ -54,7 +54,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean mainHand;
 	public HashMap<String, Integer> effectsCool = new HashMap<String, Integer>();
 	public int chargeTicks;
-	public boolean charging;
+	//public boolean charging;
 	public int critTimeCool;
 	public Queue<TF2Message.PredictionMessage> predictionList = new ArrayDeque<TF2Message.PredictionMessage>();
 	public float recoil;

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIAvoidEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.DamageSource;
@@ -17,6 +18,7 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.ai.EntityAIAmbush;
 import rafradek.TF2weapons.weapons.ItemCloak;
 
@@ -29,8 +31,12 @@ public class EntitySpy extends EntityTF2Character {
 	public EntitySpy(World p_i1738_1_) {
 		super(p_i1738_1_);
 		this.experienceValue = 15;
-		this.rotation = 20;
+		this.rotation = 20;	
+		this.tasks.addTask(2, new EntityAIAvoidEntity<EntityLivingBase>(this, EntityLivingBase.class, entity -> {
+			return entity == this.getAttackTarget() && TF2Util.lookingAtFast(entity, 105, this.posX, this.posY, this.posZ);
+		}, 4, 1.0f, 1.0f));
 		this.tasks.addTask(3, new EntityAIAmbush(this));
+		this.tasks.removeTask(avoidSentry);
 		if (this.attack != null) {
 			attack.setRange(30f);
 			this.tasks.addTask(4, this.attack);
@@ -67,14 +73,13 @@ public class EntitySpy extends EntityTF2Character {
 			if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
 				boolean useKnife = false;
 				if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
-						|| (useKnife = (this.getDistanceSqToEntity(target) < 13
-								&& !TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ)))) {
+						|| (useKnife = (this.getDistanceSqToEntity(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
 
 					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
 							!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
 							this.world);
 					if (useKnife) {
-						this.weaponCounter = 8;
+						this.weaponCounter = 19;
 						this.setCombatTask(false);
 						this.cloakCounter = 36;
 					} else
@@ -94,7 +99,7 @@ public class EntitySpy extends EntityTF2Character {
 			this.weaponCounter--;
 
 			if (this.weaponCounter <= 0 && this.getAttackTarget() != null
-					&& this.getDistanceSqToEntity(this.getAttackTarget()) < 4) {
+					&& this.getDistanceSqToEntity(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 25)) {
 				this.setCombatTask(false);
 				this.weaponCounter = 8;
 			} else if (this.weaponCounter <= 0 && this.getHeldItemMainhand() == this.loadout.getStackInSlot(2)) {
