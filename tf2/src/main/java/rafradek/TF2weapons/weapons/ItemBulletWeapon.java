@@ -59,7 +59,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 		Iterator<Entity> iterator = map.keySet().iterator();
 		while (iterator.hasNext()) {
 			Entity entity = iterator.next();
-			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, map.get(entity)[1], critical))
+			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, map.get(entity)[1], critical, false))
 				continue;
 			Vec3d pushvec = entity.getPositionVector().subtract(living.getPositionVector()).normalize();
 			

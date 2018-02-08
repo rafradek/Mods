@@ -1,10 +1,17 @@
 package rafradek.TF2weapons.crafting;
 
+import java.util.List;
+
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.ItemToken;
 
 public class ItemTF2 extends Item {
 
@@ -35,4 +42,15 @@ public class ItemTF2 extends Item {
 		for (int i = 0; i < 8; i++)
 			par3List.add(new ItemStack(this, 1, i));
 	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		if(stack.hasTagCompound() && stack.getTagCompound().hasKey("Token")) {
+			tooltip.add(ItemToken.CLASS_NAMES[stack.getTagCompound().getByte("Token")]);
+		}
+	}
+	
+	
 }

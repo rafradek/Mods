@@ -105,7 +105,7 @@ public class WeaponData {
 		public static final PropertyType SPREAD = new PropertyType(52, "Spread", Type.DOUBLE);
 		public static final PropertyType HIT_SOUND = new PropertyType(53, "Hit sound", Type.STRING);
 		public static final PropertyType AMMO_TYPE = new PropertyType(54, "Ammo type", Type.INTEGER);
-		public static final PropertyType ROLL_HIDDEN = new PropertyType(55, "Roll hidden", Type.BOOLEAN);
+		public static final PropertyType ROLL_HIDDEN = new PropertyType(55, "Roll hidden", Type.INTEGER);
 		public static final PropertyType MOB_TYPE = new PropertyType(56, "Mobs", Type.STRING);
 		public static final PropertyType RECOIL = new PropertyType(57, "Recoil", Type.DOUBLE);
 		public static final PropertyType DROP_CHANCE = new PropertyType(58, "Drop chance", Type.DOUBLE);

@@ -44,7 +44,7 @@ public class ContainerMercenary extends ContainerMerchant {
 		for(int i=0;i<3;i++) {
 			if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
 				ItemStack buf= this.mercenary.loadout.getStackInSlot(i);
-        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(0));
+        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
         		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
         	}
         	
@@ -88,7 +88,7 @@ public class ContainerMercenary extends ContainerMerchant {
 				
 				@Override
 				public boolean isItemValid(@Nullable ItemStack stack) {
-					if (stack.isEmpty() || merc.getOwner() != player)
+					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
 						return false;
 					else
 						return stack.getItem().isValidArmor(stack, entityequipmentslot, merc);
@@ -119,9 +119,12 @@ public class ContainerMercenary extends ContainerMerchant {
 				
 				@Override
 				public boolean isItemValid(@Nullable ItemStack stack) {
-					if (stack.isEmpty() || merc.getOwner() != player)
+					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
 						return false;
 					else {
+						String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+						if (!parent.isEmpty())
+							stack = ItemFromData.getNewStack(parent);
 						return ItemFromData.getData(stack).getInt(PropertyType.SLOT)==this.getSlotIndex()
 						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(merc.getClass().getSimpleName().substring(6).toLowerCase());
 					}
@@ -139,7 +142,7 @@ public class ContainerMercenary extends ContainerMerchant {
 		this.addSlotToContainer(new SlotItemHandler(merc.refill, 0, 206, 93) {
 			@Override
 			public boolean isItemValid(@Nullable ItemStack stack) {
-				if (stack.isEmpty() || !TF2Util.isOnSameTeam(merc.getOwner(), player))
+				if (stack.isEmpty() || (!TF2Util.isOnSameTeam(merc.getOwner(), player) && !player.capabilities.isCreativeMode))
 					return false;
 				if (TF2Util.isOre("ingotLead", stack))
 					return true;
@@ -193,7 +196,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	
 	@Override
 	public boolean enchantItem(EntityPlayer playerIn, int id) {
-		if(id == 256) {
+		if(id == -128) {
 			if(mercenary.getOwner() == playerIn) {
 				ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack(TF2weapons.itemTF2, 1, 2));
 				this.mercenary.setOwner(null);
@@ -203,14 +206,14 @@ public class ContainerMercenary extends ContainerMerchant {
 				this.mercenary.setOwner(playerIn);
 			}
 		}
-		if(id == 257) {
+		else if(id == -127) {
 			if(mercenary.getOwner() == playerIn) {
 				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 2, 1, null);
 				this.mercenary.setSharing(true);
 			}
 		}
-		else if(id >= 260 && mercenary.getOwner() == playerIn) {
-			int index = (id - 260) % EntityTF2Character.Order.values().length;
+		else if(id < 70 && mercenary.getOwner() == playerIn) {
+			int index = (id + 100) % EntityTF2Character.Order.values().length;
 			this.mercenary.setOrder(Order.values()[index]);
 		}
 		return true;
@@ -222,7 +225,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        for(int i=0;i<3;i++) {
 	        	if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
 	        		ItemStack buf = this.mercenary.loadout.getStackInSlot(i);
-	        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(0));
+	        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
 	        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
 	        	}
 	        }

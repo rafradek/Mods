@@ -6,6 +6,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
@@ -76,7 +78,25 @@ public class EntityMedic extends EntityTF2Character {
 			this.ignoreFrustumCheck = true;
 		else
 			this.ignoreFrustumCheck = false;
-
+		if (!this.world.isRemote) {
+			IAttributeInstance speed = this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+			for(AttributeModifier modifier : playerAttributes) {
+				speed.removeModifier(modifier);
+			}
+			if (this.ticksExisted % 4 == 0 && this.getAttackTarget() != null && this.friendly && this.getAttackTarget() instanceof EntityPlayer) {
+				
+				
+				playerAttributes.clear();
+				for(AttributeModifier modifier : this.getAttackTarget().getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifiers()) {
+					if (modifier.getAmount() > 0) {
+						TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, modifier, true);
+						this.playerAttributes.add(modifier);
+					}
+				}
+				//System.out.println("modyfikatory: "+playerAttributes.size()+" "+speed.getModifiers().size());
+			}
+		}
+		
 	}
 
 	@Override
@@ -145,9 +165,9 @@ public class EntityMedic extends EntityTF2Character {
 	public float getAttributeModifier(String attribute) {
 		if (!(this.getAttackTarget() instanceof EntityPlayer || (this.getAttackTarget() instanceof IEntityOwnable && ((IEntityOwnable) this.getAttackTarget()).getOwnerId() != null))) {
 			if (attribute.equals("Heal"))
-				return this.getDiff() == 1 ? 0.75f : (this.getDiff() == 3 ? 1f : 0.9f);
+				return this.scaleWithDifficulty(0.75f, 1f);
 			if (attribute.equals("Overheal"))
-				return this.getDiff() == 1 ? 0.55f : (this.getDiff() == 3 ? 0.85f : 0.7f);
+				return this.scaleWithDifficulty(0.55f, 1f);
 		}
 		return super.getAttributeModifier(attribute);
 	}

@@ -125,7 +125,7 @@ public class EntityScout extends EntityTF2Character {
 	public float getAttributeModifier(String attribute) {
 		if (this.loadout.getStackInSlot(1).getItem() instanceof ItemCleaver && shouldScaleAttributes())
 			if (attribute.equals("Fire Rate"))
-				return this.getDiff() == 1 ? 1.8f : (this.getDiff() == 3 ? 1f : 1.3f);
+				return this.scaleWithDifficulty(1.8f, 1f);
 		return super.getAttributeModifier(attribute);
 	}
 	
@@ -176,7 +176,7 @@ public class EntityScout extends EntityTF2Character {
 
 	@Override
 	public float getMotionSensitivity() {
-		return this.getDiff() == 3 || this.getOwnerId() != null ? 0.05f : (this.getDiff() == 1 ? 0.12f : 0.08f);
+		return this.scaleWithDifficulty(0.12f, 0.02f);
 	}
 	
 	@Override

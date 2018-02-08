@@ -73,7 +73,7 @@ public class ContainerUpgrades extends Container {
 	public void refreshData() {
 
 		for (int i = 0; i < TileEntityUpgrades.UPGRADES_COUNT; i++)
-			this.applicable[i] = this.upgradedItem.getStackInSlot(0) != null
+			this.applicable[i] = !this.upgradedItem.getStackInSlot(0).isEmpty() && station.attributeList[i] != null
 					&& station.attributeList[i].canApply(this.upgradedItem.getStackInSlot(0));
 	}
 
@@ -138,17 +138,18 @@ public class ContainerUpgrades extends Container {
 	public boolean enchantItem(EntityPlayer playerIn, int id) {
 		ItemStack stack = this.upgradedItem.getStackInSlot(0);
 
-		int idEnch = Math.min(7, Math.max(id / 2, 0));
-		// System.out.println("Selected: "+idEnch+" "+id);
+		int idEnch = Math.min(TileEntityUpgrades.UPGRADES_COUNT - 1, Math.max(id / 2, 0));
 		boolean adding = id % 2 == 0;
 		TF2Attribute attr = this.station.attributeList[idEnch];
-		if (stack.isEmpty() || !attr.canApply(stack))
+		if (attr == null || stack.isEmpty() || !attr.canApply(stack))
 			return false;
 
 		int cost = attr.getUpgradeCost(stack);
 
 		int expPoints = TF2Util.getExperiencePoints(playerIn);
-		if (adding && applicable[idEnch] && attr.calculateCurrLevel(stack) < this.station.attributes.get(attr)
+		
+		int currLevel = attr.calculateCurrLevel(stack);
+		if (adding && applicable[idEnch] && currLevel < this.station.attributes.get(attr)
 				&& expPoints >= cost) {
 			NBTTagCompound tag = stack.getTagCompound().getCompoundTag("Attributes");
 			String key = String.valueOf(attr.id);
@@ -157,6 +158,9 @@ public class ContainerUpgrades extends Container {
 				tag.setFloat(key, attr.defaultValue);
 			tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack));
 			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") + attr.cost);
+			if (currLevel == attr.numLevels - 1 && attr.numLevels > 1)
+				stack.getTagCompound().setInteger("LastUpgradesCost", (int) (stack.getTagCompound().getInteger("LastUpgradesCost") + attr.cost * (attr.numLevels > 2 ? 3 : 1.5f)));
+			//stack.getTagCompound().setInteger("TotalCostReal", stack.getTagCompound().getInteger("TotalCostReal") + attr.cost);
 			TF2Util.setExperiencePoints(playerIn, expPoints - cost);
 			this.transactions[idEnch]++;
 			this.transactionsCost[idEnch] += cost;
@@ -173,21 +177,17 @@ public class ContainerUpgrades extends Container {
 			if (!tag.hasKey(key))
 				return false;
 			tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * count);
+			if(tag.getFloat(key) == attr.defaultValue)
+				tag.removeTag(key);
+			
 			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") - attr.cost * count);
+			if (currLevel == attr.numLevels && attr.numLevels > 1)
+				stack.getTagCompound().setInteger("LastUpgradesCost", (int) (stack.getTagCompound().getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 2 : 1.5f)));
+			//stack.getTagCompound().setInteger("TotalCostReal", stack.getTagCompound().getInteger("TotalCostReal") - this.transactionsCost[idEnch]);
 			TF2Util.setExperiencePoints(playerIn, expPoints + cost);
 			this.transactions[idEnch]=0;
 			this.transactionsCost[idEnch]=0;
 		}
 		return true;
 	}
-
-	/**
-	 * Called to determine if the current slot is valid for the stack merging
-	 * (double-click) code. The stack passed in is null for the initial slot
-	 * that was double-clicked.
-	 */
-	/*
-	 * public boolean canMergeSlot(ItemStack stack, Slot slotIn) { return
-	 * super.canMergeSlot(stack, slotIn); }
-	 */
 }

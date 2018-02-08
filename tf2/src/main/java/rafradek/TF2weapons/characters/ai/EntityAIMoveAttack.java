@@ -6,6 +6,7 @@ import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
+import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -44,13 +45,13 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	public float projSpeed;
 	public double fireAtFeet;
 
-	private boolean firstTick;
-
 	public float gravity;
 
 	public boolean explosive;
 
 	public boolean dodgeHeadFor;
+
+	private float attackRangeSSquared;
 
 	public EntityAIMoveAttack(EntityTF2Character par1IRangedAttackMob, float par2, float par5) {
 		this.rangedAttackTime = -1;
@@ -66,6 +67,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	public void setRange(float range) {
 		this.attackRange = range;
 		this.attackRangeSquared = range * range;
+		this.attackRangeSSquared = (range+5) * (range+5);
 	}
 
 	/**
@@ -129,7 +131,9 @@ public class EntityAIMoveAttack extends EntityAIBase {
 
 		boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget)
 				|| (this.projSpeed > 0 && this.attackTarget.motionY > 0);
-		this.entityHost.setJumping(true);
+		//this.entityHost.setJumping(true);
+		
+		float range = this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared;
 		if (stay) {
 			++this.comeCloser;
 			if (d0 <= (double) this.attackRangeSquared / 4)

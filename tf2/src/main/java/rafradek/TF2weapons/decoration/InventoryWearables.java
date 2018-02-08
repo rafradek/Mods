@@ -8,12 +8,15 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.ItemToken;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class InventoryWearables extends InventoryBasic implements ICapabilityProvider, INBTSerializable<NBTTagList> {
 
 	public EntityPlayer owner;
+	public static final int USED_SLOTS = 5;
 	public InventoryWearables(EntityPlayer ply) {
 		super("Wearables", false, 13);
 		owner=ply;
@@ -21,7 +24,7 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 	}
 
 	public boolean isEmpty() {
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < USED_SLOTS; i++)
 			if (!this.getStackInSlot(i).isEmpty())
 				return false;
 		return true;
@@ -63,6 +66,10 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 			NBTTagCompound nbttagcompound = nbt.getCompoundTagAt(i);
 			int j = nbttagcompound.getByte("Slot");
 			this.setInventorySlotContents(j, new ItemStack(nbttagcompound));
+		}
+		if(!WeaponsCapability.get(owner).forcedClass) {
+			ItemStack token = this.getStackInSlot(4);
+			((ItemToken)TF2weapons.itemToken).updateAttributes(token, owner);
 		}
 		// System.out.println("Reading ");
 	}

@@ -42,11 +42,13 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 			float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
 		// System.out.println("Rendering layer");
 		InventoryWearables inventory = entitylivingbaseIn.getCapability(TF2weapons.INVENTORY_CAP, null);
-		for (int i = 0; i < 4; i++) {
-			ItemStack stack = inventory.getStackInSlot(i);
-			if (!stack.isEmpty() && stack.getItem() != null)
-				renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
-						headPitch, scale);
+		if (inventory != null) {
+			for (int i = 0; i < 4; i++) {
+				ItemStack stack = inventory.getStackInSlot(i);
+				if (!stack.isEmpty() && stack.getItem() != null)
+					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
+							headPitch, scale);
+			}
 		}
 		for (ItemStack stack : entitylivingbaseIn.getArmorInventoryList())
 			if (!stack.isEmpty() && stack.getItem() != null)

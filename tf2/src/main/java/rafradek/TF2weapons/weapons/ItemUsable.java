@@ -9,6 +9,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.message.TF2Message;
@@ -124,7 +125,7 @@ public abstract class ItemUsable extends ItemFromData {
 			
 			stackcap.active = 0;
 			this.holster(cap, stack, living, par2World);
-
+			cap.lastWeapon = stack;
 		}
 		if (par3Entity.ticksExisted % 5 == 0 && stackcap.active == 2
 				&& TF2Attribute.getModifier("Mark Death", stack, 0, living) > 0)
@@ -173,10 +174,17 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0
+		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0 && ItemToken.allowUse(living, this.getUsableClasses(stack))
 				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1);
 	}
 
+	public String getUsableClasses(ItemStack stack) {
+		if (getData(stack).getString(PropertyType.MOB_TYPE).isEmpty() && getData(stack).hasProperty(PropertyType.BASED_ON)) {
+			stack = getNewStack(getData(stack).getString(PropertyType.BASED_ON));
+		}
+		return getData(stack).getString(PropertyType.MOB_TYPE);
+	}
+	
 	public abstract boolean fireTick(ItemStack stack, EntityLivingBase living, World world);
 
 	public abstract boolean altFireTick(ItemStack stack, EntityLivingBase living, World world);
@@ -240,6 +248,7 @@ public abstract class ItemUsable extends ItemFromData {
 		// TODO Auto-generated method stub
 		return item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0
 				&& player.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
+				&& ItemToken.allowUse(player, this.getUsableClasses(item))
 				&& (player.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(item, player) != 1);
 	}
 

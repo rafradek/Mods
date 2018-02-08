@@ -10,6 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityHeavy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
@@ -30,17 +31,15 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 
 	private float attackRange;
 	protected float attackRangeSquared;
-
+	protected float attackRangeSSquared;
+	
 	protected boolean pressed;
-	private boolean altpreesed;
 	protected boolean dodging;
 	public boolean jump;
 	public float dodgeSpeed = 1f;
 	public int jumprange;
 	public float projSpeed;
 	public double fireAtFeet;
-
-	private boolean firstTick;
 
 	public float gravity;
 
@@ -60,6 +59,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	public void setRange(float range) {
 		this.attackRange = range;
 		this.attackRangeSquared = range * range;
+		this.attackRangeSSquared = (range+5) * (range+5);
 	}
 
 	/**
@@ -153,33 +153,13 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
 				yFall = this.attackTarget.posY - mop.hitVec.y;
 			shouldFireProj = mop != null || this.attackTarget.motionY <= 0f;
-			// System.out.println("perform"+yFall);
-			// System.out.println("perform"+yFall);
-			// System.out.println("look: "+this.attackTarget.posX+"
-			// "+this.entityHost.targetPrevPos[1]);
-
-			// System.out.println("raytracing:"+this.entityHost.world.rayTraceBlocks(new
-			// Vec3d(this.entityHost.posX,this.entityHost.posY+this.entityHost.getEyeHeight(),this.entityHost.posZ),
-			// new Vec3d(lookX,this.attackTarget.posY,lookZ)));
 			lookY -= yFall;
 			
 			if (this.fireAtFeet > 0 && this.entityHost.world.rayTraceBlocks(
 					new Vec3d(this.entityHost.posX, this.entityHost.posY + this.entityHost.getEyeHeight(),
 							this.entityHost.posZ),
 					new Vec3d(lookX, this.attackTarget.posY, lookZ), false, true, false) == null)
-				/*
-				 * if(this.fireAtFeet==2&&this.attackTarget.motionY<=0){
-				 * RayTraceResult
-				 * mop=this.entityHost.world.rayTraceBlocks(this.attackTarget
-				 * .getPositionVector(),
-				 * this.attackTarget.getPositionVector().addVector(0, yFall*1.2,
-				 * 0)); if(mop != null &&
-				 * mop.typeOfHit==RayTraceResult.Type.BLOCK){
-				 * lookY=mop.hitVec.y; } else{
-				 * lookY=this.attackTarget.posY-yFall; } } else{
-				 */
 				lookY -= (this.attackTarget.height/2)*this.fireAtFeet;
-			// }
 
 		}
 
@@ -195,17 +175,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			this.reloading = false;
 		
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
-		// this.entityHost.getLookHelper().onUpdateLook();
-		// if(!(this.entityHost instanceof
-		// EntitySoldier&&((EntitySoldier)this.entityHost).rocketJump))
-
-		// this.entityHost.getLookHelper().setLookPositionWithEntity(this.attackTarget,
-		// 1.0F, 90.0F);
-		if ((!reloading/*
-						 * ||(this.entityHost.world.getDifficulty()==
-						 * EnumDifficulty.HARD&&d0 <=
-						 * (double)this.attackRangeSquared/4)
-						 */) && fire && d0 <= this.attackRangeSquared
+		
+		if ((!reloading) && fire && d0 <= (this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared)
 				&& (((ItemUsable)item.getItem()).isAmmoSufficient(item, entityHost, true) || weapon.getAmmoType(item) == 0)) {
 			this.reloading = false;
 			if (!pressed) {
@@ -214,7 +185,6 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
-				// System.out.println("coœdo");
 			}
 
 		} else {
@@ -227,11 +197,9 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = valuedef;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(valuedef, entityHost),
 						entityHost);
-				// System.out.println("coœz");
 			}
 			pressed = false;
 		}
-		// if(){
 	}
 
 }

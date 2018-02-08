@@ -14,7 +14,7 @@ import rafradek.TF2weapons.TF2Attribute;
 
 public class TileEntityUpgrades extends TileEntity {
 
-	public static final int UPGRADES_COUNT = 8;
+	public static final int UPGRADES_COUNT = 10;
 	public HashMap<TF2Attribute, Integer> attributes = new HashMap<>();
 	public TF2Attribute[] attributeList = new TF2Attribute[UPGRADES_COUNT];
 
@@ -38,7 +38,7 @@ public class TileEntityUpgrades extends TileEntity {
 				TF2Attribute attr = passAttributes.get(rand.nextInt(passAttributes.size()));
 				if (!this.attributes.containsKey(attr)) {
 					attributeList[i] = attr;
-					this.attributes.put(attr, Math.max(1, attr.numLevels - (i < 2 ? 0 : 1)));
+					this.attributes.put(attr, Math.max(1, attr.numLevels - (i < 4 ? 0 : 1)));
 					break;
 				}
 			}

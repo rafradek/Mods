@@ -1,6 +1,8 @@
 package rafradek.TF2weapons.crafting;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -10,35 +12,50 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.characters.ItemToken;
 
 public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
 
+	public int token;
+	
+	public RecipeToScrap(int id) {
+		this.token = id;
+	}
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
 		ArrayList<ItemStack> stacks = new ArrayList<>();
 
+		HashSet<String> classnames = new HashSet<String>();
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
 			ItemStack stack = inv.getStackInSlot(x);
 			if (!stack.isEmpty())
-				if (stacks.size() < 2 && stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6)
+				if (stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6 
+				&& (token == -1 || ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[token]))) {
 					stacks.add(stack);
+				}
 				else
 					return false;
 		}
 		// System.out.println("matches "+(australium&&stack2!=null));
-		return stacks.size() == 2;
+		return stacks.size() == (token != -1 ? 3 : 2);
 	}
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
 		// TODO Auto-generated method stub
-		return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		if(token == -1)
+			return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		else
+			return new ItemStack(TF2weapons.itemToken, 1, token);
 	}
 
 	@Override
 	public ItemStack getRecipeOutput() {
 		// TODO Auto-generated method stu
-		return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		if(token == -1)
+			return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		else
+			return new ItemStack(TF2weapons.itemToken, 1, token);
 	}
 
 	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)

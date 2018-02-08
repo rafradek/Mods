@@ -48,7 +48,7 @@ public class UdpChannelHandlerServer extends SimpleChannelInboundHandler<Datagra
 			MessageContext context = constr.newInstance(player.connection, Side.SERVER); 
 			handler.onMessage(message, context);
 		}
-		System.out.println("PacketFrom: "+msg.sender().getAddress()+ " "+msg.sender().getPort()+" ");
+		//System.out.println("PacketFrom: "+msg.sender().getAddress()+ " "+msg.sender().getPort()+" ");
 		
 	}
 

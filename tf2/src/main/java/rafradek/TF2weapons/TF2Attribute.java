@@ -1,5 +1,6 @@
 package rafradek.TF2weapons;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,6 +24,7 @@ import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMinigun;
+import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.ItemWrench;
@@ -51,180 +53,67 @@ public class TF2Attribute {
 
 	private int weight;
 
-	public static final Predicate<ItemStack> ITEM_WEAPON = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
+	public static final Predicate<ItemStack> ITEM_WEAPON = input -> {
+		
 			return input.getItem() instanceof ItemWeapon;
-		}
-
 	};
-	public static final Predicate<ItemStack> NOT_FLAMETHROWER = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> NOT_FLAMETHROWER = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemWeapon && !(input.getItem() instanceof ItemFlameThrower);
-		}
-
 	};
-	public static final Predicate<ItemStack> FLAMETHROWER = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> FLAMETHROWER = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemFlameThrower;
-		}
-
 	};
-	public static final Predicate<ItemStack> IGNITE = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> IGNITE = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemFlameThrower || getModifier("BurnOnHit", input, 0, null) > 0;
-		}
-
 	};
-	public static final Predicate<ItemStack> WITH_CLIP = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
+	public static final Predicate<ItemStack> WITH_CLIP = input -> {
+		
 			return input.getItem() instanceof ItemWeapon && ((ItemWeapon) input.getItem()).hasClip(input);
-		}
-
 	};
-	public static final Predicate<ItemStack> WITH_SPREAD = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> WITH_SPREAD = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemWeapon
 					&& (((ItemWeapon) input.getItem()).getWeaponSpreadBase(input, null) != 0
 							|| ((ItemWeapon) input.getItem()).getWeaponMinDamage(input, null) != 1);
-		}
-
 	};
-	public static final Predicate<ItemStack> WITH_AMMO = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> WITH_AMMO = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
 			return input.getItem() instanceof ItemUsable
 					&& ItemFromData.getData(input).getInt(PropertyType.AMMO_TYPE) != 0;
-		}
-
 	};
-	public static final Predicate<ItemStack> ITEM_BULLET = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> CHARGE_RATE = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			if (input.getItem() instanceof ItemBulletWeapon && !ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
-				return true;
-			else {
-				Class<?> clazz = MapList.projectileClasses
-						.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE));
-				return clazz != null && EntityProjectileSimple.class.isAssignableFrom(clazz);
-			}
-		}
-
+		return input.getItem() instanceof ItemSniperRifle || input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemCloak;
 	};
-	public static final Predicate<ItemStack> ITEM_PROJECTILE = new Predicate<ItemStack>() {
+	public static final Predicate<ItemStack> DURATION = input -> {
 
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE);
-		}
-
+		return input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemSoldierBackpack || input.getItem() instanceof ItemCloak;
 	};
-	public static final Predicate<ItemStack> ITEM_MINIGUN = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemMinigun;
+	public static final Predicate<ItemStack> ITEM_BULLET = input -> {
+		// TODO Auto-generated method stub
+		if (input.getItem() instanceof ItemBulletWeapon && !ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
+			return true;
+		else {
+			Class<?> clazz = MapList.projectileClasses
+					.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE));
+			return clazz != null && EntityProjectileSimple.class.isAssignableFrom(clazz);
 		}
-
 	};
-	public static final Predicate<ItemStack> ITEM_SNIPER_RIFLE = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemSniperRifle;
-		}
-
-	};
-	public static final Predicate<ItemStack> EXPLOSIVE = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return (input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE) )&& !(input.getItem() instanceof ItemFlameThrower
-					|| (MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null 
-					&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
-		}
-
-	};
-	public static final Predicate<ItemStack> MEDIGUN = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemMedigun;
-		}
-
-	};
-	public static final Predicate<ItemStack> BANNER = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemSoldierBackpack;
-		}
-
-	};
-	public static final Predicate<ItemStack> SHIELD = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemChargingTarge;
-		}
-
-	};
-	public static final Predicate<ItemStack> WATCH = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemCloak;
-		}
-
-	};
-	public static final Predicate<ItemStack> WRENCH = new Predicate<ItemStack>() {
-
-		@Override
-		public boolean apply(ItemStack input) {
-			// TODO Auto-generated method stub
-			return input.getItem() instanceof ItemWrench;
-		}
-
-	};
-	/**
-	 * 
-	 * @param id
-	 * @param name
-	 * @param effect
-	 * @param typeOfValue
-	 * @param defaultValue
-	 * @param state
-	 *            1 dodatni, 0 neutralny, -1 ujemny
-	 */
+	public static final Predicate<ItemStack> ITEM_PROJECTILE = input -> input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE);
+	public static final Predicate<ItemStack> ITEM_MINIGUN = input -> input.getItem() instanceof ItemMinigun;
+	public static final Predicate<ItemStack> ITEM_SNIPER_RIFLE = input -> input.getItem() instanceof ItemSniperRifle;
+	public static final Predicate<ItemStack> EXPLOSIVE = input -> (input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE) )&& !(input.getItem() instanceof ItemFlameThrower
+			|| (MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null 
+			&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
+	public static final Predicate<ItemStack> MEDIGUN = input -> input.getItem() instanceof ItemMedigun;
+	public static final Predicate<ItemStack> BANNER = input -> input.getItem() instanceof ItemSoldierBackpack;
+	public static final Predicate<ItemStack> PARACHUTE = input -> input.getItem() instanceof ItemParachute;
+	public static final Predicate<ItemStack> SHIELD = input -> input.getItem() instanceof ItemChargingTarge;
+	public static final Predicate<ItemStack> WATCH = input -> input.getItem() instanceof ItemCloak;
+	public static final Predicate<ItemStack> WRENCH = input -> input.getItem() instanceof ItemWrench;
 
 	public static enum Type {
 		PERCENTAGE, INVERTED_PERCENTAGE, ADDITIVE;
@@ -286,8 +175,8 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(15, "KnockbackPenalty", "Knockback", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(16, "ChargeBonus", "Charge", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_SNIPER_RIFLE, 0.25f, 4,
-				100, 1);
+		new TF2Attribute(16, "ChargeBonus", "Charge", Type.PERCENTAGE, 1f, State.POSITIVE, CHARGE_RATE, 0.25f, 4,
+				100, 2);
 		new TF2Attribute(17, "ChargePenalty", "Charge", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE, ITEM_SNIPER_RIFLE,
 				-0.15f, 2, -140, 1);
 		new TF2Attribute(18, "SpreadAdd", "Spread", Type.ADDITIVE, 0f, State.NEGATIVE,
@@ -322,8 +211,8 @@ public class TF2Attribute {
 				2);
 		new TF2Attribute(34, "AccuracyBonus", "Accuracy", Type.PERCENTAGE, 1f, State.POSITIVE, WITH_SPREAD, 0.25f, 3,
 				160, 2);
-		new TF2Attribute(35, "BuffDurationBonus", "Buff Duration", Type.PERCENTAGE, 1f, State.POSITIVE, BANNER, 0.25f,
-				4, 80, 1);
+		new TF2Attribute(35, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1f, State.POSITIVE, Predicates.<ItemStack>alwaysFalse(), 0.25f,
+				4, 80, 2);
 		new TF2Attribute(36, "FlameRangeBonus", "Flame Range", Type.PERCENTAGE, 1f, State.POSITIVE, FLAMETHROWER, 0.25f,
 				4, 80, 1);
 		new TF2Attribute(37, "CritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE,
@@ -362,8 +251,8 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(54, "ExplodeDeath", "Explode Death", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(55, "RechargeBonus", "Charge Recharge", Type.PERCENTAGE, 1, State.POSITIVE,
-				SHIELD, 0.75f, 3, 80, 1);
+		new TF2Attribute(55, "RechargeBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0.75f, 3, 80, 1);
 		new TF2Attribute(56, "UberRateBonus", "Uber Rate", Type.PERCENTAGE, 1f, State.POSITIVE, MEDIGUN, 0.25f, 4, 120,
 				1);
 		new TF2Attribute(57, "UberRatePenalty", "Uber Rate", Type.PERCENTAGE, 1f, State.NEGATIVE, MEDIGUN, -0.15f, 2,
@@ -415,10 +304,10 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(86, "MetalOnHit", "Metal Hit", Type.ADDITIVE, 0, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(87, "CloakDurationBonus", "Cloak Duration", Type.PERCENTAGE, 1, State.POSITIVE,
-				WATCH, 0.25f, 3, 240, 1);
-		new TF2Attribute(88, "CloakRegenBonus", "Cloak Regen", Type.PERCENTAGE, 1, State.POSITIVE,
-				WATCH, 0.5f, 2, 160, 1);
+		new TF2Attribute(87, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1, State.POSITIVE,
+				DURATION, 0.25f, 3, 120, 2);
+		new TF2Attribute(88, "CloakRegenBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0.5f, 2, 240, 1);
 		new TF2Attribute(89, "CloakDrainActivate", "Cloak Drain", Type.PERCENTAGE, 1, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(90, "NoExternalCloak", "No External Cloak", Type.ADDITIVE, 0, State.NEGATIVE,
@@ -463,10 +352,20 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(110, "TeleportCost", "Teleporter Cost", Type.PERCENTAGE, 1f, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
-		new TF2Attribute(111, "MetalUsedOnHitPenalty", "Metal Used", Type.PERCENTAGE, 1f, State.NEGATIVE,
+		new TF2Attribute(111, "MetalUsedOnHitPenalty", "Metal Used", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(112, "Looting", "Looting", Type.ADDITIVE, 0, State.POSITIVE,
 				ITEM_WEAPON, 1, 3, 220, 2);
+		new TF2Attribute(113, "ArmorBonus", "Armor", Type.ADDITIVE, 0, State.HIDDEN,
+				Predicates.or(BANNER, PARACHUTE), 1, 3, 260, 1);
+		new TF2Attribute(114, "MeleeResistPenalty", "Melee Resist", Type.PERCENTAGE, 1f, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(115, "RangedResistBonus", "Ranged Resist", Type.PERCENTAGE, 1f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(116, "HolsterTimePenalty", "Holster Time", Type.PERCENTAGE, 1f, State.NEGATIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(117, "Unblockable", "Unblockable", Type.ADDITIVE, 1f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
@@ -509,7 +408,7 @@ public class TF2Attribute {
 		else if (this.typeOfValue == Type.INVERTED_PERCENTAGE)
 			valueStr = Integer.toString(Math.round((1 - value) * 100)) + "%";
 		else if (this.typeOfValue == Type.ADDITIVE)
-			valueStr = Integer.toString(Math.round(value));
+			valueStr = new DecimalFormat("##.#").format(value);
 
 		if (withColor) {
 			TextFormatting color = this.state == State.POSITIVE ? TextFormatting.AQUA
@@ -564,7 +463,12 @@ public class TF2Attribute {
 	}
 
 	public float getPerLevel(ItemStack stack) {
-		return this.perLevel * (stack.getItem() instanceof ItemMinigun && this.effect.equals("Damage") ? 0.5f : 1f);
+		float def = this.perLevel;
+		if (stack.getItem() instanceof ItemMinigun && this.effect.equals("Damage"))
+			def *= 0.5f;
+		else if (stack.getItem() instanceof ItemChargingTarge && this.effect.equals("Charge"))
+			def *= 2.4f;
+		return def;
 	}
 	
 	public int calculateCurrLevel(ItemStack stack) {
@@ -583,10 +487,14 @@ public class TF2Attribute {
 		int baseCost = this.cost;
 		if (ItemFromData.getData(stack).getInt(PropertyType.COST) <= 12)
 			baseCost /= 2;
+		if (getModifier("Damage", stack, 1, null) <= 0)
+			baseCost /=2;
 		if (this.effect.equals("Accuracy") && ItemFromData.getData(stack).getFloat(PropertyType.SPREAD) <= 0.025f)
 			baseCost /= 2;
 		if (stack.getMaxStackSize() > 1)
 			baseCost = (baseCost/3) * stack.getCount();
+		if (stack.getItem() instanceof ItemCloak)
+			baseCost *= 2;
 		//int additionalCost = 0;
 		int lastUpgradesCost = stack.getTagCompound().getInteger("TotalCost");
 		/*if (lastUpgradesCost > 0) {
@@ -594,7 +502,10 @@ public class TF2Attribute {
 			baseCost += baseCost / 10;
 		}
 		baseCost += additionalCost;*/
+		int baseCostPre = baseCost;
 		baseCost*=1+((float)lastUpgradesCost/800f);
+		if (this.calculateCurrLevel(stack) == this.numLevels - 1 && this.numLevels > 1)
+			baseCost += baseCostPre * (this.numLevels > 2 ? 2 : 1.25f) * (1 + (stack.getTagCompound().getInteger("LastUpgradesCost") / 800f));
 		return Math.min(1400, baseCost);
 	}
 

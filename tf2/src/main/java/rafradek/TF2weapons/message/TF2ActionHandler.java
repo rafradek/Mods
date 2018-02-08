@@ -67,7 +67,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					if (message.value <= 15) {
 						handleMessage(message, player, false);
 						message.entity = player.getEntityId();
-						TF2Util.sendTracking(message, player);
+						TF2Util.sendTrackingExcluding(message, player);
 					} else if (message.value == 99) {
 						Entity wearer = ctx.getServerHandler().player.world.getEntityByID(message.entity);
 						// System.out.println("ID: "+message.entity+" "+wearer);
@@ -177,29 +177,34 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							
 						});
 						//FMLNetworkHandler.openGui(player, TF2weapons.instance, 4, player.world,(int) player.posX,(int)  player.posY,(int)  player.posZ);
-					} else if (message.value == 23 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
+					} 
+					else if (message.value == 23 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 						player.fallDistance = 0;
 						player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped=true;
 						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
-					} else if (message.value == 25) {
+					} 
+					else if (message.value == 25) {
 						ItemStack stack=player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemParachute) {
 							stack.getTagCompound().setBoolean("Deployed", !stack.getTagCompound().getBoolean("Deployed"));
 						}
-					} else if (message.value == 26) {
+					} 
+					else if (message.value == 26) {
 						ItemStack stack = player.getHeldItemMainhand();
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && !WeaponsCapability.get(player).knockbackActive && WeaponsCapability.get(player).getKnockbackRage() >= 1f) {
 							WeaponsCapability.get(player).knockbackActive = true;
 						}
 					} 
-
-					
+					else if (message.value == 29) {
+						player.world.getScoreboard().removePlayerFromTeams(player.getName());
+					} 
 					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id).active=true;
 						}
-					} else if (message.value >=48 && message.value <64) {
+					} 
+					else if (message.value >=48 && message.value <64) {
 						int id=message.value-48;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							Contract contract=player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id);
@@ -219,7 +224,8 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							if(contract.progress>=150)
 								player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
 						}
-					} else if (message.value >=64 && message.value <80) {
+					} 
+					else if (message.value >=64 && message.value <80) {
 						int id=message.value-64;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
@@ -276,9 +282,9 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					if (message.value <= 15)
 						handleMessage(message, player, true);
 					else if (message.value == 19) {
-						if (player != null) {
+						if (player != null && player != Minecraft.getMinecraft().player && !(player.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(player).isFeign())) {
 							player.setDead();
-							player.world.spawnEntity(new EntityStatue(player.world, player,false));
+							//player.world.spawnEntity(new EntityStatue(player.world, player,false));
 						}
 					} 
 					else if (message.value == 24) {
@@ -297,6 +303,11 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 								//System.out.println("dd");
 								WeaponsCapability.get(player).fire1Cool-= ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, player)));
 							}
+						}
+					}
+					else if (message.value == 28) {
+						if (player != null) {
+							WeaponsCapability.get(player).expJumpGround=2;
 						}
 					}
 				}
@@ -373,19 +384,4 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 		}
 	}
 
-	public static ArrayList<EnumAction> value = new ArrayList<EnumAction>();
-
-	public static enum EnumAction {
-
-		IDLE, FIRE, ALTFIRE, RELOAD;
-
-		private EnumAction() {
-			value.add(this);
-		}
-
-		/*
-		 * public boolean leftClick(){ return this==FIRE||this==DOUBLE; } public
-		 * boolean rightClick(){ return this==ALTFIRE||this==DOUBLE; }
-		 */
-	}
 }

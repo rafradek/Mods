@@ -29,6 +29,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.decoration.ItemStatue;
@@ -67,7 +69,7 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 			else {
 				this.data= toCopy.serializeNBT();
 			}
-			this.first = true;
+			//this.first = true;
 			this.ticksLeft = toCopy instanceof EntityPlayer ? -1 : 5200;
 			this.useHand = toCopy.hasCapability(TF2weapons.WEAPONS_CAP, null) && ((WeaponsCapability.get(toCopy).state & 3) != 0 || WeaponsCapability.get(toCopy).isCharging());
 		}
@@ -83,9 +85,9 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 			this.rotationYaw = this.entity.rotationYaw;
 		}
 		else {
-			/*this.motionX=entity.motionX;
+			this.motionX=entity.motionX;
 			this.motionY=entity.motionY;
-			this.motionZ=entity.motionZ;*/
+			this.motionZ=entity.motionZ;
 		}
 		/*
 		 * this.renderYawOffset=toCopy.renderYawOffset;
@@ -138,10 +140,10 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 		this.motionY *= 0.98;
 		this.motionZ *= 0.98;
 		this.motionY -= 0.08;
-		if(!this.isFeign && this.clientOnly && this.ticksExisted > 15 && this.world.getEntitiesWithinAABB(EntityStatue.class, getEntityBoundingBox().expand(1, 0, 1), stat -> {
+		/*if(!this.isFeign && this.clientOnly && this.ticksExisted > 15 && this.world.getEntitiesWithinAABB(EntityStatue.class, getEntityBoundingBox().expand(1, 0, 1), stat -> {
 			return stat != this;
 		}).isEmpty())
-			this.setDead();
+			this.setDead();*/
 		if (!this.world.isRemote && this.ticksLeft > 0) {
 			if(this.ticksLeft-- == 0)
 				this.setDead();
@@ -233,6 +235,7 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void readSpawnData(ByteBuf additionalData) {
 		if(additionalData.readableBytes() == 0)
 			return;

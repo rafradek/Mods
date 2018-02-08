@@ -13,6 +13,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -35,7 +37,7 @@ public class ItemAmmoBelt extends Item {
     {
         return new Provider();
     }
-	public static class Provider extends ItemStackHandler implements ICapabilityProvider{
+	public static class Provider extends ItemStackHandler implements ICapabilityProvider {
 		
 		public Provider(){
 			super(9);
@@ -44,7 +46,7 @@ public class ItemAmmoBelt extends Item {
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 			// TODO Auto-generated method stub
-			return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ;
+			return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
 		}
 
 		@Override

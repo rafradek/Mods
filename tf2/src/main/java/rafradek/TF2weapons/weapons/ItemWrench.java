@@ -29,7 +29,7 @@ public class ItemWrench extends ItemMeleeWeapon {
 	}*/
 
 	@Override
-	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {
+	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
 		// attacker.swingArm(EnumHand.MAIN_HAND);
 
 		if (target instanceof EntityBuilding && TF2Util.isOnSameTeam(target, attacker)) {

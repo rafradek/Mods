@@ -31,8 +31,8 @@ public class ItemKnife extends ItemMeleeWeapon {
 			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
 				if (entityIn == Minecraft.getMinecraft().player && Minecraft.getMinecraft().objectMouseOver != null
 						&& Minecraft.getMinecraft().objectMouseOver.entityHit != null
-						&& Minecraft.getMinecraft().objectMouseOver.entityHit
-								.getDistanceSqToEntity(entityIn) <= getMaxRange(stack) * getMaxRange(stack)
+						&& TF2Util.getDistanceSqBox(Minecraft.getMinecraft().objectMouseOver.entityHit, entityIn.posX, entityIn.posY, entityIn.posZ, entityIn.width, entityIn.height) 
+						<= getMaxRange(stack) * getMaxRange(stack)
 						&& isBackstab(entityIn, Minecraft.getMinecraft().objectMouseOver.entityHit))
 					return 1;
 				return 0;

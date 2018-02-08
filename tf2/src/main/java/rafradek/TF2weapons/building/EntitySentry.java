@@ -3,6 +3,8 @@ package rafradek.TF2weapons.building;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Predicate;
@@ -29,6 +31,9 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
@@ -54,7 +59,7 @@ public class EntitySentry extends EntityBuilding {
 	public ItemStack sentryBullet2 = ItemFromData.getNewStack("sentrybullet2");
 	public ItemStack sentryRocket = ItemFromData.getNewStack("sentryrocket");
 	public float rotationDefault = 0;
-	public int attackDelay;
+	public float attackDelay;
 	public int attackDelayRocket;
 	public boolean shootRocket;
 	public boolean shootBullet;
@@ -100,7 +105,7 @@ public class EntitySentry extends EntityBuilding {
 		else if (this.getLevel() == 2)
 			this.setSize(1f, 1f);
 		else if (this.getLevel() == 3)
-			this.setSize(1.2f, 1.2f);
+			this.setSize(1f, 1.2f);
 		//System.out.println(x);
 	}
 
@@ -127,7 +132,7 @@ public class EntitySentry extends EntityBuilding {
 
 	@Override
 	public void setAttackTarget(EntityLivingBase target) {
-		if (TF2Util.isOnSameTeam(this.getOwner(), target))
+		if (TF2Util.isOnSameTeam(this, target))
 			return;
 		if (target != this.getAttackTarget() && target != null)
 			this.playSound(TF2Sounds.MOB_SENTRY_SPOT, 1.5f, 1f);
@@ -145,9 +150,9 @@ public class EntitySentry extends EntityBuilding {
 						return (((((getAttackFlags() & 2) == 2 && getOwnerId() != null) && target instanceof EntityPlayer) 
 								|| target.getTeam() != null
 								|| ((getAttackFlags() & 1) == 1 && (getRevengeTarget()==target || (getOwner() != null && getOwner().getRevengeTarget()==target)))
-								|| ((getAttackFlags() & 4) == 4 && target instanceof IMob && getOwnerId() != null)
-								|| ((getAttackFlags() & 4) == 4 && target instanceof EntityLiving && ((EntityLiving) target).getAttackTarget() == getOwner()))
-								|| ((getAttackFlags() & 8) == 8 && !(target instanceof EntityPlayer) && !(target instanceof IMob) && getOwnerId() != null))
+								|| ((getAttackFlags() & 4) == 4 && TF2Util.isHostile(target) && getOwnerId() != null)
+								|| ((getAttackFlags() & 4) == 4 && target instanceof EntityLiving && TF2Util.isOnSameTeam(EntitySentry.this, ((EntityLiving) target).getAttackTarget())))
+								|| ((getAttackFlags() & 8) == 8 && !(target instanceof EntityPlayer) && !(TF2Util.isHostile(target)) && getOwnerId() != null))
 								&& (!TF2Util.isOnSameTeam(EntitySentry.this, target))
 								&& (!(target instanceof EntityTF2Character && TF2ConfigVars.naturalCheck.equals("Never"))
 										|| !((EntityTF2Character) target).natural);
@@ -208,7 +213,7 @@ public class EntitySentry extends EntityBuilding {
 	}
 
 	public void shootRocket(EntityLivingBase owner) {
-		while (this.getLevel() == 3 && this.getRocketAmmo() > 0 && this.attackDelayRocket <= 0) {
+		while (this.getLevel() == 3 && this.getRocketAmmo() > 0 && this.attackDelayRocket <= 0 && this.consumeEnergy(this.getMinEnergy()*10)) {
 			this.attackDelayRocket += 60;
 			if (this.isControlled())
 				this.attackDelayRocket *= 0.75f;
@@ -248,17 +253,17 @@ public class EntitySentry extends EntityBuilding {
 	}
 
 	public void shootBullet(EntityLivingBase owner) {
-		this.setSoundState(this.getAmmo() > 0 ? 2 : 3);
+		this.setSoundState(this.getAmmo() > 0 && this.energy.getEnergyStored() > this.getMinEnergy() ? 2 : 3);
 		Vec3d attackPos = this.isControlled()
 				? new Vec3d(this.getLookHelper().getLookPosX(), this.getLookHelper().getLookPosY(),
 						this.getLookHelper().getLookPosZ())
 				: this.getAttackTarget().getPositionVector().addVector(0, this.getAttackTarget().getEyeHeight(), 0);
-		while (this.attackDelay <= 0 && this.getAmmo() > 0) {
+		while (this.attackDelay <= 0 && this.getAmmo() > 0 && this.consumeEnergy(this.getMinEnergy())) {
 			if(this.getOwnerId() != null && this.ticksExisted % 10 == 0)
 				TF2Util.attractMobs(this, this.world);
 			this.attackDelay += this.getLevel() > 1 ? 2.5f : 5f;
 			if (this.isControlled())
-				this.attackDelay /= 2;
+				this.attackDelay /= 2f;
 			this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
 					1f);
 			List<RayTraceResult> list = TF2Util.pierce(this.world, this, this.posX,
@@ -353,7 +358,7 @@ public class EntitySentry extends EntityBuilding {
 		if (this.getTargetInfo() == -1)
 			this.setTargetInfo(this.getOwner() != null && this.getOwner() instanceof EntityPlayer ? 
 					WeaponsCapability.get(this.getOwner()).sentryTargets
-					: 1);
+					: 5);
 		return this.getTargetInfo();
 	}
 
@@ -415,6 +420,14 @@ public class EntitySentry extends EntityBuilding {
 		this.setAmmo(200);
 	}
 
+	public int getMinEnergy() {
+		return this.getOwnerId() != null ? TF2ConfigVars.sentryUseEnergy : 0;
+	}
+	
+	public boolean shouldUseBlocks() {
+		return TF2ConfigVars.sentryUseEnergy >= 0 && super.shouldUseBlocks();
+	}
+	
 	public boolean isControlled() {
 		// TODO Auto-generated method stub
 		return this.isEntityAlive() && this.dataManager.get(CONTROLLED);// this.getOwner()
@@ -431,11 +444,11 @@ public class EntitySentry extends EntityBuilding {
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
-		if (this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
-			ClientProxy.showGuiSentry(this);
+		if (!this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
-		return false;
+		return true;
 	}
 	
 	public void onDeath(DamageSource s){
@@ -557,7 +570,5 @@ public class EntitySentry extends EntityBuilding {
 	public int getConstructionTime() {
 		return 10500;
 	}
-	/*public EntityLookHelper getLookHelper() {
-		return lookHelper;
-	}*/
+
 }

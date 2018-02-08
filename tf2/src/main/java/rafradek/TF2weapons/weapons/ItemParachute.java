@@ -19,7 +19,7 @@ import net.minecraftforge.common.ISpecialArmor;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
-public class ItemParachute extends ItemFromData implements ISpecialArmor {
+public class ItemParachute extends ItemBackpack implements ISpecialArmor {
 
 	public ItemParachute() {
 		this.setMaxDamage(1000);
@@ -39,27 +39,12 @@ public class ItemParachute extends ItemFromData implements ISpecialArmor {
 	}
 
 	@Override
-	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
-		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
-
-		if (slot == EntityEquipmentSlot.CHEST) {
-			multimap.put(SharedMonsterAttributes.ARMOR.getName(),
-					new AttributeModifier(UUID.fromString("D8499B04-0E66-4726-AB29-64469D234E0D"), "Armor modifier", getData(stack).getFloat(PropertyType.ARMOR), 0));
-			multimap.put(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(),
-					new AttributeModifier(UUID.fromString("D8499B04-0E66-4726-AB29-64469D234AB7"),
-							"Armor toughness modifier", getData(stack).getFloat(PropertyType.ARMOR_TOUGHNESS), 0));
-		}
-
-		return multimap;
-	}
-	
-	@Override
 	public void damageArmor(EntityLivingBase entity, ItemStack stack, DamageSource source, int damage, int slot) {
 		stack.damageItem((int) (damage * (stack.getTagCompound().getBoolean("Deployed")?8:1)), entity);
 	}
 
 	@Override
-	public void onArmorTick(World world, final EntityPlayer player, ItemStack itemStack) {
+	public void onArmorTickAny(World world, final EntityLivingBase player, ItemStack itemStack) {
 		if (itemStack.getTagCompound().getBoolean("Deployed")) {
 			player.motionY=Math.max(-0.1f, player.motionY);
 			player.fallDistance=0f;
@@ -70,14 +55,4 @@ public class ItemParachute extends ItemFromData implements ISpecialArmor {
 				itemStack.getTagCompound().setBoolean("Deployed", false);
 		}
 	}
-	@Override
-	public boolean isValidArmor(ItemStack stack, EntityEquipmentSlot armorType, Entity entity) {
-		return armorType == EntityEquipmentSlot.CHEST;
-	}
-	
-	public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.enchantment.Enchantment enchantment)
-    {
-        return super.canApplyAtEnchantingTable(stack, enchantment) 
-        		|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR || enchantment.type == EnumEnchantmentType.WEARABLE;
-    }
 }

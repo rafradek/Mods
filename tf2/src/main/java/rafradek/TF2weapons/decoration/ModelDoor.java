@@ -1,4 +1,4 @@
-package rafradek.TF2weapons;
+package rafradek.TF2weapons.decoration;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;

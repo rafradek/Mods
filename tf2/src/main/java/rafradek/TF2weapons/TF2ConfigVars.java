@@ -50,9 +50,16 @@ public class TF2ConfigVars {
 	public static float mercenaryVolume;
 	public static float bossVolume;
 	public static float gunVolume;
+	public static boolean enchantedExplosion;
+	public static float maxEnergy;
+	public static boolean buildingsUseEnergy;
+	public static int sentryUseEnergy;
+	public static int dispenserUseEnergy;
+	public static int teleporterUseEnergy;
 	public static Map<Class<? extends EntityLiving>, Integer> spawnRate;
 
 	public static ArrayList<ResourceLocation> repairBlacklist;
+	public static ArrayList<ResourceLocation> hostileBlacklist;
 	public TF2ConfigVars() {
 		// TODO Auto-generated constructor stub
 	}
@@ -89,13 +96,30 @@ public class TF2ConfigVars {
 				&& Loader.isModLoaded("dynamiclights");
 		dynamicLightsProj = conf.getBoolean("Dynamic Lights - Projectiles", "modcompatibility", true, "Should projectiles emit light");
 		bossReappear = conf.getInt("Boss respawn cooldown", "gameplay", 360000, 0, Integer.MAX_VALUE, "Maximum boss reappear time in ticks. Bosses always spawn in full moon");
+		
 		dispenserRepair = conf.getFloat("Dispenser repair rate", "gameplay", 3, 0, 10000, "Repair per 1 metal. Reduced by enchants");
 		String[] blacklist = conf.getStringList("Repair blacklist", "gameplay", new String[0], "Item IDs that should not be repairable by dispensers");
+		String[] hostileblacklist = conf.getStringList("Hostile entity blacklist", "gameplay", new String[] {
+				"minecraft:enderman", "minecraft:zombie_pigman"
+		}, "Entity IDs that should not be considered hostile");
+		
 		enableUdp = conf.getBoolean("Enable UDP (experimental)", "gameplay", false, "");
 		targetSentries = conf.getBoolean("Mobs target sentries", "gameplay", true, "Mobs will attack sentries that dont shoot");
 		bossVolume = conf.getFloat("Boss volume (radius)", "sound volume", 4f, 0, 10, "Values above 1 increase sound radius only");
 		mercenaryVolume = conf.getFloat("Mercenary volume (radius)", "sound volume", 0.6f, 0, 10, "Values above 1 increase sound radius only");
 		gunVolume = conf.getFloat("Gun volume (radius)", "sound volume", 2f, 0, 10, "Applies only to players, values above 1 increase sound radius only");
+		enchantedExplosion = conf.getBoolean("Enchanted blast jumping", "gameplay", true, "Strafing, no air resistance and reduced gravity when blast jumping");
+		
+		buildingsUseEnergy = conf.getBoolean("Buildings use energy", "gameplay", false, "");
+		sentryUseEnergy = conf.getInt("Sentry energy use", "gameplay", 100, 0, 40000, "Energy use on attack");
+		dispenserUseEnergy = conf.getInt("Dispenser energy use", "gameplay", 15, 0, 40000, "Energy use on repairs and heals");
+		teleporterUseEnergy = conf.getInt("Teleport energy use", "gameplay", 20000, 0, 40000, "Energy use on teleport");
+		
+		if(!buildingsUseEnergy) {
+			sentryUseEnergy = 0;
+			dispenserUseEnergy = 0;
+			teleporterUseEnergy = 0;
+		}
 		
 		conf.getBoolean("Attack on hurt", "default building targets", true, "");
 		conf.getBoolean("Attack other players", "default building targets", false, "");
@@ -122,6 +146,10 @@ public class TF2ConfigVars {
 		repairBlacklist = new ArrayList<>();
 		for(String id : blacklist) {
 			repairBlacklist.add(new ResourceLocation(id));
+		}
+		hostileBlacklist = new ArrayList<>();
+		for(String id : hostileblacklist) {
+			hostileBlacklist.add(new ResourceLocation(id));
 		}
 		
 		if (conf.hasChanged())

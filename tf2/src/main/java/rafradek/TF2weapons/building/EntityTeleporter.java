@@ -23,10 +23,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityTeleporter extends EntityBuilding {
@@ -82,7 +85,7 @@ public class EntityTeleporter extends EntityBuilding {
 					ticksToTeleport = 10;
 				else {
 					TeleporterData exit = this.getTeleportExit();
-					if (exit != null) {
+					if (exit != null && this.consumeEnergy(this.getMinEnergy())) {
 						if (exit.dimension != this.dimension) {
 							if(entityIn instanceof EntityPlayerMP && net.minecraftforge.common.ForgeHooks.onTravelToDimension(this, exit.dimension)) {
 								this.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) entityIn, 
@@ -221,14 +224,15 @@ public class EntityTeleporter extends EntityBuilding {
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		
 		if (player == this.getOwner() && player.getHeldItem(hand).getItem() instanceof ItemDye) {
 			if(!world.isRemote) {
 				this.setColor(player.getHeldItem(hand).getMetadata());
 			}
 			return true;
 		}
-		if (this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
-			ClientProxy.showGuiTeleporter(this);
+		if (!this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
 		return false;
@@ -373,6 +377,14 @@ public class EntityTeleporter extends EntityBuilding {
 
 	public int getIronDrop() {
 		return 1 + this.getLevel()/2;
+	}
+	
+	public boolean shouldUseBlocks() {
+		return TF2ConfigVars.teleporterUseEnergy >= 0 && super.shouldUseBlocks();
+	}
+	
+	public int getMinEnergy() {
+		return this.getOwnerId() != null ? TF2ConfigVars.teleporterUseEnergy : 0;
 	}
 	
 	@Override

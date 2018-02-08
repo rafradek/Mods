@@ -141,6 +141,7 @@ public class ClientProxy extends CommonProxy {
 	public static int renderCritGlow;
 	public static boolean inRenderHand;
 	public static boolean inRenderHandTicked;
+	public static boolean buildingsUseEnergy;
 
 	public static final Logger LOGGER = (Logger) LogManager.getLogger();
 	@Override
@@ -225,48 +226,7 @@ public class ClientProxy extends CommonProxy {
 
 		for (RenderPlayer render : Minecraft.getMinecraft().getRenderManager().getSkinMap().values()) {
 			render.addLayer(new LayerWearables(render, render.getMainModel()));
-			/*render.addLayer(new LayerBipedArmor(render) {
-
-				@Override
-				protected void initArmor() {
-					this.modelLeggings = new ModelBiped(0.5F);
-					this.modelArmor = new ModelBiped(1.25F);
-				}
-
-				@Override
-				public ItemStack getItemStackFromSlot(EntityLivingBase living, EntityEquipmentSlot slotIn) {
-
-					if (slotIn == EntityEquipmentSlot.CHEST)
-						return living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3);
-
-					return null;
-				}
-
-			});*/
 		}
-
-		/*
-		 * Minecraft.getMinecraft().getRenderItem().getItemModelMesher().
-		 * register(TF2weapons.itemPlacer, new ItemMeshDefinition() { public
-		 * ModelResourceLocation getModelLocation(ItemStack stack) { return new
-		 * ModelResourceLocation("spawn_egg", "inventory"); } });
-		 */
-		/*
-		 * Minecraft.getMinecraft().getRenderItem().getItemModelMesher().
-		 * register(TF2weapons.itemDisguiseKit, new ItemMeshDefinition() {
-		 * public ModelResourceLocation getModelLocation(ItemStack stack) {
-		 * return new ModelResourceLocation(TF2weapons.MOD_ID+":disguiseKit",
-		 * "inventory"); } });
-		 */
-		/*
-		 * Minecraft.getMinecraft().getRenderItem().getItemModelMesher().
-		 * register(TF2weapons.itemBuildingBox, new ItemMeshDefinition() {
-		 * public ModelResourceLocation getModelLocation(ItemStack stack) {
-		 * return new ModelResourceLocation("spawn_egg", "inventory"); } });
-		 */
-		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(p_178086_1_,
-		// p_178086_2_, p_178086_3_);
-		
 		reloadSounds = new HashMap<EntityLivingBase, ReloadSound>();
 		soundsToStart = new ConcurrentHashMap<EntityLivingBase, ItemStack>();
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
@@ -275,71 +235,9 @@ public class ClientProxy extends CommonProxy {
 		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
-		/*entityModel.put("Creeper", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
-				.get(EntityCreeper.class)).getMainModel());
-		textureDisguise.put("Creeper", new ResourceLocation("textures/entity/creeper/creeper.png"));
-		entityModel.put("Zombie", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
-				.get(EntityZombie.class)).getMainModel());
-		textureDisguise.put("Zombie", new ResourceLocation("textures/entity/zombie/zombie.png"));
-		entityModel.put("Enderman", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
-				.get(EntityEnderman.class)).getMainModel());
-		textureDisguise.put("Enderman", new ResourceLocation("textures/entity/enderman/enderman.png"));
-		entityModel.put("Spider", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
-				.get(EntitySpider.class)).getMainModel());
-		textureDisguise.put("Spider", new ResourceLocation("textures/entity/spider/spider.png"));
-		entityModel.put("Cow",
-				((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap.get(EntityCow.class))
-						.getMainModel());
-		textureDisguise.put("Cow", new ResourceLocation("textures/entity/cow/cow.png"));
-		entityModel.put("Pig",
-				((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap.get(EntityPig.class))
-						.getMainModel());
-		textureDisguise.put("Pig", new ResourceLocation("textures/entity/pig/pig.png"));
-		entityModel.put("Chicken", ((RenderLivingBase<?>) Minecraft.getMinecraft().getRenderManager().entityRenderMap
-				.get(EntityChicken.class)).getMainModel());
-		textureDisguise.put("Chicken", new ResourceLocation("textures/entity/chicken.png"));*/
-		
-			/*((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener(){
-
-				@Override
-				public void onResourceManagerReload(final IResourceManager resourceManager) {
-					new Thread(new Runnable(){
-
-						@Override
-						public void run() {
-							try {
-								Field field=LanguageManager.class.getDeclaredField("CURRENT_LOCALE");
-								field.setAccessible(true);
-								Locale loc=(Locale) field.get(null);
-								Method method=loc.getClass().getDeclaredMethod("loadLocaleData", new Class<?>[]{InputStream.class});
-								method.setAccessible(true);
-								method.invoke(loc, resourceManager.getResource(new ResourceLocation(TF2weapons.MOD_ID,"lange/en_us.lang")).getInputStream());
-							} catch (Exception e){
-								e.printStackTrace();
-							}
-						}
-					}).run();
-					
-						
-						/*Map<String,String> map=new HashMap<>();
-						FMLCommonHandler.instance().loadLanguage(map, );
-						for(Entry<String,String> entry:map.entrySet()){
-							System.out.println(entry.getKey()+" "+entry.getValue());
-						}
-				}
-				
-			});*/
-			
-			
-		
-		// RenderingRegistry.registerEntityRenderingHandler(EntityScout.class,
-		// new RenderTF2Character());
-		// Minecraft.getMinecraft().renderEngine.loadTextureMap(new
-		// ResourceLocation("textures/tfatlas/particles.png"), particleMap=new
-		// TF2TextureMap("textures/particle"));
 		try {
 					//System.out.println("Is Class: "+logger.getClass().getCanonicalName());
-					Filter filter= new AbstractFilter() {
+					/*Filter filter= new AbstractFilter() {
 						 @Override
 						    public Result filter(final LogEvent event) {
 							 	if(event.getLoggerName().equals("net.minecraft.client.multiplayer.GuiConnecting")) {
@@ -351,29 +249,7 @@ public class ClientProxy extends CommonProxy {
 						    }
 					};
 					filter.start();
-					/*Writer writer =new Writer() {
-
-						@Override
-						public void close() throws IOException {
-							// TODO Auto-generated method stub
-							
-						}
-
-						@Override
-						public void flush() throws IOException {
-							// TODO Auto-generated method stub
-							
-						}
-
-						@Override
-						public void write(char[] arg0, int arg1, int arg2) throws IOException {
-							//System.out.println(new String(arg0));
-						}
-						
-					};
-					WriterAppender app=WriterAppender.createAppender(null, filter, writer, "lel", true, false);
-					app.start();*/
-					LOGGER.get().addFilter(filter);
+					LOGGER.get().addFilter(filter);*/
 					//logger.get().addAppender(app, org.apache.logging.log4j.Level.ALL, null);
 		} catch (Exception e) {
 			
@@ -502,6 +378,25 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_weapon", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 10,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_hat", "inventory"));
+		
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_scout", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 1,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_soldier", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 2,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_pyro", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 3,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_demoman", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 4,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_heavy", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 5,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_engineer", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 6,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_medic", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 7,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_sniper", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 8,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_spy", "inventory"));
 		
 		RenderingRegistry.registerEntityRenderingHandler(EntityTF2Character.class,
 				new IRenderFactory<EntityTF2Character>() {

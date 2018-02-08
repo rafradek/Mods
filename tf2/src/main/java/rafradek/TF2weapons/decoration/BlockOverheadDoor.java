@@ -1,4 +1,4 @@
-package rafradek.TF2weapons;
+package rafradek.TF2weapons.decoration;
 
 import java.util.Random;
 
@@ -9,17 +9,22 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockOverheadDoor extends BlockContainer {
 
@@ -65,11 +70,11 @@ public class BlockOverheadDoor extends BlockContainer {
 				}
 			}
 			else {
-				if(slide != 0)
+				if(slide != 0) {
 					world.setBlockState(pos, state.withProperty(SLIDE, slide - 1));
-				else if (bottom.getBlock().isAir(state, world, pos.down())) {
+				}
+				else if (world.isAirBlock(pos.down())) {
 					world.setBlockState(pos.down(), state.withProperty(SLIDE, 3));
-					System.out.println("Bottom is air");
 				}
 			}
 		}
@@ -78,7 +83,27 @@ public class BlockOverheadDoor extends BlockContainer {
 	}
 	
 	public int tickRate(World world) {
-		return 2;
+		return 1;
+	}
+	
+	public BlockFaceShape getBlockFaceShape(IBlockAccess world, IBlockState state, BlockPos pos, EnumFacing face) {
+		return face == state.getValue(FACING) ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
+    }
+	
+	public boolean isFullCube(IBlockState state)
+    {
+        return false;
+    }
+	
+	@Override
+	public boolean isOpaqueCube(IBlockState state) {
+		return false;
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public BlockRenderLayer getBlockLayer() {
+		return BlockRenderLayer.CUTOUT;
 	}
 	
 	@Override

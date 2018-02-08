@@ -43,10 +43,14 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 
 	@Override
 	public void setDead() {
-		if (this.impact)
-			this.impact = false;
-		else
-			super.setDead();
+		if (this.world.isRemote && this.sticked && this.getThrower() != null) {
+			EntityStickProjectile ent = new EntityStickProjectile(this.world);
+			ent.setPositionAndRotation(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
+			ent.sticked = true;
+			ent.stickedBlock = this.stickedBlock;
+			this.world.spawnEntity(ent);
+		}
+		super.setDead();
 	}
 
 	@Override

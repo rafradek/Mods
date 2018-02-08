@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -9,6 +10,8 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.weapons.ItemBackpack;
+import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntitySoldier extends EntityTF2Character {
@@ -40,6 +43,12 @@ public class EntitySoldier extends EntityTF2Character {
 	 * this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 	 * ItemFromData.getNewStack("rocketlauncher")); }
 	 */
+	protected void addWeapons() {
+		super.addWeapons();
+		if(this.loadout.getStackInSlot(1).getItem() instanceof ItemBackpack) {
+			this.setItemStackToSlot(EntityEquipmentSlot.CHEST, this.loadout.getStackInSlot(1));
+		}
+	}
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootSoldier;
@@ -74,6 +83,7 @@ public class EntitySoldier extends EntityTF2Character {
 				}
 			}
 		}
+		
 		/*
 		 * if(this.rocketJump&&this.getEntityData().getCompoundTag("TF2").
 		 * getShort("reload")<=50){

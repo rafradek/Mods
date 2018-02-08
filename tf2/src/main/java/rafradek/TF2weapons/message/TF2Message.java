@@ -705,25 +705,30 @@ public abstract class TF2Message implements IMessage {
 
 		int id;
 		
+		boolean energyUse;
+		
 		public InitMessage() {
 
 		}
 
-		public InitMessage(int port, int id) {
+		public InitMessage(int port, int id, boolean energyUse) {
 			this.port = port;
 			this.id = id;
+			this.energyUse = energyUse;
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			this.port = buf.readUnsignedShort();
 			this.id = buf.readShort();
+			this.energyUse = buf.readBoolean();
 		}
 
 		@Override
 		public void toBytes(ByteBuf buf) {
 			buf.writeShort(this.port);
 			buf.writeShort(id);
+			buf.writeBoolean(this.energyUse);
 		}
 	}
 	

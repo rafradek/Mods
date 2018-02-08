@@ -15,19 +15,23 @@ import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketExplosion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
@@ -263,7 +267,7 @@ public class TF2Util {
 		// stack, 1,living))-1*TF2Attribute.getModifier("Accuracy", stack,
 		// 1,living));
 		// System.out.println((distance-weapon.getWeaponDamageFalloff(stack))-(weapon.getWeaponDamageFalloff(stack)*2));
-		if (target instanceof EntityEnderman && !(stack.getItem() instanceof ItemMeleeWeapon))
+		if (target instanceof EntityEnderman && !(stack.getItem() instanceof ItemMeleeWeapon || TF2Attribute.getModifier("Unblockable", stack, 0, living) != 0))
 			calculateddamage *= 0.4f;
 		
 		if (living != null && target instanceof EntityLivingBase && living.hasCapability(TF2weapons.WEAPONS_CAP, null) 
@@ -417,7 +421,7 @@ public class TF2Util {
 		double lvelocityY = entity.motionY;
 		double lvelocityZ = entity.motionZ;
 		entity.hurtResistantTime = 0;
-	
+		
 		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer)) {
 			if(world.getDifficulty() == EnumDifficulty.NORMAL) {
 				damage *= 0.7f;
@@ -433,18 +437,19 @@ public class TF2Util {
 	
 		if (entity == living && source instanceof TF2DamageSource && living instanceof EntityPlayer && living.getTeam() != null) {
 			((TF2DamageSource) source).setAttackSelf();
-			TF2weapons.dummyEnt.world = world;
+			//TF2weapons.dummyEnt.world = world;
 		}
 		
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && ItemFromData.getData(stack).hasProperty(PropertyType.HIT_SOUND))
 			TF2Util.playSound(entity, ItemFromData.getSound(stack, PropertyType.HIT_SOUND), ItemFromData.getData(stack).getName().equals("fryingpan") ? 2F : 0.7F, 1F);
 		//System.out.println("dealt: " + damage);
 		boolean knockback = canHit(living, entity);
-		if (knockback && isUsingShield(entity, source)) {
+		if (knockback && isUsingShield(entity, source) && source.getDamageLocation() == null && TF2Attribute.getModifier("Unblockable", stack, 0, living) != 1) {
 			((EntityLivingBase)entity).getActiveItemStack().damageItem((int) (damage*(source.isExplosion()?4f:2f)), (EntityLivingBase) entity);
-			damage*=0.45f;
+			damage*=source.isExplosion() ? 0.3f : 0.45f;
 		}
 		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth():0f;
+		
 		if (knockback && entity.attackEntityFrom(source, damage)) {
 			//System.out.println("realD");
 			if (source instanceof TF2DamageSource && !((TF2DamageSource)source).getWeaponOrig().isEmpty())
@@ -669,8 +674,9 @@ public class TF2Util {
 			
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
 			if(vec != null) {
+				
 				boolean expJump=ent == shooter && explosion.affectedEntities.size() == 1;
-				vec=vec.scale(dmg/(expJump?6f:9f) * 
+				vec=vec.scale(dmg/(expJump?9f:9f) * 
 						(ent instanceof EntityLivingBase && !expJump? 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue():1));	
 				if(ent.motionY!=0)
 					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.y)/ent.motionY));
@@ -682,14 +688,23 @@ public class TF2Util {
 						ent.fallDistance -= vec.y * 3 - 1;
 				}
 				ent.addVelocity(vec.x, vec.y, vec.z);
+				//System.out.println("Explosion vec "+vec.lengthVector() * 20 + " "+ Math.sqrt(vec.x * vec.x + vec.z * vec.z) * 20 + " " + dmg * entry.getValue());
 				explosion.getKnockbackMap().put(ent, vec);
+				/*if (ent instanceof EntityPlayer)
+					ent.addVelocity(vec.x*3, 0, vec.y*3);*/
 				
 			}
 			if(ent==shooter)
 				dmg= TF2Attribute.getModifier("Self Damage", weapon, dmg, shooter);
 			
+			DamageSource source;
+			if (TF2Attribute.getModifier("Unblockable", weapon, 0, shooter) == 1)
+				source = TF2Util.causeDirectDamage(weapon, shooter, criticalloc);
+			else
+				source = TF2Util.causeBulletDamage(weapon, shooter, criticalloc, exploder);
+			
 			dealDamage(ent, world, shooter, weapon, criticalloc, entry.getValue() * dmg,
-					TF2Util.causeBulletDamage(weapon, shooter, criticalloc, exploder).setExplosion());
+					source.setExplosion());
 			/*if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
 				killedInRow++;
 				if (killedInRow > 2 && exploder instanceof EntityRocket && shooter instanceof EntityPlayerMP && TF2weapons.isEnemy(shooter, (EntityLivingBase) ent)) {
@@ -801,6 +816,13 @@ public class TF2Util {
 			TF2weapons.network.sendTo(message, (EntityPlayerMP) player);
 		}
 	}
+	
+	public static void sendTrackingExcluding(IMessage message,Entity entity){
+		for(EntityPlayer player:((WorldServer)entity.world).getEntityTracker().getTrackingPlayers(entity)){
+			TF2weapons.network.sendTo(message, (EntityPlayerMP) player);
+		}
+	}
+	
 	/*public static TargetPoint pointFromEntity(Entity entity) {
 		return new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 256);
 	}*/
@@ -850,7 +872,7 @@ public class TF2Util {
 						@Override
 						public boolean apply(EntityCreature input) {
 							// TODO Auto-generated method stub
-							return input.getAttackTarget() == null && (input instanceof IMob) && input.isNonBoss();
+							return input.getAttackTarget() == null && input.isNonBoss() && TF2Util.isHostile(input);
 						}
 
 					})) {
@@ -873,6 +895,38 @@ public class TF2Util {
 
 			}
 		}
+	}
+	
+	public static void addModifierSafe(EntityLivingBase living, IAttribute attribute, AttributeModifier modifier, boolean saved) {
+		living.getEntityAttribute(attribute).removeModifier(modifier.getID());
+		living.getEntityAttribute(attribute).applyModifier(modifier);
+		if(!saved)
+			modifier.setSaved(false);
+	}
+	
+	public static boolean isHostile(EntityLivingBase living) {
+		return living instanceof IMob && !TF2ConfigVars.hostileBlacklist.contains(EntityList.getKey(living));
+	}
+	
+	public static Vec3d getRotationVector(float pitch, float yaw)
+    {
+        float f = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
+        float f1 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
+        float f2 = -MathHelper.cos(-pitch * 0.017453292F);
+        float f3 = MathHelper.sin(-pitch * 0.017453292F);
+        return new Vec3d((double)(f1 * f2), (double)f3, (double)(f * f2));
+    }
+	public static double getYaw(double x, double z) {
+		return MathHelper.atan2(x, z) * 180.0D / Math.PI;
+	}
+	
+	public static boolean isBaseSame(NBTTagCompound base, NBTTagCompound second) {
+		if (base != null)
+			for(String key : base.getKeySet()) {
+				if(!base.getTag(key).equals(second.getTag(key)))
+					return false;
+			}
+		return true;
 	}
 	static {
 		for (int i = 0; i < 32; ++i)

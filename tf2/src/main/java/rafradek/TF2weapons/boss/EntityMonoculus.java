@@ -466,7 +466,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				return false;
 			EntityMoveHelper entitymovehelper = this.parentEntity.getMoveHelper();
 
-			if (!entitymovehelper.isUpdating())
+			if (!entitymovehelper.isUpdating() || !this.parentEntity.isWithinHomeDistanceCurrentPosition())
 				return true;
 			else {
 				double d0 = entitymovehelper.getX() - this.parentEntity.posX;
@@ -495,7 +495,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 			BlockPos pos = this.parentEntity.world.getTopSolidOrLiquidBlock(this.parentEntity.getPosition());
 			double d1 = Math.min(pos.getY() + 16, this.parentEntity.posY + (random.nextFloat() * 2.0F - 1.0F) * 16.0F);
 			double d2 = this.parentEntity.posZ + (random.nextFloat() * 2.0F - 1.0F) * 16.0F;
-			this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1.0D);
+			if(this.parentEntity.isWithinHomeDistanceCurrentPosition() 
+					|| this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) > this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition()))
+				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1.0D);
 		}
 	}
 

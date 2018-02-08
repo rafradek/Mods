@@ -18,10 +18,12 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.CraftingHelper.ShapedPrimer;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.ItemToken;
 
 public class TF2CraftingManager {
 	public static final ShapelessOreRecipe[] AMMO_RECIPES = new ShapelessOreRecipe[14];
@@ -33,21 +35,21 @@ public class TF2CraftingManager {
 		bonk.setCount( 2);
 		ItemStack cola = ItemFromData.getNewStack("critcola");
 		cola.setCount( 2);
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[1] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 9, 1),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[1] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 13, 1),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[2] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 25, 2),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[2] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 45, 2),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[3] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 25, 3),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[3] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 45, 3),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[4] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 10, 4),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[4] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 16, 4),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 40, 5),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 64, 5),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[6] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 4, 6),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[6] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 5, 6),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[7] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 12, 7),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[7] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 20, 7),
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[8] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 12, 8),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[8] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 20, 8),
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[11] = new ShapelessOreRecipe(
 				null, new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
@@ -116,6 +118,7 @@ public class TF2CraftingManager {
 		ItemStack madmilk = ItemFromData.getNewStack("madmilk");
 		madmilk.getTagCompound().setBoolean("IsEmpty", true);
 		addRecipe(new ShapedOreRecipe(null,madmilk, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
+		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("basejumper"), new Object[] {"LLL", "S S", " s ", 'L', "leather", 'S', "string", 's', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
 		ItemStack banner=new ItemStack(Items.BANNER,1,EnumDyeColor.RED.getDyeDamage());
 		banner.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", new NBTTagList());
 		banner.setCount(2);
@@ -134,7 +137,11 @@ public class TF2CraftingManager {
 				new ItemStack(TF2weapons.itemTF2, 1, 5), new ItemStack(TF2weapons.itemTF2, 1, 5));
 		
 		addRecipe(new OpenCrateRecipe());
-		addRecipe(new RecipeToScrap());
+		addRecipe(new RecipeToScrap(-1));
+		for(int i = 0; i < 9; i++)
+			addRecipe(new RecipeToScrap(i));
+		addRecipe(new RecipeToken(null, new ItemStack(TF2weapons.itemTF2, 1, 9), new Object[] {new ItemStack(TF2weapons.itemTF2, 1, 3),
+				new ItemStack(TF2weapons.itemToken, 1, OreDictionary.WILDCARD_VALUE)}));
 	}
 
 	public ShapedRecipes addRecipe(ItemStack stack, Object... recipeComponents) {

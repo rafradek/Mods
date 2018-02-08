@@ -27,7 +27,7 @@
 		"Spread recovery": false,
 		"Ammo type": 1,
 		"Recoil": 7,
-		"Efficient range": 20,
+		"Efficient range": 14,
 		"Drop chance": 0.12,
 		"Stock": true,
 		"Cost": 12
@@ -71,7 +71,7 @@
 		"Spread recovery": false,
 		"Ammo type": 1,
 		"Recoil": 7,
-		"Efficient range": 20,
+		"Efficient range": 14,
 		"Drop chance": 0.1,
 		"Stock": true,
 		"Cost": 15
@@ -140,7 +140,7 @@
 		"Knockback": 3,
 		"Spread recovery": false,
 		"Ammo type": 2,
-		"Efficient range": 20,
+		"Efficient range": 19,
 		"Drop chance": 0.045,
 		"Stock": true,
 		"Cost": 36
@@ -350,7 +350,7 @@
 		"Knockback": 5,
 		"Spread recovery": false,
 		"Ammo type": 8,
-		"Efficient range": 21.5,
+		"Efficient range": 20,
 		"Drop chance": 0.065,
 		"Stock": true,
 		"Cost": 25
@@ -601,7 +601,7 @@
 		"Render": "rafradek_tf2_weapons:bonk",
 		"Duration": 160,
 		"Cooldown": 600,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Cost": 3,
 		"Description": "Makes you invulnerable for 8 seconds, but cannot attack"
 	},
@@ -615,7 +615,7 @@
 		"Render": "rafradek_tf2_weapons:critacola",
 		"Duration": 540,
 		"Cooldown": 1200,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Cost": 3,
 		"Description": "Increases speed by 25% and damage by 35% for 27 seconds"
 	},
@@ -635,7 +635,7 @@
 		"Firing speed": 30,
 		"Drop chance": 0.07,
 		"Cost": 18,
-		"Armor": 6,
+		"Armor": 5,
 		"Wear flags": 2,
 		"Description": "Deal damage to fill rage meter.\nUse horn to activate a buff\nthat increases damage dealt by 35%\nfor you and all allies nearby"
 	},
@@ -655,10 +655,14 @@
 		"Firing speed": 30,
 		"Drop chance": 0.07,
 		"Cost": 18,
-		"Armor": 6,
+		"Armor": 5,
 		"Armor toughness": 1,
 		"Wear flags": 2,
-		"Description": "Deal damage to fill rage meter.\nUse horn to activate a buff\nthat reduces damage received by 35%\nand protects you from crits/enchants\nfor you and all allies nearby"
+		"Description": "Deal damage to fill rage meter.\nUse horn to activate a buff\nthat reduces damage received by 35%\nand protects you from crits/enchants\nfor you and all allies nearby",
+		"Attributes": 
+		{
+			"HealthPenalty": 2
+		}
 	},
 
 	"concheror": 
@@ -676,9 +680,13 @@
 		"Firing speed": 26,
 		"Drop chance": 0.07,
 		"Cost": 18,
-		"Armor": 6,
+		"Armor": 5,
 		"Wear flags": 2,
-		"Description": "Deal damage to fill rage meter.\nUse horn to activate a buff\nthat increases movement speed by 25%\nand heals 35% of damage dealt\nfor you and all allies nearby"
+		"Description": "Deal damage to fill rage meter.\nUse horn to activate a buff\nthat increases movement speed by 25%\nand heals 35% of damage dealt\nfor you and all allies nearby",
+		"Attributes": 
+		{
+			"HealthRegen": 0.4
+		}
 	},
 
 	"sapper": 
@@ -706,7 +714,7 @@
 		"Spread recovery": false,
 		"Efficient range": 1.9,
 		"Drop chance": 0.7,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Cost": 3,
 		"Stock": true,
 		"Description": "Left click to put the sapper on a building"
@@ -956,7 +964,7 @@
 		"Clip size": 1,
 		"Knockback": 3,
 		"Spread recovery": false,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Effect type": "rafradek_tf2_weapons:jarateEff",
 		"Description": "Coated enemies take 35% more damage"
 	},
@@ -1112,7 +1120,7 @@
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sword",
 		"Hit sound": "rafradek_tf2_weapons:mob.hhh.hit",
 		"Hit world sound": "rafradek_tf2_weapons:mob.hhh.miss",
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Attributes": 
 		{
 			"RangeIncrease": 1.5,
@@ -1535,8 +1543,8 @@
 		"Attributes":
 		{
 			"WeaponMode": 1,
-			"CloakRegenBonus": 1.5,
-			"CloakDurationBonus": 1.4,
+			"ChargeBonus": 1.5,
+			"EffectDurationBonus": 1.4,
 			"CloakDrainActivate": 0.5,
 			"NoExternalCloak": 1
 			
@@ -1585,7 +1593,7 @@
 		"Based on": "wrench",
 		"Render": "rafradek_tf2_weapons:wrench",
 		"Drop chance": 0,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Cost": 9,
 		"Stock": false,
 		"Attributes": 
@@ -1594,5 +1602,163 @@
 			"MetalUsedOnHitPenalty": 0.6,
 			"NoRandomCrit": 1
 		}
+	},
+	"grenadeshotgun": 
+	{
+		"Name": "Grenade Shotgun",
+		"Class": "projectile",
+		"Based on": "grenadelauncher",
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Hidden": true,
+		"Cost": 80,
+		"Stock": false,
+		"Attributes": 
+		{
+			"DamagePenalty": 0.4,
+			"PelletBonus": 6,
+			"SpreadAdd": 8,
+			"AmmoEfficiencyPenalty": 1.5,
+			"FireRatePenalty": 1.5,
+			"ClipSizePenalty": 0.5,
+			"DestroyOnImpact": 2
+		}
+	},
+	"autorifle": 
+	{
+		"Name": "Automatic rifle",
+		"Class": "sniperrifle",
+		"Based on": "sniperrifle",
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Clip size": 5,
+		"Hidden": true,
+		"Cost": 80,
+		"Stock": false,
+		"Reloads clip": true,
+		"Reloads full clip": true,
+		"Reload time first": 2100,
+		"Reload time": 2100,
+		"Spread": 0.02,
+		
+		"Attributes": 
+		{
+			"DamagePenalty": 0.4,
+			"FireRateBonus": 0.17,
+			"WeaponMode": 2,
+			"AmmoEfficiencyBonus": 0.4
+		}
+	},
+	"rocketminigun": 
+	{
+		"Name": "Rocket minigun",
+		"Class": "minigun",
+		"Based on": "minigun",
+		"Projectile": "rocket",
+		"Pellets": 1,
+		"Projectile speed": 1.04,
+		"Damage": 5,
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Spread": 6,
+		"Hidden": true,
+		"Cost": 80,
+		"Ammo type": 7,
+		"Attributes": 
+		{
+			"FireRatePenalty": 1.3,
+			"AmmoEfficiencyBonus": 0.4
+		}
+	},
+	"puncturizer": 
+	{
+		"Name": "Puncturize",
+		"Class": "projectile",
+		"Based on": "syringegun",
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Hidden": true,
+		"Cost": 80,
+		"Attributes": 
+		{
+			"SpreadPenalty": 3,
+			"PelletBonus": 10,
+			"FireRatePenalty": 2.5,
+			"ClipSizePenalty": 0.1,
+			"AmmoEfficiencyPenalty": 3
+		}
+	},
+	"bigone": 
+	{
+		"Name": "Big one",
+		"Class": "projectile",
+		"Based on": "rocketlauncher",
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Hidden": true,
+		"Cost": 80,
+		"Min damage": 0.75,
+		"Attributes": 
+		{
+			"FireRatePenalty": 1.75,
+			"ClipSizePenalty": 0.25,
+			"AmmoEfficiencyPenalty": 2,
+			"DamageBonus": 1.7,
+			"ExplosionRadiusBonus": 2,
+			"Unblockable": 1
+		}
+	},
+	"airstrike": 
+	{
+		"Name": "Air Strike",
+		"Class": "projectile",
+		"Based on": "rocketlauncher",
+		"Render": "rafradek_tf2_weapons:rocketlauncher",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.airstrike",
+		"Cost": 30,
+		"Stock": false,
+		"Attributes": 
+		{
+			"SelfDamageReduced": 0.85,
+			"ClipOnKill": 1,
+			"CollectHeads": 1,
+			"DamagePenalty": 0.85,
+			"AirborneBonus": 1
+		}
+	},
+	"fistofsteel": 
+	{
+		"Name": "Fist of Steel",
+		"Class": "melee",
+		"Based on": "fryingpan",
+		"Mobs": "heavy",
+		"Render": "rafradek_tf2_weapons:fists_of_steel",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.gloves",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gloves",
+		"Firing speed": 1200,
+		"Damage": 7.5,
+		"Dual wield speed": 0.65,
+		"Drop chance": 0.11,
+		"Cost": 9,
+		"Attributes": 
+		{
+			"MeleeResistPenalty": 2,
+			"RangedResistBonus": 0.6,
+			"HolsterTimePenalty": 2
+		}
+	},
+	"basejumper": 
+	{
+		"Name": "B.A.S.E Jumper",
+		"Class": "parachute",
+		"Render": "rafradek_tf2_weapons:base_jumper",
+		"Mobs": "solder",
+		"Slot": 2,
+		"Drop chance": 0.07,
+		"Cost": 15,
+		"Armor": 4,
+		"Wear flags": 2,
+		"Description": "Press jump button while airborne to activate",
+		"Stock": false
 	}
 }

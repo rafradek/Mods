@@ -194,8 +194,8 @@ public abstract class EntityProjectileBase extends Entity
 
 		if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
 			float f = MathHelper.sqrt(p_70016_1_ * p_70016_1_ + p_70016_5_ * p_70016_5_);
-			this.prevRotationYaw = this.rotationYaw = (float) (Math.atan2(p_70016_1_, p_70016_5_) * 180.0D / Math.PI);
-			this.prevRotationPitch = this.rotationPitch = (float) (Math.atan2(p_70016_3_, f) * 180.0D / Math.PI);
+			this.prevRotationYaw = this.rotationYaw = (float) (MathHelper.atan2(p_70016_1_, p_70016_5_) * 180.0D / Math.PI);
+			this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(p_70016_3_, f) * 180.0D / Math.PI);
 			this.prevRotationPitch = this.rotationPitch;
 			this.prevRotationYaw = this.rotationYaw;
 			this.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
@@ -212,57 +212,6 @@ public abstract class EntityProjectileBase extends Entity
 		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult, this.getCritical(), 
 						(float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
 					.distanceTo(new Vec3d(x, y, z)));
-		/*float blockDmg=TF2Attribute.getModifier("Destroy Block", this.usedWeapon, 0, this.shootingEntity);
-		if(blockDmg>0){
-			float distance = (float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
-					.distanceTo(new Vec3d(x, y, z));
-			
-			blockDmg *= TF2weapons.calculateDamage(TF2weapons.dummyEnt, world, this.shootingEntity, usedWeapon,
-							this.getCritical(), distance);
-		}
-		
-		TF2Explosion explosion = new TF2Explosion(this.world, this, x, y, z,
-				this.getExplosionSize()
-						* TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity),
-				direct, blockDmg,1);
-		
-		// System.out.println("ticks: "+this.ticksExisted);
-		explosion.isFlaming = false;
-		explosion.isSmoking = true;
-		explosion.doExplosionA();
-		explosion.doExplosionB(true);
-		Iterator<Entity> affectedIterator = explosion.affectedEntities.keySet().iterator();
-		int killedInRow=0;
-		while (affectedIterator.hasNext()) {
-			Entity ent = affectedIterator.next();
-			float distance=(float) TF2weapons.getDistanceBox(this.shootingEntity, ent.posX, ent.posY, ent.posZ, ent.width+0.1, ent.height+0.1);
-			int critical = TF2weapons.calculateCritPost(ent, shootingEntity, this.getCritical(), this.usedWeapon);
-			float dmg = TF2weapons.calculateDamage(ent, world, this.shootingEntity, usedWeapon, critical, distance)
-					* damageMult;
-			
-			TF2weapons.dealDamage(ent, this.world, this.shootingEntity, this.usedWeapon, critical,
-					explosion.affectedEntities.get(ent) * dmg,
-					TF2weapons.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this).setExplosion());
-			
-			if(this.getCritical()==2&&!ent.isEntityAlive() && ent instanceof EntityLivingBase){
-				killedInRow++;
-				if (killedInRow>2 && this instanceof EntityRocket && this.shootingEntity instanceof EntityPlayerMP && TF2weapons.isEnemy(shootingEntity, (EntityLivingBase) ent)){
-					((EntityPlayerMP)this.shootingEntity).addStat(TF2Achievements.CRIT_ROCKET_KILL);
-				}
-			}
-			
-			
-		}
-		Iterator<EntityPlayer> iterator = this.world.playerEntities.iterator();
-
-		while (iterator.hasNext()) {
-			EntityPlayer entityplayer = iterator.next();
-
-			if (entityplayer.getDistanceSq(x, y, z) < 4096.0D)
-				((EntityPlayerMP) entityplayer).connection
-						.sendPacket(new SPacketExplosion(x, y, z, this.getExplosionSize(),
-								explosion.affectedBlockPositions, explosion.knockback().get(entityplayer)));
-		}*/
 	}
 
 	public void attackDirect(Entity target, double pushForce) {
@@ -274,7 +223,7 @@ public abstract class EntityProjectileBase extends Entity
 						this.usedWeapon);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
 						distance);
-				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical);
+				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical, false);
 				if(!proceed || TF2Util.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
 						TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
 					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
@@ -325,6 +274,7 @@ public abstract class EntityProjectileBase extends Entity
 			this.prevRotationPitch = this.rotationPitch = (float) (Math.atan2(this.motionY, f) * 180.0D / Math.PI);
 		}
 
+		
 		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
 				this.posY + this.motionY, this.posZ + this.motionZ, false, this.getCollisionSize(), this.canPenetrate()
 				)) {
@@ -333,13 +283,13 @@ public abstract class EntityProjectileBase extends Entity
 					&& target.entityHit instanceof EntityPlayer) {
 				EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
 	
-				if (entityplayer.capabilities.disableDamage || this.shootingEntity instanceof EntityPlayer
-						&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer))
+				if (entityplayer.capabilities.disableDamage/* || this.shootingEntity instanceof EntityPlayer
+						&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)*/)
 					continue;
 			}
 	
-			if (target.entityHit != null && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
-					&& (this.ticksExisted < 3)) && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target)) {
+			if (target.entityHit != null && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target) && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
+					&& (this.ticksExisted < 3 && !world.isRemote && ((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, shootingEntity, target.entityHit, 1, 0, true)) )) {
 				this.onHitMob(target.entityHit, target);
 			}
 				

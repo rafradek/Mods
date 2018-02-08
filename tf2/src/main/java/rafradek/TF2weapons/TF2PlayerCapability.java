@@ -70,6 +70,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	}
 
 	public void tick() {
+		if(Float.isNaN(this.owner.getHealth())) {
+			this.owner.setHealth(this.owner.getMaxHealth());
+			this.owner.setAbsorptionAmount(0);
+		}
 		// System.out.println("graczin"+state);
 		//ItemStack stack = owner.getHeldItem(EnumHand.MAIN_HAND);
 		/*

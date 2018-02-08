@@ -81,7 +81,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	 */
 	@Override
 	public Vec3d getDamageLocation() {
-		return this.damageSourceEntity.getPositionVector();
+		return this.isExplosion() ? null : this.damageSourceEntity.getPositionVector();
 	}
 
 	public void removeProjecileStatus() {

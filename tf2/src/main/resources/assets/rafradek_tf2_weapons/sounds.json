@@ -852,6 +852,20 @@
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_03"
     ]
   },
+  "weapon.fire.airstrike": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/airstrike_fire_01",
+    	"rafradek_tf2_weapons:weapon/airstrike_fire_02",
+    	"rafradek_tf2_weapons:weapon/airstrike_fire_03"
+    ]
+  },
+  "weapon.fire.airstrike.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/airstrike_fire_crit"
+    ]
+  },
   "weapon.off.deadringer": {
     "category": "neutral",
     "sounds": [

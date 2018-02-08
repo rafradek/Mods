@@ -96,6 +96,13 @@ weaponAttribute.MetalUsedOnHitPenalty=%1$s metal used on hit
 weaponAttribute.DestroyProjectiles=Destroy Projectiles
 weaponAttribute.KnockbackRage=Charge by dealing damage. Reload to receive knockback bonus
 weaponAttribute.Looting=+%1$s Looting
+weaponAttribute.ArmorBonus=+%1$s Armor
+weaponAttribute.DestroyOnImpact=Grenades explode on impact
+weaponAttribute.HealthRegen=Up to +%1$s Health generated per second
+weaponAttribute.MeleeResistPenalty=+%1$s damage from melee sources while active
+weaponAttribute.RangedResistBonus=%1$s damage from ranged sources while active
+weaponAttribute.HolsterTimePenalty=+%1$s holster time
+
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
@@ -157,9 +164,9 @@ commands.resetitemdata.success=Reloading item data
 commands.giveweapon.usage=/giveweapon <item> [player] [attribute index:attribute value ...] 
 commands.giveweapon.success=Given %s to %s
 commands.giveweapon.notfound=Cannot find weapon: %s
-
-gui.teleporter.info=Teleporter channel
-gui.teleporter.drop=Grab
+commands.forceclass.usage=/forceclass <class number | clear> [player]
+commands.forceclass.success=Changed class of %s to %s
+commands.forceclass.success2=Removed class from %s
 
 effect.bonk=Bonk! Atomic Punch
 effect.stun=Scared
@@ -179,7 +186,7 @@ item.mantreads.name=Mantreads
 item.ammoBelt.name=Ammo Belt
 item.ingotCopper.name=Copper Ingot
 item.ingotLead.name=Lead Ingot
-item.ingotAustralium.name=Austalium Ingot
+item.ingotAustralium.name=Australium Ingot
 item.scrapMetal.name=Scrap Metal
 item.reclaimedMetal.name=Reclaimed Metal
 item.refinedMetal.name=Refined Metal
@@ -191,6 +198,10 @@ item.key.name=Mann Co. Supply Crate Key
 item.chocolate.name=Dalokohs Bar
 item.crate.name=Mann Co. Supply Crate
 item.tf2ammobox.name=Ammo Box
+item.token.scout.name=Scout Token
+item.token.soldier.name=Soldier Token
+item.token.pyro.name=P
+
 tile.cabinet.name=TF2 Crafting Table
 tile.oreCopper.name=Copper Ore
 tile.oreLead.name=Lead Ore
@@ -213,6 +224,14 @@ gui.sentry.onhurt=Attack on hurt
 gui.sentry.player=Attack other player
 gui.sentry.hostile=Attack hostile mobs
 gui.sentry.friendly=Attack friendly creatures
+gui.sentry.help=Attacks the nearest target in 20 blocks range\nCan be upgraded to increase attack speed and health\nAttack damage: %1$s
+gui.sentry.help.rockets=Rocket damage: 5-15. Rockets are fired every 3 seconds
+
+gui.teleporter.info=Teleporter channel
+gui.teleporter.drop=Grab
+gui.teleporter.help=Two teleporters must share the same channel, and one of them must be set to exit\nMultiple teleporters can lead to the same exit
+
+gui.dispenser.help=Heals, feed and generates metal\nRepairs items held in hand using materials stored inside\nDraws items from chests on the sides\nOutputs repaired items to chest in the back or front
 
 gui.contracts=Contracts
 gui.contracts.accept=Accept

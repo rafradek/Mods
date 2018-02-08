@@ -126,7 +126,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		if (cap.reloadCool > 0 && par5 && cap.isCharging())
 			this.disableZoom(par1ItemStack, (EntityLivingBase) par3Entity);
 			
-		if (cap.isCharging() && par5 && !(TF2Attribute.getModifier("Weapon Mode", par1ItemStack, 0, (EntityLivingBase) par3Entity) == 2 && cap.fire1Cool <= 0 ))
+		if (cap.isCharging() && par5 && !(TF2Attribute.getModifier("Weapon Mode", par1ItemStack, 0, (EntityLivingBase) par3Entity) == 2 && cap.fire1Cool > 0 ))
 			if (cap.chargeTicks < getChargeTime(par1ItemStack, (EntityLivingBase) par3Entity))
 				cap.chargeTicks += 1;
 		// System.out.println("Charging: "+cap.chargeTicks);
@@ -195,5 +195,9 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		else {
 			super.doFireSound(stack, living, world, critical);
 		}
+	}
+	
+	static {
+		slowdown.setSaved(false);
 	}
 }

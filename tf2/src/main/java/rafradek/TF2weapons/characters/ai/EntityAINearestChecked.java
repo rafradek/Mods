@@ -17,6 +17,7 @@ import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityMedic;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemDisguiseKit;
@@ -59,6 +60,8 @@ public class EntityAINearestChecked extends EntityAITarget {
 
 							d0 *= 0.7F * f;
 						}
+						if (taskOwner instanceof EntitySentry)
+							d0*=1;
 						if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
 										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
@@ -67,7 +70,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 								&& (TF2ConfigVars.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
 										&& ((EntityTF2Character) taskOwner).natural));
 						if (target.getDistanceToEntity(taskOwner) > d0
-								|| (!fastCheck && !TF2Util.lookingAtFast(taskOwner, 105,
+								|| (!fastCheck && !TF2Util.lookingAtFast(taskOwner, 86,
 										target.posX, target.posY + target.getEyeHeight(), target.posZ)))
 							return false;
 
@@ -182,8 +185,9 @@ public class EntityAINearestChecked extends EntityAITarget {
 
 					if (target == ((IEntityOwnable) this.taskOwner).getOwner())
 						return false;
-				} else if (target instanceof EntityPlayer && !includeInvincibles
-						&& ((EntityPlayer) target).capabilities.disableDamage)
+				} 
+				if (target instanceof EntityPlayer && !includeInvincibles
+					&& ((EntityPlayer) target).capabilities.disableDamage)
 					return false;
 
 				return !this.shouldCheckSight || this.taskOwner.getEntitySenses().canSee(target);

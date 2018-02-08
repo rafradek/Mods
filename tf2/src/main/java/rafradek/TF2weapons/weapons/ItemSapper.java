@@ -18,7 +18,7 @@ public class ItemSapper extends ItemBulletWeapon {
 	}
 
 	@Override
-	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {
+	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
 		// System.out.println("Can hit: " + TF2weapons.canHit(attacker,
 		// target));
 		if (target instanceof EntityBuilding && !((EntityBuilding) target).isSapped()

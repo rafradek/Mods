@@ -1,7 +1,10 @@
 package rafradek.TF2weapons.building;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.lwjgl.opengl.GL11;
 
@@ -14,20 +17,40 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemHoe;
+import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemShears;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.FoodStats;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
@@ -43,20 +66,25 @@ public class EntityDispenser extends EntityBuilding {
 
 	public int reloadTimer;
 	public int giveAmmoTimer;
-	public List<EntityLivingBase> dispenserTarget;
+	public List<EntityLivingBase> dispenserTarget = new ArrayList<>();
 	private static final DataParameter<Integer> METAL = EntityDataManager.createKey(EntityDispenser.class,
 			DataSerializers.VARINT);
+	public ItemStackHandler items = new ItemStackHandler(9);
+	
+	public HashMap<ItemStack, Float> fillMeter = new HashMap<>();
+	public int food;
+	private ItemStack currRepairItem;
+	
+	public static final int MAX_METAL = 400;
 
 	public EntityDispenser(World worldIn) {
 		super(worldIn);
 		this.setSize(1f, 1.1f);
-		this.dispenserTarget = new ArrayList<>();
 	}
 
 	public EntityDispenser(World worldIn, EntityLivingBase living) {
 		super(worldIn, living);
 		this.setSize(1f, 1.1f);
-		this.dispenserTarget = new ArrayList<>();
 	}
 
 	@Override
@@ -68,7 +96,7 @@ public class EntityDispenser extends EntityBuilding {
 		}
 
 		List<EntityLivingBase> targetList = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				this.getEntityBoundingBox().grow(2, 1.5d, 2), new Predicate<EntityLivingBase>() {
+				this.getEntityBoundingBox().grow(2, 1.5, 2), new Predicate<EntityLivingBase>() {
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -82,19 +110,46 @@ public class EntityDispenser extends EntityBuilding {
 				});
 		if (!this.world.isRemote) {
 			this.reloadTimer--;
-			if (this.reloadTimer <= 0 && this.getMetal() < 400) {
+			
+			if (this.reloadTimer <= 0 && this.getMetal() < MAX_METAL) {
 				int metalAmount = TF2ConfigVars.fastMetalProduction ? 30 : 21;
-				this.setMetal(Math.min(400, this.getMetal() + metalAmount + this.getLevel() * (metalAmount / 3)));
-				// System.out.println("MetalGenerated "+this.getMetal());
-				this.playSound(TF2Sounds.MOB_DISPENSER_GENERATE_METAL, 1.55f, 1f);
-				this.reloadTimer = TF2ConfigVars.fastMetalProduction ? 100 : 200;
+				metalAmount = Math.min(MAX_METAL - this.getMetal(), metalAmount + this.getLevel() * (metalAmount / 3));
+				if(this.consumeEnergy(metalAmount * this.getMinEnergy())) {
+					this.setMetal(this.getMetal() + metalAmount);
+					this.playSound(TF2Sounds.MOB_DISPENSER_GENERATE_METAL, 1.55f, 1f);
+					this.reloadTimer = TF2ConfigVars.fastMetalProduction ? 100 : 200;
+				}
 			}
 			this.giveAmmoTimer--;
-
+			if (this.food <= 8 && this.giveAmmoTimer == 0) {
+				ItemStack foodItem = TF2Util.getFirstItem(this.items, stack -> {
+					return stack.getItem() instanceof ItemFood;
+				});
+				
+				if(!foodItem.isEmpty()) {
+					this.food += ((ItemFood)foodItem.getItem()).getHealAmount(foodItem);
+					foodItem.shrink(1);
+				}
+			}
 			for (EntityLivingBase living : targetList) {
 				int level = this.getLevel();
-				living.heal(0.025f + 0.025f * level);
+				if (living.getHealth() < living.getMaxHealth() && this.consumeEnergy(this.getMinEnergy()))
+					living.heal(0.025f + 0.025f * level);
+				
 				if (this.giveAmmoTimer == 0) {
+					if (living instanceof EntityPlayer) {
+						FoodStats stats = ((EntityPlayer) living).getFoodStats();
+						if(stats.getFoodLevel() >= 20)
+							stats.addStats(1, living.getHealth() >= living.getMaxHealth() ? 8 : 1);
+						else{
+							int foodAmount = (int) (living.getHealth()/living.getMaxHealth() * 8);
+							if(this.food > 0) {
+								stats.addStats(Math.min(foodAmount, this.food), 1f);
+								this.food -= Math.min(foodAmount, this.food);
+							}
+						}
+					}
+					
 					if (living instanceof EntityEngineer || living instanceof EntityPlayer) {
 						int metal = living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 						int metalUse = Math.min(30 + this.getLevel() * 10,
@@ -106,29 +161,43 @@ public class EntityDispenser extends EntityBuilding {
 						((EntityTF2Character)living).restoreAmmo(0.1f+this.getLevel()*0.1f);
 					
 					}
-					ItemStack heldItem = living.getHeldItem(EnumHand.MAIN_HAND);
-					if (!heldItem.isEmpty()
-							&& heldItem.getItem().isRepairable()
-							&& heldItem.getItemDamage() != 0 && !TF2ConfigVars.repairBlacklist.contains(heldItem.getItem().getRegistryName())) {
+					Predicate<ItemStack> test = stack -> {
+						return !stack.isEmpty() && stack.isItemStackDamageable()
+						&& stack.getItemDamage() != 0 && !TF2ConfigVars.repairBlacklist.contains(stack.getItem().getRegistryName());
+					};
+					ItemStack heldItem = TF2Util.getFirstItem(items, test);
+					
+					if (heldItem.isEmpty() && test.apply(living.getHeldItemMainhand()))
+						heldItem = living.getHeldItemMainhand();
+					if (!heldItem.isEmpty()) {
 
 						float repairMult = TF2ConfigVars.dispenserRepair;
-						NBTTagList list = living.getHeldItem(EnumHand.MAIN_HAND).getEnchantmentTagList();
+						NBTTagList list = heldItem.getEnchantmentTagList();
 						if (list != null) {
 							for (int i = 0; i < list.tagCount(); i++)
 								repairMult -= list.getCompoundTagAt(i).getShort("lvl") * TF2ConfigVars.dispenserRepair / 15f;
 							if (repairMult <= TF2ConfigVars.dispenserRepair / 3f)
-								repairMult = 1f;
+								repairMult = TF2ConfigVars.dispenserRepair / 3f;
 						}
+						
 						int metalUse = Math.min(15 + this.getLevel() * 10,
 								Math.min(
-										(int) (living.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() / repairMult) + 1,
+										(int) (heldItem.getItemDamage() / repairMult) + 1,
 										this.getMetal()));
-						this.setMetal(this.getMetal() - metalUse);
-						living.getHeldItem(EnumHand.MAIN_HAND).setItemDamage(
-								living.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() - (int) (metalUse * repairMult));
-
-						if (living instanceof EntityPlayerMP)
-							((EntityPlayerMP) living).updateHeldItem();
+						
+						//System.out.println("use: "+metalUse);
+						int repairUses = this.getRepairMaterialUses(heldItem, Math.min(heldItem.getItemDamage(), (int) (metalUse * repairMult)));
+						//System.out.println("repair use: "+repairUses);
+						if (repairUses != 0) {
+							if(this.consumeEnergy(metalUse*this.getMinEnergy())) {
+								this.setMetal(this.getMetal() - metalUse);
+								heldItem.setItemDamage(
+										heldItem.getItemDamage() - repairUses);
+	
+								if (living instanceof EntityPlayerMP)
+									((EntityPlayerMP) living).updateHeldItem();
+							}
+						}
 					}
 				}
 				Tuple<Integer, ItemStack> cloak = ItemCloak.searchForWatches(living);
@@ -154,6 +223,15 @@ public class EntityDispenser extends EntityBuilding {
 	}
 
 	@Override
+	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		if (!this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			return true;
+		}
+		return true;
+	}
+	
+	@Override
 	public SoundEvent getSoundNameForState(int state) {
 		switch (state) {
 		case 0:
@@ -163,6 +241,80 @@ public class EntityDispenser extends EntityBuilding {
 		}
 	}
 
+	public int getRepairMaterialUses(ItemStack tool, int maxRepair) {
+		Iterator<Entry<ItemStack,Float>> it = this.fillMeter.entrySet().iterator();
+		while(it.hasNext()) {
+			Entry<ItemStack,Float> uses = it.next();
+			if(tool.getItem().getIsRepairable(tool, uses.getKey())) {
+				this.currRepairItem = uses.getKey();
+				float materialCost = this.getMaterialCost(tool);
+				float use = ((float)maxRepair / (float)tool.getMaxDamage()) * materialCost;
+				
+				float maxUse = Math.min(uses.getValue(), use);
+				uses.setValue(uses.getValue() - maxUse);
+				if (uses.getValue() == 0)
+					it.remove();
+				return (int) (maxUse * (tool.getMaxDamage() / materialCost));
+			}
+		}
+		
+		for (int i = 0; i < this.items.getSlots(); i++) {
+			if(tool.getItem().getIsRepairable(tool, this.items.getStackInSlot(i))) {
+				
+				this.currRepairItem = this.items.getStackInSlot(i);
+				this.items.extractItem(i, 1, false);
+				
+				float materialCost = this.getMaterialCost(tool);
+				float use = ((float)maxRepair / (float)tool.getMaxDamage()) * materialCost;
+				float maxUse = Math.min(1, use);
+				this.fillMeter.put(ItemHandlerHelper.copyStackWithSize(currRepairItem, 1), 1f - maxUse);
+				return (int) (maxUse * (tool.getMaxDamage() / materialCost));
+			}
+		}
+		return 0;
+	}
+	
+	public float getMaterialCost(ItemStack stack) {
+		float cost = 0;
+		for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
+			if(recipe.getRecipeOutput().isItemEqualIgnoreDurability(stack) && TF2Util.isBaseSame(recipe.getRecipeOutput().getTagCompound(), stack.getTagCompound())) {
+				for (Ingredient ing : recipe.getIngredients()) {
+					if(ing.apply(this.currRepairItem)) {
+						cost++;
+					}
+						
+				}
+				if(cost != 0) {
+					break;
+				}
+			}
+		}
+		if (cost == 0) {
+			if (stack.getItem() instanceof ItemPickaxe || stack.getItem() instanceof ItemAxe)
+				cost = 3;
+			else if (stack.getItem() instanceof ItemSword || stack.getItem() instanceof ItemHoe || stack.getItem() instanceof ItemShears)
+				cost = 2;
+			else if (stack.getItem() instanceof ItemSpade)
+				cost = 1;
+			else if (stack.getItem() instanceof ItemArmor) {
+				switch (((ItemArmor)stack.getItem()).armorType) {
+				case CHEST: cost = 8; break;
+				case FEET: cost = 4; break;
+				case HEAD: cost = 5; break;
+				case LEGS: cost = 7; break;
+				default: break;
+				}
+			}
+			else {
+				cost = 4;
+			}
+		}
+		if (stack.getItem() instanceof ItemArmor)
+			cost /= 4.5f;
+		else
+			cost /= 3f;
+		return cost;
+	}
 	public static boolean isNearDispenser(World world, final EntityLivingBase living) {
 		List<EntityDispenser> targetList = world.getEntitiesWithinAABB(EntityDispenser.class,
 				living.getEntityBoundingBox().grow(2.5D, 2D, 2.5D), new Predicate<EntityDispenser>() {
@@ -191,13 +343,43 @@ public class EntityDispenser extends EntityBuilding {
 	public void setMetal(int amount) {
 		this.dataManager.set(METAL, amount);
 	}
-
+	
 	@Override
 	public void upgrade() {
 		super.upgrade();
 		this.setMetal(this.getMetal() + 25);
 	}
 
+	public int getMinEnergy() {
+		return this.getOwnerId() != null ? TF2ConfigVars.dispenserUseEnergy : 0;
+	}
+	
+	public boolean isItemStackAccepted(ItemStack stack) {
+		return stack.isItemStackDamageable();
+	}
+	
+	public void drawFromBlock(BlockPos pos, TileEntity ent, EnumFacing facing) {
+		super.drawFromBlock(pos, ent, facing);
+		EnumFacing front = EnumFacing.getDirectionFromEntityLiving(pos, this);
+		if (ent.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite())) {
+			IItemHandler handler = ent.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing.getOpposite());
+			if (front == facing || front == facing.getOpposite())
+				for(int i = 0; i < items.getSlots(); i++) {
+					if (items.getStackInSlot(i).isItemStackDamageable() && items.getStackInSlot(i).getItemDamage() == 0)
+					items.insertItem(i, ItemHandlerHelper.insertItem(handler, items.extractItem(i, 1, false), false), false);
+				}
+			else{
+				for(int i = 0; i < handler.getSlots(); i++) {
+					handler.insertItem(i, ItemHandlerHelper.insertItem(items, handler.extractItem(i, 1, false), false), false);
+				}
+			}
+		}
+	}
+	
+	public boolean shouldUseBlocks() {
+		return true;
+	}
+	
 	@Override
 	protected SoundEvent getHurtSound(DamageSource source) {
 		return null;
@@ -216,15 +398,41 @@ public class EntityDispenser extends EntityBuilding {
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
 
+		par1NBTTagCompound.setTag("Items", this.items.serializeNBT());
 		par1NBTTagCompound.setShort("Metal", (short) this.getMetal());
+		
+		par1NBTTagCompound.setShort("Food", (short) food);
+		NBTTagList fill = new NBTTagList();
+		for(Entry<ItemStack, Float> entry : this.fillMeter.entrySet()) {
+			NBTTagCompound values = new NBTTagCompound();
+			values.setTag("Item", entry.getKey().serializeNBT());
+			values.setFloat("Fill", entry.getValue());
+			fill.appendTag(values);
+		}
+		par1NBTTagCompound.setTag("Fill", fill);
 	}
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readEntityFromNBT(par1NBTTagCompound);
 
+		this.items.deserializeNBT(par1NBTTagCompound.getCompoundTag("Items"));
 		this.setMetal(par1NBTTagCompound.getShort("Metal"));
+		this.food = par1NBTTagCompound.getShort("Food");
+		NBTTagList fill = par1NBTTagCompound.getTagList("Fill", 10);
+		for(int i = 0; i < fill.tagCount(); i++) {
+			NBTTagCompound values = (NBTTagCompound) fill.get(i);
+			this.fillMeter.put(new ItemStack(values.getCompoundTag("Item")), values.getFloat("Fill"));
+		}
 	}
+	
+	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier)
+    {
+		super.dropEquipment(wasRecentlyHit, lootingModifier);
+		for(int i = 0; i < this.items.getSlots(); i++) {
+			this.entityDropItem(this.items.getStackInSlot(i), 0);
+		}
+    }
 	
 	@SideOnly(Side.CLIENT)
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {

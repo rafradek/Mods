@@ -37,7 +37,7 @@ public class ItemFromData extends Item {
 		@Override
 		public boolean apply(WeaponData input) {
 			// TODO Auto-generated method stub
-			return !input.getBoolean(PropertyType.HIDDEN) && !input.getBoolean(PropertyType.ROLL_HIDDEN)
+			return !input.getBoolean(PropertyType.HIDDEN) && input.getInt(PropertyType.ROLL_HIDDEN) == 0
 					&& !input.getString(PropertyType.CLASS).equals("cosmetic")
 					&& !input.getString(PropertyType.CLASS).equals("crate");
 		}
@@ -136,7 +136,7 @@ public class ItemFromData extends Item {
 				weapons.add(type);
 			for (Entry<String, WeaponData> entry : MapList.nameToData.entrySet())
 				if (!entry.getValue().getBoolean(PropertyType.HIDDEN)
-						&& !entry.getValue().getBoolean(PropertyType.ROLL_HIDDEN)
+						&& entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 0
 						&& entry.getValue().getString(PropertyType.BASED_ON).equals(type))
 					weapons.add(entry.getKey());
 			if (weapons.size() > 0)
@@ -151,7 +151,7 @@ public class ItemFromData extends Item {
 		ArrayList<String> weapons = new ArrayList<>();
 		for (Entry<String, WeaponData> entry : MapList.nameToData.entrySet())
 			if (!entry.getValue().getBoolean(PropertyType.HIDDEN)
-					&& (showHidden || !entry.getValue().getBoolean(PropertyType.ROLL_HIDDEN))
+					&& (showHidden || entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 0)
 					&& entry.getValue().getString(PropertyType.CLASS).equals(clazz))
 				weapons.add(entry.getKey());
 		return getNewStack(weapons.get(random.nextInt(weapons.size())));
@@ -174,7 +174,7 @@ public class ItemFromData extends Item {
 			@Override
 			public boolean apply(WeaponData input) {
 				// TODO Auto-generated method stub
-				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getBoolean(PropertyType.ROLL_HIDDEN) && !showHidden)
+				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
 						&& input.getInt(PropertyType.SLOT) == slot
 						&& input.getString(PropertyType.MOB_TYPE).contains(mob);
 			}

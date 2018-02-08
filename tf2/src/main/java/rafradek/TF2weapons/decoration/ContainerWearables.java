@@ -18,9 +18,11 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemAmmo;
 import rafradek.TF2weapons.weapons.ItemAmmoBelt;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class ContainerWearables extends Container {
 	private static final EntityEquipmentSlot[] VALID_EQUIPMENT_SLOTS = new EntityEquipmentSlot[] {
@@ -146,21 +148,21 @@ public class ContainerWearables extends Container {
 		for (int i1 = 0; i1 < 9; ++i1)
 			this.addSlotToContainer(new Slot(playerInventory, i1, 8 + i1 * 18, 142));
 
-		this.addSlotToContainer(new Slot(playerInventory, 40, 77, 62) {
+		this.addSlotToContainer(new Slot(wearables, 4, 77, 62) {
 			/**
 			 * Check if the stack is a valid item for this slot. Always true
 			 * beside for the armor slots.
 			 */
 			@Override
 			public boolean isItemValid(@Nullable ItemStack stack) {
-				return super.isItemValid(stack);
+				return stack.getItem() instanceof ItemToken;
 			}
 
 			@Override
 			@Nullable
 			@SideOnly(Side.CLIENT)
 			public String getSlotTexture() {
-				return "minecraft:items/empty_armor_slot_shield";
+				return TF2weapons.MOD_ID + ":items/token_empty";
 			}
 		});
 		for (int i = 0; i < 3; ++i)
@@ -190,6 +192,8 @@ public class ContainerWearables extends Container {
 	public void onContainerClosed(EntityPlayer playerIn) {
 		super.onContainerClosed(playerIn);
 
+		if (!playerIn.world.isRemote && !WeaponsCapability.get(playerIn).forcedClass)
+			((ItemToken)TF2weapons.itemToken).updateAttributes(this.wearables.getStackInSlot(4), playerIn);
 		/*if (this.wearables.getStackInSlot(3) == null)
 			for (int i = 4; i < 13; ++i) {
 				ItemStack itemstack = this.wearables.removeStackFromSlot(i);

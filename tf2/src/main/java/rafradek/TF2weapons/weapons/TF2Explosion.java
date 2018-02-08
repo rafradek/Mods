@@ -137,7 +137,7 @@ public class TF2Explosion extends Explosion {
 								}
 						}
 		this.affectedBlockPositions.addAll(hashset);
-		float f3 = this.explosionSize * 2.0F;
+		float f3 = Math.max(6, this.explosionSize * 2.0F);
 		j = MathHelper.floor(this.explosionX - f3 - 1.0D);
 		k = MathHelper.floor(this.explosionX + f3 + 1.0D);
 		int j1 = MathHelper.floor(this.explosionY - f3 - 1.0D);
@@ -167,13 +167,10 @@ public class TF2Explosion extends Explosion {
 
 			if (d4 <= 0.5D) {
 				boolean isExploder = this.getExplosivePlacedBy() == entity;
-				boolean expJump = isExploder && livingEntities == 1;
+				boolean expJump = isExploder && this.directHit == null;
 				// System.out.println("jump: "+expJump);
 				double d5 = entity.posX - this.explosionX;
-				double d6 = entity.posY
-						+ (isExploder ? entity.getEyeHeight()
-								: (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2)
-						- this.explosionY;
+				double d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2 - this.explosionY;
 				double d7 = entity.posZ - this.explosionZ;
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 
@@ -192,9 +189,9 @@ public class TF2Explosion extends Explosion {
 						d11 = 1;
 					if (d11 == 0)
 						continue;
-					if (expJump) {
+					/*if (expJump) {
 						move=move.addVector(d5*0.5, 0, d7*0.5);
-					}
+					}*/
 					this.affectedEntities.put(entity, (float) (d11 / (expJump ? 2 : 1)));
 
 					// double d8 =
@@ -203,11 +200,16 @@ public class TF2Explosion extends Explosion {
 					// System.out.println("d: "+ d5 * d8+" "+d6 * d8+" "+d7
 					// * d8);
 					// entity.addVelocity(2, 2, 2);
+					d11 = d11 * 0.5 + 0.5;
+					if (entity.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+						entity.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
+					}
 					if (entity instanceof EntityPlayerMP) {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),
 						// (EntityPlayerMP) entity);
-						entity.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
+						
+						
 						this.getKnockbackMap().put(entity, move.scale(d11));
 						// entity.getDataWatcher().updateObject(29,
 						// Byte.valueOf((byte) 1));

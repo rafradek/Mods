@@ -177,7 +177,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
 			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,!this.hasClip(stack)?ItemAmmo.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
-		
+
 		this.doFireSound(stack, living, world, thisCritical);
 		
 		if (world.isRemote)
@@ -527,24 +527,26 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			living.setHealth((living.getMaxHealth()/(removeHealth+living.getMaxHealth())*living.getHealth()));
 	}
 	
-	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical) {
+	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
 		if(target instanceof EntityBuilding && TF2Util.isOnSameTeam(attacker, target) && !((EntityBuilding)target).isSapped()) {
 			float repair=TF2Attribute.getModifier("Repair Building", stack, 0, attacker);
 			if(repair>0) {
-				((EntityBuilding)target).heal(repair);
+				if (!simulate)
+					((EntityBuilding)target).heal(repair);
 				return false;
 			}
 		}
 		else if(target instanceof EntityLivingBase && TF2Util.isOnSameTeam(attacker, target) && !(target instanceof EntityBuilding)) {
 			float heal=damage*TF2Attribute.getModifier("Heal Target", stack, 0, attacker);
 			if(heal>0) {
+				if (!simulate)
 				((EntityLivingBase) target).heal(heal);
 				return false;
 			}
 		}
-		if(target instanceof EntityLivingBase && !TF2Util.isEnemy(attacker, (EntityLivingBase) target)) {
+		if (target instanceof EntityLivingBase && !TF2Util.isEnemy(attacker, (EntityLivingBase) target)) {
 			float speedtime=TF2Attribute.getModifier("Speed Hit", stack, 0, attacker);
-			if(speedtime > 0) {
+			if(!simulate && speedtime > 0) {
 				((EntityLivingBase) target).addPotionEffect(new PotionEffect(MobEffects.SPEED,(int) (speedtime*20),1));
 				attacker.addPotionEffect(new PotionEffect(MobEffects.SPEED,(int) (speedtime*36),1));
 			}

@@ -66,7 +66,7 @@ public class EntityTarget extends EntityArmorStand {
             }
             else
             {
-            	amount =this.applyPotionDamageCalculations(source, this.applyArmorCalculations(source, ForgeHooks.onLivingHurt(this, source, amount)));
+            	amount =ForgeHooks.onLivingDamage(this, source, this.applyPotionDamageCalculations(source, this.applyArmorCalculations(source, ForgeHooks.onLivingHurt(this, source, amount))));
             	this.dataManager.set(LAST_DAMAGE, amount);
             	this.dps[0] += amount;
             	if(this.startAttack == -1) {

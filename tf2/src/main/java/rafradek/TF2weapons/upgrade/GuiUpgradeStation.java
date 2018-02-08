@@ -134,6 +134,9 @@ public class GuiUpgradeStation extends GuiContainer {
 			this.mc.getTextureManager().bindTexture(UPGRADES_GUI_TEXTURES);
 
 			TF2Attribute attr = this.station.attributeList[i + firstIndex];
+			if(attr == null) {
+				continue;
+			}
 			ItemStack stack = this.inventorySlots.inventorySlots.get(0).getStack();
 
 			int xOffset = 101 * (i % 2);

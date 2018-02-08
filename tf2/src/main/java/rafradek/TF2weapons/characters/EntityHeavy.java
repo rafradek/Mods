@@ -99,7 +99,7 @@ public class EntityHeavy extends EntityTF2Character {
 	public float getAttributeModifier(String attribute) {
 		if (shouldScaleAttributes()){
 			if (attribute.equals("Minigun Spinup"))
-				return this.getDiff() == 1 ? 2f : (this.getDiff() == 3 ? 1.2f : 1.55f);
+				return this.scaleWithDifficulty(2f, 1f);
 			if (attribute.equals("Damage"))
 				return 0.9f;
 		}

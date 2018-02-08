@@ -6,7 +6,7 @@
 		"Render": "rafradek_tf2_weapons:monoculus_head",
 		"Cost": 30,
 		"Wear flags": 1,
-		"Roll hidden": true
+		"Roll hidden": 1
 	},
 	"merasmushat": {
 		"Name": "Skull Island Topper",
@@ -15,7 +15,7 @@
 		"Render": "rafradek_tf2_weapons:merasmus_hat",
 		"Cost": 30,
 		"Wear flags": 1,
-		"Roll hidden": true
+		"Roll hidden": 1
 	},
 	"billhat": {
 		"Name": "Bill's Hat",
@@ -60,7 +60,7 @@
 		"Render": "rafradek_tf2_weapons:bombinomicon",
 		"Cost": 30,
 		"Wear flags": 2,
-		"Roll hidden": true,
+		"Roll hidden": 1,
 		"Attributes":{
 			"ExplodeDeath": 1
 		}

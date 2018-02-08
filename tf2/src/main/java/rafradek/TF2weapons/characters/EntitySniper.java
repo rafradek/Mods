@@ -131,6 +131,6 @@ public class EntitySniper extends EntityTF2Character {
 
 	@Override
 	public float getMotionSensitivity() {
-		return this.getDiff() == 3 || this.getOwnerId() != null ? 0.45f : (this.getDiff() == 1 ? 0.75f : 0.55f);
+		return this.scaleWithDifficulty(0.75f, 0.28f);
 	}
 }

@@ -46,6 +46,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	public HashSet<EntityPlayer> attackers = new HashSet<EntityPlayer>();
 	public int playersAttacked = 0;
 	private int blockBreakCounter=27;
+	public BlockPos spawnPos;
 
 	public float damageMult=1;
 	public EntityTF2Boss(World worldIn) {
@@ -178,6 +179,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		int players = 0;
 		int highestLevel = 0;
 		int statmult=0;
+		this.spawnPos = this.getPosition();
+		this.setHomePosAndDistance(this.getPosition(), 40);
 		for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
 				this.getEntityBoundingBox().grow(64, 64, 64),new Predicate<EntityLivingBase>(){
 
@@ -244,6 +247,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		nbt.setShort("Players", (short) this.playersAttacked);
 		nbt.setShort("TimeLeft", (short)this.timeLeft);
 		nbt.setFloat("DamageMult", this.damageMult);
+		if(this.spawnPos != null)
+			nbt.setIntArray("SpawnPos", new int[]{this.spawnPos.getX(), this.spawnPos.getY(), this.spawnPos.getZ()});
 	}
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
@@ -254,6 +259,10 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		this.damageMult=nbt.getFloat("DamageMult");
 		if(this.timeLeft<2250)
 			this.setGlowing(false);
+		if(nbt.hasKey("SpawnPos")) {
+			int[] arr = nbt.getIntArray("SpawnPos");
+			this.spawnPos = new BlockPos(arr[0], arr[1], arr[2]);
+		}
 	}
 	@Override
 	public void addTrackingPlayer(EntityPlayerMP player) {

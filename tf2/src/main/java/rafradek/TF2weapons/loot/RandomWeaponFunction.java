@@ -15,6 +15,8 @@ import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.functions.LootFunction;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.WeaponData;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class RandomWeaponFunction extends LootFunction {
@@ -32,8 +34,18 @@ public class RandomWeaponFunction extends LootFunction {
 
 	@Override
 	public ItemStack apply(ItemStack stack, Random rand, LootContext context) {
-		stack= ItemFromData.getRandomWeapon(rand, ItemFromData.VISIBLE_WEAPON);
-		
+		if(this.valveWepChance*0.35f<rand.nextFloat()) {
+			stack= ItemFromData.getRandomWeapon(rand, input -> {
+				return !input.getBoolean(PropertyType.HIDDEN) && input.getInt(PropertyType.ROLL_HIDDEN) == 0
+						&& !input.getString(PropertyType.CLASS).equals("cosmetic")
+						&& !input.getString(PropertyType.CLASS).equals("crate");
+			});
+		}
+		else {
+			stack= ItemFromData.getRandomWeapon(rand, input -> {
+				return input.getInt(PropertyType.ROLL_HIDDEN) == 2;
+			});
+		}
 		if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && this.valveWepChance>=rand.nextFloat()){
 			stack.getTagCompound().setBoolean("Valve", true);
 			TF2Attribute.setAttribute(stack, TF2Attribute.attributes[0], 1.15f);

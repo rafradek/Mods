@@ -19,6 +19,7 @@ import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2EventsClient;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.decoration.LayerWearables;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
@@ -69,6 +70,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		this.modelMain=(ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
 		this.addLayer(new LayerBipedArmor(this));
+		this.addLayer(new LayerWearables(this, (ModelBiped) this.getMainModel()));
 	}
 
 	@Override

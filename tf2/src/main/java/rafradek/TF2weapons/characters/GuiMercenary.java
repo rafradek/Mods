@@ -59,7 +59,7 @@ public class GuiMercenary extends GuiMerchant {
 		}
 		else{
 			hireBtn.enabled=false;
-			hireBtn.displayString=mercenary.getOwner() == null ? "Hired mercenary" : "Hired by: "+mercenary.getOwner().getName();
+			hireBtn.displayString=mercenary.ownerName != null ? "Hired mercenary" : "Hired by: "+mercenary.ownerName;
 			orderBtn.enabled=false;
 			shareBtn.visible=false;
 		}
@@ -73,17 +73,17 @@ public class GuiMercenary extends GuiMerchant {
 				this.mercenary.setOrder(Order.HOLD);
 			else
 				this.mercenary.setOrder(Order.FOLLOW);
-			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, 260 + this.mercenary.getOrder().ordinal());
+			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, -100 + this.mercenary.getOrder().ordinal());
 		}
 		else if(button.id == 60) {
-			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, 256);
+			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, -128);
 			if(this.mercenary.getOwnerId() == null)
 				this.mercenary.setOwner(mc.player);
 			else
 				this.mercenary.setOwner(null);
 		}
 		else if(button.id == 62) {
-			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, 257);
+			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, -127);
 			this.mercenary.setSharing(true);
 		}
 		this.updateButtons();

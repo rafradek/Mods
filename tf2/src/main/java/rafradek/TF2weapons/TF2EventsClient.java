@@ -40,6 +40,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
@@ -67,6 +68,7 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityTeleporter;
 import rafradek.TF2weapons.characters.EntitySpy;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.GuiContracts;
@@ -103,24 +105,27 @@ public class TF2EventsClient {
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_0"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_1"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_2"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/token_empty"));
 		// }
 	}
 
 	@SubscribeEvent
 	public void keyJumpPress(InputEvent.KeyInputEvent event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
-		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isKeyDown() && !minecraft.player.onGround) {
+		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
 			
-			if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots
+			if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
+					minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots)
 				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 				minecraft.player.jump();
-				float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 3 : 1);
+				float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
+				Vec3d moveDir = new Vec3d(minecraft.player.moveForward , minecraft.player.moveStrafing, 0).normalize();
 				minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
 				minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
 				minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
 				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 			}
-			else if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute && minecraft.player.motionY<0 ) {
+			else if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute) {
 				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(25));
 			}
 		}
@@ -313,8 +318,12 @@ public class TF2EventsClient {
 			if (event.getEntity().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemSniperRifle && event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
 				event.setNewfov(event.getFov() * 0.55f);
 			} else if (event.getEntity().getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemMinigun.slowdownUUID) != null) {
-				event.setNewfov(event.getFov() * 1.4f);
+				event.setNewfov(event.getNewfov() * 1.4f);
 			}
+		int token = WeaponsCapability.get(event.getEntity()).getUsedToken();
+		if (token >= 0) {
+			event.setNewfov(event.getNewfov() - (ItemToken.SPEED_VALUES[token] / 2f));
+		}
 	}
 	
 	@SubscribeEvent
@@ -335,7 +344,7 @@ public class TF2EventsClient {
 
 			if (event.getGui() instanceof GuiMerchant)
 				if (((GuiMerchant) event.getGui()).getMerchant().getDisplayName().getUnformattedText().equals(I18n.format("entity.hale.name"))) {
-					event.getButtonList().add(new GuiButton(7578, event.getGui().width / 2 - 100, event.getGui().height / 2 - 110, 100, 20, "Change Team"));
+					event.getButtonList().add(new GuiButton(7578, event.getGui().width / 2 - 100, event.getGui().height / 2 - 110, 100, 20, "Leave Team"));
 					event.getButtonList().add(new GuiButton(7579, event.getGui().width / 2, event.getGui().height / 2 - 110, 100, 20, "Recover Lost Items"));
 				}
 			Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).state &= 8;
@@ -358,7 +367,8 @@ public class TF2EventsClient {
 		// PacketHandler.INSTANCE.sendToServer(new
 		// PacketOpenNormalInventory(event.getGui().mc.player));
 		if (event.getGui() instanceof GuiMerchant && event.getButton().id == 7578) {
-			ClientProxy.displayScreenJoinTeam();
+			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(29));
+			Minecraft.getMinecraft().displayGuiScreen(null);
 		}
 		else if (event.getGui() instanceof GuiMerchant && event.getButton().id == 7579) {
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(18));

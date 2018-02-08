@@ -35,7 +35,7 @@ public class UdpChannelHandlerClient extends SimpleChannelInboundHandler<Datagra
 		}
 		MessageContext context = constr.newInstance(Minecraft.getMinecraft().player.connection, Side.CLIENT); 
 		handler.onMessage(message, context);
-		System.out.println("PacketFrom: "+msg.sender().getAddress()+ " "+msg.sender().getPort()+" ");
+		//System.out.println("PacketFrom: "+msg.sender().getAddress()+ " "+msg.sender().getPort()+" ");
 		
 	}
 

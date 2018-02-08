@@ -1,8 +1,11 @@
 package rafradek.TF2weapons.weapons;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
@@ -14,6 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.ItemToken;
 
 public class ItemChargingTarge extends ItemFromData {
 
@@ -26,9 +30,13 @@ public class ItemChargingTarge extends ItemFromData {
 	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
 		//if (!living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.containsKey("Charging")) {
 		ItemStack stack=living.getHeldItem(hand);
+		if (ItemToken.allowUse(living, "demoman")) {
+			
+		
 			if (!world.isRemote)
-				living.addPotionEffect(new PotionEffect(TF2weapons.charging, 40));
-			living.getCooldownTracker().setCooldown(this, (int) (280f/TF2Attribute.getModifier("Charge Recharge", stack, 1, living)));
+				living.addPotionEffect(new PotionEffect(TF2weapons.charging, (int) TF2Attribute.getModifier("Effect Duration", stack, 40, living)));
+			living.getCooldownTracker().setCooldown(this, (int) (280f/TF2Attribute.getModifier("Charge", stack, 1, living)));
+		}
 			//living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put("Charging", 280);
 		//}
 		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
@@ -65,4 +73,8 @@ public class ItemChargingTarge extends ItemFromData {
 				.get("Charging");
 		return (double) (value != null ? value : 0) / (double) 280;*/
 	}
+	
+	public boolean isShield(ItemStack stack, @Nullable EntityLivingBase entity) {
+        return true;
+    }
 }

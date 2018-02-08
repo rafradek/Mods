@@ -14,10 +14,13 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -31,7 +34,7 @@ public class GuiTF2Crafting extends GuiContainer {
 			"textures/gui/container/cabinet.png");
 
 	public GuiButtonToggleItem[] buttonsItem;
-	public ItemStack[] itemsToRender;
+	public NonNullList<ItemStack> itemsToRender;
 	public int firstIndex;
 	public float scroll;
 	public int tabid;
@@ -48,7 +51,7 @@ public class GuiTF2Crafting extends GuiContainer {
 		// this.cabinet=cabinet;
 		this.xSize = 176;
 		this.ySize = 180;
-		this.itemsToRender = new ItemStack[9];
+		this.itemsToRender = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
 		this.buttonsItem = new GuiButtonToggleItem[12];
 	}
 
@@ -103,58 +106,14 @@ public class GuiTF2Crafting extends GuiContainer {
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		
+		if(this.getSlotUnderMouse() != null && this.getSlotUnderMouse().getStack().isEmpty() &&
+				this.mc.player.inventory.getItemStack().isEmpty() && this.getSlotUnderMouse().inventory instanceof InventoryCrafting &&
+				!this.itemsToRender.get(this.getSlotUnderMouse().slotNumber - 1).isEmpty()) {
+			this.renderToolTip(this.itemsToRender.get(this.getSlotUnderMouse().slotNumber - 1), mouseX, mouseY);
+		}
 		this.renderHoveredToolTip(mouseX, mouseY);
 	}
-
-	protected void drawTab(int id) {
-		boolean flag = id == tabid;
-		boolean flag1 = true;
-		int i = id;
-		int j = 200 + i * 28;
-		int k = 16;
-		int l = this.guiLeft + 28 * i;
-		int i1 = this.guiTop;
-		int j1 = 32;
-
-		if (flag)
-			k += 32;
-
-		if (i == 5)
-			l = this.guiLeft + this.xSize - 28;
-		else if (i > 0)
-			l += i;
-
-		if (flag1)
-			i1 = i1 - 28;
-		else {
-			k += 64;
-			i1 = i1 + (this.ySize - 4);
-		}
-
-		GlStateManager.disableLighting();
-		GlStateManager.color(1F, 1F, 1F); // Forge: Reset color in case Items
-											// change it.
-		GlStateManager.enableBlend(); // Forge: Make sure blend is enabled else
-										// tabs show a white border.
-		this.drawTexturedModalRect(l, i1, j, k, 28, 32);
-		this.zLevel = 100.0F;
-		this.itemRender.zLevel = 100.0F;
-		l = l + 6;
-		i1 = i1 + 8 + (flag1 ? 1 : -1);
-		GlStateManager.enableLighting();
-		GlStateManager.enableRescaleNormal();
-		ItemStack itemstack = id == 0 ? craftingTabStack : chestTabStack;
-		this.itemRender.renderItemAndEffectIntoGUI(itemstack, l, i1);
-		this.itemRender.renderItemOverlays(this.fontRenderer, itemstack, l, i1);
-		GlStateManager.disableLighting();
-		this.itemRender.zLevel = 0.0F;
-		this.zLevel = 0.0F;
-	}
-
-	/*@Override
-	public void drawHoveringText(List<String> textLines, int x, int y) {
-		drawHoveringText(textLines, x, y, fontRenderer);
-	}*/
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -165,35 +124,44 @@ public class GuiTF2Crafting extends GuiContainer {
 			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, currentRecipe);
 			setButtons();
 			this.inventorySlots.onCraftMatrixChanged(null);
-			itemsToRender = new ItemStack[9];
+			itemsToRender = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
 			if (currentRecipe >= 0 && currentRecipe < TF2CraftingManager.INSTANCE.getRecipeList().size()) {
 				IRecipe recipe = TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe);
 				if (recipe instanceof AustraliumRecipe) {
-					itemsToRender[0] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[1] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[2] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[3] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[5] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[6] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[7] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[8] = new ItemStack(TF2weapons.itemTF2, 1, 2);
-					itemsToRender[4] = new ItemStack(TF2weapons.itemTF2, 1, 9);
+					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(1, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(2, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(3, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(5, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(6, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(7, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(8, new ItemStack(TF2weapons.itemTF2, 1, 2));
+					itemsToRender.set(4, new ItemStack(TF2weapons.itemTF2, 1, 9));
 				} else if (recipe instanceof JumperRecipe) {
-					itemsToRender[0] = new ItemStack(Items.FEATHER);
-					itemsToRender[1] = new ItemStack(Items.FEATHER);
-					itemsToRender[2] = new ItemStack(Items.FEATHER);
-					itemsToRender[3] = new ItemStack(Items.FEATHER);
-					itemsToRender[5] = new ItemStack(Items.FEATHER);
-					itemsToRender[6] = new ItemStack(Items.FEATHER);
-					itemsToRender[7] = new ItemStack(Items.FEATHER);
-					itemsToRender[8] = new ItemStack(Items.FEATHER);
-					itemsToRender[4] = ItemFromData.getNewStack(((JumperRecipe)recipe).nameBefore);
+					itemsToRender.set(0, new ItemStack(Items.FEATHER));
+					itemsToRender.set(1, new ItemStack(Items.FEATHER));
+					itemsToRender.set(2, new ItemStack(Items.FEATHER));
+					itemsToRender.set(3, new ItemStack(Items.FEATHER));
+					itemsToRender.set(5, new ItemStack(Items.FEATHER));
+					itemsToRender.set(6, new ItemStack(Items.FEATHER));
+					itemsToRender.set(7, new ItemStack(Items.FEATHER));
+					itemsToRender.set(8, new ItemStack(Items.FEATHER));
+					itemsToRender.set(4, ItemFromData.getNewStack(((JumperRecipe)recipe).nameBefore));
 				} else if (recipe instanceof RecipeToScrap) {
-					itemsToRender[0] = new ItemStack(TF2weapons.itemTF2, 1, 9);
-					itemsToRender[1] = new ItemStack(TF2weapons.itemTF2, 1, 9);
+					for (int i = 0; i < (((RecipeToScrap)recipe).token == -1 ? 2 : 3); i++) {
+						itemsToRender.set(i, new ItemStack(TF2weapons.itemTF2, 1, 9));
+						if(((RecipeToScrap)recipe).token != -1) {
+							itemsToRender.get(i).setTagCompound(new NBTTagCompound());
+							itemsToRender.get(i).getTagCompound().setByte("Token", (byte) ((RecipeToScrap)recipe).token);
+						}
+					}
+				} else if (recipe instanceof RecipeFromScrap) {
+					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 3));
+					itemsToRender.set(1, new ItemStack(TF2weapons.itemTF2, 1, 3));
+					itemsToRender.set(2, new ItemStack(TF2weapons.itemToken, 1, 0));
 				} else if (recipe instanceof OpenCrateRecipe) {
-					itemsToRender[0] = new ItemStack(TF2weapons.itemTF2, 1, 7);
-					itemsToRender[1] = ItemFromData.getNewStack("crate1");
+					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 7));
+					itemsToRender.set(1, ItemFromData.getNewStack("crate1"));
 				}
 				else{
 					List<Ingredient> input = recipe.getIngredients();
@@ -203,12 +171,12 @@ public class GuiTF2Crafting extends GuiContainer {
 						if(recipe instanceof ShapedRecipes)
 							space = (3-((ShapedRecipes)recipe).recipeWidth)*(i/((ShapedRecipes)recipe).recipeWidth);
 						else if(recipe instanceof ShapedOreRecipe)
-							space = (3-((ShapedOreRecipe)recipe).getWidth())*(i/((ShapedOreRecipe)recipe).getWidth());
+							space = (3-((ShapedOreRecipe)recipe).getRecipeWidth())*(i/((ShapedOreRecipe)recipe).getRecipeWidth());
 							
 						if(input.get(i).getMatchingStacks().length>0) {
-							itemsToRender[i + space] = input.get(i).getMatchingStacks()[0];
-							if(itemsToRender[i + space].getMetadata()==32767)
-								itemsToRender[i + space].setItemDamage(0);
+							itemsToRender.set(i + space, input.get(i).getMatchingStacks()[0]);
+							if(itemsToRender.get(i + space).getMetadata()==32767)
+								itemsToRender.get(i + space).setItemDamage(0);
 						}
 					}
 				}
@@ -256,7 +224,7 @@ public class GuiTF2Crafting extends GuiContainer {
 		this.itemRender.zLevel = 0;
 		for (x = 0; x < 3; x++)
 			for (y = 0; y < 3; y++) {
-				ItemStack stack = this.itemsToRender[x + y * 3];
+				ItemStack stack = this.itemsToRender.get(x + y * 3);
 				if (stack != null && !stack.isEmpty())
 					this.itemRender.renderItemIntoGUI(stack, this.guiLeft + 86 + 18 * x, this.guiTop + 23 + 18 * y);
 			}
@@ -268,52 +236,6 @@ public class GuiTF2Crafting extends GuiContainer {
 		this.zLevel = 120;
 		this.drawTexturedModalRect(85 + this.guiLeft, 22 + this.guiTop, 85, 22, 54, 54);
 		this.zLevel = 0;
-		/*
-		 * int currentRecipe=((ContainerTF2Workbench)this.inventorySlots).
-		 * currentRecipe;
-		 * if(currentRecipe>=0&&currentRecipe<TF2CraftingManager.INSTANCE.
-		 * getRecipeList().size()){ IRecipe
-		 * recipe=TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe)
-		 * ;
-		 * 
-		 * if(recipe instanceof ShapelessOreRecipe){ List<Object> input=;
-		 * for(int i=0;i<((ShapelessOreRecipe)recipe).getInput().size();i++){
-		 * this.itemRender.renderItemIntoGUI(((ShapelessOreRecipe)recipe).
-		 * getInput().get(i), , y); } }
-		 * 
-		 * }
-		 */
 	}
-	/*
-	 * protected void renderItemModelIntoGUI(ItemStack stack, int x, int y,
-	 * IBakedModel bakedmodel) { GlStateManager.pushMatrix();
-	 * this.mc.getTextureManager().bindTexture(TextureMap.
-	 * LOCATION_BLOCKS_TEXTURE);
-	 * this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE
-	 * ).setBlurMipmap(false, false); GlStateManager.enableRescaleNormal();
-	 * GlStateManager.enableAlpha(); GlStateManager.alphaFunc(516, 0.1F);
-	 * GlStateManager.enableBlend();
-	 * GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
-	 * GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA); this.setupGuiTransform(x,
-	 * y, bakedmodel.isGui3d()); bakedmodel =
-	 * net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(
-	 * bakedmodel, ItemCameraTransforms.TransformType.GUI, false);
-	 * GlStateManager.color(0.4F, 0.4F, 0.4F); this.itemRender.renderItem(stack,
-	 * bakedmodel); GlStateManager.disableAlpha();
-	 * GlStateManager.disableRescaleNormal(); GlStateManager.disableLighting();
-	 * GlStateManager.popMatrix();
-	 * this.mc.getTextureManager().bindTexture(TextureMap.
-	 * LOCATION_BLOCKS_TEXTURE);
-	 * this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE
-	 * ).restoreLastBlurMipmap(); } private void setupGuiTransform(int
-	 * xPosition, int yPosition, boolean isGui3d) {
-	 * GlStateManager.translate((float)xPosition, (float)yPosition, 100.0F +
-	 * this.zLevel); GlStateManager.translate(8.0F, 8.0F, 0.0F);
-	 * GlStateManager.scale(1.0F, -1.0F, 1.0F); GlStateManager.scale(16.0F,
-	 * 16.0F, 16.0F);
-	 * 
-	 * if (isGui3d) { GlStateManager.enableLighting(); } else {
-	 * GlStateManager.disableLighting(); } }
-	 */
 	
 }

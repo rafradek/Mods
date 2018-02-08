@@ -15,8 +15,8 @@ import rafradek.TF2weapons.WeaponData.PropertyType;
 
 public class ItemAmmoPackage extends Item{
 
-	public static int[] ammoPackageMin=new int[]{0,2,6,6,2,12,1,2,2,12,0,2,0,1,1};
-	public static int[] ammoPackageMax=new int[]{0,2,6,6,3,13,1,1,1,13,0,1,0,2,1};
+	public static final int[] AMMO_PACKAGE_MIN=new int[]{0,3,9,9,3,18,1,2,2,18,0,2,0,2,1};
+	public static final int[] AMMO_PACKAGE_MAX=new int[]{0,3,9,9,4,20,2,3,3,20,0,3,0,3,2};
 	public ItemAmmoPackage() {
 		this.setHasSubtypes(true);
 		this.setMaxStackSize(1);
@@ -57,7 +57,7 @@ public class ItemAmmoPackage extends Item{
 			return stack;
 		}
 		else{
-			return new ItemStack(TF2weapons.itemAmmo,ItemAmmoPackage.ammoPackageMin[stack.getMetadata()]+player.getRNG().nextInt(ItemAmmoPackage.ammoPackageMax[stack.getMetadata()]+1),stack.getMetadata());
+			return new ItemStack(TF2weapons.itemAmmo,AMMO_PACKAGE_MIN[stack.getMetadata()]+player.getRNG().nextInt(AMMO_PACKAGE_MAX[stack.getMetadata()]+1),stack.getMetadata());
 		}
 	}
 }

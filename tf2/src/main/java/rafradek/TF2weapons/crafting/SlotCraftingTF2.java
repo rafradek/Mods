@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.crafting;
 
+import com.google.common.base.Predicates;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
@@ -8,6 +10,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
+import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.characters.ItemToken;
 
 public class SlotCraftingTF2 extends SlotCrafting {
 
@@ -24,7 +29,14 @@ public class SlotCraftingTF2 extends SlotCrafting {
 	@Override
 	public ItemStack onTake(EntityPlayer playerIn, ItemStack stack) {
 		if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 9) {
-			stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), ItemFromData.VISIBLE_WEAPON);
+			if (stack.hasTagCompound()) {
+				String className = ItemToken.CLASS_NAMES[stack.getTagCompound().getByte("Token")];
+				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), Predicates.<WeaponData>and(ItemFromData.VISIBLE_WEAPON, test -> {
+					return test.getString(PropertyType.MOB_TYPE).contains(className);
+				}));
+			}
+			else
+				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), ItemFromData.VISIBLE_WEAPON);
 			//playerIn.addStat(TF2Achievements.HOME_MADE);
 			playerIn.inventory.setItemStack(stack);
 		} else if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 10) {

@@ -13,6 +13,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -34,6 +35,7 @@ import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
 
@@ -87,16 +89,24 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean knockbackActive;
 	public boolean appliedMouseSlow;
 	
-	public int sentryTargets = 1;
+	public int sentryTargets = 5;
 	public boolean dispenserPlayer;
 	public boolean teleporterPlayer;
 	public boolean teleporterEntity;
+	public boolean forcedClass;
 	
 	public EntityDataManager dataManager;
 	
 	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
+	public float oldFactor;
+	public int expJumpGround;
+	public double lastPosX;
+	public double lastPosY;
+	public double lastPosZ;
+	public ItemStack lastWeapon = ItemStack.EMPTY;
+	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
 	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
@@ -109,6 +119,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
 	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
 	private static final DataParameter<Float> KNOCKBACK_RAGE= new DataParameter<Float>(5, DataSerializers.FLOAT);
+	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -137,6 +148,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(DISGUISE_TYPE, "");
 		this.dataManager.register(EXP_JUMP, false);
 		this.dataManager.register(CHARGING, false);
+		this.dataManager.register(TOKEN_USED, -1);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -201,6 +213,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setExpJump(boolean val) {
 		this.dataManager.set(EXP_JUMP, val);
+		if(val) {
+			this.expJumpGround = 2;
+			TF2Util.sendTracking(new TF2Message.ActionMessage(28, this.owner), this.owner);
+		}
 	}
 	
 	public boolean isExpJump() {
@@ -232,6 +248,15 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean isCharging() {
 		return this.dataManager.get(CHARGING);
 	}
+	
+	public void setUsedToken(int val) {
+		this.dataManager.set(TOKEN_USED, val);
+	}
+	
+	public int getUsedToken() {
+		return this.dataManager.get(TOKEN_USED);
+	}
+	
 	public void addHead(ItemStack weapon) {
 
 		this.collectedHeadsTime = owner.ticksExisted;
@@ -252,7 +277,15 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		if(param.getId() == 11 && !((Boolean)newValue)){
 			this.chargeTicks = 0;
 		}
+		if(param.getId() == 6 && (Boolean)newValue)
+			this.expJumpGround = 2;
 	}
+	
+	public boolean isUsingParachute() {
+		ItemStack stack = this.owner.getItemStackFromSlot(EntityEquipmentSlot.CHEST); 
+		return stack.getItem() instanceof ItemParachute && stack.getTagCompound().getBoolean("Deployed");
+	}
+	
 	public void tick() {
 		// System.out.println("graczin"+state);
 		Iterator<Entry<String, Integer>> iterator = effectsCool.entrySet().iterator();
@@ -263,7 +296,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				iterator.remove();
 		}
 
-		
 		if (!this.owner.world.isRemote && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
 			this.dataManager.set(HEADS, this.dataManager.get(HEADS) - 1);
 			collectedHeadsTime = this.owner.ticksExisted;
@@ -288,6 +320,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.lastFire -= 50;
 		if(this.doubleJumped && this.owner.onGround){
 			this.doubleJumped=false;
+		}
+		
+		if (this.owner.isSprinting() && this.getUsedToken() >= 0){
+			if(this.owner.onGround) {
+				owner.motionX *= 0.82D;
+	            owner.motionZ *= 0.82D;
+			}
+            //owner.setSprinting(false);
 		}
 		
 		if(this.owner.world.isRemote && this.owner == Minecraft.getMinecraft().player) {
@@ -322,23 +362,22 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				this.fire1Cool -= 50;
 			if (this.fire2Cool > 0)
 				this.fire2Cool -= 50;
-			if (this.fire1Cool <= 0 && stackcap.active == 1) {
-				stackcap.active = 2;
-				if (item.isDoubleWielding(owner))
-					owner.getHeldItemOffhand().getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 2;
-				item.draw(this, stack, owner, owner.world);
-
-				/*
-				 * if(par3Entity instanceof EntityPlayerMP){
-				 * TF2weapons.network.sendTo(new
-				 * TF2Message.ActionMessage(22,(EntityLivingBase) par3Entity),
-				 * (EntityPlayerMP)par3Entity); }
-				 */
-
-				if ((this.state & 3) > 0) {
-					this.state = this.state & 7;
-					if ((this.state & 3) > 0)
-						item.startUse(stack, owner, owner.world, 0, this.state & 3);
+			if (stackcap.active == 1) {
+				if (!this.lastWeapon.isEmpty()) {
+					this.fire1Cool += (TF2Attribute.getModifier("Holster Time", this.lastWeapon, 1f, this.owner) - 1f)*item.getDeployTime(stack, owner);
+					this.lastWeapon = ItemStack.EMPTY;
+				}
+				if (this.fire1Cool <= 0) {
+					stackcap.active = 2;
+					if (item.isDoubleWielding(owner))
+						owner.getHeldItemOffhand().getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 2;
+					item.draw(this, stack, owner, owner.world);
+	
+					if ((this.state & 3) > 0) {
+						this.state = this.state & 7;
+						if ((this.state & 3) > 0)
+							item.startUse(stack, owner, owner.world, 0, this.state & 3);
+					}
 				}
 			}
 			if (owner.world.isRemote)
@@ -704,6 +743,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		tag.setInteger("Metal", this.getMetal());
 		tag.setFloat("Phlog", this.getPhlogRage());
 		tag.setFloat("Knockback", this.getKnockbackRage());
+		if (this.forcedClass)
+			tag.setByte("Token", (byte) this.getUsedToken());
 		//tag.setBoolean("Uber", this.owner.getDataManager().get(TF2EventBusListener.ENTITY_UBER));
 		//tag.setFloat("DodgedDmg", this.dodgedDmg);
 		//tag.setInteger("KillsSpinning", this.killsSpinning);
@@ -733,6 +774,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.setPhlogRage(nbt.getFloat("Phlog"));
 		this.setMetal(nbt.getInteger("Metal"));
 		this.setKnockbackRage(nbt.getFloat("KnockbackRage"));
+		if(nbt.hasKey("Token")) {
+			((ItemToken)TF2weapons.itemToken).updateAttributes(new ItemStack(TF2weapons.itemToken, 1, nbt.getByte("Token")), this.owner);
+			this.forcedClass = true;
+		}
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
 	}
 	
