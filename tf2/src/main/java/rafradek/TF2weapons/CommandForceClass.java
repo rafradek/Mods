@@ -1,5 +1,10 @@
 package rafradek.TF2weapons;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -9,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
@@ -44,7 +50,7 @@ public class CommandForceClass extends CommandBase {
 				notifyCommandListener(sender, this, "commands.forceclass.success2", new Object[] {player.getName()});
 			}
 			else {
-				int clazz = Integer.parseInt(args[0]); 
+				int clazz = ItemToken.getClassID(args[0]);
 				((ItemToken)TF2weapons.itemToken).updateAttributes(new ItemStack(TF2weapons.itemToken, 1, clazz), player);
 				WeaponsCapability.get(player).forcedClass = true;
 				notifyCommandListener(sender, this, "commands.forceclass.success", new Object[] {player.getName(), ItemToken.CLASS_NAMES[clazz]});
@@ -55,4 +61,19 @@ public class CommandForceClass extends CommandBase {
 			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    {
+		if (args.length == 1)
+        {
+            return getListOfStringsMatchingLastWord(args, ItemToken.CLASS_NAMES);
+        }
+		else if (args.length == 2)
+        {
+            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        }
+        else
+        {
+            return Collections.emptyList();
+        }
+    }
 }

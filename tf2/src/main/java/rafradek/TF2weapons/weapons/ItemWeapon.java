@@ -22,6 +22,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import net.minecraft.client.Minecraft;
@@ -304,7 +305,9 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
 
-		if (slot == EntityEquipmentSlot.MAINHAND && getData(stack) != ItemFromData.BLANK_DATA && stack.hasTagCompound()) {
+		
+		if (slot == EntityEquipmentSlot.MAINHAND && getData(stack) != ItemFromData.BLANK_DATA && stack.hasTagCompound() 
+				&& ItemToken.allowUse(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass, getData(stack).getString(PropertyType.CLASS))) {
 			int heads=Math.min((int)TF2Attribute.getModifier("Kill Count", stack, 0, null), stack.getTagCompound().getInteger("Heads"));
 			multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
 					new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier",
@@ -320,6 +323,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 				multimap.put(SharedMonsterAttributes.MOVEMENT_SPEED.getName(),
 						new AttributeModifier(SPEED_MODIFIER, "Weapon modifier", addSpeed - 1, 2));
 		}
+		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass = -1;
 		return multimap;
 	}
 
@@ -466,7 +470,8 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	public int getWeaponClipSize(ItemStack stack, EntityLivingBase living) {
 		// System.out.println("With tag: "+stack.getTagCompound());
-		int headsbonus = (int) (TF2Attribute.getModifier("Clip Kill", stack, 0, living) * stack.getTagCompound().getInteger("Heads"));
+		int headsbonus = (int) (TF2Attribute.getModifier("Clip Kill", stack, 0, living) * 
+				Math.min(TF2Attribute.getModifier("Kill Count", stack, 0, living), stack.getTagCompound().getInteger("Heads")));
 		return (int) (TF2Attribute.getModifier("Clip Size", stack,
 				ItemFromData.getData(stack).getInt(PropertyType.CLIP_SIZE), living)) + headsbonus;
 	}

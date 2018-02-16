@@ -675,8 +675,8 @@ public class TF2Util {
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
 			if(vec != null) {
 				
-				boolean expJump=ent == shooter && explosion.affectedEntities.size() == 1;
-				vec=vec.scale(dmg/(expJump?9f:9f) * 
+				boolean expJump=ent == shooter;
+				vec=vec.scale((expJump ? TF2Attribute.getModifier("Self Push Force", weapon, dmg, shooter) : dmg)/9f * 
 						(ent instanceof EntityLivingBase && !expJump? 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue():1));	
 				if(ent.motionY!=0)
 					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.y)/ent.motionY));
@@ -927,6 +927,13 @@ public class TF2Util {
 					return false;
 			}
 		return true;
+	}
+	
+	public static Vec3d getMovementVector(EntityLivingBase living) {
+		Vec3d moveDir = new Vec3d(living.moveForward , living.moveStrafing, 0).normalize();
+		float cos = MathHelper.cos(living.rotationYaw * 0.017453292F - (float)Math.PI);
+		float sin = MathHelper.sin(living.rotationYaw * 0.017453292F - (float)Math.PI);
+		return new Vec3d(-moveDir.y * cos + moveDir.x * sin, -moveDir.x * cos - moveDir.y * sin, 0);
 	}
 	static {
 		for (int i = 0; i < 32; ++i)

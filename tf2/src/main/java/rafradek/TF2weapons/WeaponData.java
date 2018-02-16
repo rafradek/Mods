@@ -501,6 +501,7 @@ public class WeaponData {
 		public HashMap<String, Float> cachedAttrAdd = new HashMap<>();
 		public boolean cached=false;
 		public int active;
+		public int usedClass = -1;
 		
 		/*public static WeaponData get(ItemStack stack) {
 			WeaponData value=ItemFromData.BLANK_DATA;

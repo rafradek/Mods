@@ -102,8 +102,12 @@ weaponAttribute.HealthRegen=Up to +%1$s Health generated per second
 weaponAttribute.MeleeResistPenalty=+%1$s damage from melee sources while active
 weaponAttribute.RangedResistBonus=%1$s damage from ranged sources while active
 weaponAttribute.HolsterTimePenalty=+%1$s holster time
-
-
+weaponAttribute.EffectDurationBonus=+%1$s effect duration
+weaponAttribute.SelfPushForceBonus=+%1$s self push force bonus
+weaponAttribute.ClipOnKill=Gain +%1$s clip size on kill
+weaponAttribute.AirborneBonus=Increased attack speed while airborne
+weaponAttribute.MaxHealthOnKill=Gives extra health for each kill
+weaponAttribute.SpeedOnKill=Gives extra speed for each kill
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
 itemGroup.tf2misc=TF2 Utility
@@ -200,7 +204,13 @@ item.crate.name=Mann Co. Supply Crate
 item.tf2ammobox.name=Ammo Box
 item.token.scout.name=Scout Token
 item.token.soldier.name=Soldier Token
-item.token.pyro.name=P
+item.token.pyro.name=Pyro Token
+item.token.demoman.name=Demoman Token
+item.token.heavy.name=Heavy Token
+item.token.medic.name=Medic Token
+item.token.engineer.name=Engineer Token
+item.token.sniper.name=Sniper Token
+item.token.spy.name=Spy Token
 
 tile.cabinet.name=TF2 Crafting Table
 tile.oreCopper.name=Copper Ore

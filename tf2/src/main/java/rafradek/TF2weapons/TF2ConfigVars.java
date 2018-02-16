@@ -36,6 +36,7 @@ public class TF2ConfigVars {
 	public static String spawnOres;
 	public static String naturalCheck;
 	public static float damageMultiplier;
+	public static float healthScale;
 	public static boolean dynamicLights;
 	public static boolean dynamicLightsProj;
 	public static boolean deadRingerTrigger;
@@ -47,6 +48,7 @@ public class TF2ConfigVars {
 	public static boolean teleporterEntities;
 	public static boolean enableUdp;
 	public static boolean targetSentries;
+	public static float dropAmmo;
 	public static float mercenaryVolume;
 	public static float bossVolume;
 	public static float gunVolume;
@@ -90,7 +92,10 @@ public class TF2ConfigVars {
 		naturalCheck = conf.get("gameplay", "Natural mob detection", "Always").setValidValues(new String[] { "Always", "Fast", "Never" }).getString();
 		shootAttract = conf.getBoolean("Shooting attracts mobs", "gameplay", true, "Gunfire made by players attracts mobs");
 		randomCrits = conf.getBoolean("Random critical hits", "gameplay", true, "Enables randomly appearing critical hits that deal 3x more damage");
-		damageMultiplier = 200f/(float)conf.getInt("TF2 - Minecraft health translation", "gameplay", 200,-10000,10000, "How much 10 minecraft hearts are worth in TF2 health");
+		
+		healthScale = conf.getInt("TF2 - Minecraft health translation", "gameplay", 200,-10000,10000, "How much 10 minecraft hearts are worth in TF2 health");
+		damageMultiplier = 200f/healthScale;
+		
 		deadRingerTrigger = conf.getBoolean("Feign death events", "gameplay", true, "Does feign death trigger death events, set to false in case of mod conflicts");
 		dynamicLights = conf.getBoolean("Dynamic Lights", "modcompatibility", true, "Enables custom light sources for AtomicStryker's Dynamic Lights mod")
 				&& Loader.isModLoaded("dynamiclights");
@@ -109,6 +114,7 @@ public class TF2ConfigVars {
 		mercenaryVolume = conf.getFloat("Mercenary volume (radius)", "sound volume", 0.6f, 0, 10, "Values above 1 increase sound radius only");
 		gunVolume = conf.getFloat("Gun volume (radius)", "sound volume", 2f, 0, 10, "Applies only to players, values above 1 increase sound radius only");
 		enchantedExplosion = conf.getBoolean("Enchanted blast jumping", "gameplay", true, "Strafing, no air resistance and reduced gravity when blast jumping");
+		dropAmmo = conf.getFloat("Ammo drop chance", "gameplay", 0.15f, 0f, 1f, "Chance of dropping ammo from non-TF2 hostile creature");
 		
 		buildingsUseEnergy = conf.getBoolean("Buildings use energy", "gameplay", false, "");
 		sentryUseEnergy = conf.getInt("Sentry energy use", "gameplay", 100, 0, 40000, "Energy use on attack");

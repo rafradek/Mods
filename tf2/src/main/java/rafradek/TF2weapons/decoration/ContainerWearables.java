@@ -255,7 +255,7 @@ public class ContainerWearables extends Container {
 
 				if (!this.mergeItemStack(itemstack1, i, i + 1, false))
 					return ItemStack.EMPTY;
-			} else if (entityequipmentslot == EntityEquipmentSlot.OFFHAND
+			} else if (itemstack1.getItem() instanceof ItemToken
 					&& !this.inventorySlots.get(44).getHasStack()) {
 				if (!this.mergeItemStack(itemstack1, 44, 45, false))
 					return ItemStack.EMPTY;

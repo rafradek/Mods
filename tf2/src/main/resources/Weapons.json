@@ -1107,7 +1107,9 @@
 			"RangeIncrease": 1.5,
 			"HealthPenalty": -3,
 			"NoRandomCrit": 1,
-			"CollectHeads": 1
+			"CollectHeads": 4,
+			"MaxHealthOnKill": 2,
+			"SpeedOnKill": 0.08
 		}
 	},
 
@@ -1126,7 +1128,9 @@
 			"RangeIncrease": 1.5,
 			"HealthPenalty": -3,
 			"NoRandomCrit": 1,
-			"CollectHeads": 1
+			"CollectHeads": 4,
+			"MaxHealthOnKill": 2,
+			"SpeedOnKill": 0.08
 		}
 	},
 
@@ -1721,7 +1725,7 @@
 		{
 			"SelfDamageReduced": 0.85,
 			"ClipOnKill": 1,
-			"CollectHeads": 1,
+			"CollectHeads": 4,
 			"DamagePenalty": 0.85,
 			"AirborneBonus": 1
 		}

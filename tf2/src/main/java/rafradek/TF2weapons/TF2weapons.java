@@ -195,7 +195,7 @@ import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemHorn;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -319,7 +319,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 30;
+		return 31;
 	}
 
 	@Mod.EventHandler

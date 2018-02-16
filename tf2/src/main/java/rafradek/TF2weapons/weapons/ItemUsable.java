@@ -175,7 +175,7 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0 && ItemToken.allowUse(living, this.getUsableClasses(stack))
-				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1);
+				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1) && this.getFiringSpeed(stack, living) != Integer.MAX_VALUE;
 	}
 
 	public String getUsableClasses(ItemStack stack) {
@@ -220,6 +220,9 @@ public abstract class ItemUsable extends ItemFromData {
 			double modifiers=calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED),ATTACK_SPEED_MODIFIER,living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue(),1.4);
 			speed *= (living instanceof EntityPlayer? 4:living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue())/modifiers;
 			//System.out.println("Post speed "+speed);
+		}
+		if (speed <= 0) {
+			return Integer.MAX_VALUE;
 		}
 		return speed;
 	}

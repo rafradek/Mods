@@ -366,6 +366,8 @@ public class TF2Attribute {
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(117, "Unblockable", "Unblockable", Type.ADDITIVE, 1f, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(118, "SelfPushForceBonus", "Self Push Force", Type.PERCENTAGE, 1f, State.POSITIVE,
+				ITEM_WEAPON, 0.20f, 5, 160, 0);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
@@ -384,20 +386,14 @@ public class TF2Attribute {
 		return value;
 	}
 	public static float getModifier(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
-		//long nanoTimeStart=System.nanoTime();
+
 		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
 			return initial;
 		float value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, initial);
-		/*if (!stack.isEmpty() && stack.getTagCompound() != null) {
-			//NBTTagCompound attributeList = stack.getTagCompound().getCompoundTag("Attributes");
-			value=addValue(value,stack.getTagCompound().getCompoundTag("Attributes"),effect);
-			if(MapList.buildInAttributes.get(ItemFromData.getData(stack).getName()) != null)
-				value=addValue(value,MapList.buildInAttributes.get(ItemFromData.getData(stack).getName()),effect);
-		}*/
+
 		if (entity != null && entity instanceof EntityTF2Character)
 			value *= ((EntityTF2Character) entity).getAttributeModifier(effect);
-		/*if(!Thread.currentThread().getName().equals("Client Thread"))
-			TF2EventsCommon.tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTimeStart;*/
+
 		return value;
 	}
 
@@ -481,6 +477,11 @@ public class TF2Attribute {
 		return Math.round(floatVal-0.3f);
 	}
 
+	public TF2Attribute getAttributeReplacement(ItemStack stack) {
+		if(this.name.equals("DamageBonus") && getModifier("Self Damage", stack, 1, null) <= 0)
+			return MapList.nameToAttribute.get("SelfPushForceBonus");
+		return this;
+	}
 	public int getUpgradeCost(ItemStack stack) {
 		if (stack.isEmpty() || !(stack.getItem() instanceof ItemFromData))
 			return this.cost;
@@ -509,6 +510,9 @@ public class TF2Attribute {
 		return Math.min(1400, baseCost);
 	}
 
+	public String toString() {
+		return name;
+	}
 	public boolean canApply(ItemStack stack) {
 		return !stack.isEmpty() && this.canApply.apply(stack);
 	}

@@ -38,6 +38,7 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumAction;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
@@ -235,8 +236,60 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(0), Math.min(800, 232+(int) (this.world.getWorldTime() / 4000)),
 					rand);
 		}
+		
 	}
 
+	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
+		float chance = 0.4f + 2f * this.tradeLevel;
+        if (this.rand.nextFloat() < 0.15F * chance * difficulty.getClampedAdditionalDifficulty())
+        {
+            int i = this.rand.nextInt(2);
+            float f = (this.world.getDifficulty() == EnumDifficulty.HARD ? 0.1F : 0.25F) / chance;
+
+            if (this.rand.nextFloat() < 0.095F * chance)
+            {
+                ++i;
+            }
+
+            if (this.rand.nextFloat() < 0.095F * chance)
+            {
+                ++i;
+            }
+
+            if (this.rand.nextFloat() < 0.095F * chance)
+            {
+                ++i;
+            }
+
+            boolean flag = true;
+
+            for (EntityEquipmentSlot entityequipmentslot : EntityEquipmentSlot.values())
+            {
+                if (entityequipmentslot.getSlotType() == EntityEquipmentSlot.Type.ARMOR)
+                {
+                    ItemStack itemstack = this.getItemStackFromSlot(entityequipmentslot);
+
+                    if (!flag && this.rand.nextFloat() < f)
+                    {
+                        break;
+                    }
+
+                    flag = false;
+
+                    if (itemstack.isEmpty() && entityequipmentslot != EntityEquipmentSlot.HEAD)
+                    {
+                        Item item = getArmorByChance(entityequipmentslot, i);
+
+                        if (item != null)
+                        {
+                            this.setItemStackToSlot(entityequipmentslot, new ItemStack(item));
+                        }
+                    }
+                }
+            }
+        }
+    }
+	
 	/*
 	 * public ItemStack getItemStackFromSlot(EntityEquipmentSlot slotIn){
 	 * if(slotIn==EntityEquipmentSlot.MAINHAND){
@@ -501,6 +554,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 		}
 		this.addWeapons();
+		this.setEquipmentBasedOnDifficulty(p_180482_1_);
 		this.switchSlot(this.getDefaultSlot());
 		if(!this.world.getGameRules().getBoolean("doTF2AI")) {
 			this.tasks.taskEntries.clear();

@@ -115,21 +115,22 @@ public class TF2EventsClient {
 		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
 			
 			if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
-					minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots)
+					(ItemToken.allowUse(minecraft.player, "scout") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))
 				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
 				minecraft.player.jump();
-				float speedmult=minecraft.player.moveForward * minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
-				Vec3d moveDir = new Vec3d(minecraft.player.moveForward , minecraft.player.moveStrafing, 0).normalize();
-				minecraft.player.motionX=-MathHelper.sin(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
-				minecraft.player.motionZ=MathHelper.cos(minecraft.player.rotationYaw * 0.017453292F) * speedmult;
+				float speedmult=minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
+				Vec3d moveDir = TF2Util.getMovementVector(minecraft.player);
+				minecraft.player.motionX=moveDir.x * speedmult;
+				minecraft.player.motionZ=moveDir.y * speedmult;
 				minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
 				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 			}
-			else if(minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute) {
+			else if(ItemToken.allowUse(minecraft.player, "soldier") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute) {
 				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(25));
 			}
 		}
 		if(minecraft.currentScreen == null && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
+				&& ItemToken.allowUse(minecraft.player, "engineer")
 				&& minecraft.player.getItemInUseCount()<770) {
 			int sel=-1;
 			for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {

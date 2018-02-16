@@ -1,14 +1,22 @@
 package rafradek.TF2weapons;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 public class CommandGiveWeapon extends CommandBase {
 
@@ -90,4 +98,19 @@ public class CommandGiveWeapon extends CommandBase {
 			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    {
+		if (args.length == 1)
+        {
+            return getListOfStringsMatchingLastWord(args, MapList.nameToData.keySet());
+        }
+		else if (args.length == 2)
+        {
+            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        }
+        else
+        {
+            return !args[args.length - 1].contains(":") ? getListOfStringsMatchingLastWord(args, MapList.nameToAttribute.keySet()) : Collections.emptyList();
+        }
+    }
 }

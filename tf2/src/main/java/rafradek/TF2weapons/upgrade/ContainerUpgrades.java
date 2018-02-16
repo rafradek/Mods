@@ -64,10 +64,10 @@ public class ContainerUpgrades extends Container {
 
 		for (int k = 0; k < 3; ++k)
 			for (int i1 = 0; i1 < 9; ++i1)
-				this.addSlotToContainer(new Slot(playerInventory, i1 + k * 9 + 9, 36 + i1 * 18, 134 + k * 18));
+				this.addSlotToContainer(new Slot(playerInventory, i1 + k * 9 + 9, 36 + i1 * 18, 143 + k * 18));
 
 		for (int l = 0; l < 9; ++l)
-			this.addSlotToContainer(new Slot(playerInventory, l, 36 + l * 18, 192));
+			this.addSlotToContainer(new Slot(playerInventory, l, 36 + l * 18, 201));
 	}
 
 	public void refreshData() {
@@ -138,55 +138,83 @@ public class ContainerUpgrades extends Container {
 	public boolean enchantItem(EntityPlayer playerIn, int id) {
 		ItemStack stack = this.upgradedItem.getStackInSlot(0);
 
-		int idEnch = Math.min(TileEntityUpgrades.UPGRADES_COUNT - 1, Math.max(id / 2, 0));
-		boolean adding = id % 2 == 0;
-		TF2Attribute attr = this.station.attributeList[idEnch];
-		if (attr == null || stack.isEmpty() || !attr.canApply(stack))
-			return false;
-
-		int cost = attr.getUpgradeCost(stack);
-
-		int expPoints = TF2Util.getExperiencePoints(playerIn);
+		NBTTagCompound stacktag = stack.getTagCompound();
 		
-		int currLevel = attr.calculateCurrLevel(stack);
-		if (adding && applicable[idEnch] && currLevel < this.station.attributes.get(attr)
-				&& expPoints >= cost) {
-			NBTTagCompound tag = stack.getTagCompound().getCompoundTag("Attributes");
-			String key = String.valueOf(attr.id);
-
-			if (!tag.hasKey(key))
-				tag.setFloat(key, attr.defaultValue);
-			tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack));
-			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") + attr.cost);
-			if (currLevel == attr.numLevels - 1 && attr.numLevels > 1)
-				stack.getTagCompound().setInteger("LastUpgradesCost", (int) (stack.getTagCompound().getInteger("LastUpgradesCost") + attr.cost * (attr.numLevels > 2 ? 3 : 1.5f)));
-			//stack.getTagCompound().setInteger("TotalCostReal", stack.getTagCompound().getInteger("TotalCostReal") + attr.cost);
-			TF2Util.setExperiencePoints(playerIn, expPoints - cost);
-			this.transactions[idEnch]++;
-			this.transactionsCost[idEnch] += cost;
-
-			/*playerIn.addStat(TF2Achievements.WEAPON_UPGRADE);
-			if (attr.numLevels > 1 && attr.calculateCurrLevel(stack) == attr.numLevels)
-				playerIn.addStat(TF2Achievements.FULLY_UPGRADED);*/
-		} else if (!adding && this.transactions[idEnch] > 0) {
-			cost = this.transactionsCost[idEnch];
-			int count = this.transactions[idEnch];
-			NBTTagCompound tag = stack.getTagCompound().getCompoundTag("Attributes");
-			String key = String.valueOf(attr.id);
-
-			if (!tag.hasKey(key))
+		int expPoints = TF2Util.getExperiencePoints(playerIn);
+		if (id >= 0) {
+			int idEnch = Math.min(TileEntityUpgrades.UPGRADES_COUNT - 1, Math.max(id / 2, 0));
+			boolean adding = id % 2 == 0;
+			TF2Attribute attr = this.station.attributeList[idEnch].getAttributeReplacement(stack);
+			TF2Attribute attrorig = this.station.attributeList[idEnch];
+			if (attr == null || stack.isEmpty() || !attr.canApply(stack))
 				return false;
-			tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * count);
-			if(tag.getFloat(key) == attr.defaultValue)
-				tag.removeTag(key);
+	
+			int cost = attr.getUpgradeCost(stack);
+	
 			
-			stack.getTagCompound().setInteger("TotalCost", stack.getTagCompound().getInteger("TotalCost") - attr.cost * count);
-			if (currLevel == attr.numLevels && attr.numLevels > 1)
-				stack.getTagCompound().setInteger("LastUpgradesCost", (int) (stack.getTagCompound().getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 2 : 1.5f)));
-			//stack.getTagCompound().setInteger("TotalCostReal", stack.getTagCompound().getInteger("TotalCostReal") - this.transactionsCost[idEnch]);
-			TF2Util.setExperiencePoints(playerIn, expPoints + cost);
-			this.transactions[idEnch]=0;
-			this.transactionsCost[idEnch]=0;
+			
+			int currLevel = attr.calculateCurrLevel(stack);
+			if (adding && applicable[idEnch] && currLevel < this.station.attributes.get(attrorig)
+					&& expPoints >= cost) {
+				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
+				String key = String.valueOf(attr.id);
+	
+				if (!stacktag.hasKey("AttributesOrig")) {
+					stacktag.setTag("AttributesOrig", stacktag.getCompoundTag("Attributes").copy());
+				}
+				
+				if (!tag.hasKey(key))
+					tag.setFloat(key, attr.defaultValue);
+				tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack));
+				
+				stacktag.setInteger("TotalCost", stacktag.getInteger("TotalCost") + attr.cost);
+				stacktag.setInteger("TotalSpent", stacktag.getInteger("TotalSpent") + cost);
+				
+				if (currLevel == attr.numLevels - 1 && attr.numLevels > 1)
+					stacktag.setInteger("LastUpgradesCost", (int) (stacktag.getInteger("LastUpgradesCost") + attr.cost * (attr.numLevels > 2 ? 3 : 1.5f)));
+				
+				//stacktag.setInteger("TotalCostReal", stacktag.getInteger("TotalCostReal") + attr.cost);
+				TF2Util.setExperiencePoints(playerIn, expPoints - cost);
+				this.transactions[idEnch]++;
+				this.transactionsCost[idEnch] += cost;
+	
+				/*playerIn.addStat(TF2Achievements.WEAPON_UPGRADE);
+				if (attr.numLevels > 1 && attr.calculateCurrLevel(stack) == attr.numLevels)
+					playerIn.addStat(TF2Achievements.FULLY_UPGRADED);*/
+			} else if (!adding && this.transactions[idEnch] > 0) {
+				cost = this.transactionsCost[idEnch];
+				int count = this.transactions[idEnch];
+				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
+				String key = String.valueOf(attr.id);
+	
+				if (!tag.hasKey(key))
+					return false;
+				tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * count);
+				if(tag.getFloat(key) == attr.defaultValue)
+					tag.removeTag(key);
+				
+				stacktag.setInteger("TotalCost", stacktag.getInteger("TotalCost") - attr.cost * count);
+				stacktag.setInteger("TotalSpent", stacktag.getInteger("TotalSpent") - cost);
+				
+				if (currLevel == attr.numLevels && attr.numLevels > 1)
+					stacktag.setInteger("LastUpgradesCost", (int) (stacktag.getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 2 : 1.5f)));
+				//stacktag.setInteger("TotalCostReal", stacktag.getInteger("TotalCostReal") - this.transactionsCost[idEnch]);
+				TF2Util.setExperiencePoints(playerIn, expPoints + cost);
+				this.transactions[idEnch]=0;
+				this.transactionsCost[idEnch]=0;
+			}
+		}
+		else if (id == -1) {
+			 if (stacktag.hasKey("AttributesOrig") && stacktag.getInteger("TotalSpent") > 0) {
+					stacktag.setTag("Attributes", stacktag.getTag("AttributesOrig").copy());
+					TF2Util.setExperiencePoints(playerIn, expPoints + stacktag.getInteger("TotalSpent"));
+					stacktag.setInteger("TotalSpent", 0);
+					stacktag.setInteger("TotalCost", 0);
+					for (int i = 0; i < this.transactions.length; i++) {
+						this.transactions[i] = 0;
+						this.transactionsCost[i] = 0;
+					}
+				}
 		}
 		return true;
 	}

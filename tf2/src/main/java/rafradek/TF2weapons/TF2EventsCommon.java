@@ -70,6 +70,7 @@ import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemStickyLauncher;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
+import rafradek.TF2weapons.characters.ItemToken;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -158,6 +159,8 @@ import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -488,6 +491,9 @@ public class TF2EventsCommon {
 			}
 			newInv.setInventorySlotContents(4, oldInv.getStackInSlot(4));
 		}
+		WeaponsCapability cap = WeaponsCapability.get(event.getEntityPlayer());
+		cap.forcedClass=WeaponsCapability.get(event.getOriginal()).forcedClass;
+		((ItemToken) TF2weapons.itemToken).updateAttributes(cap.forcedClass ? new ItemStack(TF2weapons.itemToken, 1, cap.getUsedToken()) : newInv.getStackInSlot(4), event.getEntityPlayer());
 		for (Entry<Class<? extends Entity>, Short> entry : event.getOriginal().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.entrySet()) {
 			event.getEntityPlayer().getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.put(entry.getKey(), entry.getValue());
 		}
@@ -542,6 +548,10 @@ public class TF2EventsCommon {
 				return;
 			}
 			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+				if (WeaponsCapability.get(target).getUsedToken() == 2 && event.getSource() == DamageSource.ON_FIRE) {
+					event.setCanceled(true);
+					target.extinguish();
+				}
 				if (WeaponsCapability.get(target).isInvisible()) {
 					if(TF2Attribute.getModifier("Weapon Mode",ItemCloak.searchForWatches(target).getSecond(),0,target)==1)
 						event.setAmount(event.getAmount() * 0.5f);
@@ -1055,10 +1065,7 @@ public class TF2EventsCommon {
 							//System.out.println("gravity" + living.motionY +" "+ living.posY);
 						double speed = Math.sqrt(living.motionX * living.motionX + living.motionZ * living.motionZ);
 		
-						Vec3d moveDir = new Vec3d(living.moveForward , living.moveStrafing, 0).normalize();
-						float cos = MathHelper.cos(living.rotationYaw * 0.017453292F - (float)Math.PI);
-						float sin = MathHelper.sin(living.rotationYaw * 0.017453292F - (float)Math.PI);
-						moveDir = new Vec3d(-moveDir.y * cos + moveDir.x * sin, -moveDir.x * cos - moveDir.y * sin, 0);
+						Vec3d moveDir = TF2Util.getMovementVector(living);
 						double combSpeed = living.motionX * moveDir.x + living.motionZ * moveDir.y;
 						
 						//System.out.println("comb "+combSpeed + " "+ speed + " " + moveDir.x * combSpeed + " " + moveDir.y * combSpeed);
@@ -1958,6 +1965,25 @@ public class TF2EventsCommon {
 	        }
 		}
 	}
+	
+	@SubscribeEvent
+	public void equipItem(LivingEquipmentChangeEvent event) {
+		if(event.getEntityLiving().hasCapability(TF2weapons.WEAPONS_CAP, null) &&
+				WeaponsCapability.get(event.getEntityLiving()).getUsedToken() >= 0 &&
+				event.getTo().hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+			event.getTo().getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass = WeaponsCapability.get(event.getEntityLiving()).getUsedToken();
+		}
+	}
+	
+	@SubscribeEvent
+	public void drops(LivingDropsEvent event) {
+		if(event.getSource().getTrueSource() instanceof EntityPlayer && TF2Util.isEnemy((EntityLivingBase) event.getSource().getTrueSource(),event.getEntityLiving())
+				&& !(event.getEntityLiving() instanceof IEntityTF2)
+				&& event.getSource() instanceof TF2DamageSource && event.getEntityLiving().getRNG().nextFloat() < TF2ConfigVars.dropAmmo) {
+			event.getDrops().add(event.getEntityLiving().entityDropItem(new ItemStack(TF2weapons.itemAmmoPackage, 1, event.getEntityLiving().getRNG().nextInt(ItemAmmo.AMMO_TYPES.length)), 0));
+		}
+	}
+	
 	public static LootPool getLootPool(ResourceLocation res){
 		return new LootPool(new LootEntry[]{new LootEntryTable(res, 1, 0, new LootCondition[0], "combined")},
 				new LootCondition[0], new RandomValueRange(1), new RandomValueRange(0), "combined");

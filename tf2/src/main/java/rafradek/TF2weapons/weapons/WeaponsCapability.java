@@ -34,6 +34,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityEngineer;
+import rafradek.TF2weapons.characters.EntityMedic;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
@@ -328,6 +329,18 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	            owner.motionZ *= 0.82D;
 			}
             //owner.setSprinting(false);
+		}
+		
+		if (!this.owner.world.isRemote) {
+			if (this.owner.ticksExisted % 20 == 0 && (this.owner instanceof EntityMedic || this.getUsedToken() == 6)) {
+				int lastHitTime = this.owner.ticksExisted - this.owner.getEntityData().getInteger("lasthit");
+				if (lastHitTime >= 120)
+					this.owner.heal(0.6f);
+				else if(lastHitTime >= 60)
+					this.owner.heal(TF2Util.lerp(0.6f, 0.3f, (lastHitTime-60)/60f));
+				else
+					this.owner.heal(0.3f);
+			}
 		}
 		
 		if(this.owner.world.isRemote && this.owner == Minecraft.getMinecraft().player) {
