@@ -158,7 +158,7 @@ public class EntitySentry extends EntityBuilding {
 										|| !((EntityTF2Character) target).natural);
 
 					}
-				}, false));
+				}, false, true));
 		this.tasks.addTask(1, new EntityAISentryAttack(this));
 		this.tasks.addTask(2, new EntityAISentryIdle(this));
 	}

@@ -1,14 +1,19 @@
 package rafradek.TF2weapons.decoration;
 
 import java.text.DecimalFormat;
+
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.ISpecialArmor.ArmorProperties;
 
 public class EntityTarget extends EntityArmorStand {
 
@@ -59,14 +64,14 @@ public class EntityTarget extends EntityArmorStand {
     {
         if (!this.world.isRemote && !this.isDead)
         {
-            if (DamageSource.OUT_OF_WORLD.equals(source))
+            if (DamageSource.OUT_OF_WORLD.equals(source) || (source.getTrueSource() instanceof EntityLivingBase && source.getDamageType().equals("player") && source.getTrueSource().isSneaking()))
             {
                 this.setDead();
                 return false;
             }
             else
             {
-            	amount =ForgeHooks.onLivingDamage(this, source, this.applyPotionDamageCalculations(source, this.applyArmorCalculations(source, ForgeHooks.onLivingHurt(this, source, amount))));
+            	amount = ForgeHooks.onLivingDamage(this, source, this.applyPotionDamageCalculations(source, ArmorProperties.applyArmor(this, (NonNullList<ItemStack>) this.getArmorInventoryList(), source, ForgeHooks.onLivingHurt(this, source, amount))));
             	this.dataManager.set(LAST_DAMAGE, amount);
             	this.dps[0] += amount;
             	if(this.startAttack == -1) {
@@ -79,7 +84,10 @@ public class EntityTarget extends EntityArmorStand {
             	this.total += amount;
             	DecimalFormat format = new DecimalFormat("#.##");
             	this.setCustomNameTag("Last: "+format.format(this.getLastDamage())+ " DPS: "+format.format(total * (20f/(this.lastAttack - this.startAttack  + this.deltaTime)))+" Total: "+format.format(total));
-                return false;
+                for (ItemStack stack : this.getArmorInventoryList()) {
+                	stack.setItemDamage(0);
+                }
+            	return false;
             }
         }
         else

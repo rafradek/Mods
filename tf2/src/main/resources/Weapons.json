@@ -443,7 +443,7 @@
 		"Firing speed": 50,
 		"Heal": 0.12,
 		"Max overheal": 0.5,
-		"Range": 8,
+		"Range": 9.1,
 		"Efficient range": 6.7,
 		"Ammo type": 12,
 		"Max ammo": 700,

@@ -32,7 +32,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 	private int targetUnseenTicks;
 
 	public <A extends EntityLivingBase> EntityAINearestChecked(EntityCreature p_i1665_1_, Class<A> p_i1665_2_,
-			boolean p_i1665_4_, boolean p_i1665_5_, final Predicate<A> p_i1665_6_, boolean targetLock) {
+			boolean p_i1665_4_, boolean p_i1665_5_, final Predicate<A> p_i1665_6_, boolean targetLock, boolean allowBehind) {
 		super(p_i1665_1_, p_i1665_4_, p_i1665_5_);
 		this.targetClass = p_i1665_2_;
 		this.theNearestAttackableTargetSorter = new EntityAINearestAttackableTarget.Sorter(p_i1665_1_);
@@ -66,7 +66,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
 										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = taskOwner instanceof EntityBuilding ? 0 : 1;
-						boolean fastCheck = taskOwner instanceof EntityBuilding || (!(target instanceof EntityPlayer)
+						boolean fastCheck = allowBehind || (!(target instanceof EntityPlayer)
 								&& (TF2ConfigVars.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
 										&& ((EntityTF2Character) taskOwner).natural));
 						if (target.getDistanceToEntity(taskOwner) > d0

@@ -154,7 +154,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 						return input instanceof EntityPlayer || input instanceof EntityTF2Character;
 					}
 
-				}, true));
+				}, true, false));
 		this.hostile = true;
 	}
 

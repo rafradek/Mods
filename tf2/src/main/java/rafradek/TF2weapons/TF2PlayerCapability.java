@@ -2,6 +2,7 @@ package rafradek.TF2weapons;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -14,6 +15,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -21,6 +24,8 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.characters.EntityMedic;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
@@ -59,8 +64,11 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public int fastKillTimer;
 	public float healed;
 	public boolean sendContractsNextTick;
+	public EntityLivingBase lastMedic;
 	
 	public short udpServerId;
+	public int medicCall;
+	public boolean medicCharge;
 	
 	
 	public TF2PlayerCapability(EntityPlayer entity) {
@@ -83,12 +91,38 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		// player.getEntityData().setTag("TF2", tag);
 		this.zombieHuntTicks--;
 		this.sapperTime--;
+		
 		if(this.fastKillTimer>0)
 			this.fastKillTimer--;
 		if(this.dodgedDmg>0&&this.owner.getActivePotionEffect(TF2weapons.bonk)==null){
 			this.dodgedDmg=0;
 		}
 		if(!this.owner.world.isRemote) {
+			
+			if (this.owner.ticksExisted % 20 == 0) {
+				if (medicCharge)
+					this.medicCharge = false;
+				
+				Iterator<BlockPos> it = this.owner.world.getCapability(TF2weapons.WORLD_CAP, null).lostMercPos.get(this.owner.getUniqueID()).iterator();
+				while (it.hasNext()){
+					BlockPos pos = it.next();
+					ArrayList<EntityTF2Character> list = new ArrayList<>();
+					this.owner.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityTF2Character.class, new AxisAlignedBB(pos), list, test->{
+						return test.getOwnerId().equals(owner.getUniqueID());
+					});
+					boolean success = false;
+					for (EntityTF2Character living : list) {
+						success = TF2Util.teleportSafe(living, owner);
+					};
+					if(success || list.isEmpty())
+						it.remove();
+					
+				}
+			}
+			this.medicCall--;
+			if (this.medicCharge && this.owner.ticksExisted % 20 == 0)
+				
+
 			if(this.sendContractsNextTick)
 				for(int i=0;i<this.contracts.size();i++) {
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, this.contracts.get(i)),(EntityPlayerMP) this.owner);

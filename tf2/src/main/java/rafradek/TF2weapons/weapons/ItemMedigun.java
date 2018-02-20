@@ -169,22 +169,10 @@ public class ItemMedigun extends ItemUsable {
 		// float
 		// fixedYaw=Math.max(Math.abs(wrapAngledYaw),90)-Math.min(Math.abs(wrapAngledYaw),90);
 
-		endX = (endX / var9)
-				* 8 /*
-					 * + (rand[0]*ratioX[0])((fixedYaw/90)+(1-fixedYaw/90)*(-
-					 * living.rotationPitch/90))*this.positive(wrapAngledYaw)*40
-					 */;
-		endY = (endY / var9)
-				* 8 /* + (rand[1]*ratioY[1])(0.5-Math.abs(spreadPitch))*80*40 */;
-		endZ = (endZ / var9) * 8 /*
-									 * + ((ratioX[2]>ratioY[2]?rand[0]:rand[1])*(
-									 * ratioX[2]+ratioY[2]))(rand[0]*ratioX[2] +
-									 * rand[1]*ratioY[2])((1-fixedYaw/90)+(
-									 * fixedYaw/90)*(-living.rotationPitch/90))*
-									 * this.positive(wrapAngledYaw)*40
-									 */;
-		// System.out.println(startX+" "+startY+" "+startZ+" "+endX+" "+endY+"
-		// "+endZ);
+		double range = getData(stack).getFloat(PropertyType.RANGE);
+		endX = (endX / var9) * range;
+		endY = (endY / var9) * range;
+		endZ = (endZ / var9) * range;
 		List<RayTraceResult> list = TF2Util.pierce(world, living, startX, startY, startZ, startX + endX,
 				startY + endY, startZ + endZ, false, 0.2f, false);
 		return !list.isEmpty() && list.get(0).entityHit != null ? list.get(0) : null;
@@ -222,7 +210,8 @@ public class ItemMedigun extends ItemUsable {
 				EntityLivingBase healTarget=(EntityLivingBase) healTargetEnt;
 				// System.out.println("healing:
 				// "+ItemUsable.itemProperties.server.get(par3Entity).getInteger("HealTarget"));
-				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSqToEntity(healTarget) > 72) {
+				double range = getData(par1ItemStack).getFloat(PropertyType.RANGE) + 1.6;
+				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSqToEntity(healTarget) > range * range) {
 					par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 					// TF2weapons.sendTracking(new
 					// TF2Message.PropertyMessage("HealTarget",

@@ -31,13 +31,13 @@ public class EntityMedic extends EntityTF2Character {
 		this.targetTasks.taskEntries.clear();
 		this.targetTasks.addTask(1, this.findplayer = new EntityAINearestChecked(this, EntityLivingBase.class, true,
 				false, Predicates.and(this::isValidTarget, target -> {
-					return target.getHealth()<target.getMaxHealth();
-				}), false));
+					return target.getHealth()<target.getMaxHealth() || (target instanceof EntityPlayer && target.getCapability(TF2weapons.PLAYER_CAP, null).medicCall > 0);
+				}), false, true));
 		this.targetTasks.addTask(2, new EntityAINearestChecked(this, EntityLivingBase.class, true,
-				false, this::isValidTarget, true));
+				false, this::isValidTarget, true, false));
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true));
 		this.targetTasks.addTask(4,
-				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super::isValidTarget, true));
+				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super::isValidTarget, true, false));
 		this.unlimitedAmmo = true;
 		//this.ammoLeft = 1;
 		this.experienceValue = 15;
@@ -66,7 +66,7 @@ public class EntityMedic extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(30.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.2D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.325D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.14111D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 

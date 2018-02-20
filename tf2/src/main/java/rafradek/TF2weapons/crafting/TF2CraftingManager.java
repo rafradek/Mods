@@ -13,6 +13,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
@@ -53,7 +54,7 @@ public class TF2CraftingManager {
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[11] = new ShapelessOreRecipe(
 				null, new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
-		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 13),
+		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 10, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 14),
 				new Object[] { "SLS", 'S', "string", 'L',"leather" }));
@@ -119,12 +120,26 @@ public class TF2CraftingManager {
 		madmilk.getTagCompound().setBoolean("IsEmpty", true);
 		addRecipe(new ShapedOreRecipe(null,madmilk, new Object[] { " G ", "G G", "GGG", 'G', "paneGlass" }));
 		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("basejumper"), new Object[] {"LLL", "S S", " s ", 'L', "leather", 'S', "string", 's', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
+		
 		ItemStack banner=new ItemStack(Items.BANNER,1,EnumDyeColor.RED.getDyeDamage());
 		banner.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", new NBTTagList());
 		banner.setCount(2);
-		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("startwrench"), new Object[] { " II", " S ", "I  ", 'I', "ingotIron", 'S', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
 		addRecipe(new ShapedOreRecipe(null,banner,
 				new Object[] { "WWW", "WWW", "AS ", 'W',new ItemStack(Blocks.WOOL), 'A',new ItemStack(TF2weapons.itemTF2, 1, 2),'S', Items.STICK }));
+		
+		ItemStack bannern=new ItemStack(Items.BANNER,1,EnumDyeColor.GRAY.getDyeDamage());
+		bannern.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", new NBTTagList());
+		bannern.setCount(4);
+		
+		NBTTagCompound pattern=new NBTTagCompound();
+		
+		pattern.setString("Pattern", "nb");
+		pattern.setInteger("Color", 15);
+		bannern.getOrCreateSubCompound("BlockEntityTag").getTagList("Patterns", 10).appendTag(pattern);
+		addRecipe(new ShapedOreRecipe(null,bannern,
+				new Object[] { "WWW", "WWW", " SA", 'W',new ItemStack(Blocks.WOOL), 'A',new ItemStack(TF2weapons.itemTF2, 1, 2),'S', Items.STICK }));
+		
+		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("startwrench"), new Object[] { " II", " S ", "I  ", 'I', "ingotIron", 'S', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),
 				new ItemStack(TF2weapons.itemTF2, 1, 3), new ItemStack(TF2weapons.itemTF2, 1, 3));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 5), new ItemStack(TF2weapons.itemTF2, 1, 4),

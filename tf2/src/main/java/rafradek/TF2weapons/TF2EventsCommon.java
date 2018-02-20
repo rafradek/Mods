@@ -13,6 +13,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
@@ -104,6 +106,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
@@ -1038,10 +1041,12 @@ public class TF2EventsCommon {
 				else if (living.onGround || living.isInWater()) {
 					cap.killsAirborne=0;
 					cap.setExpJump(false);
-					if(enchanted)
+					if(enchanted && cap.oldFactor != 0) {
 						living.jumpMovementFactor = cap.oldFactor;
+						enchanted = false;
+					}
 				}
-				if (!enchanted && living.jumpMovementFactor == 0) {
+				if (!enchanted && living.jumpMovementFactor == 0 && cap.oldFactor != 0) {
 					living.jumpMovementFactor = cap.oldFactor;
 				}
 				if(enchanted) {
@@ -1486,7 +1491,7 @@ public class TF2EventsCommon {
 		TileEntity banner = event.getWorld().getTileEntity(event.getBlockSnapshot().getPos());
 		if(banner != null && banner instanceof TileEntityBanner){
 			List<BannerPattern> patterns = getPatterns((TileEntityBanner) banner);
-			if(patterns.contains(TF2weapons.redPattern) || patterns.contains(TF2weapons.bluPattern)){
+			if(patterns.contains(TF2weapons.redPattern) || patterns.contains(TF2weapons.bluPattern) || patterns.contains(TF2weapons.neutralPattern)){
 				//System.out.println("Banner is");
 				event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).banners.add(event.getPos());
 			}
@@ -1730,6 +1735,16 @@ public class TF2EventsCommon {
 			event.setResult(Result.ALLOW);
 			return;
 		}
+		
+		if ((stack.getItem() == TF2weapons.itemSandvich || stack.getItem() == TF2weapons.itemChocolate) && event.getEntityPlayer().getHealth() < event.getEntityPlayer().getMaxHealth()) {
+			
+			event.getEntityPlayer().heal(event.getEntityPlayer().getMaxHealth()*((ItemFood) TF2weapons.itemSandvich).getHealAmount(stack)/28f);
+			stack.shrink(1);
+			if(stack.isEmpty())
+				event.setResult(Result.ALLOW);
+			return;
+		}
+		
 		if (WeaponsCapability.get(event.getEntity()).isInvisible()) {
 			event.setResult(Result.DENY);
 			event.setCanceled(true);
@@ -2023,6 +2038,9 @@ public class TF2EventsCommon {
 
 		public ArrayList<BlockPos> banners=new ArrayList<>();
 		public HashMap<String,MerchantRecipeList> lostItems=new HashMap<>();
+		public HashMultimap<UUID, BlockPos> lostMercPos = HashMultimap.<UUID, BlockPos>create();
+		public HashMultimap<UUID, BlockPos> medicMercPos = HashMultimap.<UUID, BlockPos>create();
+		public HashMultimap<UUID, BlockPos> restMercPos = HashMultimap.<UUID, BlockPos>create();
 		/*@Override
 		public void readFromNBT(NBTTagCompound nbt) {
 			
@@ -2041,6 +2059,8 @@ public class TF2EventsCommon {
 			nbt.setInteger("Event", eventFlag);
 			NBTTagCompound items=new NBTTagCompound();
 			nbt.setTag("Items", items);
+			NBTTagCompound mercslost=new NBTTagCompound();
+			nbt.setTag("MercsLost", mercslost);
 			NBTTagList bannersS = new NBTTagList();
 			for(BlockPos pos:banners){
 				
@@ -2055,22 +2075,59 @@ public class TF2EventsCommon {
 				
 				items.setTag(entry.getKey(), entry.getValue().getRecipiesAsTags());
 			}
+			
+			for(UUID id:lostMercPos.keySet()){
+				NBTTagList list = new NBTTagList();
+				for(BlockPos pos:lostMercPos.get(id)) {
+					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
+				}
+				mercslost.setTag(id.toString(), list);
+				
+			}
+			
+			for(UUID id:medicMercPos.keySet()){
+				NBTTagList list = new NBTTagList();
+				for(BlockPos pos:lostMercPos.get(id)) {
+					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
+				}
+				mercslost.setTag(id.toString(), list);
+				
+			}
+			
+			for(UUID id:restMercPos.keySet()){
+				NBTTagList list = new NBTTagList();
+				for(BlockPos pos:lostMercPos.get(id)) {
+					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
+				}
+				mercslost.setTag(id.toString(), list);
+				
+			}
 			return nbt;
 		}
 		@Override
 		public void deserializeNBT(NBTTagCompound nbt) {
 			eventFlag=nbt.getInteger("Event");
 			NBTTagCompound items=nbt.getCompoundTag("Items");
+			NBTTagCompound mercslost=nbt.getCompoundTag("MercsLost");
 			for(String key:items.getKeySet()){
 				MerchantRecipeList handler=new MerchantRecipeList();
 				handler.readRecipiesFromTags(items.getCompoundTag(key));
 				lostItems.put(key, handler);
+			}
+			for(String key:mercslost.getKeySet()){
+				NBTTagList list = nbt.getTagList(key, 11);
+				for (int i = 0; i < list.tagCount(); i++) {
+					int[] pos = list.getIntArrayAt(i);
+					lostMercPos.put(UUID.fromString(key), new BlockPos(pos[0], pos[1], pos[2]));
+				}
+				
 			}
 			NBTTagList bannersS=nbt.getTagList("Banners", 9);
 			for(int i=0;i<bannersS.tagCount();i++){
 				NBTTagList coords=(NBTTagList) bannersS.get(i);
 				banners.add(new BlockPos(coords.getIntAt(0),coords.getIntAt(1),coords.getIntAt(2)));
 			}
+			
 		}
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {

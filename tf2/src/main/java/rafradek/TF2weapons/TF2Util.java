@@ -12,6 +12,7 @@ import com.google.common.base.Predicate;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -36,6 +37,7 @@ import net.minecraft.network.play.server.SPacketExplosion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -313,7 +315,7 @@ public class TF2Util {
 			return ((EntityPlayer) living).getTeam() == living.world.getScoreboard().getTeam("BLU") ? 1 : 0;
 		else if (living instanceof IThrowableEntity)
 			return getTeamForDisplay(((IThrowableEntity) living).getThrower());*/
-		return colorCode[getTeamColorNumber(living)];
+		return colorCode[living != null ? getTeamColorNumber(living) : 0];
 	}
 	
 	public static int getTeamForDisplay(Entity living) {
@@ -935,6 +937,36 @@ public class TF2Util {
 		float sin = MathHelper.sin(living.rotationYaw * 0.017453292F - (float)Math.PI);
 		return new Vec3d(-moveDir.y * cos + moveDir.x * sin, -moveDir.x * cos - moveDir.y * sin, 0);
 	}
+	
+	public static boolean teleportSafe(EntityLiving toTeleport, Entity dest) {
+		int i = MathHelper.floor(dest.posX) - 2;
+        int j = MathHelper.floor(dest.posZ) - 2;
+        int k = MathHelper.floor(dest.getEntityBoundingBox().minY);
+
+        for (int l = 0; l <= 4; ++l)
+        {
+            for (int i1 = 0; i1 <= 4; ++i1)
+            {
+                if ((l < 1 || i1 < 1 || l > 3 || i1 > 3) && isTeleportFriendlyBlock(toTeleport, i, j, k, l, i1))
+                {
+                    toTeleport.setLocationAndAngles((double)((float)(i + l) + 0.5F), (double)k, (double)((float)(j + i1) + 0.5F), toTeleport.rotationYaw, toTeleport.rotationPitch);
+                    toTeleport.getNavigator().clearPathEntity();
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+	}
+	
+	public static boolean isTeleportFriendlyBlock(EntityLivingBase owner, int x, int p_192381_2_, int y, int p_192381_4_, int p_192381_5_)
+    {
+        BlockPos blockpos = new BlockPos(x + p_192381_4_, y - 1, p_192381_2_ + p_192381_5_);
+        IBlockState iblockstate = owner.world.getBlockState(blockpos);
+        return iblockstate.getBlockFaceShape(owner.world, blockpos, EnumFacing.DOWN) == BlockFaceShape.SOLID && 
+        		iblockstate.canEntitySpawn(owner) && owner.world.isAirBlock(blockpos.up()) && owner.world.isAirBlock(blockpos.up(2));
+    }
+	
 	static {
 		for (int i = 0; i < 32; ++i)
         {

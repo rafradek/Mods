@@ -1,7 +1,10 @@
 package rafradek.TF2weapons.characters.ai;
 
+import net.minecraft.entity.player.EntityPlayer;
+import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemMedigun;
@@ -74,8 +77,8 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		// this.entityHost.getLookHelper().setLookPositionWithEntity(this.attackTarget,
 		// 1.0F, 90.0F);
-		
-		if (d0 <= 64) {
+		double range = ItemFromData.getData(this.entityHost.getHeldItemMainhand()).getFloat(PropertyType.RANGE);
+		if (d0 <= range * range) {
 
 			if (!pressed) {
 				pressed = true;
@@ -86,7 +89,8 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				// System.out.println("coœdo");
 			}
 			else {
-				if(this.attackTarget.getHealth()/this.attackTarget.getMaxHealth() < 0.35F && (this.attackTarget.ticksExisted - this.attackTarget.getRevengeTimer()) < 25)
+				if((this.attackTarget.getHealth()/this.attackTarget.getMaxHealth() < 0.35F && (this.attackTarget.ticksExisted - this.attackTarget.getRevengeTimer()) < 25)
+						|| (this.attackTarget instanceof EntityPlayer && this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge))
 					((ItemMedigun)this.entityHost.getHeldItemMainhand().getItem()).startUse(this.entityHost.getHeldItemMainhand(), this.entityHost, this.entityHost.world, 0, 2);
 			}
 

@@ -19,6 +19,7 @@ public class TF2GuiConfig extends GuiConfig {
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("modcompatibility")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("spawn rate")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("world gen")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("mercenary")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("default building targets")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("sound volume")));
 		configElements.addAll(new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements());

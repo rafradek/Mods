@@ -49,10 +49,19 @@ public class ContainerMercenary extends ContainerMerchant {
         	}
         	
         }
-        if(this.mercenary.loadoutHeld.getStackInSlot(3).isEmpty() && this.mercenary.getItemStackFromSlot(EntityEquipmentSlot.HEAD).getItem() instanceof ItemWearable) {
-        	this.mercenary.loadoutHeld.setStackInSlot(3, this.mercenary.getItemStackFromSlot(EntityEquipmentSlot.HEAD));
-        	this.mercenary.setItemStackToSlot(EntityEquipmentSlot.HEAD, ItemStack.EMPTY);
-        }
+		{
+			int i = 3;
+			for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+				if(slot.getSlotType() == Type.ARMOR) {
+				 if(this.mercenary.loadoutHeld.getStackInSlot(3+i).isEmpty() && !this.mercenary.isEmpty[i]) {
+			        	this.mercenary.loadoutHeld.setStackInSlot(3+i, this.mercenary.getItemStackFromSlot(slot));
+			        	this.mercenary.setItemStackToSlot(slot, ItemStack.EMPTY);
+			        }
+				 i--;
+				}
+			}
+		}
+       
 		for (int k = 0; k < 4; ++k) {
 			final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
 			this.addSlotToContainer(new SlotItemHandler(merc.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH), 3-k, 184, 8 + k * 18) {
@@ -205,6 +214,7 @@ public class ContainerMercenary extends ContainerMerchant {
 				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 2, 1, null);
 				this.mercenary.setOwner(playerIn);
 			}
+			this.mercenary.applySpeed();
 		}
 		else if(id == -127) {
 			if(mercenary.getOwner() == playerIn) {
@@ -238,10 +248,17 @@ public class ContainerMercenary extends ContainerMerchant {
 	        	}
 	        }
 	        
-	        if(this.mercenary.getItemStackFromSlot(EntityEquipmentSlot.HEAD).isEmpty() && this.mercenary.loadoutHeld.getStackInSlot(3).getItem() instanceof ItemWearable) {
-	        	this.mercenary.setItemStackToSlot(EntityEquipmentSlot.HEAD, this.mercenary.loadoutHeld.getStackInSlot(3));
-	        	this.mercenary.loadoutHeld.setStackInSlot(3, ItemStack.EMPTY);
+	        int i = 6;
+	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+	        	if(slot.getSlotType() == Type.ARMOR) {
+		        	if(this.mercenary.getItemStackFromSlot(slot).isEmpty()/* && this.mercenary.loadoutHeld.getStackInSlot(3).getItem() instanceof ItemWearable*/) {
+			        	this.mercenary.setItemStackToSlot(slot, this.mercenary.loadoutHeld.getStackInSlot(i));
+			        	this.mercenary.loadoutHeld.setStackInSlot(i, ItemStack.EMPTY);
+			        }
+		        	i--;
+	        	}
 	        }
+	        
         }
     }
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index)

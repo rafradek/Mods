@@ -2,15 +2,21 @@ package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.weapons.ItemBackpack;
+import rafradek.TF2weapons.weapons.ItemHorn;
 import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
@@ -19,6 +25,7 @@ public class EntitySoldier extends EntityTF2Character {
 	public boolean rocketJump;
 	public boolean rocketJumper;
 	public boolean airborne;
+	private boolean activateBackpack;
 
 	public EntitySoldier(World par1World) {
 		super(par1World);
@@ -62,7 +69,7 @@ public class EntitySoldier extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.35D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.275D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10583D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 
@@ -83,6 +90,15 @@ public class EntitySoldier extends EntityTF2Character {
 				}
 			}
 		}
+		ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+		if (!this.world.isRemote && backpack.getItem() instanceof ItemSoldierBackpack) {
+			if (this.getActiveItemStack().getItem() instanceof ItemHorn && (72000 - this.getItemInUseCount()) > ItemFromData.getData(backpack).getInt(PropertyType.FIRE_SPEED)) {
+				this.stopActiveHand();
+				this.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
+			}
+		}
+		//if (!this.world.isRemote)
+			//System.out.println(this.moveForward+ " "+this.moveStrafing);
 		
 		/*
 		 * if(this.rocketJump&&this.getEntityData().getCompoundTag("TF2").
@@ -113,6 +129,18 @@ public class EntitySoldier extends EntityTF2Character {
 		 */
 	}
 
+	public void activateBackpack() {
+		ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+		if (backpack.getTagCompound().getFloat("Rage") >= 1) {
+			this.setHeldItem(EnumHand.OFF_HAND, new ItemStack(TF2weapons.itemHorn));
+			this.setActiveHand(EnumHand.OFF_HAND);
+			if (TF2Util.getTeamForDisplay(this) == 1)
+				this.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_BLU_SOUND), 0.8f, 1f);
+			else
+				this.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_RED_SOUND), 0.8f, 1f);
+		}
+	}
+	
 	@Override
 	public void fall(float distance, float damageMultiplier) {
 		super.fall(distance, this.airborne ? damageMultiplier * 0.35f : damageMultiplier);

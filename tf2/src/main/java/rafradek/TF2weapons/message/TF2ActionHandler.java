@@ -2,9 +2,11 @@ package rafradek.TF2weapons.message;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,7 +16,9 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.village.MerchantRecipe;
@@ -36,9 +40,15 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityTeleporter;
 import rafradek.TF2weapons.building.TeleporterDim;
 import rafradek.TF2weapons.building.EntityTeleporter.TeleporterData;
+import rafradek.TF2weapons.characters.EntityEngineer;
+import rafradek.TF2weapons.characters.EntityMedic;
+import rafradek.TF2weapons.characters.EntitySoldier;
 import rafradek.TF2weapons.characters.EntityStatue;
+import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.weapons.ItemParachute;
+import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 import rafradek.TF2weapons.weapons.ItemWrench;
@@ -268,7 +278,118 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							}
 						}
 					}
-					
+					else if (message.value >= 110 && message.value<119) {
+						int id=message.value-110;
+						if(player != null) {
+							if (id == 0) {
+								player.getCapability(TF2weapons.PLAYER_CAP, null).medicCall=100;
+								boolean success = false;
+								for (EntityMedic medic : player.world.getEntities(EntityMedic.class, test -> {
+									return test.getOwner() == player;
+								})) {
+									if (TF2Util.teleportSafe(medic, player)) {
+										success = true;
+										medic.setOrder(Order.FOLLOW);
+										break;
+									}
+								}
+								if(!success) {
+									Iterator<BlockPos> it = player.world.getCapability(TF2weapons.WORLD_CAP, null).medicMercPos.get(player.getUniqueID()).iterator();
+									while (it.hasNext()){
+										BlockPos pos = it.next();
+										success = false;
+										ArrayList<EntityMedic> list = new ArrayList<>();
+										player.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityMedic.class, new AxisAlignedBB(pos), list, test->{
+											return test.getOwnerId().equals(player.getUniqueID());
+										});
+										for (EntityMedic medic : list) {
+											if (TF2Util.teleportSafe(medic, player)) {
+												
+												success = true;
+												medic.setOrder(Order.FOLLOW);
+											}
+										}
+										
+										if(success) {
+											it.remove();
+											break;
+										}
+										else if(list.isEmpty())
+											it.remove();
+									}
+								}
+							}
+							else if (id == 1) {
+								boolean success = false;
+								for (EntityTF2Character living : player.world.getEntities(EntityTF2Character.class, test -> {
+									return test.getOwner() == player && !(test instanceof EntityMedic || test instanceof EntityEngineer);
+								})) {
+									if (TF2Util.teleportSafe(living, player)) {
+										success = true;
+										living.setOrder(Order.FOLLOW);
+										break;
+									}
+								}
+								if(!success) {
+									Iterator<BlockPos> it = player.world.getCapability(TF2weapons.WORLD_CAP, null).restMercPos.get(player.getUniqueID()).iterator();
+									while (it.hasNext()){
+										BlockPos pos = it.next();
+										success = false;
+										ArrayList<EntityTF2Character> list = new ArrayList<>();
+										player.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityTF2Character.class, new AxisAlignedBB(pos), list, test->{
+											return test.getOwnerId().equals(player.getUniqueID());
+										});
+										for (EntityTF2Character medic : list) {
+											if (TF2Util.teleportSafe(medic, player)) {
+												
+												success = true;
+												medic.setOrder(Order.FOLLOW);
+											}
+										}
+										
+										if(success) {
+											it.remove();
+											break;
+										}
+										else if(list.isEmpty())
+											it.remove();
+									}
+								}
+								List<EntityLiving> attackers = player.world.getEntitiesWithinAABB(EntityLiving.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
+									return !TF2Util.isOnSameTeam(player, test) && test.getAttackTarget() == player;
+								});
+								if (attackers.size() > 0)
+									for(EntityTF2Character living : player.world.getEntitiesWithinAABB(EntityTF2Character.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
+										return TF2Util.isOnSameTeam(player, test) && test.getAttackTarget() == null;
+									})) {
+										living.setAttackTarget(attackers.get(player.getRNG().nextInt(attackers.size())));
+									}
+							}
+							else if (id == 2) {
+								player.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge=true;
+							}
+							else if (id == 3) {
+								for(EntitySoldier living : player.world.getEntitiesWithinAABB(EntitySoldier.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
+									return TF2Util.isOnSameTeam(player, test) && test.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemSoldierBackpack;
+								})){
+									living.activateBackpack();
+								}
+							}
+							else if (id == 4) {
+								RayTraceResult trace = player.world.rayTraceBlocks(player.getPositionEyes(1), player.getPositionEyes(1).add(player.getLook(1).scale(40)));
+								if (trace != null) {
+									BlockPos pos = trace.getBlockPos().offset(trace.sideHit);
+									for(EntityTF2Character living : player.world.getEntitiesWithinAABB(EntityTF2Character.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
+										return test.getOwner() == player && test.getOrder() == Order.FOLLOW;
+									})) {
+										living.setHomePosAndDistance(pos, 0);
+										living.getNavigator().tryMoveToXYZ(pos.getX(), pos.getY(), pos.getZ(), 1);
+										living.setOrder(Order.HOLD);
+									}
+								}
+							}
+						}
+					}
 				}
 
 			});

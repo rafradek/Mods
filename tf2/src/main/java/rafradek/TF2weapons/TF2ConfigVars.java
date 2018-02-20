@@ -49,6 +49,8 @@ public class TF2ConfigVars {
 	public static boolean enableUdp;
 	public static boolean targetSentries;
 	public static float dropAmmo;
+	public static float speedMult;
+	public static float armorMult;
 	public static float mercenaryVolume;
 	public static float bossVolume;
 	public static float gunVolume;
@@ -89,7 +91,12 @@ public class TF2ConfigVars {
 		TF2weapons.weaponVersion = TF2weapons.conf.getInt("Weapon Config Version", "internal", TF2weapons.getCurrentWeaponVersion(), 0, 1000, "");
 		conf.get("gameplay", "Disable structures", false).setRequiresMcRestart(true);
 		
-		naturalCheck = conf.get("gameplay", "Natural mob detection", "Always").setValidValues(new String[] { "Always", "Fast", "Never" }).getString();
+		boolean old = conf.hasKey("gameplay", "Natural mob detection");
+		if (old) {
+			conf.moveProperty("gameplay", "Natural mob detection", "mercenary");
+		}
+		
+		naturalCheck = conf.get("mercenary", "Natural mob detection", "Always").setValidValues(new String[] { "Always", "Fast", "Never" }).getString();
 		shootAttract = conf.getBoolean("Shooting attracts mobs", "gameplay", true, "Gunfire made by players attracts mobs");
 		randomCrits = conf.getBoolean("Random critical hits", "gameplay", true, "Enables randomly appearing critical hits that deal 3x more damage");
 		
@@ -115,6 +122,8 @@ public class TF2ConfigVars {
 		gunVolume = conf.getFloat("Gun volume (radius)", "sound volume", 2f, 0, 10, "Applies only to players, values above 1 increase sound radius only");
 		enchantedExplosion = conf.getBoolean("Enchanted blast jumping", "gameplay", true, "Strafing, no air resistance and reduced gravity when blast jumping");
 		dropAmmo = conf.getFloat("Ammo drop chance", "gameplay", 0.15f, 0f, 1f, "Chance of dropping ammo from non-TF2 hostile creature");
+		speedMult = conf.getFloat("Mercenary speed multiplier", "mercenary", 0.8f, 0f, 2f, "Speed multiplier of mercenaries. Does not apply to owned mercenaries");
+		armorMult = conf.getFloat("Armored mercenary chance", "mercenary", 0.06f, 0f, 10f, "Base chance of armored mercenaries. Altered by difficulty level");
 		
 		buildingsUseEnergy = conf.getBoolean("Buildings use energy", "gameplay", false, "");
 		sentryUseEnergy = conf.getInt("Sentry energy use", "gameplay", 100, 0, 40000, "Energy use on attack");

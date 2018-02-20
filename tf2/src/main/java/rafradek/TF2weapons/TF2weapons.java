@@ -195,7 +195,7 @@ import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemHorn;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3.3", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3.4", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -310,6 +310,7 @@ public class TF2weapons {
 	
 	public static BannerPattern redPattern;
 	public static BannerPattern bluPattern;
+	public static BannerPattern neutralPattern;
 	public static BannerPattern fastSpawn;
 	public static ArrayList<ResourceLocation> animals;
 	
@@ -440,6 +441,7 @@ public class TF2weapons {
 
 		bluPattern=EnumHelper.addEnum(BannerPattern.class, "BLU_PATTERN", new Class<?>[]{String.class,String.class}, "blu_base","bb");
 		redPattern=EnumHelper.addEnum(BannerPattern.class, "RED_PATTERN", new Class<?>[]{String.class,String.class}, "red_base","rb");
+		neutralPattern=EnumHelper.addEnum(BannerPattern.class, "NEUTRAL_PATTERN", new Class<?>[]{String.class,String.class}, "neutral_base","nb");
 		fastSpawn=EnumHelper.addEnum(BannerPattern.class, "FAST_SPAWN", new Class<?>[]{String.class,String.class}, "fast_spawn","fs");
 		
 		MapList.initMaps();
@@ -478,19 +480,23 @@ public class TF2weapons {
 			@SideOnly(Side.CLIENT)
 		    public void displayAllRelevantItems(NonNullList<ItemStack> list) {
 				super.displayAllRelevantItems(list);
-				for(int i=0;i<2;i++){
+				for(int i=0;i<3;i++){
 					for(int j=0;j<2;j++){
-						ItemStack banner=new ItemStack(Items.BANNER,1,(i==0?EnumDyeColor.RED:EnumDyeColor.BLUE).getDyeDamage());
+						if (i == 2 && j == 1)
+							continue;
+						ItemStack banner=new ItemStack(Items.BANNER,1,(i==0?EnumDyeColor.RED:(i == 1 ? EnumDyeColor.BLUE : EnumDyeColor.GRAY)).getDyeDamage());
 						NBTTagList patterns=new NBTTagList();
 						banner.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", patterns);
 						NBTTagCompound pattern=new NBTTagCompound();
+						pattern.setInteger("Color", 15);
 						if(i==0){
 							pattern.setString("Pattern", "rb");
-							pattern.setInteger("Color", 15);
 						}
-						else{
+						else if (i == 1) {
 							pattern.setString("Pattern", "bb");
-							pattern.setInteger("Color", 15);
+						}
+						else if (i == 2) {
+							pattern.setString("Pattern", "nb");
 						}
 						
 						patterns.appendTag(pattern);
@@ -547,9 +553,9 @@ public class TF2weapons {
 		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
 		ForgeRegistries.ITEMS.register(itemDisguiseKit = new ItemDisguiseKit().setUnlocalizedName("disguiseKit").setRegistryName(TF2weapons.MOD_ID + ":disguise_kit"));
 		ForgeRegistries.ITEMS.register(itemBuildingBox = new ItemBuildingBox().setUnlocalizedName("buildingBox").setRegistryName(TF2weapons.MOD_ID + ":building_box"));
-		ForgeRegistries.ITEMS.register(itemSandvich = new ItemFood(14, 1, false).setPotionEffect(new PotionEffect(MobEffects.REGENERATION, 120, 2), 1f).setUnlocalizedName("sandvich")
+		ForgeRegistries.ITEMS.register(itemSandvich = new ItemFoodThrowable(14, 2F, false).setPotionEffect(new PotionEffect(MobEffects.REGENERATION, 120, 2), 1f).setUnlocalizedName("sandvich")
 				.setCreativeTab(tabutilitytf2).setRegistryName(TF2weapons.MOD_ID + ":sandvich"));
-		ForgeRegistries.ITEMS.register(itemChocolate = new ItemFood(7, 0.6F, false).setPotionEffect(new PotionEffect(MobEffects.ABSORPTION, 600, 0), 1f).setUnlocalizedName("chocolate")
+		ForgeRegistries.ITEMS.register(itemChocolate = new ItemFoodThrowable(7, 1.5F, false).setPotionEffect(new PotionEffect(MobEffects.ABSORPTION, 600, 0), 1f).setUnlocalizedName("chocolate")
 				.setCreativeTab(tabutilitytf2).setRegistryName(TF2weapons.MOD_ID + ":chocolate"));
 		ForgeRegistries.ITEMS.register(itemHorn = new ItemHorn().setUnlocalizedName("horn").setRegistryName(TF2weapons.MOD_ID + ":horn"));
 		ForgeRegistries.ITEMS.register(itemAmmo = new ItemAmmo().setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo"));

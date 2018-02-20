@@ -108,6 +108,7 @@ weaponAttribute.ClipOnKill=Gain +%1$s clip size on kill
 weaponAttribute.AirborneBonus=Increased attack speed while airborne
 weaponAttribute.MaxHealthOnKill=Gives extra health for each kill
 weaponAttribute.SpeedOnKill=Gives extra speed for each kill
+
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
 itemGroup.tf2misc=TF2 Utility
@@ -223,6 +224,7 @@ achievement.strangeUp=Reached new strange level:
 
 item.banner.blu_base.white=Only BLU team can spawn in 35 blocks range
 item.banner.red_base.white=Only RED team can spawn in 35 blocks range
+item.banner.neutral_base.white=No team can spawn in 35 blocks range
 item.banner.fast_spawn.white=Fast respawn
 
 gui.ok=OK
@@ -242,6 +244,12 @@ gui.teleporter.drop=Grab
 gui.teleporter.help=Two teleporters must share the same channel, and one of them must be set to exit\nMultiple teleporters can lead to the same exit
 
 gui.dispenser.help=Heals, feed and generates metal\nRepairs items held in hand using materials stored inside\nDraws items from chests on the sides\nOutputs repaired items to chest in the back or front
+
+gui.command.1=1. Medic!
+gui.command.2=2. Help
+gui.command.3=3. Activate Ubercharge
+gui.command.4=4. Activate Banner
+gui.command.5=5. Go here
 
 gui.contracts=Contracts
 gui.contracts.accept=Accept

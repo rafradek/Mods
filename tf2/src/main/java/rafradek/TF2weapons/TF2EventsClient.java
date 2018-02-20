@@ -3,6 +3,7 @@ package rafradek.TF2weapons;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -13,6 +14,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -112,43 +114,76 @@ public class TF2EventsClient {
 	@SubscribeEvent
 	public void keyJumpPress(InputEvent.KeyInputEvent event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
-		if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
-			
-			if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
-					(ItemToken.allowUse(minecraft.player, "scout") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))
-				&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
-				minecraft.player.jump();
-				float speedmult=minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
-				Vec3d moveDir = TF2Util.getMovementVector(minecraft.player);
-				minecraft.player.motionX=moveDir.x * speedmult;
-				minecraft.player.motionZ=moveDir.y * speedmult;
-				minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
-				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
-			}
-			else if(ItemToken.allowUse(minecraft.player, "soldier") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute) {
-				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(25));
-			}
-		}
-		if(minecraft.currentScreen == null && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
-				&& ItemToken.allowUse(minecraft.player, "engineer")
-				&& minecraft.player.getItemInUseCount()<770) {
-			int sel=-1;
-			for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
-				if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
-					sel=i;
-					break;
+		if (minecraft.currentScreen == null) {
+			if (minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
+				
+				if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
+						(ItemToken.allowUse(minecraft.player, "scout") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))
+					&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
+					minecraft.player.jump();
+					float speedmult=minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
+					Vec3d moveDir = TF2Util.getMovementVector(minecraft.player);
+					minecraft.player.motionX=moveDir.x * speedmult;
+					minecraft.player.motionZ=moveDir.y * speedmult;
+					minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
+				}
+				else if(ItemToken.allowUse(minecraft.player, "soldier") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemParachute) {
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(25));
 				}
 			}
-			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
-		}
-		/*if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
-				&& TF2Attribute.getModifier("Knockback Rage", minecraft.player.getHeldItemMainhand(), 0, null) != 0) {
-			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(26));
-		}*/
-		if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
-			if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
-				keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());
+			if(minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
+					&& ItemToken.allowUse(minecraft.player, "engineer")
+					&& minecraft.player.getItemInUseCount()<770) {
+				int sel=-1;
+				for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
+					if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
+						sel=i;
+						minecraft.gameSettings.keyBindsHotbar[i].isPressed();
+						break;
+					}
+				}
+				//KeyBinding.setKeyBindState(Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey(), false);
+				if (sel != -1)
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
 			}
+			if(minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWrench
+					&& ItemToken.allowUse(minecraft.player, "engineer")
+					&& minecraft.player.getItemInUseCount()<770) {
+				int sel=-1;
+				for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
+					if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
+						sel=i;
+						minecraft.gameSettings.keyBindsHotbar[i].isPressed();
+						break;
+					}
+				}
+				//KeyBinding.setKeyBindState(Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey(), false);
+				if (sel != -1)
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
+			}
+			if(ClientProxy.reload.isKeyDown()) {
+				int sel=-1;
+				for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
+					if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
+						sel=i;
+						minecraft.gameSettings.keyBindsHotbar[i].isPressed();
+						break;
+					}
+				}
+				//KeyBinding.setKeyBindState(Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey(), false);
+				if (sel != -1)
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+110));
+			}
+			/*if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
+					&& TF2Attribute.getModifier("Knockback Rage", minecraft.player.getHeldItemMainhand(), 0, null) != 0) {
+				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(26));
+			}*/
+			if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
+				if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
+					keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());
+				}
+		}
 
 	}
 	
@@ -156,7 +191,7 @@ public class TF2EventsClient {
 	public void mousePress(MouseEvent event) {
 		if (event.getButton() != -1) {
 			Minecraft minecraft = Minecraft.getMinecraft();
-			if (minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
+			if (minecraft.currentScreen == null && minecraft.player != null && !minecraft.player.getHeldItemMainhand().isEmpty())
 				if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
 					KeyBinding.setKeyBindState(event.getButton() - 100, event.isButtonstate());
 					keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());
@@ -236,14 +271,11 @@ public class TF2EventsClient {
 		Minecraft minecraft = Minecraft.getMinecraft();
 
 		if (event.phase == TickEvent.Phase.END) {
-			if(Minecraft.getMinecraft().player != null && ClientProxy.reload.isKeyDown() && Minecraft.getMinecraft().currentScreen == null) {
-				if(ticksPressedReload++ > 20) {
-					Minecraft.getMinecraft().displayGuiScreen(new GuiContracts());
-				}
+			
+			if (minecraft.player != null && minecraft.currentScreen != null) {
+				WeaponsCapability.get(minecraft.player).fire1Cool=Math.max(WeaponsCapability.get(minecraft.player).fire1Cool, 250);
 			}
-			else {
-				ticksPressedReload=0;
-			}
+			
 			/*
 			 * Iterator<Entry<EntityLivingBase,EntityLivingBase>>
 			 * iterator=fakeEntities.entrySet().iterator();
@@ -348,6 +380,9 @@ public class TF2EventsClient {
 					event.getButtonList().add(new GuiButton(7578, event.getGui().width / 2 - 100, event.getGui().height / 2 - 110, 100, 20, "Leave Team"));
 					event.getButtonList().add(new GuiButton(7579, event.getGui().width / 2, event.getGui().height / 2 - 110, 100, 20, "Recover Lost Items"));
 				}
+			
+			if (event.getGui() instanceof GuiIngameMenu)
+				event.getButtonList().add(new GuiButton(125362351,event.getGui().width / 2 - 40, event.getGui().height - 40, 80, 20, "Contracts"));
 			Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).state &= 8;
 		}
 	}
@@ -374,6 +409,12 @@ public class TF2EventsClient {
 		else if (event.getGui() instanceof GuiMerchant && event.getButton().id == 7579) {
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(18));
 		}
+		
+		if (event.getGui() instanceof GuiIngameMenu)
+			if (event.getButton().id == 125362351) {
+				Minecraft.getMinecraft().displayGuiScreen(new GuiContracts());
+			}
+		
 	}
 
 	@SubscribeEvent
@@ -403,6 +444,7 @@ public class TF2EventsClient {
 		ItemStack held=player.getHeldItem(EnumHand.MAIN_HAND);
 		int width=event.getResolution().getScaledWidth();
 		int height=event.getResolution().getScaledHeight();
+		Entity mouseTarget = Minecraft.getMinecraft().objectMouseOver != null ? Minecraft.getMinecraft().objectMouseOver.entityHit : null;
 		if (event.getType() == ElementType.HELMET) {
 			if (player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770){
 				
@@ -433,16 +475,24 @@ public class TF2EventsClient {
 				String line2;
 				if( player.getCapability(TF2weapons.PLAYER_CAP, null).newRewards) {
 					line1="You can claim your contract reward";
-					line2="Hold reload key to continue";
+					line2="Contracts can be accessed in the pause menu";
 				}
 				else {
 					line1="You have a new contract";
-					line2="Hold reload key to view it";
+					line2="Contracts can be accessed in the pause menu";
 				}
 				gui.getFontRenderer().drawString(line1, event.getResolution().getScaledWidth()-
 						gui.getFontRenderer().getStringWidth(line1), 50, 0xFFFFFF);
 				gui.getFontRenderer().drawString(line2, event.getResolution().getScaledWidth()-
 						gui.getFontRenderer().getStringWidth(line2), 65, 0xFFFFFF);
+			}
+			if (ClientProxy.reload.isKeyDown()){
+				
+				int commands = 5;
+				for (int i = 0; i < commands; i++) {
+					String line = I18n.format("gui.command."+(i+1));
+					gui.getFontRenderer().drawString(line, 5, (event.getResolution().getScaledHeight() - commands*15)/2 + i * 15, 0xFFFFFF);
+				}
 			}
 			if (player.getActivePotionEffect(TF2weapons.uber)!=null){
 				GlStateManager.disableDepth();
@@ -605,6 +655,7 @@ public class TF2EventsClient {
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
 				GL11.glEnable(GL11.GL_ALPHA_TEST);
 			}
+			Entity healTarget = null;
 			if (held != null && held.getItem() instanceof ItemMedigun) {
 				
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
@@ -632,75 +683,7 @@ public class TF2EventsClient {
 				renderer.pos(event.getResolution().getScaledWidth() - 140, event.getResolution().getScaledHeight() - 52, 0.0D).tex(0.0D, 0.0D).endVertex();
 				tessellator.draw();
 	
-				Entity healTarget = player.world.getEntityByID(cap.getHealTarget());
-				if (healTarget != null && healTarget instanceof EntityLivingBase) {
-					EntityLivingBase living = (EntityLivingBase) healTarget;
-					
-					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-					// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-					// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
-					setColorTeam(player,0.7f);
-					
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.0D, 1D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.01D, 1D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.01D, 0.99D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.0D, 0.99D).endVertex();
-					tessellator.draw();
-					
-					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(0.0D, 0.265625D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(1.0D, 0.265625D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(1.0D, 0.0D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(0.0D, 0.0D).endVertex();
-					tessellator.draw();
-					float overheal = 1f + living.getAbsorptionAmount() / living.getMaxHealth();
-					if (overheal > 1f) {
-						GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.4F);
-						renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
-								.tex(0.0D, 0.59375D).endVertex();
-						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
-								.tex(0.28125D, 0.59375D).endVertex();
-						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
-								.tex(0.28125D, 0.3125D).endVertex();
-						renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
-								.tex(0.0D, 0.3125D).endVertex();
-						tessellator.draw();
-					}
-					GL11.glColor4f(0.12F, 0.12F, 0.12F, 1F);
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.0D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.28125D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.28125D, 0.3125D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.0D, 0.3125D).endVertex();
-					tessellator.draw();
-					float health = living.getHealth() / living.getMaxHealth();
-					if (health > 0.33f) {
-						GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
-					} else {
-						GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
-					}
-					int tf2health=Math.round((living.getHealth()/TF2ConfigVars.damageMultiplier)*overheal*10);
-					
-					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.0D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.28125D, 0.59375D).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
-							.tex(0.28125D, 0.59375D - 0.28125D * health).endVertex();
-					renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
-							.tex(0.0D, 0.59375D - 0.28125D * health).endVertex();
-					tessellator.draw();
-					
-					gui.getFontRenderer().drawString(Integer.toString(tf2health), event.getResolution().getScaledWidth() / 2 - 47 - gui.getFontRenderer().getStringWidth(Integer.toString(tf2health)) / 2,
-							event.getResolution().getScaledHeight() / 2 + 52, 0x101010);
-					gui.drawString(gui.getFontRenderer(), "Healing:", event.getResolution().getScaledWidth() / 2 - 28,
-							event.getResolution().getScaledHeight() / 2 + 42, 16777215);
-					gui.drawString(gui.getFontRenderer(), living.getDisplayName().getFormattedText(),
-							event.getResolution().getScaledWidth() / 2 - 28, event.getResolution().getScaledHeight() / 2 + 54, 16777215);
-	
-				}
+				healTarget = player.world.getEntityByID(cap.getHealTarget());
 	
 				float uber = held.getTagCompound().getFloat("ubercharge");
 				gui.drawString(gui.getFontRenderer(), "UBERCHARGE: " + Math.round(uber * 100f) + "%",
@@ -728,7 +711,99 @@ public class TF2EventsClient {
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 			}
 			
-			Entity mouseTarget = Minecraft.getMinecraft().objectMouseOver != null ? Minecraft.getMinecraft().objectMouseOver.entityHit : null;
+			
+			if (healTarget == null && TF2Util.isOnSameTeam(mouseTarget, player))
+				healTarget = mouseTarget;
+			
+			if (healTarget != null && healTarget instanceof EntityLivingBase) {
+				EntityLivingBase living = (EntityLivingBase) healTarget;
+				
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder renderer = tessellator.getBuffer();
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+				// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+				// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+				setColorTeam(player,0.7f);
+				
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.0D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.01D, 1D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 + 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.01D, 0.99D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 62, event.getResolution().getScaledHeight() / 2 + 40, 0.0D).tex(0.0D, 0.99D).endVertex();
+				tessellator.draw();
+				
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(0.0D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 72, 0.0D).tex(1.0D, 0.265625D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 + 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(1.0D, 0.0D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 64, event.getResolution().getScaledHeight() / 2 + 38, 0.0D).tex(0.0D, 0.0D).endVertex();
+				tessellator.draw();
+				float overheal = 1f + living.getAbsorptionAmount() / living.getMaxHealth();
+				if (overheal > 1f) {
+					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.4F);
+					renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
+							.tex(0.0D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 + 10 * overheal, 0.0D)
+							.tex(0.28125D, 0.59375D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 + 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
+							.tex(0.28125D, 0.3125D).endVertex();
+					renderer.pos(event.getResolution().getScaledWidth() / 2 - 47 - 10 * overheal, event.getResolution().getScaledHeight() / 2 + 55 - 10 * overheal, 0.0D)
+							.tex(0.0D, 0.3125D).endVertex();
+					tessellator.draw();
+				}
+				GL11.glColor4f(0.12F, 0.12F, 0.12F, 1F);
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.0D, 0.59375D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 66.4, 0.0D).tex(0.28125D, 0.59375D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 35.7, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.28125D, 0.3125D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 58.3, event.getResolution().getScaledHeight() / 2 + 43.6, 0.0D).tex(0.0D, 0.3125D).endVertex();
+				tessellator.draw();
+				float health = living.getHealth() / living.getMaxHealth();
+				if (health > 0.33f) {
+					GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+				} else {
+					GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+				}
+				int tf2health=Math.round((living.getHealth()/TF2ConfigVars.damageMultiplier)*overheal*10);
+				
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.0D, 0.59375D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65, 0.0D).tex(0.28125D, 0.59375D).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 37, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
+						.tex(0.28125D, 0.59375D - 0.28125D * health).endVertex();
+				renderer.pos(event.getResolution().getScaledWidth() / 2 - 57, event.getResolution().getScaledHeight() / 2 + 65 - health * 20, 0.0D)
+						.tex(0.0D, 0.59375D - 0.28125D * health).endVertex();
+				tessellator.draw();
+				
+				gui.getFontRenderer().drawString(Integer.toString(tf2health), event.getResolution().getScaledWidth() / 2 - 47 - gui.getFontRenderer().getStringWidth(Integer.toString(tf2health)) / 2,
+						event.getResolution().getScaledHeight() / 2 + 52, 0x101010);
+				String text = "";
+				if (player.world.getEntityByID(cap.getHealTarget()) != null) {
+					text = "Healing:";
+				}
+				else if (living.getHeldItemMainhand().getItem() instanceof ItemMedigun) {
+					text = "Ubercharge: " + Math.round(living.getHeldItemMainhand().getTagCompound().getFloat("ubercharge")*100f) + "%";
+				}
+				gui.drawString(gui.getFontRenderer(), text, event.getResolution().getScaledWidth() / 2 - 28,
+						event.getResolution().getScaledHeight() / 2 + 42, 16777215);
+				gui.drawString(gui.getFontRenderer(), living.getDisplayName().getFormattedText(),
+						event.getResolution().getScaledWidth() / 2 - 28, event.getResolution().getScaledHeight() / 2 + 54, 16777215);
+
+				GL11.glEnable(GL11.GL_TEXTURE_2D);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			}
+			
 			if (mouseTarget != null && mouseTarget instanceof EntityBuilding
 					&& TF2Util.isOnSameTeam(player, mouseTarget)) {
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
@@ -1058,7 +1133,7 @@ public class TF2EventsClient {
 		tickTime = event.renderTickTime;
 		Minecraft minecraft = Minecraft.getMinecraft();
 		if (event.phase == Phase.END)
-			if (minecraft.player != null && minecraft.player.getHeldItemMainhand() != null)
+			if (minecraft.currentScreen == null && minecraft.player != null && minecraft.player.getHeldItemMainhand() != null)
 				if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemUsable) {
 					Mouse.poll();
 					minecraft.player.rotationYawHead = minecraft.player.rotationYaw;

@@ -82,7 +82,7 @@ public class ContainerTF2Workbench extends Container {
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox
 				&& player.getTeam() == player.world.getScoreboard().getTeam("BLU"))
 			stack.setItemDamage(stack.getItemDamage() + 1);
-		if (!stack.isEmpty() && stack.getItem() instanceof ItemBanner){
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemBanner && stack.getItemDamage() == EnumDyeColor.RED.getDyeDamage()){
 			NBTTagCompound pattern=new NBTTagCompound();
 			if(player.getTeam() == player.world.getScoreboard().getTeam("BLU")){
 				stack.setItemDamage(EnumDyeColor.BLUE.getDyeDamage());
