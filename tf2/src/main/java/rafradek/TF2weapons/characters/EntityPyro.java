@@ -1,14 +1,18 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.ai.EntityAIAirblast;
+import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 
 public class EntityPyro extends EntityTF2Character {
@@ -71,9 +75,18 @@ public class EntityPyro extends EntityTF2Character {
 					this.switchSlot(0);
 				}
 			}
+			if (this.getWepCapability().getPhlogRage() >= 20f 
+					&& this.getHeldItemMainhand().getItem() instanceof ItemFlameThrower && !this.getHeldItemMainhand().getTagCompound().getBoolean("RageActive")) {
+				this.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
+				this.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
+				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber,40,0));
+				this.getHeldItemMainhand().getTagCompound().setBoolean("RageActive", true);
+			}
 		}
 		super.onLivingUpdate();
 	}
+	
+	
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -139,4 +152,7 @@ public class EntityPyro extends EntityTF2Character {
 	 * super.getAttributeModifier(attribute)*1.5f; } return
 	 * super.getAttributeModifier(attribute); }
 	 */
+	public int getClassIndex() {
+		return 2;
+	}
 }

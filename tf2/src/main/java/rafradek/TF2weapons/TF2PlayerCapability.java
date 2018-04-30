@@ -29,6 +29,7 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
+import rafradek.TF2weapons.weapons.ItemAmmo;
 
 public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 
@@ -51,7 +52,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public boolean engineerKilled;
 	public boolean sentryKilled;
 	public boolean dispenserKilled;
-	public int[] cachedAmmoCount=new int[15];
+	public int[] cachedAmmoCount=new int[ItemAmmo.AMMO_TYPES.length];
 	public int sapperTime;
 	public int headshotsRow;
 	public EntityLivingBase buildingOwnerKill;
@@ -108,7 +109,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					BlockPos pos = it.next();
 					ArrayList<EntityTF2Character> list = new ArrayList<>();
 					this.owner.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityTF2Character.class, new AxisAlignedBB(pos), list, test->{
-						return test.getOwnerId().equals(owner.getUniqueID());
+						return owner.getUniqueID().equals(test.getOwnerId());
 					});
 					boolean success = false;
 					for (EntityTF2Character living : list) {
@@ -177,10 +178,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					int oldProgress=contract.progress;
 					contract.progress+=objective.getPoints();
 					
-					if(oldProgress<40 && contract.progress>=40) {
+					if(oldProgress<Contract.REWARD_LOW && contract.progress>=Contract.REWARD_LOW) {
 						contract.rewards+=1;
 					}
-					if(oldProgress<135 && contract.progress>=135) {
+					if(oldProgress<Contract.REWARD_HIGH && contract.progress>=Contract.REWARD_HIGH) {
 						contract.rewards+=2;
 					}
 					if(contract.progress>135)

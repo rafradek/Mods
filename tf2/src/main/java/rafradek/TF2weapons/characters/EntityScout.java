@@ -184,4 +184,8 @@ public class EntityScout extends EntityTF2Character {
 		if (ItemFromData.getData(this.loadout.getStackInSlot(2)).getName().equals("sandmanball"))
 			this.ballCooldown = this.getDiff() == 1 ? 340 : (this.getDiff() == 3 ? 160 : 240);
 	}
+	
+	public int getClassIndex() {
+		return 0;
+	}
 }

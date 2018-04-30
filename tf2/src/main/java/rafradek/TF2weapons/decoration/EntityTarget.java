@@ -22,6 +22,10 @@ public class EntityTarget extends EntityArmorStand {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public EntityTarget(World worldIn, double d, double d1, double e) {
+		super(worldIn, d, d1, e);
+	}
+
 	private static final DataParameter<Float> LAST_DAMAGE = EntityDataManager.<Float>createKey(EntityTarget.class, DataSerializers.FLOAT);
 	private static final DataParameter<Float> DPS = EntityDataManager.<Float>createKey(EntityTarget.class, DataSerializers.FLOAT);
 	

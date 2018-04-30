@@ -9,6 +9,7 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 
 	public boolean sticked;
 
+	public boolean clientSticked;
 	public EntityStickProjectile(World world) {
 		super(world);
 		this.setSize(0.3F, 0.3F);
@@ -43,10 +44,13 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 
 	@Override
 	public void setDead() {
-		if (this.world.isRemote && this.sticked && this.getThrower() != null) {
+		if (this.world.isRemote && this.sticked && this.getThrower() != null && !this.clientSticked) {
 			EntityStickProjectile ent = new EntityStickProjectile(this.world);
 			ent.setPositionAndRotation(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
 			ent.sticked = true;
+			ent.setType(this.getType());
+			ent.setThrower(this.getThrower());
+			ent.clientSticked = true;
 			ent.stickedBlock = this.stickedBlock;
 			this.world.spawnEntity(ent);
 		}

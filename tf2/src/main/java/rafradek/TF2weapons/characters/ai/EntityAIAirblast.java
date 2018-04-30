@@ -31,7 +31,9 @@ public class EntityAIAirblast extends EntityAIBase {
 		// "+TF2ActionHandler.playerAction.server.get(host));
 		// System.out.println("should execute:
 		// "+(host.world.getDifficulty().getDifficultyId()>=2));
-		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower && host.world.getDifficulty().getDifficultyId() >= 2;
+		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower 
+				&& ((ItemFlameThrower)this.host.getHeldItemMainhand().getItem()).canAltFire(this.host.world, host, this.host.getHeldItemMainhand())
+				&& host.world.getDifficulty().getDifficultyId() >= 2;
 
 	}
 

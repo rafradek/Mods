@@ -5,12 +5,14 @@ import javax.annotation.Nullable;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.ContainerMerchant;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.EntityEquipmentSlot.Type;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -135,7 +137,7 @@ public class ContainerMercenary extends ContainerMerchant {
 						if (!parent.isEmpty())
 							stack = ItemFromData.getNewStack(parent);
 						return ItemFromData.getData(stack).getInt(PropertyType.SLOT)==this.getSlotIndex()
-						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(merc.getClass().getSimpleName().substring(6).toLowerCase());
+						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[merc.getClassIndex()]);
 					}
 				}
 
@@ -158,8 +160,8 @@ public class ContainerMercenary extends ContainerMerchant {
 				if (stack.getItem() instanceof ItemFood) {
 					return true;
 				}
-				if (stack.getItem() instanceof ItemAmmo) {
-					int type = ((ItemAmmo)stack.getItem()).getTypeInt(stack);
+				if (stack.getItem() instanceof ItemAmmo || stack.getItem() == Items.ARROW) {
+					//int type = ((ItemAmmo)stack.getItem()).getTypeInt(stack);
 					return true/*type == ItemFromData.getData(merc.loadout.getStackInSlot(0)).getInt(PropertyType.AMMO_TYPE) ||
 							type == ItemFromData.getData(merc.loadout.getStackInSlot(1)).getInt(PropertyType.AMMO_TYPE)*/;
 				}
@@ -239,7 +241,8 @@ public class ContainerMercenary extends ContainerMerchant {
 	        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
 	        	}
 	        }
-	        this.mercenary.switchSlot(this.mercenary.preferredSlot);
+	        
+	        this.mercenary.switchSlot(this.mercenary.preferredSlot, false, true);
 	        
 	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
 	        	if(slot.getSlotType() == Type.ARMOR) {
@@ -281,17 +284,21 @@ public class ContainerMercenary extends ContainerMerchant {
 
                 slot.onSlotChange(itemstack1, itemstack);
             }
-            else if (index != 0 && index != 1)
+            else if (index != 0 && index != 1 && index < 39)
             {
-            	if (equip.getSlotType() == EntityEquipmentSlot.Type.ARMOR && !(index >= 40 && index < 44)) {
-            		if(!this.mergeItemStack(itemstack1, 43-equip.getIndex(), 44-equip.getIndex(), false))
+            	if (equip.getSlotType() == EntityEquipmentSlot.Type.ARMOR) {
+            		if(!this.mergeItemStack(itemstack1, 43-equip.getSlotIndex(), 44-equip.getSlotIndex(), false))
             			return ItemStack.EMPTY;
             	}
-            	else if (itemstack1.getItem() instanceof ItemUsable && !(index >= 44 && index < 47) ) {
+            	else if (itemstack1.getItem() instanceof ItemUsable ) {
             		for(int i = 0; i < 3; i++) {
-            			if(!this.getSlot(i + 44).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, i + 44, i + 45, false))
+            			if(!this.getSlot(i + 43).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, i + 43, i + 44, false))
             				return ItemStack.EMPTY;
             		}
+            	}
+            	else if (this.getSlot(46).isItemValid(itemstack1)) {
+        			if(!this.mergeItemStack(itemstack1, 46, 47, false))
+        				return ItemStack.EMPTY;
             	}
             	else if (index >= 3 && index < 30)
                 {

@@ -222,16 +222,16 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,1,2):ItemFromData.getRandomWeapon(player.getRNG(), ItemFromData.VISIBLE_WEAPON);
 								if(!player.inventory.addItemStackToInventory(reward))
 									player.dropItem(reward, true);
-								player.addExperience(200);
+								player.addExperience(240);
 							}
 							if((contract.rewards&2)==2) {
 								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,4,2):new ItemStack(TF2weapons.itemTF2,1,7);
 								if(!player.inventory.addItemStackToInventory(reward))
 									player.dropItem(reward, true);
-								player.addExperience(400);
+								player.addExperience(1200);
 							}
 							contract.rewards=0;
-							if(contract.progress>=150)
+							if(contract.progress>=Contract.REWARD_HIGH)
 								player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
 						}
 					} 
@@ -300,7 +300,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 										success = false;
 										ArrayList<EntityMedic> list = new ArrayList<>();
 										player.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityMedic.class, new AxisAlignedBB(pos), list, test->{
-											return test.getOwnerId().equals(player.getUniqueID());
+											return player.getUniqueID().equals(test.getOwnerId());
 										});
 										for (EntityMedic medic : list) {
 											if (TF2Util.teleportSafe(medic, player)) {
@@ -337,7 +337,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 										success = false;
 										ArrayList<EntityTF2Character> list = new ArrayList<>();
 										player.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityTF2Character.class, new AxisAlignedBB(pos), list, test->{
-											return test.getOwnerId().equals(player.getUniqueID());
+											return player.getUniqueID().equals(test.getOwnerId());
 										});
 										for (EntityTF2Character medic : list) {
 											if (TF2Util.teleportSafe(medic, player)) {

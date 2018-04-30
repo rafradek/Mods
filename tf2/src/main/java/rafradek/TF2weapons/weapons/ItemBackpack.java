@@ -84,6 +84,10 @@ public class ItemBackpack extends ItemFromData {
 		this.onArmorTickAny(world, player, itemStack);
 	}
 	
+    public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
+        return EntityEquipmentSlot.CHEST;
+    }
+	
 	public void onArmorTickAny(World world, final EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {

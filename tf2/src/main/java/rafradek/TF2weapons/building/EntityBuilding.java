@@ -35,6 +35,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
@@ -148,15 +149,20 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		}
 		return false;
 	}
-
+	
+	@Override
+	public ItemStack getPickedResult(RayTraceResult target) {
+		ItemStack stack = new ItemStack(TF2weapons.itemBuildingBox, 1,
+				(this instanceof EntitySentry ? 18 : (this instanceof EntityDispenser ? 20 : 22)) + this.getEntTeam());
+		stack.setTagCompound(new NBTTagCompound());
+		stack.getTagCompound().setTag("SavedEntity", new NBTTagCompound());
+		this.writeEntityToNBT(stack.getTagCompound().getCompoundTag("SavedEntity"));
+		return stack;
+	}
+	
 	public void grab() {
 		if(!this.isDisabled()) {
-			ItemStack stack = new ItemStack(TF2weapons.itemBuildingBox, 1,
-					(this instanceof EntitySentry ? 18 : (this instanceof EntityDispenser ? 20 : 22)) + this.getEntTeam());
-			stack.setTagCompound(new NBTTagCompound());
-			stack.getTagCompound().setTag("SavedEntity", new NBTTagCompound());
-			this.writeEntityToNBT(stack.getTagCompound().getCompoundTag("SavedEntity"));
-			this.entityDropItem(stack, 0);
+			this.entityDropItem(this.getPickedResult(null), 0);
 			// System.out.println("Saved:
 			// "+stack.getTagCompound().getCompoundTag("SavedEntity"));
 			this.setDead();

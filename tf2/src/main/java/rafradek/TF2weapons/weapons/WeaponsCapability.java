@@ -96,6 +96,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean teleporterEntity;
 	public boolean forcedClass;
 	
+	public float lastHitCharge;
 	public EntityDataManager dataManager;
 	
 	public EntityLivingBase entityDisguise;
@@ -407,7 +408,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					shooter.targetPrevPos[4] = shooter.getAttackTarget().posZ;
 				}
 			}
-			this.stateDo(owner, stack);
+			if (TF2Util.canInteract(owner))
+				this.stateDo(owner, stack);
 
 			if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.knockbackActive && this.getKnockbackRage() >= 1f) {
 				this.knockbackActive = true;
@@ -415,7 +417,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			
 			if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
 					&& stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)
-					&& (!ItemAmmo.searchForAmmo(owner, stack).isEmpty()
+					&& (!item.searchForAmmo(owner, stack).isEmpty()
 							|| owner.world.isRemote)) {
 				if (((state & 4) != 0 || stack.getItemDamage() == stack.getMaxDamage()) && (state & 8) == 0
 						&& stack.getItemDamage() != 0 && this.reloadCool <= 0
@@ -436,7 +438,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					while ((state & 8) != 0 && this.reloadCool <= 0 && stack.getItemDamage() != 0) {
 						// System.out.println("On client:
 						// "+owner.world.isRemote);
-						int maxAmmoUse = ItemAmmo.getAmmoAmount(owner, stack);
+						int maxAmmoUse = item.getAmmoAmount(owner, stack);
 						int consumeAmount = 0;
 
 						if (((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack)) {
@@ -455,7 +457,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 							stack.setItemDamage(stack.getItemDamage() - 1);
 							TF2weapons.proxy.playReloadSound(owner, stack);
 						}
-						ItemAmmo.consumeAmmoGlobal(owner, stack, consumeAmount);
+						item.consumeAmmoGlobal(owner, stack, consumeAmount);
 						if (!owner.world.isRemote && owner instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(
 									new TF2Message.UseMessage(stack.getItemDamage(), true, -1,EnumHand.MAIN_HAND),
@@ -473,6 +475,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		} else {
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemMinigun.slowdown);
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemSniperRifle.slowdown);
+			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemHuntsman.slowdown);
 		}
 		
 		if (!this.owner.world.isRemote && this.dataManager.isDirty()) {
@@ -583,7 +586,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	 * removeModifier(ItemSniperRifle.slowdown); } map.put(player, state); } }
 	 */
 	public boolean shouldShoot(EntityLivingBase player, int state) {
-		return TF2Util.canInteract(player) && (!(!player.world.isRemote
+		return (!(!player.world.isRemote
 				&& player instanceof EntityPlayer
 				&& (this.predictionList.isEmpty()
 						|| (this.predictionList.peek() != null && (this.predictionList.peek().state & state) != state)))

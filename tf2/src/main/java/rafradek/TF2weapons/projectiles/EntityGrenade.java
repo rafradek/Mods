@@ -73,16 +73,16 @@ public class EntityGrenade extends EntityProjectileBase {
 				this.explode(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.entityHit, 1);
 			}
 			else {
-				this.attackDirect(entityHit, 1);
+				this.attackDirect(entityHit, 1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false);
 				if(mop.sideHit==EnumFacing.EAST || mop.sideHit==EnumFacing.WEST)
 					this.onHitBlockX();
 				else if(mop.sideHit==EnumFacing.NORTH || mop.sideHit==EnumFacing.SOUTH)
 					this.onHitBlockZ();
 				else
 					this.onHitBlockY(null);
-				this.motionX*=0.65;
+				this.motionX*=0.4;
 				this.motionY*=0.65;
-				this.motionZ*=0.65;
+				this.motionZ*=0.4;
 			}
 		}
 	}

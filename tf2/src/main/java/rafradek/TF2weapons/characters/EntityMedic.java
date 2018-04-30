@@ -192,4 +192,8 @@ public class EntityMedic extends EntityTF2Character {
 		else
 			this.tasks.addTask(4, this.attack);
 	}
+	
+	public int getClassIndex() {
+		return 6;
+	}
 }

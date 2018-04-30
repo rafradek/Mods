@@ -33,8 +33,10 @@ public class TF2ConfigVars {
 	public static boolean disableContracts;
 	public static boolean disableGeneration;
 	public static boolean randomCrits;
+	public static boolean overworldOnly;
 	public static String spawnOres;
 	public static String naturalCheck;
+	public static String biomeCheck;
 	public static float damageMultiplier;
 	public static float healthScale;
 	public static boolean dynamicLights;
@@ -82,6 +84,8 @@ public class TF2ConfigVars {
 		fastMetalProduction = conf.getBoolean("Fast metal production", "gameplay", false, "Dispensers produce metal every 5 seconds");
 		
 		disableSpawn = conf.getBoolean("Disable mob spawning", "spawn rate", false, "Disable mod-specific mobs spawning");
+		overworldOnly = conf.getBoolean("Spawn only in overworld", "spawn rate", false, "Disable spawning in custom dimensions");
+		biomeCheck = conf.get("spawn rate", "Spawn in biomes", "All","Default - biomes that spawn vanilla monsters").setValidValues(new String[] { "All", "Default", "Vanilla only" }).getString();
 		disableBossSpawn = conf.getBoolean("Disable boss spawn", "spawn rate", false, "Disable random tf2 boss spawn");
 		disableInvasion =conf.getBoolean("Disable invasion event", "spawn rate", false, "Disable invasion event");
 		disableContracts =conf.getBoolean("Disable contracts", "gameplay", false, "Stop new contracts from appearing");

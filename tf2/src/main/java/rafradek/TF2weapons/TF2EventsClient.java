@@ -1,5 +1,7 @@
 package rafradek.TF2weapons;
 
+import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -24,7 +26,9 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
@@ -93,15 +97,29 @@ public class TF2EventsClient {
 	public static boolean moveEntities;
 	public static float tickTime = 0;
 	public static ArrayList<MuzzleFlashLightSource> muzzleFlashes = new ArrayList<>();
-	public static TextureAtlasSprite pelletIcon;
+	public static TextureAtlasSprite[] pelletIcon;
 	public static int ticksPressedReload;
+	private static FloatBuffer brightnessBuffer = GLAllocation.createDirectFloatBuffer(4);
+	private static final DynamicTexture TEXTURE_BRIGHTNESS = new DynamicTexture(16, 16);
 	
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
 		// if(event.getMap().getGlTextureId()==1){
 		// System.out.println("Registered icon:
 		// "+event.getMap().getGlTextureId());
-		pelletIcon = event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/pellet3"));
+		pelletIcon = new TextureAtlasSprite[16];
+		for (int i = 0; i < 16; i++) {
+			ResourceLocation location = new ResourceLocation(TF2weapons.MOD_ID, "items/tracer"+(i+1));
+				try {
+					Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(TF2weapons.MOD_ID, "textures/items/tracer"+(i+1)+".png"));
+					pelletIcon[i] = event.getMap().registerSprite(location);
+				} catch (IOException e) {
+
+				}
+				
+		}
+		
+		
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/ammo_belt_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/refill_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_0"));
@@ -1017,7 +1035,7 @@ public class TF2EventsClient {
 		else{
 			ClientProxy.renderCritGlow=0;
 		}
-		if (WeaponsCapability.get(player).isInvisible() ||player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
+		if (WeaponsCapability.get(player).isInvisible() ||(player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() &&player.getHeldItemMainhand().getItem() instanceof ItemSniperRifle) ) {
 			/*
 			 * GL11.glEnable(GL11.GL_BLEND); GlStateManager.clear(256);
 			 * OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -1181,27 +1199,7 @@ public class TF2EventsClient {
 			return;
 		
 		ClientProxy.renderCritGlow=0;
-		if (event.getRenderer().getRenderManager().isDebugBoundingBox() && !event.getEntity().isInvisible() && !Minecraft.getMinecraft().isReducedDebug()){
-			GlStateManager.depthMask(false);
-	        GlStateManager.disableTexture2D();
-	        GlStateManager.disableLighting();
-	        GlStateManager.disableCull();
-	        GlStateManager.disableBlend();
-	        AxisAlignedBB head=TF2Util.getHead(event.getEntity()).offset(-event.getEntity().posX, -event.getEntity().posY, -event.getEntity().posZ);
-	        /*double ymax = event.getEntity().getEntityBoundingBox().maxY-event.getEntity().posY;
-	        AxisAlignedBB head = new AxisAlignedBB(- 0.32, ymax - 0.24, - 0.32,  0.32, ymax + 0.48, 0.32);
-	        if (event.getEntity().width > event.getEntity().height * 0.65) {
-				double offsetX = MathHelper.cos((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2;
-				double offsetZ = -(double) (MathHelper.sin((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2);// cos
-				head.offset(offsetX, 0, offsetZ);
-			}*/
-	        RenderGlobal.drawBoundingBox(head.minX + event.getX(), head.minY + event.getY(), head.minZ + event.getZ(), head.maxX + event.getX(), head.maxY + event.getY(), head.maxZ + event.getZ(), 1.0F, 0.0F, 1.0F, 1.0F);
-	        GlStateManager.enableTexture2D();
-	        GlStateManager.enableLighting();
-	        GlStateManager.enableCull();
-	        GlStateManager.disableBlend();
-	        GlStateManager.depthMask(true);
-		}
+		
 		if (!(event.getEntity() instanceof EntityPlayer || event.getEntity() instanceof EntityTF2Character))
 			return;
 
@@ -1243,100 +1241,62 @@ public class TF2EventsClient {
 		
 		if (event.getEntity().getActivePotionEffect(TF2weapons.uber)!=null){
 			// GlStateManager.disableLighting();
-			ClientProxy.setColor(TF2Util.getTeamColor(event.getEntity()), 1f, 0f, 0.33f, 1f);
+			int i = TF2Util.getTeamColor(event.getEntity());
+			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+			GlStateManager.enableTexture2D();
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.defaultTexUnit);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PRIMARY_COLOR);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.defaultTexUnit);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+			GlStateManager.enableTexture2D();
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, OpenGlHelper.GL_INTERPOLATE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.GL_CONSTANT);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE2_RGB, OpenGlHelper.GL_CONSTANT);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND2_RGB, 770);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			brightnessBuffer.position(0);
+			//float f1 = (float)(i >> 24 & 255) / 255.0F;
+            float f2 = (float)(i >> 16 & 255) / 255.0F;
+            float f3 = (float)(i >> 8 & 255) / 255.0F;
+            float f4 = (float)(i & 255) / 255.0F;
+            brightnessBuffer.put(f2);
+            brightnessBuffer.put(f3);
+            brightnessBuffer.put(f4);
+            brightnessBuffer.put(0.5f);
+			brightnessBuffer.flip();
+			GlStateManager.glTexEnv(8960, 8705, brightnessBuffer);
+			GlStateManager.setActiveTexture(OpenGlHelper.GL_TEXTURE2);
+			GlStateManager.enableTexture2D();
+			GlStateManager.bindTexture(TEXTURE_BRIGHTNESS.getGlTextureId());
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.lightmapTexUnit);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+			
+			//ClientProxy.setColor(TF2Util.getTeamColor(event.getEntity()), 1f, 0f, 0.33f, 1f);
 		}
 		if (event.getRenderer() != ClientProxy.disguiseRender && event.getRenderer() != ClientProxy.disguiseRenderPlayer
 				&& event.getRenderer() != ClientProxy.disguiseRenderPlayerSmall && WeaponsCapability.get(event.getEntity()).isDisguised()) {
-
+			float partialTicks = tickTime;
 			
-			 
-			 
-			// Entity camera=Minecraft.getMinecraft().getRenderViewEntity();
-			float partialTicks = tickTime;/*
-											 * 0;
-											 * if(camera.posX-camera.prevPosX!=0
-											 * ){ partialTicks=(float)
-											 * ((camera.posX-event.x)/(camera.
-											 * posX-camera.prevPosX)); }
-											 * /"lel: "+event.x+" "+camera.
-											 * posX+" "+camera.prevPosX+" "+);
-											 */
-			/*
-			 * ModelBase model=ClientProxy.entityRenderers.get("Creeper");
-			 * GlStateManager.pushMatrix(); GlStateManager.disableCull();
-			 * model.swingProgress =
-			 * event.getEntity().getSwingProgress(partialTicks); model.isRiding
-			 * = event.getEntity().isRiding(); model.isChild =
-			 * event.getEntity().isChild();
-			 * 
-			 * try { float f =
-			 * interpolateRotation(event.getEntity().prevRenderYawOffset,
-			 * event.getEntity().renderYawOffset, partialTicks); float f1 =
-			 * interpolateRotation(event.getEntity().prevRotationYawHead,
-			 * event.getEntity().rotationYawHead, partialTicks); float f2 = f1 -
-			 * f;
-			 * 
-			 * if (event.getEntity().isRiding() &&
-			 * event.getEntity().ridingEntity instanceof EntityLivingBase) {
-			 * EntityLivingBase entitylivingbase =
-			 * (EntityLivingBase)event.getEntity().ridingEntity; f =
-			 * interpolateRotation(entitylivingbase.prevRenderYawOffset,
-			 * entitylivingbase.renderYawOffset, partialTicks); f2 = f1 - f;
-			 * float f3 = MathHelper.wrapAngleTo180_float(f2);
-			 * 
-			 * if (f3 < -85.0F) { f3 = -85.0F; }
-			 * 
-			 * if (f3 >= 85.0F) { f3 = 85.0F; }
-			 * 
-			 * f = f1 - f3;
-			 * 
-			 * if (f3 * f3 > 2500.0F) { f += f3 * 0.2F; } }
-			 * 
-			 * float f7 = event.getEntity().prevRotationPitch +
-			 * (event.getEntity().rotationPitch -
-			 * event.getEntity().prevRotationPitch) * partialTicks;
-			 * GlStateManager.translate((float)event.x, (float)event.y,
-			 * (float)event.z); float ticks=
-			 * this.handleRotationFloat(event.getEntity(), partialTicks);
-			 * this.rotateCorpse(entity, f8, f, partialTicks);
-			 * GlStateManager.enableRescaleNormal(); GlStateManager.scale(-1.0F,
-			 * -1.0F, 1.0F); this.preRenderCallback(entity, partialTicks); float
-			 * f4 = 0.0625F; GlStateManager.translate(0.0F, -1.5078125F, 0.0F);
-			 * float f5 = entity.prevLimbSwingAmount + (entity.limbSwingAmount -
-			 * entity.prevLimbSwingAmount) * partialTicks; float f6 =
-			 * entity.limbSwing - entity.limbSwingAmount * (1.0F -
-			 * partialTicks); GlStateManager.enableAlpha();
-			 * this.mainModel.setLivingAnimations(entity, f6, f5, partialTicks);
-			 * this.mainModel.setRotationAngles(f6, f5, f8, f2, f7, 0.0625F,
-			 * entity);
-			 * 
-			 * if (this.renderOutlines) { boolean flag1 =
-			 * this.setScoreTeamColor(entity); this.renderModel(entity, f6, f5,
-			 * f8, f2, f7, 0.0625F);
-			 * 
-			 * if (flag1) { this.unsetScoreTeamColor(); } } else { boolean flag
-			 * = event.renderer.setDoRenderBrightness(event.getEntity(),
-			 * partialTicks); M.renderModel(event.getEntity(), f6, f5, f8, f2,
-			 * f7, 0.0625F);
-			 * 
-			 * if (flag) { event.renderer.unsetBrightness(); }
-			 * 
-			 * GlStateManager.depthMask(true);
-			 * //event.renderer.renderLayers(event.getEntity(), f6, f5,
-			 * partialTicks, f8, f2, f7, 0.0625F); //}
-			 * 
-			 * GlStateManager.disableRescaleNormal(); } catch (Exception
-			 * exception) { //logger.error((String)"Couldn\'t render entity",
-			 * (Throwable)exception); }
-			 * 
-			 * GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-			 * GlStateManager.enableTexture2D();
-			 * GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
-			 * GlStateManager.enableCull(); GlStateManager.popMatrix();
-			 * 
-			 * /*if (!event.renderer.renderOutlines) { super.doRender(entity, x,
-			 * y, z, entityYaw, partialTicks); }
-			 */
 			RenderLivingBase<EntityLivingBase> render = null;
 			if (WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("M:")) {
 				String mobType = WeaponsCapability.get(event.getEntity()).getDisguiseType().substring(2);
@@ -1389,11 +1349,69 @@ public class TF2EventsClient {
 
 	@SubscribeEvent
 	public void renderLivingPostEntity(RenderLivingEvent.Post<EntityLivingBase> event) {
+		if (event.getRenderer().getRenderManager().isDebugBoundingBox() && !event.getEntity().isInvisible() && !Minecraft.getMinecraft().isReducedDebug()){
+			GlStateManager.depthMask(false);
+	        GlStateManager.disableTexture2D();
+	        GlStateManager.disableLighting();
+	        GlStateManager.disableCull();
+	        GlStateManager.disableBlend();
+	        AxisAlignedBB head=TF2Util.getHead(event.getEntity()).offset(-event.getEntity().posX, -event.getEntity().posY, -event.getEntity().posZ);
+	        /*double ymax = event.getEntity().getEntityBoundingBox().maxY-event.getEntity().posY;
+	        AxisAlignedBB head = new AxisAlignedBB(- 0.32, ymax - 0.24, - 0.32,  0.32, ymax + 0.48, 0.32);
+	        if (event.getEntity().width > event.getEntity().height * 0.65) {
+				double offsetX = MathHelper.cos((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2;
+				double offsetZ = -(double) (MathHelper.sin((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2);// cos
+				head.offset(offsetX, 0, offsetZ);
+			}*/
+	        RenderGlobal.drawBoundingBox(head.minX + event.getX(), head.minY + event.getY(), head.minZ + event.getZ(), head.maxX + event.getX(), head.maxY + event.getY(), head.maxZ + event.getZ(), 1.0F, 0.0F, 1.0F, 1.0F);
+	        GlStateManager.enableTexture2D();
+	        GlStateManager.enableLighting();
+	        GlStateManager.enableCull();
+	        GlStateManager.disableBlend();
+	        GlStateManager.depthMask(true);
+		}
 		if (!(event.getEntity() instanceof EntityPlayer || event.getEntity() instanceof EntityTF2Character))
 			return;
 		ClientProxy.renderCritGlow=0;
 		if (event.getEntity().getActivePotionEffect(TF2weapons.uber)!=null) {
-			GL11.glColor4f(1.0F, 1F, 1.0F, 1F);
+			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+			GlStateManager.enableTexture2D();
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.defaultTexUnit);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PRIMARY_COLOR);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.defaultTexUnit);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_ALPHA, OpenGlHelper.GL_PRIMARY_COLOR);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_ALPHA, 770);
+			GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, 5890);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, 5890);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+			GlStateManager.setActiveTexture(OpenGlHelper.GL_TEXTURE2);
+			GlStateManager.disableTexture2D();
+			GlStateManager.bindTexture(0);
+			GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, 5890);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+			GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, 5890);
+			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+			//GL11.glColor4f(1.0F, 1F, 1.0F, 1F);
 		}
 		// GlStateManager.enableLighting();
 		if (event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks > 0) {
@@ -1426,6 +1444,127 @@ public class TF2EventsClient {
 		}
 		
 	}
-	
+
+    /*protected static boolean setBrightness(float partialTicks, boolean combineTextures)
+    {
+        float f = entitylivingbaseIn.getBrightness();
+        int i = this.getColorMultiplier(entitylivingbaseIn, f, partialTicks);
+        boolean flag = (i >> 24 & 255) > 0;
+        boolean flag1 = entitylivingbaseIn.hurtTime > 0 || entitylivingbaseIn.deathTime > 0;
+
+        if (!flag && !flag1)
+        {
+            return false;
+        }
+        else if (!flag && !combineTextures)
+        {
+            return false;
+        }
+        else
+        {
+            GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+            GlStateManager.enableTexture2D();
+            GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.defaultTexUnit);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PRIMARY_COLOR);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.defaultTexUnit);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+            GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+            GlStateManager.enableTexture2D();
+            GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, OpenGlHelper.GL_INTERPOLATE);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.GL_CONSTANT);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE2_RGB, OpenGlHelper.GL_CONSTANT);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND2_RGB, 770);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.GL_PREVIOUS);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+            brightnessBuffer.position(0);
+
+            if (flag1)
+            {
+                brightnessBuffer.put(1.0F);
+                brightnessBuffer.put(0.0F);
+                brightnessBuffer.put(0.0F);
+                brightnessBuffer.put(0.5F);
+            }
+            else
+            {
+                float f1 = (float)(i >> 24 & 255) / 255.0F;
+                float f2 = (float)(i >> 16 & 255) / 255.0F;
+                float f3 = (float)(i >> 8 & 255) / 255.0F;
+                float f4 = (float)(i & 255) / 255.0F;
+                brightnessBuffer.put(f2);
+                brightnessBuffer.put(f3);
+                brightnessBuffer.put(f4);
+                brightnessBuffer.put(1.0F - f1);
+            }
+
+            brightnessBuffer.flip();
+            GlStateManager.glTexEnv(8960, 8705, brightnessBuffer);
+            GlStateManager.setActiveTexture(OpenGlHelper.GL_TEXTURE2);
+            GlStateManager.enableTexture2D();
+            GlStateManager.bindTexture(TEXTURE_BRIGHTNESS.getGlTextureId());
+            GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.GL_PREVIOUS);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.lightmapTexUnit);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 7681);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.GL_PREVIOUS);
+            GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+            GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+            return true;
+        }
+    }
+
+    protected void unsetBrightness()
+    {
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GlStateManager.enableTexture2D();
+        GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, OpenGlHelper.defaultTexUnit);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PRIMARY_COLOR);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, OpenGlHelper.defaultTexUnit);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_ALPHA, OpenGlHelper.GL_PRIMARY_COLOR);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_ALPHA, 770);
+        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, 5890);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, 5890);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.setActiveTexture(OpenGlHelper.GL_TEXTURE2);
+        GlStateManager.disableTexture2D();
+        GlStateManager.bindTexture(0);
+        GlStateManager.glTexEnvi(8960, 8704, OpenGlHelper.GL_COMBINE);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_RGB, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND1_RGB, 768);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_RGB, 5890);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE1_RGB, OpenGlHelper.GL_PREVIOUS);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_COMBINE_ALPHA, 8448);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_OPERAND0_ALPHA, 770);
+        GlStateManager.glTexEnvi(8960, OpenGlHelper.GL_SOURCE0_ALPHA, 5890);
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+    }*/
 
 }

@@ -100,8 +100,9 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.tradeOffers.add(new MerchantRecipe(new ItemStack(TF2weapons.itemTF2, 5, 2), ItemStack.EMPTY,
 				new ItemStack(TF2weapons.itemTF2, 1, 7), 0, 100));
 		int weaponCount = 13 + this.rand.nextInt(2);
+		List<ItemStack> weapons = ItemFromData.getRandomWeapons(this.rand, ItemFromData.VISIBLE_WEAPON, weaponCount);
 		for (int i = 0; i < weaponCount; i++) {
-			ItemStack item = ItemFromData.getRandomWeapon(this.rand, ItemFromData.VISIBLE_WEAPON);
+			ItemStack item = weapons.get(i);
 			int cost = ItemFromData.getData(item).getInt(PropertyType.COST);
 			ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
 			ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);

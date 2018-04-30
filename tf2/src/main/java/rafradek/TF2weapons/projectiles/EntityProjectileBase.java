@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.projectiles;
 
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.fml.relauncher.Side;
@@ -7,6 +8,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashSet;
 import java.util.List;
+
+import com.google.common.collect.Iterables;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
 import atomicstryker.dynamiclights.client.IDynamicLightSource;
@@ -20,6 +23,7 @@ import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
 import rafradek.TF2weapons.weapons.ItemWeapon;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFenceGate;
@@ -72,6 +76,7 @@ public abstract class EntityProjectileBase extends Entity
 	
 	public double cachedGravity = -1;
 	
+	public float chargeLevel;
 	private static final DataParameter<Byte> CRITICAL = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BYTE);
 	public static final DataParameter<Byte> TYPE = EntityDataManager.createKey(EntityProjectileBase.class,
@@ -101,23 +106,37 @@ public abstract class EntityProjectileBase extends Entity
 		this.usedWeaponOrig=shooter.getHeldItem(hand);
 		this.setLocationAndAngles(shooter.posX, shooter.posY + shooter.getEyeHeight(), shooter.posZ,
 				shooter.rotationYawHead, shooter.rotationPitch + this.getPitchAddition());
+		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch, shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
+		Vec3d trace;
+		if (shooter instanceof EntityPlayer) {
+			RayTraceResult ray = Iterables.getFirst(TF2Util.pierce(world, shooter, this.posX, this.posY, this.posZ, look.x, look.y, look.z, false, 0, false), null);
+			trace = ray.hitVec;
+		}
+		else
+			trace = look;
 		this.posX -= MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F
 				* (hand == EnumHand.MAIN_HAND ? 1 : -1);
-		this.posY -= shooter instanceof EntitySentry ? -0.1D : 0.1D;
+		this.posY -= shooter instanceof EntitySentry ? -0.1D : (shooter instanceof EntityPlayer ? 0.1D : 0D);
 		this.posZ -= MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI) * 0.16F
 				* (hand == EnumHand.MAIN_HAND ? 1 : -1);
+		if (trace.lengthSquared() < 2)
+			trace = look;
 		this.setPosition(this.posX, this.posY, this.posZ);
-		this.motionX = -MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI)
+		/*this.motionX = -MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI)
 				* MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI);
 		this.motionZ = MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI)
 				* MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI);
-		this.motionY = (-MathHelper.sin(this.rotationPitch / 180.0F * (float) Math.PI));
-		this.setThrowableHeading(this.motionX, this.motionY, this.motionZ,
+		this.motionY = (-MathHelper.sin(this.rotationPitch / 180.0F * (float) Math.PI));*/
+		this.setThrowableHeading(trace.x - this.posX, trace.y - this.posY, trace.z - this.posZ,
 				((ItemWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
 				((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter));
 		if(((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity)){
 			this.setPenetrate();
 		}
+		if(((ItemWeapon) this.usedWeapon.getItem()).holdingMode(this.usedWeapon, shooter) != 0) {
+			this.chargeLevel = ((ItemWeapon) this.usedWeapon.getItem()).getCharge(shooter, usedWeapon);
+		}
+		this.getGravityOverride();
 	}
 
 	@Override
@@ -167,8 +186,8 @@ public abstract class EntityProjectileBase extends Entity
 		this.motionY = p_70186_3_;
 		this.motionZ = p_70186_5_;
 		float f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
-		this.prevRotationYaw = this.rotationYaw = (float) (Math.atan2(p_70186_1_, p_70186_5_) * 180.0D / Math.PI);
-		this.prevRotationPitch = this.rotationPitch = (float) (Math.atan2(p_70186_3_, f3) * 180.0D / Math.PI);
+		this.prevRotationYaw = this.rotationYaw = (float) (MathHelper.atan2(p_70186_1_, p_70186_5_) * 180.0D / Math.PI);
+		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(p_70186_3_, f3) * 180.0D / Math.PI);
 	}
 
 	/**
@@ -214,21 +233,27 @@ public abstract class EntityProjectileBase extends Entity
 					.distanceTo(new Vec3d(x, y, z)));
 	}
 
-	public void attackDirect(Entity target, double pushForce) {
+	public void attackDirect(Entity target, double pushForce, boolean headshot) {
 		if (!this.world.isRemote) {
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
 				float distance = (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
-				int critical = TF2Util.calculateCritPost(target, shootingEntity, this.getCritical(),
+				
+				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 2 : this.getCritical(),
 						this.usedWeapon);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
 						distance);
+				DamageSource src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this);
+				if (headshot)
+					((TF2DamageSource)src).addAttackFlag(TF2DamageSource.HEADSHOT);
 				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical, false);
 				if(!proceed || TF2Util.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
-						TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this))) {
+						src)) {
 					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
 						this.setDead();
 					if(proceed) {
+						if (this.isBurning())
+							target.setFire(7);
 						Vec3d pushvec=new Vec3d(this.motionX,this.motionY,this.motionZ).normalize();
 						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
 								*  0.01625D*dmg);
@@ -274,39 +299,46 @@ public abstract class EntityProjectileBase extends Entity
 			this.prevRotationPitch = this.rotationPitch = (float) (Math.atan2(this.motionY, f) * 180.0D / Math.PI);
 		}
 
-		
-		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
-				this.posY + this.motionY, this.posZ + this.motionZ, false, this.getCollisionSize(), this.canPenetrate()
-				)) {
-			
-			if (target.entityHit != null
-					&& target.entityHit instanceof EntityPlayer) {
-				EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
-	
-				if (entityplayer.capabilities.disableDamage/* || this.shootingEntity instanceof EntityPlayer
-						&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)*/)
-					continue;
-			}
-	
-			if (target.entityHit != null && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target) && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
-					&& (this.ticksExisted < 3 && !world.isRemote && ((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, shootingEntity, target.entityHit, 1, 0, true)) )) {
-				this.onHitMob(target.entityHit, target);
-			}
+		if (this.shootingEntity != null) {
+			boolean flag = this.shootingEntity.hasCapability(TF2weapons.WEAPONS_CAP, null);
+			if (flag)
+				WeaponsCapability.get(this.shootingEntity).lastHitCharge = this.chargeLevel;
+			boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
+			for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
+					this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
+					)) {
 				
-			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
-				int attr = this.world.isRemote ? 0
-						: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
-				if (attr == 0 && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, target)) {
-					BlockPos blpos = target.getBlockPos();
-					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
-				} else if (attr == 2)
-					this.explode(target.hitVec.x, target.hitVec.y,
-							target.hitVec.z, null, 1f);
-				else
-					this.setDead();
-			}
-		}
+				if (target.entityHit != null
+						&& target.entityHit instanceof EntityPlayer) {
+					EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
 		
+					if (entityplayer.capabilities.disableDamage/* || this.shootingEntity instanceof EntityPlayer
+							&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)*/)
+						continue;
+				}
+				
+				if (target.entityHit != null && !ForgeEventFactory.onProjectileImpact(this, target) && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
+						&& (this.ticksExisted < 3 && !world.isRemote && ((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, shootingEntity, target.entityHit, 1, 0, true)) )) {
+					this.onHitMob(target.entityHit, target);
+				}
+					
+				else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
+					int attr = this.world.isRemote ? 0
+							: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
+					if (attr == 0 && !ForgeEventFactory.onProjectileImpact(this, target)) {
+						BlockPos blpos = target.getBlockPos();
+						this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
+					} else if (attr == 2)
+						this.explode(target.hitVec.x, target.hitVec.y,
+								target.hitVec.z, null, 1f);
+					else
+						this.setDead();
+				}
+			}
+			if (flag)
+				WeaponsCapability.get(this.shootingEntity).lastHitCharge = 0;
+			
+		}
 		float f2;
 		if (this.isSticked()) {
 			this.setPosition(this.dataManager.get(STICK_X), this.dataManager.get(STICK_Y),
@@ -684,8 +716,8 @@ public abstract class EntityProjectileBase extends Entity
 	}
 	
 	public double getGravityOverride() {
-		if(this.dataManager.get(GRAVITY) == -1f) {
-			this.dataManager.set(GRAVITY, TF2Attribute.getModifier("Gravity", this.usedWeapon, (float) this.getGravity(), shootingEntity));
+		if(this.dataManager.get(GRAVITY) == -1f && !this.usedWeapon.isEmpty()) {
+			this.dataManager.set(GRAVITY, ((ItemWeapon)this.usedWeapon.getItem()).getAdditionalGravity(shootingEntity, usedWeapon, this.getGravity()));
 		}
 		return this.dataManager.get(GRAVITY);
 	}

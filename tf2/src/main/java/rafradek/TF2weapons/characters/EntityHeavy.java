@@ -22,6 +22,7 @@ public class EntityHeavy extends EntityTF2Character {
 		//this.ammoLeft = 133;
 		this.experienceValue = 15;
 		this.setSize(0.6F, 1.99F);
+		
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 		// ItemUsable.getNewStack("Minigun"));
 
@@ -29,11 +30,13 @@ public class EntityHeavy extends EntityTF2Character {
 
 	protected void addWeapons() {
 		super.addWeapons();
-		float chance = this.rand.nextFloat();
-		if (chance < 0.2f)
-			this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemSandvich));
-		else if(chance < 0.3f)
-			this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemChocolate));
+		if (!this.noEquipment) {
+			float chance = this.rand.nextFloat();
+			if (chance < 0.2f)
+				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemSandvich));
+			else if(chance < 0.3f)
+				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemChocolate));
+		}
 	}
 	@Override
 	protected ResourceLocation getLootTable() {
@@ -84,6 +87,11 @@ public class EntityHeavy extends EntityTF2Character {
 		return TF2Sounds.MOB_HEAVY_DEATH;
 	}
 
+	public float getEyeHeight()
+    {
+        return 1.78F;
+    }
+	
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */
@@ -104,5 +112,9 @@ public class EntityHeavy extends EntityTF2Character {
 				return 0.9f;
 		}
 		return super.getAttributeModifier(attribute);
+	}
+	
+	public int getClassIndex() {
+		return 4;
 	}
 }

@@ -10,10 +10,16 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.building.EntityTeleporter;
+
+import java.util.List;
+
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -64,7 +70,7 @@ public class ItemMonsterPlacerPlus extends Item {
 
 			boolean hastag = stack.getTagCompound() != null && stack.getTagCompound().hasKey("SavedEntity");
 			
-			EntityLivingBase entity = spawnCreature(worldIn, stack.getItemDamage(), pos.getX() + 0.5D, pos.getY() + d0,
+			EntityLivingBase entity = spawnCreature(playerIn, worldIn, stack.getItemDamage(), pos.getX() + 0.5D, pos.getY() + d0,
 					pos.getZ() + 0.5D, hastag 
 							? stack.getTagCompound().getCompoundTag("SavedEntity") : null);
 
@@ -116,7 +122,7 @@ public class ItemMonsterPlacerPlus extends Item {
 					
 					boolean hastag = itemStackIn.getTagCompound() != null && itemStackIn.getTagCompound().hasKey("SavedEntity");
 					
-					EntityLivingBase entity = spawnCreature(worldIn, itemStackIn.getItemDamage(),
+					EntityLivingBase entity = spawnCreature(playerIn, worldIn, itemStackIn.getItemDamage(),
 							blockpos.getX() + 0.5D, blockpos.getY() + 0.5D, blockpos.getZ() + 0.5D,
 							hastag
 									? itemStackIn.getTagCompound().getCompoundTag("SavedEntity") : null);
@@ -156,40 +162,31 @@ public class ItemMonsterPlacerPlus extends Item {
 		}
 	}
 
-	/**
-	 * Spawns the creature specified by the egg's type in the location specified
-	 * by the last three parameters. Parameters: world, entityID, x, y, z.
-	 */
-	public static EntityLiving spawnCreature(World par0World, int par1, double par2, double par4, double par6,
+	public static EntityLiving spawnCreature(Entity spawner, World par0World, int par1, double par2, double par4, double par6,
 			NBTTagCompound nbtdata) {
 		EntityLiving entity = null;
 
 		for (int j = 0; j < 1; ++j) {
-			if (par1 / 2 == 0)
-				entity = new EntityHeavy(par0World);
-			else if (par1 / 2 == 1)
-				entity = new EntityScout(par0World);
-			else if (par1 / 2 == 2)
-				entity = new EntitySniper(par0World);
-			else if (par1 / 2 == 3)
-				entity = new EntitySoldier(par0World);
-			else if (par1 / 2 == 4)
-				entity = new EntityPyro(par0World);
-			else if (par1 / 2 == 5)
-				entity = new EntityDemoman(par0World);
-			else if (par1 / 2 == 6)
-				entity = new EntityMedic(par0World);
-			else if (par1 / 2 == 7)
-				entity = new EntitySpy(par0World);
-			else if (par1 / 2 == 8)
-				entity = new EntityEngineer(par0World);
+			int team = 0;
+			if (par1 < 18) {
+				switch (par1%9) {
+				case 0: entity = new EntityScout(par0World); break;
+				case 1: entity = new EntitySoldier(par0World); break;
+				case 2: entity = new EntityPyro(par0World); break;
+				case 3: entity = new EntityDemoman(par0World); break;
+				case 4: entity = new EntityHeavy(par0World); break;
+				case 5: entity = new EntityEngineer(par0World); break;
+				case 6: entity = new EntityMedic(par0World); break;
+				case 7: entity = new EntitySniper(par0World); break;
+				case 8: entity = new EntitySpy(par0World); break;
+				}
+				team = par1 / 9;
+			}
 			else if (par1 / 2 == 9)
 				entity = new EntitySentry(par0World);
 			else if (par1 / 2 == 10)
 				entity = new EntityDispenser(par0World);
 			else if (par1 / 2 == 11)
-				entity = new EntityTeleporter(par0World);
-			else if (par1 / 2 == 12)
 				entity = new EntityTeleporter(par0World);
 			else if (par1 / 2 == 13)
 				entity = new EntitySaxtonHale(par0World);
@@ -209,11 +206,13 @@ public class ItemMonsterPlacerPlus extends Item {
 				entityliving.rotationYawHead = entityliving.rotationYaw;
 				entityliving.renderYawOffset = entityliving.rotationYaw;
 				TF2CharacterAdditionalData data = new TF2CharacterAdditionalData();
-				data.team = par1 % 2;
-				entityliving.onInitialSpawn(par0World.getDifficultyForLocation(new BlockPos(entityliving)), data);
+				data.team = team;
+				data.noEquipment = spawner != null && spawner.isSneaking();
+				if (nbtdata == null)
+					entityliving.onInitialSpawn(par0World.getDifficultyForLocation(new BlockPos(entityliving)), data);
 				entityliving.playLivingSound();
 				if (entity instanceof EntityBuilding)
-					((EntityBuilding) entity).setEntTeam(par1 % 2);
+					((EntityBuilding) entity).setEntTeam(team);
 				if (entity instanceof EntitySaxtonHale && par1 % 2 == 1)
 					((EntitySaxtonHale) entity).setHostile();
 				if (!par0World.getCollisionBoxes(entity, entity.getEntityBoundingBox()).isEmpty())
@@ -249,37 +248,10 @@ public class ItemMonsterPlacerPlus extends Item {
 	@Override
 	public String getItemStackDisplayName(ItemStack p_77653_1_) {
 		String s = ("" + I18n.translateToLocal(this.getUnlocalizedName() + ".name")).trim();
-		int i = p_77653_1_.getItemDamage() / 2;
-		String s1 = "Heavy";
-		switch (i) {
-		case 1:
-			s1 = "Scout";
-			break;
-		case 2:
-			s1 = "Sniper";
-			break;
-		case 3:
-			s1 = "Soldier";
-			break;
-		case 4:
-			s1 = "Pyro";
-			break;
-		case 5:
-			s1 = "Demoman";
-			break;
-		case 6:
-			s1 = "Medic";
-			break;
-		case 7:
-			s1 = "Spy";
-			break;
-		case 8:
-			s1 = "Engineer";
-			break;
-		case 13:
-			s1 = "Saxton Hale";
-			break;
-		}
+		int i = p_77653_1_.getItemDamage();
+		String s1 = "Saxton Hale";
+		if (i < 18)
+			s1 = ItemToken.CLASS_NAMES[i%9];
 		if (p_77653_1_.getItemDamage() == 27)
 			s1 = s1.concat(" (Hostile)");
 		if (p_77653_1_.getItemDamage() == 28)
@@ -289,5 +261,12 @@ public class ItemMonsterPlacerPlus extends Item {
 		if (p_77653_1_.getItemDamage() == 30)
 			s1 = "Merasmus";
 		return s.concat(" " + s1);
+	}
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		if (stack.getMetadata() < 18)
+		tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn with default equipment");
 	}
 }

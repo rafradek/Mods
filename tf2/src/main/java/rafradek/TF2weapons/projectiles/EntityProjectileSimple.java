@@ -26,12 +26,18 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 	public EntityProjectileSimple(World world, EntityLivingBase living, EnumHand hand) {
 		super(world, living, hand);
 		this.setSize(0.3F, 0.3F);
+		if (this.usedWeapon.getTagCompound().getBoolean("ArrowLit")) {
+			this.usedWeaponOrig.getTagCompound().setBoolean("ArrowLit", false);
+			this.setFire(1000);
+		}
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
 			this.setType(0);
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
 			this.setType(1);
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
 			this.setType(2);
+		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
+			this.setType(3);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -69,7 +75,7 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		attackDirect(entityHit,1);
+		attackDirect(entityHit,1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false);
 	}
 
 	@Override

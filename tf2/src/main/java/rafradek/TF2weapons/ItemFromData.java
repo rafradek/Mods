@@ -1,6 +1,7 @@
 package rafradek.TF2weapons;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -8,6 +9,7 @@ import java.util.Random;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -97,35 +99,46 @@ public class ItemFromData extends Item {
 		// "+Thread.currentThread().getName());
 		if(!MapList.nameToData.containsKey(type))
 			return ItemStack.EMPTY;
+		
+		return getNewStack(MapList.nameToData.get(type));
+	}
+	
+	public static ItemStack getNewStack(WeaponData type) {
 		ItemStack stack = new ItemStack(
-				MapList.weaponClasses.get(MapList.nameToData.get(type).getString(PropertyType.CLASS)));
+				MapList.weaponClasses.get(type.getString(PropertyType.CLASS)));
 		//System.out.println(stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null));
-		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst=MapList.nameToData.get(type);
+		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst=type;
 		NBTTagCompound tag=new NBTTagCompound();
-		tag.setString("Type", type);
+		tag.setString("Type", type.getName());
 		tag.setTag("Attributes", new NBTTagCompound());
 		stack.setTagCompound(tag);
 		// System.out.println(stack.toString());
 		return stack;
 	}
-
+	
 	public net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt)
     {
         return new WeaponData.WeaponDataCapability();
     }
 	
-	public static ItemStack getRandomWeapon(Random random, Predicate<WeaponData> predicate) {
+	public static List<ItemStack> getRandomWeapons(Random random, Predicate<WeaponData> predicate, int count) {
 
-		ArrayList<String> weapons = new ArrayList<>();
+		ArrayList<WeaponData> weapons = new ArrayList<>();
 		for (Entry<String, WeaponData> entry : MapList.nameToData.entrySet())
 			if (predicate.apply(entry.getValue())){
-				weapons.add(entry.getKey());
+				weapons.add(entry.getValue());
 			}
-		if (weapons.isEmpty())
-			return ItemStack.EMPTY;
-		return getNewStack(weapons.get(random.nextInt(weapons.size())));
+		ArrayList<ItemStack> ret = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			if(weapons.isEmpty())
+				break;
+			ret.add(getNewStack(weapons.remove(random.nextInt(weapons.size()))));
+		}
+		return ret;
 	}
-
+	public static ItemStack getRandomWeapon(Random random, Predicate<WeaponData> predicate) {
+		return Iterables.getFirst(getRandomWeapons(random, predicate, 1), ItemStack.EMPTY);
+	}
 	public static ItemStack getRandomWeaponOfType(String type, float chanceOfParent, Random random) {
 		// WeaponData parent=MapList.nameToData.get(type);
 		if (chanceOfParent >= 0 && random.nextFloat() <= chanceOfParent)
@@ -148,27 +161,17 @@ public class ItemFromData extends Item {
 	}
 
 	public static ItemStack getRandomWeaponOfClass(String clazz, Random random, boolean showHidden) {
-		ArrayList<String> weapons = new ArrayList<>();
+		ArrayList<WeaponData> weapons = new ArrayList<>();
 		for (Entry<String, WeaponData> entry : MapList.nameToData.entrySet())
 			if (!entry.getValue().getBoolean(PropertyType.HIDDEN)
 					&& (showHidden || entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 0)
 					&& entry.getValue().getString(PropertyType.CLASS).equals(clazz))
-				weapons.add(entry.getKey());
+				weapons.add(entry.getValue());
 		return getNewStack(weapons.get(random.nextInt(weapons.size())));
 	}
 
 	public static ItemStack getRandomWeaponOfSlotMob(final String mob, final int slot, Random random,
-			final boolean showHidden, boolean weighted) {
-		/*
-		 * ArrayList<String> weapons=new ArrayList<>();
-		 * for(Entry<String,WeaponData> entry: MapList.nameToData.entrySet()){
-		 * if(!entry.getValue().getBoolean(PropertyType.ROLL_HIDDEN)&&entry.
-		 * getValue().getString(PropertyType.TYPE).equals(type)){ String[]
-		 * mobTypes=entry.getValue().getString(PropertyType.MOB_TYPE).contains(
-		 * s) for(String mobType:mobTypes){
-		 * if(mob.equalsIgnoreCase(mobType.trim())){
-		 * weapons.add(entry.getKey()); break; } } } }
-		 */
+			final boolean showHidden, boolean weighted, boolean stockOnly) {
 		Predicate<WeaponData> base=new Predicate<WeaponData>() {
 
 			@Override
@@ -181,8 +184,9 @@ public class ItemFromData extends Item {
 
 		};
 		
-		if(!weighted)
+		if(!weighted && !stockOnly)
 			return getRandomWeapon(random, base);
+		
 		ItemStack stock=getRandomWeapon(random, Predicates.and(base,new Predicate<WeaponData>(){
 
 			@Override
@@ -192,6 +196,9 @@ public class ItemFromData extends Item {
 			}
 			
 		}));
+		
+		if (stockOnly)
+			return stock;
 		Predicate<WeaponData> unipredicate=Predicates.and(base,new Predicate<WeaponData>(){
 
 			@Override
@@ -217,7 +224,20 @@ public class ItemFromData extends Item {
 			return stock;
 		}
 	}
+	public static List<ItemStack> getRandomWeaponsOfSlotMob(final String mob, final int slot, Random random,
+			final boolean showHidden, int count) {
+		return getRandomWeapons(random,new Predicate<WeaponData>() {
 
+			@Override
+			public boolean apply(WeaponData input) {
+				// TODO Auto-generated method stub
+				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
+						&& input.getInt(PropertyType.SLOT) == slot
+						&& input.getString(PropertyType.MOB_TYPE).contains(mob);
+			}
+
+		}, count);
+	}
 	public static int getWeaponCount(Predicate<WeaponData> predicate){
 		int count=0;
 		for(Entry<String,WeaponData> entry:MapList.nameToData.entrySet()){

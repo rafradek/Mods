@@ -75,56 +75,57 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityTF2Character par1EntityLiving) {
-		String clazz = null;
+		//String clazz = null;
+		int clazz;
 		boolean sameTeam=Minecraft.getMinecraft().player != null && TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
 		if ( !sameTeam && WeaponsCapability.get(par1EntityLiving).isDisguised()
 				&& WeaponsCapability.get(par1EntityLiving).getDisguiseType().startsWith("T:"))
-			clazz = WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2);
+			clazz= ItemToken.getClassID(WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2).toLowerCase());
 		else
-			clazz = par1EntityLiving.getClass().getSimpleName().substring(6);
+			clazz = par1EntityLiving.getClassIndex();
 		// System.out.println("class: "+clazz);
 		if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
 				&& WeaponsCapability.get(par1EntityLiving).isDisguised()))
 			switch (clazz) {
-			case "Heavy":
-				return HEAVY_RED;
-			case "Scout":
+			case 0:
 				return SCOUT_RED;
-			case "Sniper":
-				return SNIPER_RED;
-			case "Soldier":
+			case 1:
 				return SOLDIER_RED;
-			case "Demoman":
-				return DEMOMAN_RED;
-			case "Pyro":
+			case 2:
 				return PYRO_RED;
-			case "Spy":
-				return SPY_RED;
-			case "Medic":
-				return MEDIC_RED;
-			case "Engineer":
+			case 3:
+				return DEMOMAN_RED;
+			case 4:
+				return HEAVY_RED;
+			case 5:
 				return ENGINEER_RED;
+			case 6:
+				return MEDIC_RED;
+			case 7:
+				return SNIPER_RED;
+			case 8:
+				return SPY_RED;
 			}
 		else
 			switch (clazz) {
-			case "Heavy":
-				return HEAVY_BLU;
-			case "Scout":
+			case 0:
 				return SCOUT_BLU;
-			case "Sniper":
-				return SNIPER_BLU;
-			case "Soldier":
+			case 1:
 				return SOLDIER_BLU;
-			case "Demoman":
-				return DEMOMAN_BLU;
-			case "Pyro":
+			case 2:
 				return PYRO_BLU;
-			case "Spy":
-				return SPY_BLU;
-			case "Medic":
-				return MEDIC_BLU;
-			case "Engineer":
+			case 3:
+				return DEMOMAN_BLU;
+			case 4:
+				return HEAVY_BLU;
+			case 5:
 				return ENGINEER_BLU;
+			case 6:
+				return MEDIC_BLU;
+			case 7:
+				return SNIPER_BLU;
+			case 8:
+				return SPY_BLU;
 			}
 		return HEAVY_BLU;
 	}

@@ -293,7 +293,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 						startX - MathHelper.cos(living.rotationYaw / 180.0F * (float) Math.PI) * 0.16F * mult,
 						startY - 0.1,
 						startZ - MathHelper.sin(living.rotationYaw / 180.0F * (float) Math.PI) * 0.16F * mult, endX,
-						endY, endZ, 20, critical, this.showSpecialTracer(stack));
+						endY, endZ, 20, this.showSpecialTracer(stack) ? 2 : critical, 0, this.showSpecialTracer(stack) ? 10000f : 1f);
 			}
 			if (living != Minecraft.getMinecraft().player)
 				return;
@@ -375,10 +375,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 	 * 
 	 * return Math.abs(ymax-hitVec.y)<0.205; }
 	 */
-	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
-		// TODO Auto-generated method stub
-		return living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0 && TF2Attribute.getModifier("Headshot", stack, 0, living) > 0;
-	}
+	
 
 	public float[] calculateRatioX(float yaw, float pitch) {
 		float[] result = new float[3];

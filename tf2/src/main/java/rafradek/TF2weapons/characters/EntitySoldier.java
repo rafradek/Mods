@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -30,7 +31,6 @@ public class EntitySoldier extends EntityTF2Character {
 	public EntitySoldier(World par1World) {
 		super(par1World);
 		// this.rotation=90;
-		this.rocketJumper = this.rand.nextBoolean();
 		if (this.attack != null) {
 			attack.setRange(35);
 			attack.fireAtFeet = 1;
@@ -160,6 +160,12 @@ public class EntitySoldier extends EntityTF2Character {
 		}
 	}
 
+	public void onEquipItem(int slot, ItemStack stack) {
+		super.onEquipItem(slot, stack);
+		this.attack.fireAtFeet = slot == 0 ? TF2Attribute.getModifier("Explosion Radius", stack, 1, this) : 0;
+		this.rocketJumper = TF2Attribute.getModifier("Airborne Bonus", stack, 0, this) != 0 || this.rand.nextBoolean();
+	}
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_SOLDIER_SAY;
@@ -194,6 +200,9 @@ public class EntitySoldier extends EntityTF2Character {
 			this.entityDropItem(ItemFromData.getNewStack("shotgun"), 0);
 		if (this.rand.nextFloat() < 0.05f + p_70628_2_ * 0.025f)
 			this.entityDropItem(ItemFromData.getNewStack("rocketlauncher"), 0);
+	}
+	public int getClassIndex() {
+		return 1;
 	}
 	/*
 	 * @Override public float getAttributeModifier(String attribute) {

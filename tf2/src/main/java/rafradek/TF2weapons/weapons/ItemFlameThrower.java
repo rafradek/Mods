@@ -150,9 +150,9 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			// Minecraft.getMinecraft().getSoundHandler().stopSound(ClientProxy.fireSounds.get(living));
 			return;
 		}
-		if(!(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode) && ItemAmmo.getAmmoAmount(living, stack)<15)
+		if(!(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode) && this.getAmmoAmount(living, stack)<15)
 			return;
-		ItemAmmo.consumeAmmoGlobal(living, stack, 15);
+		this.consumeAmmoGlobal(living, stack, 15);
 		// String airblastSound=getData(stack).get("Airblast
 		// Sound").getString();
 		TF2Util.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
@@ -232,9 +232,21 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		
 		if(target instanceof EntityLivingBase && TF2Attribute.getModifier("Rage Crit", stack, 0, attacker)!=0 && !stack.getTagCompound().getBoolean("RageActive")){
-			
+			float mult = 1f;
+			if (attacker instanceof EntityPlayer) {
+				if (target instanceof EntityPlayer)
+					mult = 1f;
+				else if (TF2Util.isEnemy(attacker, (EntityLivingBase) target))
+					mult = 0.4f;
+				else
+					mult = 0.1f;
+			}
+			else {
+				if(target instanceof EntityPlayer)
+					mult = 4f;
+			}
 			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(Math.min(20, attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()+amount
-					*(target instanceof EntityPlayer?1f:TF2Util.isEnemy(attacker, (EntityLivingBase) target)?0.4f:0.1f)));
+					*mult));
 		}
 	}
 	
@@ -242,7 +254,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(stack, par2World, par3Entity, par4, par5);
 		if(stack.getTagCompound().getBoolean("RageActive")) {
-			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()-0.17f);
+			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()-0.1f);
 			if(par5 && par3Entity.ticksExisted%5==0) {
 				((EntityLivingBase) par3Entity).addPotionEffect(new PotionEffect(TF2weapons.critBoost,5));
 			}
@@ -255,7 +267,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	public int getMaxItemUseDuration(ItemStack stack) {
 		return 40;
 	}
-
+	
 	@Override
 	public EnumAction getItemUseAction(ItemStack stack) {
 		return EnumAction.BLOCK;
@@ -264,7 +276,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	@Override
 	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
 		//stack.getTagCompound().setFloat("Rage", 0f);
-		stack.getTagCompound().setBoolean("RageActive", true);
+		//stack.getTagCompound().setBoolean("RageActive", true);
 		return stack;
 	}
 	
@@ -309,6 +321,10 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 		ItemStack itemStackIn = playerIn.getHeldItem(hand);
 		if (TF2Attribute.getModifier("Rage Crit", itemStackIn, 0, playerIn)!=0 &&playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
 			playerIn.setActiveHand(hand);
+			playerIn.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
+			TF2Util.addAndSendEffect(playerIn, new PotionEffect(TF2weapons.uber,40,0));
+			playerIn.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
+			itemStackIn.getTagCompound().setBoolean("RageActive", true);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}
 		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);

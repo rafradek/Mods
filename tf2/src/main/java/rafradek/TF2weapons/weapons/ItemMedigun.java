@@ -72,7 +72,7 @@ public class ItemMedigun extends ItemUsable {
 	public void heal(ItemStack stack, EntityLivingBase living, World world, EntityLivingBase target) {
 		
 		if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode) {
-			ItemStack stackAmmo = ItemAmmo.searchForAmmo(living, stack);
+			ItemStack stackAmmo = this.searchForAmmo(living, stack);
 			if (!stackAmmo.isEmpty())
 				((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
 						this.getActualAmmoUse(stack, living, target.getHealth() >= target.getMaxHealth()?1:2));
@@ -241,7 +241,7 @@ public class ItemMedigun extends ItemUsable {
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub
 		return !(living instanceof EntityPlayer) || (((EntityPlayer) living).capabilities.isCreativeMode
-				|| !ItemAmmo.searchForAmmo(living, stack).isEmpty());
+				|| !this.searchForAmmo(living, stack).isEmpty());
 	}
 
 	@Override

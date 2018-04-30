@@ -57,13 +57,13 @@ public class TF2CraftingManager {
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 10, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 14),
-				new Object[] { "SLS", 'S', "string", 'L',"leather" }));
+				new Object[] { " S ","SLS"," S ", 'S', "string", 'L',"leather" }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemAmmoMedigun, 1),
 				new Object[] { Items.SPECKLED_MELON, Items.GHAST_TEAR, new ItemStack(Items.DYE, 1, 15) });
 		addRecipe(new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoFire, 1),
 				new Object[] { "ingotIron", Items.MAGMA_CREAM, "ingotIron" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 30, 9),
-				new Object[] { "ingotIron", "paper" }));
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 40, 9),
+				new Object[] { "ingotIron", "paper", "paper", "paneGlass" }));
 		ItemStack cleaver = ItemFromData.getNewStack("cleaver");
 		cleaver.setCount(1);
 		addRecipe(new ShapedOreRecipe(null,cleaver, new Object[] { "I", "W", 'I', "ingotIron", 'W', "stickWood"}));

@@ -40,7 +40,7 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
 		if (TF2Attribute.getModifier("Ball Release", stack, 0, living) > 0) {
 			ItemStack ballStack = getNewStack("sandmanball");
-			if (!ItemAmmo.searchForAmmo(living, ballStack).isEmpty()) {
+			if (!this.searchForAmmo(living, ballStack).isEmpty()) {
 				if (living instanceof EntityPlayer)
 					((EntityPlayer)living).getCooldownTracker().setCooldown(this, this.getFiringSpeed(ballStack, living)/50);
 				ItemStack oldHeldItem = living.getHeldItemMainhand();

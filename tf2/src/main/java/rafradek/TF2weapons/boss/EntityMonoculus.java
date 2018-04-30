@@ -63,8 +63,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 	@Override
 	protected void initEntityAI() {
 		this.tasks.addTask(5, new AIRandomFly(this));
+		this.tasks.addTask(6, new AIFireballAttack(this));
 		this.tasks.addTask(7, new AILookAround(this));
-		this.tasks.addTask(7, new AIFireballAttack(this));
+		
 		this.targetTasks.taskEntries.clear();
 		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class, 0,true, false,
 				new Predicate<EntityLivingBase>() {
@@ -306,7 +307,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 	static class AIFireballAttack extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
-		public int attackTimer;
+		private int attackTimer;
 
 		public int triple;
 
@@ -327,7 +328,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		 */
 		@Override
 		public void startExecuting() {
-			this.attackTimer = 0;
+			//this.attackTimer = 0;
 		}
 
 		/**
@@ -383,14 +384,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 					if (this.triple > 0) {
 						triple--;
 						this.attackTimer = Math.max(4, 6 - this.parentEntity.level / 5);
-						((ItemProjectileWeapon) this.parentEntity.getHeldItemMainhand().getItem()).shoot(
-								this.parentEntity.getHeldItemMainhand(), this.parentEntity, world, 2,
-								EnumHand.MAIN_HAND);
+						
 					} else {
 						this.attackTimer = Math.max(11, 29 - this.parentEntity.level);
 						if (this.parentEntity.isAngry())
 							triple = 2;
 					}
+					//System.out.println(this.attackTimer);
 
 				}
 			} else if (this.attackTimer > 0)
@@ -495,8 +495,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 			BlockPos pos = this.parentEntity.world.getTopSolidOrLiquidBlock(this.parentEntity.getPosition());
 			double d1 = Math.min(pos.getY() + 16, this.parentEntity.posY + (random.nextFloat() * 2.0F - 1.0F) * 16.0F);
 			double d2 = this.parentEntity.posZ + (random.nextFloat() * 2.0F - 1.0F) * 16.0F;
-			if(this.parentEntity.isWithinHomeDistanceCurrentPosition() 
-					|| this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) > this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition()))
+			if(this.parentEntity.isWithinHomeDistanceCurrentPosition()
+					|| this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition()))
 				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1.0D);
 		}
 	}

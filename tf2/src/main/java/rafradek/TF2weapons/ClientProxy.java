@@ -176,7 +176,7 @@ public class ClientProxy extends CommonProxy {
 		Minecraft.getMinecraft().getItemColors().registerItemColorHandler((stack, tintIndex) ->
 			{
 				if(stack.getItemDamage()<25){
-					return stack.getItemDamage() % 2 == 0 ? 16711680 : 255;
+					return stack.getItemDamage() < 9 ? 16711680 : 255;
 				}
 				else if(stack.getItemDamage() / 2 == 13)
 					return 0xFFFFFF;
@@ -348,6 +348,8 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_fire", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemChocolate, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":chocolate", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTarget, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":target", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemHorn, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":horn", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMantreads, 0,
@@ -451,13 +453,7 @@ public class ClientProxy extends CommonProxy {
 				return new RenderProjectileSimple(manager);
 			}
 		});
-		RenderingRegistry.registerEntityRenderingHandler(EntityStickProjectile.class, new IRenderFactory<EntityStickProjectile>() {
-			@Override
-			public Render<EntityStickProjectile> createRenderFor(RenderManager manager) {
-				// TODO Auto-generated method stub
-				return new RenderSyringe(manager);
-			}
-		});
+
 		RenderingRegistry.registerEntityRenderingHandler(EntityBall.class, new IRenderFactory<EntityBall>() {
 			@Override
 			public Render<EntityBall> createRenderFor(RenderManager manager) {
@@ -562,8 +558,8 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public static void spawnBulletParticle(World world, EntityLivingBase living, double startX, double startY,
-			double startZ, double endX, double endY, double endZ, int j, int crits, boolean special) {
-		Particle entity = new EntityBulletTracer(world, startX, startY, startZ, endX, endY, endZ, j, crits, living, special);
+			double startZ, double endX, double endY, double endZ, int j, int crits, int type, float length) {
+		Particle entity = new EntityBulletTracer(world, startX, startY, startZ, endX, endY, endZ, j, crits, living, type, length);
 		spawnParticle(world, entity);
 	}
 

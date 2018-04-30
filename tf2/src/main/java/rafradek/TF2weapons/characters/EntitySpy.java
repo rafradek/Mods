@@ -67,6 +67,10 @@ public class EntitySpy extends EntityTF2Character {
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 		if (!this.world.isRemote) {
+			if (!(this.loadout.getStackInSlot(3).getItem() instanceof ItemCloak)) {
+				this.setDead();
+				return;
+			}
 			this.prevHealth=this.getHealth();
 			this.cloakCounter--;
 			EntityLivingBase target = this.getAttackTarget();
@@ -120,10 +124,10 @@ public class EntitySpy extends EntityTF2Character {
 
 	@Override
 	protected void addWeapons() {
-		this.loadout.setStackInSlot(0,ItemFromData.getRandomWeaponOfSlotMob("spy", 0, this.rand, false, true));
-		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true));
-		this.loadout.setStackInSlot(2,ItemFromData.getRandomWeaponOfSlotMob("spy", 2, this.rand, false, true));
-		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("spy", 3, this.rand, false, true));
+		this.loadout.setStackInSlot(0,ItemFromData.getRandomWeaponOfSlotMob("spy", 0, this.rand, false, true, this.noEquipment));
+		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true, this.noEquipment));
+		this.loadout.setStackInSlot(2,ItemFromData.getRandomWeaponOfSlotMob("spy", 2, this.rand, false, true, this.noEquipment));
+		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("spy", 3, this.rand, false, true, this.noEquipment));
 		this.loadout.getStackInSlot(1).setCount( 64);
 	}
 
@@ -208,5 +212,9 @@ public class EntitySpy extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.14111D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.0D);
+	}
+	
+	public int getClassIndex() {
+		return 8;
 	}
 }

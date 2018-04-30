@@ -140,4 +140,8 @@ public class EntityEngineer extends EntityTF2Character {
 		// dispenser.readFromNBT(par1NBTTagCompound.getCompoundTag("Dispenser"));
 		// this.world.spawnEntity(dispenser);
 	}
+	
+	public int getClassIndex() {
+		return 5;
+	}
 }

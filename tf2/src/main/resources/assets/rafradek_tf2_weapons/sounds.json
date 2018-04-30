@@ -623,7 +623,7 @@
   "weapon.start.phlog": {
     "category": "neutral",
     "sounds": [
-    	"rafradek_tf2_weapons:weapon/flame_thrower_start"
+    	"rafradek_tf2_weapons:weapon/phlog_loop"
     ]
   },
   "weapon.end.phlog": {
@@ -884,6 +884,36 @@
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_01",
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_02",
     	"rafradek_tf2_weapons:weapon/widow_maker_shot_crit_03"
+    ]
+  },
+  "weapon.fire.huntsman": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bow_shoot"
+    ]
+  },
+  "weapon.fire.huntsman.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bow_shoot_crit"
+    ]
+  },
+  "weapon.reload.huntsman": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bow_shoot_pull_short"
+    ]
+  },
+  "weapon.pull.huntsman": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bow_shoot_pull"
+    ]
+  },
+  "weapon.pull.huntsman.reverse": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bow_shoot_pull_reverse"
     ]
   },
   "weapon.hit.cleaver": {

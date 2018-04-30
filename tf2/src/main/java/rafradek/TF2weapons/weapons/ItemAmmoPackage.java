@@ -33,8 +33,9 @@ public class ItemAmmoPackage extends Item{
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);
 		if(!worldIn.isRemote){
 			for(ItemStack stack:playerIn.inventory.mainInventory){
-				if(!stack.isEmpty() && stack.getItem() instanceof ItemFromData&& ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE)!=0){
-					itemStackIn.setItemDamage(ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE));
+				if(!stack.isEmpty() && stack.getItem() instanceof ItemUsable && ((ItemUsable) stack.getItem()).getAmmoType(stack) !=0 
+						&& ((ItemUsable) stack.getItem()).getAmmoType(stack) < ItemAmmo.AMMO_TYPES.length){
+					itemStackIn.setItemDamage(((ItemUsable) stack.getItem()).getAmmoType(stack));
 					break;
 				}
 			}

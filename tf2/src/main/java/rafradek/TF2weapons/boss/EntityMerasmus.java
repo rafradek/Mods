@@ -369,7 +369,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 			int blockCount=(int) Math.min(100,10*(0.7f+0.3f*this.playersAttacked)*(0.9f+0.1f*this.level));
 			BlockPos initial=this.getPosition();
 			for(int i=0; i<blockCount; i++){
-				BlockPos pos=initial.add(this.rand.nextInt((int) (48+blockCount*0.37f))-24-(int)(blockCount*0.18f), 0, this.rand.nextInt((int) (48+blockCount*0.37f))-24-(int)(blockCount*0.18f));
+				BlockPos pos=initial.add(this.rand.nextInt((int) (40+blockCount*0.3f))-20-(int)(blockCount*0.15f), 0, this.rand.nextInt((int) (40+blockCount*0.3f))-20-(int)(blockCount*0.15f));
 				pos=this.world.getTopSolidOrLiquidBlock(pos);
 				//pos=pos.add(0, 1, 0);
 				if(this.world.getBlockState(pos).getBlock().isReplaceable(this.world, pos)){

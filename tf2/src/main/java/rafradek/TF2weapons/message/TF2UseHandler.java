@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.weapons.ItemAmmo;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
@@ -23,7 +24,8 @@ public class TF2UseHandler implements IMessageHandler<TF2Message.UseMessage, IMe
 			if(message.newAmmo!=-1){
 				if(TF2Attribute.getModifier("Ball Release", stack, 0, player)!=0)
 					stack=ItemFromData.getNewStack("sandmanball");
-				player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[((ItemUsable) stack.getItem()).getAmmoType(stack)]=message.newAmmo;
+				if (((ItemUsable) stack.getItem()).getAmmoType(stack) < ItemAmmo.AMMO_TYPES.length)
+					player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[((ItemUsable) stack.getItem()).getAmmoType(stack)]=message.newAmmo;
 			}
 			
 			if (stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)) {

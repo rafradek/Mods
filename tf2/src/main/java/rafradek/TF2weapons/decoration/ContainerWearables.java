@@ -250,8 +250,8 @@ public class ContainerWearables extends Container {
 				if (!this.mergeItemStack(itemstack1, 8, 44, false))
 					return ItemStack.EMPTY;
 			} else if (entityequipmentslot.getSlotType() == EntityEquipmentSlot.Type.ARMOR
-					&& !this.inventorySlots.get(4 - entityequipmentslot.getIndex()).getHasStack()) {
-				int i = 4 - entityequipmentslot.getIndex();
+					&& !this.inventorySlots.get(4 - entityequipmentslot.getSlotIndex()).getHasStack()) {
+				int i = 4 - entityequipmentslot.getSlotIndex();
 
 				if (!this.mergeItemStack(itemstack1, i, i + 1, false))
 					return ItemStack.EMPTY;

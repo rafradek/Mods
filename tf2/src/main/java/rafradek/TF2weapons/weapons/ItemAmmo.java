@@ -25,8 +25,8 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 public class ItemAmmo extends Item {
 
 	public static final String[] AMMO_TYPES = new String[] { "none", "shotgun", "minigun", "pistol", "revolver", "smg",
-			"sniper", "rocket", "grenade", "syringe", "fire", "sticky", "medigun", "flare", "ball" };
-	public static final int[] AMMO_MAX_STACK = new int[] { 64, 64, 64, 64, 64, 64, 16, 32, 32, 64, 1, 32, 1, 64, 64 };
+			"sniper", "rocket", "grenade", "syringe", "fire", "sticky", "medigun", "flare", "ball", "custom" };
+	public static final int[] AMMO_MAX_STACK = new int[] { 64, 64, 64, 64, 64, 64, 16, 32, 32, 64, 1, 32, 1, 64, 64, 64 };
 	public static ItemStack STACK_FILL;
 
 	public ItemAmmo() {
@@ -61,7 +61,7 @@ public class ItemAmmo extends Item {
 		// System.out.println(this.getCreativeTab());
 		if(!this.isInCreativeTab(par2CreativeTabs))
 			return;
-		for (int i = 1; i < AMMO_TYPES.length; i++)
+		for (int i = 1; i < AMMO_TYPES.length-1; i++)
 			if (i != 10 && i != 12)
 				par3List.add(new ItemStack(this, 1, i));
 	}
@@ -97,127 +97,7 @@ public class ItemAmmo extends Item {
 		}
 	}
 
-	public static void consumeAmmoGlobal(EntityLivingBase living, ItemStack stack, int amount) {
-		if (EntityDispenser.isNearDispenser(living.world, living))
-			return;
-		if (living instanceof EntityTF2Character)
-			((EntityTF2Character)living).useAmmo(((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, amount));
-		if (!(living instanceof EntityPlayer))
-			return;
-		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
-			living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-amount);
-		}
-		if (amount > 0) {
-			amount = ((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, amount);
-			// int
-			// type=ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE);
-
-			// stack.getCount()-=amount;
-			ItemStack stackAmmo;
-			while (amount > 0 && !(stackAmmo = searchForAmmo(living, stack)).isEmpty()) {
-				int inStack;
-				if(stackAmmo.getMaxDamage()!=0)
-					inStack = stackAmmo.getMaxDamage()-stackAmmo.getItemDamage();
-				else
-					inStack = stackAmmo.getCount();
-				((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo, amount);
-				amount -= inStack;
-			}
-		}
-	}
-
-	public static ItemStack searchForAmmo(EntityLivingBase owner, ItemStack stack) {
-		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
-			return STACK_FILL;
-
-		int type = ((ItemUsable) stack.getItem()).getAmmoType(stack);
-
-		if (type == 0)
-			return STACK_FILL;
-		
-		if (owner instanceof EntityTF2Character) {
-			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getData(stack).getInt(PropertyType.SLOT)) > 0 ? STACK_FILL : ItemStack.EMPTY;
-		}
-			
-		if (owner.world.isRemote && owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[type] > 0)
-			return STACK_FILL;
-		
-		
-		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
-		if (metalammo != 0) {
-			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= metalammo ? STACK_FILL : ItemStack.EMPTY;
-		}
-		
-		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
-			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			//System.out.println("Ammo Search: "+inv.getSlots());
-			for (int i = 0; i < inv.getSlots(); i++) {
-				ItemStack stackCap = inv.getStackInSlot(i);
-				//System.out.println("Stack: "+stackCap);
-				if (stackCap != null && stackCap.getItem() instanceof ItemAmmo
-						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type){
-					//System.out.println("Found: "+i);
-					return stackCap;
-				}
-			}
-		}
-		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
-			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
-			if (stackInv != null && stackInv.getItem() instanceof ItemAmmo
-					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type)
-				return stackInv;
-		}
-		return ItemStack.EMPTY;
-	}
-
-	public static int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
-		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
-			return 999;
-
-		if (owner instanceof EntityTF2Character)
-			return (int) (((EntityTF2Character) owner).getAmmo() / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
-
-		if(TF2Attribute.getModifier("Ball Release", stack, 0, owner)>0)
-			stack=ItemFromData.getNewStack("sandmanball");
-		int type = ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE);
-
-		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
-			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
-		}
-		
-		if (type == 0)
-			return 999;
-
-		int ammoCount = 0;
-
-		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
-			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-			.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			for (int i = 0; i < inv.getSlots(); i++) {
-				ItemStack stackCap = inv.getStackInSlot(i);
-				if (stackCap != null && stackCap.getItem() instanceof ItemAmmo
-						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type){
-					//System.out.println("Found: "+i);
-					if(stackCap.getMaxDamage()!=0)
-						ammoCount += stackCap.getMaxDamage()-stackCap.getItemDamage();
-					else
-						ammoCount += stackCap.getCount();
-				}
-			}
-		}
-		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
-			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
-			if (stackInv != null && stackInv.getItem() instanceof ItemAmmo
-					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type)
-				if(stackInv.getMaxDamage()!=0)
-					ammoCount += stackInv.getMaxDamage()-stackInv.getItemDamage();
-				else
-					ammoCount += stackInv.getCount();
-		}
-		return (int) (ammoCount / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
-	}
-
+	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)

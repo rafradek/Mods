@@ -18,8 +18,10 @@ public class EntitySniper extends EntityTF2Character {
 		//this.ammoLeft = 18;
 		this.experienceValue = 15;
 		this.rotation = 3;
-		if (this.attack != null)
+		if (this.attack != null) {
 			attack.setRange(50);
+			attack.releaseAt = 1;
+		}
 
 	}
 
@@ -49,7 +51,7 @@ public class EntitySniper extends EntityTF2Character {
 
 	@Override
 	public void onLivingUpdate() {
-		if (!this.world.isRemote && (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
+		if (!this.world.isRemote && this.getHeldItemMainhand().getItem() instanceof ItemSniperRifle && (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
 				&& this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging())
 			((ItemSniperRifle) this.getHeldItem(EnumHand.MAIN_HAND).getItem())
 					.disableZoom(this.getHeldItem(EnumHand.MAIN_HAND), this);
@@ -132,5 +134,9 @@ public class EntitySniper extends EntityTF2Character {
 	@Override
 	public float getMotionSensitivity() {
 		return this.scaleWithDifficulty(0.75f, 0.28f);
+	}
+	
+	public int getClassIndex() {
+		return 7;
 	}
 }

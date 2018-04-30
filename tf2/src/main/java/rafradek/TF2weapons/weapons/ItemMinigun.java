@@ -157,9 +157,9 @@ public class ItemMinigun extends ItemBulletWeapon {
 			if(cap.chargeTicks >= spinuptime || (living instanceof EntityPlayer && ((EntityPlayer) living).isCreative())) {
 				if(cap.minigunTicks<20)
 					cap.minigunTicks+=1;
-				if( ammo > 0 && !ItemAmmo.searchForAmmo(living, stack).isEmpty()) {
+				if( ammo > 0 && !this.searchForAmmo(living, stack).isEmpty()) {
 					if ((living.ticksExisted % (20/ammo)) == 0) {
-						ItemAmmo.consumeAmmoGlobal(living, stack, 1);
+						this.consumeAmmoGlobal(living, stack, 1);
 					}
 				}
 				

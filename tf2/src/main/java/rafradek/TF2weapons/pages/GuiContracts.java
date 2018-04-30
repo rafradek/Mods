@@ -71,7 +71,7 @@ public class GuiContracts extends GuiScreen {
 			else if(this.selectedContract.rewards>0) {
 				TF2weapons.network.sendToServer(new TF2Message.ActionMessage(48+this.selectedId));
 				this.selectedContract.rewards=0;
-				if(this.selectedContract.progress>=150) {
+				if(this.selectedContract.progress>=Contract.REWARD_HIGH) {
 					this.mc.player.getCapability(TF2weapons.PLAYER_CAP,null).contracts.remove(this.selectedId);
 					this.selectedContract=null;
 					this.selectedId=-1;
@@ -86,12 +86,14 @@ public class GuiContracts extends GuiScreen {
 				@Override
 				public void confirmClicked(boolean result, int id) {
 					if (result) {
+						TF2weapons.network.sendToServer(new TF2Message.ActionMessage(64+selectedId));
 						mc.player.getCapability(TF2weapons.PLAYER_CAP,null).contracts.remove(selectedId);
 						selectedContract=null;
 						selectedId=-1;
 						buttonList.clear();
 						initGui();
 						mc.player.getStatFileWriter().unlockAchievement(mc.player, TF2Achievements.CONTRACT_DAY, (int) (mc.world.getWorldTime()/24000+1));
+						
 					}
 					Minecraft.getMinecraft().displayGuiScreen(GuiContracts.this);
 				}

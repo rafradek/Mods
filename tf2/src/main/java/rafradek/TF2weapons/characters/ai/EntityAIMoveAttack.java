@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.characters.EntitySniper;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -136,12 +137,12 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		float range = this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared;
 		if (stay) {
 			++this.comeCloser;
-			if (d0 <= (double) this.attackRangeSquared / 4)
+			if (d0 <= (double) this.attackRangeSquared / (this.entityHost instanceof EntitySniper ? 2f : 4f))
 				this.comeCloser = 20;
 		} else
 			this.comeCloser = 0;
 		
-		if (d0 <= this.attackRangeSquared && this.comeCloser >= 20) {
+		if (d0 <= range && this.comeCloser >= 20) {
 			if (!this.dodging) {
 				this.entityHost.getNavigator().clearPathEntity();
 				this.dodging = true;

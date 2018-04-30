@@ -5,6 +5,8 @@ import java.util.Map;
 
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import rafradek.TF2weapons.characters.EntityScout;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.decoration.ItemWearable;
 import rafradek.TF2weapons.projectiles.EntityBall;
 import rafradek.TF2weapons.projectiles.EntityCleaver;
@@ -21,6 +23,7 @@ import rafradek.TF2weapons.weapons.ItemChargingTarge;
 import rafradek.TF2weapons.weapons.ItemCleaver;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
+import rafradek.TF2weapons.weapons.ItemHuntsman;
 import rafradek.TF2weapons.weapons.ItemJar;
 import rafradek.TF2weapons.weapons.ItemKnife;
 import rafradek.TF2weapons.weapons.ItemMedigun;
@@ -38,7 +41,7 @@ import rafradek.TF2weapons.weapons.ItemWrench;
 
 public class MapList {
 
-	public static Map<Integer, String> integerToMob;
+	//public static Map<Class<? extends EntityTF2Character>, Integer> classNumbers;
 	public static Map<String, Item> weaponClasses;
 	public static Map<String, WeaponData.PropertyType> propertyTypes;
 	public static Map<String, Class<? extends EntityProjectileBase>> projectileClasses;
@@ -57,7 +60,9 @@ public class MapList {
 		nameToAttribute = new HashMap<String, TF2Attribute>();
 		buildInAttributes = new HashMap<String, NBTTagCompound>();
 		specialWeapons = new HashMap<String, ItemUsable>();
-		integerToMob = new HashMap<Integer, String>();
+		//classNumbers = new HashMap<>();
+		
+		//classNumbers.put(EntityScout.class, 0);
 		// scoutSpawn=new HashMap<List<SpawnListEntry>, SpawnListEntry>();
 		weaponClasses.put("sniperrifle", new ItemSniperRifle());
 		weaponClasses.put("bullet", new ItemBulletWeapon());
@@ -80,6 +85,7 @@ public class MapList {
 		weaponClasses.put("shield", new ItemChargingTarge());
 		weaponClasses.put("cleaver", new ItemCleaver());
 		weaponClasses.put("parachute", new ItemParachute());
+		weaponClasses.put("huntsman", new ItemHuntsman());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
@@ -98,6 +104,7 @@ public class MapList {
 		projectileClasses.put("jar", EntityJar.class);
 		projectileClasses.put("ball", EntityBall.class);
 		projectileClasses.put("repairclaw", EntityStickProjectile.class);
+		projectileClasses.put("arrow", EntityStickProjectile.class);
 		projectileClasses.put("cleaver", EntityCleaver.class);
 	}
 }

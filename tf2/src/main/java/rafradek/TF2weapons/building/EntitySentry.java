@@ -253,7 +253,7 @@ public class EntitySentry extends EntityBuilding {
 	}
 
 	public void shootBullet(EntityLivingBase owner) {
-		this.setSoundState(this.getAmmo() > 0 && this.energy.getEnergyStored() > this.getMinEnergy() ? 2 : 3);
+		this.setSoundState(this.getAmmo() > 0 && this.energy.getEnergyStored() >= this.getMinEnergy() ? 2 : 3);
 		Vec3d attackPos = this.isControlled()
 				? new Vec3d(this.getLookHelper().getLookPosX(), this.getLookHelper().getLookPosY(),
 						this.getLookHelper().getLookPosZ())

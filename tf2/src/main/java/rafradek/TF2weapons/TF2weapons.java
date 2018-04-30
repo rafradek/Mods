@@ -33,6 +33,8 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -63,6 +65,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.storage.loot.LootTableList;
@@ -146,6 +149,7 @@ import rafradek.TF2weapons.decoration.EntityTarget;
 import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.decoration.InventoryWearables;
 import rafradek.TF2weapons.decoration.ItemStatue;
+import rafradek.TF2weapons.decoration.ItemTarget;
 import rafradek.TF2weapons.loot.EntityBuildingFunction;
 import rafradek.TF2weapons.loot.EntityOfClassFunction;
 import rafradek.TF2weapons.loot.KilledByTeam;
@@ -195,7 +199,7 @@ import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemHorn;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3.4", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.3.6", guiFactory = "rafradek.TF2weapons.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -272,7 +276,8 @@ public class TF2weapons {
 	public static Potion it;
 	public static Potion bombmrs;
 	public static Potion bleeding;
-
+	public static Potion noKnockback;
+	
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
 	public static Item itemSandvich;
@@ -288,6 +293,7 @@ public class TF2weapons {
 	public static Item itemHorn;
 	public static Item itemStatue;
 	public static Item itemToken;
+	public static Item itemTarget;
 	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
@@ -576,6 +582,7 @@ public class TF2weapons {
 		// GameRegistry.register(itemAustraliumIngot=new
 		// Item().setUnlocalizedName("ingotAustralium").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotAustralium"));
 		ForgeRegistries.ITEMS.register(itemTF2 = new ItemTF2().setRegistryName(TF2weapons.MOD_ID + ":itemTF2"));
+		ForgeRegistries.ITEMS.register(itemTarget = new ItemTarget().setRegistryName(TF2weapons.MOD_ID + ":target").setUnlocalizedName("attackTarget"));
 		
 		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -600,7 +607,7 @@ public class TF2weapons {
 				.setUnlocalizedName("blockAustralium"), TF2weapons.MOD_ID + ":australium_block");
 		registerBlock(blockOverheadDoor = new BlockOverheadDoor().setCreativeTab(tabsurvivaltf2).setHardness(9.0F).setResistance(20.0F)
 				.setUnlocalizedName("blockOverhead"), TF2weapons.MOD_ID + ":overhead_door");
-		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(1.0F).setResistance(2.0F)
+		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(0.75F).setResistance(2.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
 		OreDictionary.registerOre("oreCopper", blockCopperOre);
@@ -672,27 +679,29 @@ public class TF2weapons {
 				.setRegistryName(TF2weapons.MOD_ID + ":critEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354E56B59", 0.25D, 2));
 		ForgeRegistries.POTIONS.register(buffbanner = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/buffbanner.png")).setPotionName("effect.banner")
-				.setRegistryName(TF2weapons.MOD_ID + ":bannerEff"));
+				.setRegistryName(TF2weapons.MOD_ID + ":bannerEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(backup = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/backup.png")).setPotionName("effect.backup")
-				.setRegistryName(TF2weapons.MOD_ID + ":backupEff"));
+				.setRegistryName(TF2weapons.MOD_ID + ":backupEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(conch = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/conch.png")).setPotionName("effect.conch")
-				.setRegistryName(TF2weapons.MOD_ID + ":conchEff")
+				.setRegistryName(TF2weapons.MOD_ID + ":conchEff").setBeneficial()
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E2", 0.25D, 2));
 		ForgeRegistries.POTIONS.register(markDeath = new PotionTF2(true, 0, 1, 2).setPotionName("effect.markDeath").setRegistryName(TF2weapons.MOD_ID + ":markDeathEff"));
-		ForgeRegistries.POTIONS.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff"));
+		ForgeRegistries.POTIONS.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(jarate = new PotionTF2Item(true, 0xFFD500, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/jarate.png")).setPotionName("effect.jarate")
 				.setRegistryName(TF2weapons.MOD_ID + ":jarateEff"));
 		ForgeRegistries.POTIONS.register(madmilk = new PotionTF2Item(true, 0xF1F1F1, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/madmilk.png")).setPotionName("effect.madmilk")
 				.setRegistryName(TF2weapons.MOD_ID + ":madmilkEff"));
 		ForgeRegistries.POTIONS.register(charging = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/charging_targe.png")).setPotionName("effect.charging")
 				.setRegistryName(TF2weapons.MOD_ID + ":chargingEff")
-				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E6", 2D, 2));
+				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E6", 2D, 2).setBeneficial());
 		ForgeRegistries.POTIONS.register(uber = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/medigun_im.png")).setPotionName("effect.uber")
-				.setRegistryName(TF2weapons.MOD_ID + ":uberEff"));
+				.setRegistryName(TF2weapons.MOD_ID + ":uberEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(it = new PotionTF2(true, 0xFFFFFFFF, 1, 2).setPotionName("effect.it").setRegistryName(TF2weapons.MOD_ID + ":itEff"));
 		ForgeRegistries.POTIONS.register(bombmrs = new PotionTF2(false, 0xFFFFFFFF, 1, 2).setPotionName("effect.bombmrs").setRegistryName(TF2weapons.MOD_ID + ":bombEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE6F-7CE8-4030-940E-14B354F0D8BA", 1.25D, 2));
 		ForgeRegistries.POTIONS.register(bleeding = new PotionTF2(true, 0, 4, 0).setPotionName("effect.bleeding").setRegistryName(TF2weapons.MOD_ID + ":bleedingEff"));
+		ForgeRegistries.POTIONS.register(noKnockback = new PotionTF2(true, 0, 0, 0).setPotionName("effect.noKnockback").setRegistryName(TF2weapons.MOD_ID + ":noKnockbackEff")
+				.registerPotionAttributeModifier(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "0d09b7c3-ac5e-4f56-9b65-fe2d09b99dc3", 10, 0));
 		// conf.save();
 		WeaponData.PropertyType.init();
 		if(!TF2ConfigVars.disableGeneration){
@@ -717,7 +726,7 @@ public class TF2weapons {
 		GameRegistry.addSmelting(new ItemStack(blockLeadOre), new ItemStack(itemTF2, 1, 1), 0.55f);
 		GameRegistry.addSmelting(new ItemStack(blockAustraliumOre), new ItemStack(itemTF2, 1, 2), 2f);
 		GameRegistry.addSmelting(new ItemStack(itemTF2, 1, 3), new ItemStack(Items.IRON_INGOT, 2), 0.35f);
-		GameRegistry.registerFuelHandler(new IFuelHandler() {
+		/*GameRegistry.(new IFuelHandler() {
 
 			@Override
 			public int getBurnTime(ItemStack fuel) {
@@ -725,7 +734,7 @@ public class TF2weapons {
 				return fuel.getItem() instanceof ItemCrate ? 300 : 0;
 			}
 
-		});
+		});*/
 		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null, new ItemStack(blockCabinet), "SCS", "SIS", 'S', new ItemStack(itemTF2, 1, 3), 'C', "workbench", 'I', "blockIron")
 				.setRegistryName(TF2weapons.MOD_ID,"recipe1"));
 		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null, new ItemStack(itemTF2, 1, 2), "AAA", "AAA", "AAA", 'A', new ItemStack(itemTF2, 1, 6))
@@ -770,7 +779,7 @@ public class TF2weapons {
 				double d0 = p_82487_1_.getX() + enumfacing.getFrontOffsetX();
 				double d1 = p_82487_1_.getY() + 0.2F;
 				double d2 = p_82487_1_.getZ() + enumfacing.getFrontOffsetZ();
-				Entity entity = ItemMonsterPlacerPlus.spawnCreature(p_82487_1_.getWorld(), p_82487_2_.getItemDamage(), d0, d1, d2,
+				Entity entity = ItemMonsterPlacerPlus.spawnCreature(null,p_82487_1_.getWorld(), p_82487_2_.getItemDamage(), d0, d1, d2,
 						p_82487_2_.getTagCompound() != null && p_82487_2_.getTagCompound().hasKey("SavedEntity") ? p_82487_2_.getTagCompound().getCompoundTag("SavedEntity")
 								: null);
 
@@ -781,7 +790,24 @@ public class TF2weapons {
 				return p_82487_2_;
 			}
 		});
+		BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(itemBuildingBox, new BehaviorDefaultDispenseItem() {
+			@Override
+			public ItemStack dispenseStack(IBlockSource p_82487_1_, ItemStack p_82487_2_) {
+				EnumFacing enumfacing = p_82487_1_.getBlockState().getValue(BlockDispenser.FACING);
+				double d0 = p_82487_1_.getX() + enumfacing.getFrontOffsetX();
+				double d1 = p_82487_1_.getY() + 0.2F;
+				double d2 = p_82487_1_.getZ() + enumfacing.getFrontOffsetZ();
+				Entity entity = ItemMonsterPlacerPlus.spawnCreature(null,p_82487_1_.getWorld(), p_82487_2_.getItemDamage(), d0, d1, d2,
+						p_82487_2_.getTagCompound() != null && p_82487_2_.getTagCompound().hasKey("SavedEntity") ? p_82487_2_.getTagCompound().getCompoundTag("SavedEntity")
+								: null);
 
+				if (entity instanceof EntityLivingBase && p_82487_2_.hasDisplayName())
+					((EntityLiving) entity).setCustomNameTag(p_82487_2_.getDisplayName());
+
+				p_82487_2_.splitStack(1);
+				return p_82487_2_;
+			}
+		});
 		network = new TF2NetworkWrapper(MOD_ID);
 		network.registerMessage(TF2ActionHandler.class, TF2Message.ActionMessage.class, 0, Side.SERVER, true);
 		network.registerMessage(TF2PropertyHandler.class, TF2Message.PropertyMessage.class, 2, Side.SERVER, false);
@@ -1136,8 +1162,25 @@ public class TF2weapons {
 	public static void updateMobSpawning() {
 		ArrayList<Biome> biomesList = new ArrayList<Biome>();
 		for (Biome biome : GameRegistry.findRegistry(Biome.class)){
-			if(biome!=Biomes.HELL && biome!=Biomes.SKY)
-			biomesList.add(biome);
+			if (TF2ConfigVars.biomeCheck.equalsIgnoreCase("Default")) {
+				boolean zombie = false;
+				boolean spider = false;
+				for (SpawnListEntry entry : biome.getSpawnableList(EnumCreatureType.MONSTER)) {
+					if (entry.entityClass == EntityZombie.class)
+						zombie = true;
+					else if (entry.entityClass == EntitySpider.class)
+						spider = true;
+					if (zombie && spider) {
+						biomesList.add(biome);
+						break;
+					}
+				}
+			}
+			else if (TF2ConfigVars.biomeCheck.equalsIgnoreCase("Vanilla") && biome.delegate.name().getResourceDomain().equals("minecraft") && biome!=Biomes.HELL && biome!=Biomes.SKY) {
+				biomesList.add(biome);
+			}
+			else if (TF2ConfigVars.biomeCheck.equalsIgnoreCase("All"))
+				biomesList.add(biome);
 		}
 		if (!TF2ConfigVars.disableSpawn) {
 			Biome[] biomes = biomesList.toArray(new Biome[biomesList.size()]);

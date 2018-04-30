@@ -17,32 +17,32 @@ public class EntityBulletTracer extends Particle {
 
 	private int duration;
 	private boolean nextDead;
-	private boolean special;
+	private float length;
 
 	public EntityBulletTracer(World par1World, double startX, double startY, double startZ, double x, double y,
-			double z, int duration, int crits, EntityLivingBase shooter,boolean special) {
+			double z, int duration, int crits, EntityLivingBase shooter, int type, float length) {
 		super(par1World, startX, startY, startZ);
 		this.particleScale = 0.2f;
 		this.duration = duration;
-		this.special = special;
+		//this.special = special;
 		
 		this.motionX = (x - startX) / duration;
 		this.motionY = (y - startY) / duration;
 		this.motionZ = (z - startZ) / duration;
-		
-		if(special) {
+		/*if (type == 1) {
 			crits=2;
 			this.motionX *= 0.001;
 			this.motionY *= 0.001;
 			this.motionZ *= 0.001;
-		}
+		}*/
 		this.particleMaxAge = 200;
 		this.setSize(0.025f, 0.025f);
 		// this.setParticleIcon(Item.itemsList[2498+256].getIconFromDamage(0));
-		this.setParticleTexture(TF2EventsClient.pelletIcon);
+		this.setParticleTexture(TF2EventsClient.pelletIcon[0]);
 		// this.setParticleTextureIndex(81);
 		this.multipleParticleScaleBy(2);
 
+		this.length = length;
 		// TODO Auto-generated constructor stub
 		if (crits != 2)
 			this.setRBGColorF(0.97f, 0.76f, 0.51f);
@@ -88,9 +88,9 @@ public class EntityBulletTracer extends Particle {
 		int j = i >> 16 & 65535;
 		int k = i & 65535;
 
-		float xNext = (float) (x + this.motionX * 2 * (special?10000:1));
-		float yNext = (float) (y + this.motionY * 2 * (special?10000:1));
-		float zNext = (float) (z + this.motionZ * 2 * (special?10000:1));
+		float xNext = (float) (x + this.motionX * 2 * this.length);
+		float yNext = (float) (y + this.motionY * 2 * this.length);
+		float zNext = (float) (z + this.motionZ * 2 * this.length);
 
 		float xMin = this.particleTexture.getMinU();
 		float xMax = this.particleTexture.getMaxU();

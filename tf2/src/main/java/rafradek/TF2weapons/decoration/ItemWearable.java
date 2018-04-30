@@ -65,6 +65,10 @@ public class ItemWearable extends ItemFromData {
 		return slot == (isHat(stack) ? EntityEquipmentSlot.HEAD : EntityEquipmentSlot.CHEST);
 	}
 
+	public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
+        return isHat(stack) ? EntityEquipmentSlot.HEAD : EntityEquipmentSlot.CHEST;
+    }
+	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)

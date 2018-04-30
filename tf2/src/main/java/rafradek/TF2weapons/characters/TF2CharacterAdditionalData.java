@@ -7,4 +7,5 @@ public class TF2CharacterAdditionalData implements IEntityLivingData {
 	public int team;
 	public boolean natural;
 	public boolean spawnDay;
+	public boolean noEquipment;
 }

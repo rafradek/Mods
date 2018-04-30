@@ -104,8 +104,8 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	}
 
 	public float getZoomBonus(ItemStack stack, EntityLivingBase living) {
-		return 1 + Math.max(0, (living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks - 20)
-				/ ((getChargeTime(stack, living) - 20) / 2));
+		return 1 + Math.max(0, (living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks - 26)
+				/ ((getChargeTime(stack, living) - 26) / 2));
 	}
 
 	public static float getChargeTime(ItemStack stack, EntityLivingBase living) {

@@ -199,6 +199,7 @@ item.randomWeapon.name=Random Weapon
 item.randomHat.name=Random Hat
 item.nuggetAustralium.name=Australium Nugget
 item.horn.name=Horn
+item.attackTarget.name=Target
 item.key.name=Mann Co. Supply Crate Key
 item.chocolate.name=Dalokohs Bar
 item.crate.name=Mann Co. Supply Crate

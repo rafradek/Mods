@@ -14,6 +14,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData;
@@ -36,6 +37,7 @@ public class EntityDemoman extends EntityTF2Character {
 			this.attack.setRange(20F);
 			this.attack.projSpeed = 1.16205f;
 			this.attack.gravity = 0.0381f;
+			this.attack.releaseAt = 0.03f;
 			this.moveAttack.setDodge(true, false);
 		}
 		this.rotation = 10;
@@ -128,6 +130,12 @@ public class EntityDemoman extends EntityTF2Character {
 		if(effect.getPotion()==TF2weapons.charging)
 			this.moveAttack.setDodge(true, false);
     }
+	
+	public void onEquipItem(int slot, ItemStack stack) {
+		super.onEquipItem(slot, stack);
+		this.attack.fireAtFeet = slot == 1 ? TF2Attribute.getModifier("Explosion Radius", stack, 1, this) : 0;
+	}
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_DEMOMAN_SAY;
@@ -166,6 +174,10 @@ public class EntityDemoman extends EntityTF2Character {
 		return super.getAttributeModifier(attribute);
 	}
 
+	public int getClassIndex() {
+		return 3;
+	}
+	
 	/*
 	 * @Override public float getAttributeModifier(String attribute) {
 	 * if(attribute.equals("Minigun Spinup")){ return

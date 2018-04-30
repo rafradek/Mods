@@ -89,4 +89,8 @@ public class ItemCrate extends ItemFromData {
 			}
 		}
 	}
+	
+	public int getItemBurnTime(ItemStack itemStack) {
+		return 2400;
+	}
 }

@@ -23,8 +23,10 @@ import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
+import net.minecraft.entity.boss.EntityWither;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityGhast;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -33,7 +35,9 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketEntityEffect;
 import net.minecraft.network.play.server.SPacketExplosion;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
@@ -56,6 +60,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import rafradek.TF2weapons.TF2EventsCommon.DestroyBlockEntry;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.boss.EntityMerasmus;
+import rafradek.TF2weapons.boss.EntityMonoculus;
 import rafradek.TF2weapons.boss.EntityTF2Boss;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntitySentry;
@@ -132,13 +137,13 @@ public class TF2Util {
 
 	public static List<RayTraceResult> pierce(World world, Entity living, double startX, double startY, double startZ, double endX, double endY, double endZ,
 			boolean headshot, float size, boolean pierce) {
-		return pierce(world, living, startX, startY, startZ, endX, endY, endZ, pierce, size, pierce, TARGETABLE);
+		return pierce(world, living, startX, startY, startZ, endX, endY, endZ, headshot, size, pierce, TARGETABLE);
 	}
 
 	public static RayTraceResult getTraceResult(Entity target, RayTraceResult hitVec, float size, boolean headshot, Vec3d start, Vec3d end) {
 		RayTraceResult result = new RayTraceResult(target, hitVec.hitVec);
-		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding) && headshot) {
-			Boolean var13 = TF2Util.getHead((EntityLivingBase)target).grow(size).calculateIntercept(start, end) != null;
+		if (headshot && target instanceof EntityLivingBase && !(target instanceof EntityBuilding)) {
+			Boolean var13 = TF2Util.getHead((EntityLivingBase)target).calculateIntercept(start, end.add(end.subtract(start).normalize())) != null;
 			result.hitInfo = var13;
 		}
 		result.sideHit=hitVec.sideHit;
@@ -390,30 +395,13 @@ public class TF2Util {
 	
 	    // Vector pointing from apex to circle-center point.
 	    Vec3d axisVect = start.subtract(end);
-	
-	    // X is lying in cone only if it's lying in 
-	    // infinite version of its cone -- that is, 
-	    // not limited by "round basement".
-	    // We'll use dotProd() to 
-	    // determine angle between apexToXVect and axis.
+
 	    boolean isInInfiniteCone = apexToXVect.dotProduct(axisVect)
-	                               /apexToXVect.lengthVector()/axisVect.lengthVector()
-	                                 >
-	                               // We can safely compare cos() of angles 
-	                               // between vectors instead of bare angles.
+	                               /apexToXVect.lengthVector()/axisVect.lengthVector() >
 	                               MathHelper.cos(halfAperture);
 	
 	
 	    return isInInfiniteCone;
-	
-	    // X is contained in cone only if projection of apexToXVect to axis
-	    // is shorter than axis. 
-	    // We'll use dotProd() to figure projection length.
-	   /* boolean isUnderRoundCap = dotProd(apexToXVect,axisVect)
-	                              /magn(axisVect)
-	                                <
-	                              magn(axisVect);
-	    return isUnderRoundCap;*/
 	}
 
 	public static boolean dealDamage(Entity entity, World world, EntityLivingBase living, ItemStack stack, int critical, float damage, DamageSource source) {
@@ -450,14 +438,15 @@ public class TF2Util {
 			((EntityLivingBase)entity).getActiveItemStack().damageItem((int) (damage*(source.isExplosion()?4f:2f)), (EntityLivingBase) entity);
 			damage*=source.isExplosion() ? 0.3f : 0.45f;
 		}
-		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth():0f;
+		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth()+((EntityLivingBase)entity).getAbsorptionAmount():0f;
 		
 		if (knockback && entity.attackEntityFrom(source, damage)) {
 			//System.out.println("realD");
 			if (source instanceof TF2DamageSource && !((TF2DamageSource)source).getWeaponOrig().isEmpty())
 				stack=((TF2DamageSource)source).getWeaponOrig();
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon)
-				((ItemWeapon) stack.getItem()).onDealDamage(stack, living, entity, source, entity instanceof EntityLivingBase?prehealth-((EntityLivingBase) entity).getHealth():0f);
+				((ItemWeapon) stack.getItem()).onDealDamage(stack, living, entity, source,
+						entity instanceof EntityLivingBase?prehealth-(((EntityLivingBase) entity).getHealth()+((EntityLivingBase)entity).getAbsorptionAmount()):0f);
 			if (living instanceof EntityPlayer) {
 				if (!ItemUsable.lastDamage.containsKey(living))
 					ItemUsable.lastDamage.put(living, new float[20]);
@@ -967,6 +956,21 @@ public class TF2Util {
         		iblockstate.canEntitySpawn(owner) && owner.world.isAirBlock(blockpos.up()) && owner.world.isAirBlock(blockpos.up(2));
     }
 	
+	
+	public static float getGravity(EntityLivingBase living) {
+		if (living.isInWater() || living.hasNoGravity() || living.isElytraFlying() || living instanceof EntityWither || living instanceof EntityMonoculus || living instanceof EntityGhast)
+			return 0;
+		else
+			return 0.08f;
+	}
+	
+	public static void addAndSendEffect(EntityLivingBase living, PotionEffect effect) {
+		living.addPotionEffect(effect);
+		if (!living.world.isRemote)
+		for (EntityPlayer player : ((WorldServer)living.world).getEntityTracker().getTrackingPlayers(living)) {
+			((EntityPlayerMP)player).connection.sendPacket(new SPacketEntityEffect(living.getEntityId(), effect));
+		}
+	}
 	static {
 		for (int i = 0; i < 32; ++i)
         {

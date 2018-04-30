@@ -12,6 +12,9 @@ public class Contract {
 	public boolean active;
 	public int rewards;
 	
+	public final static int REWARD_LOW = 40;
+	public final static int REWARD_HIGH = 135;
+	
 	public Contract(String className,int expireDay,Random rand) {
 		// TODO Auto-generated constructor stub
 		this.className=className;
