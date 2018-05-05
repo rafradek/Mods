@@ -670,7 +670,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (this.loadoutHeld.getSlots() < 7) {
 			this.loadoutHeld.setSize(7);
 		}
-
+		
 		this.refill.setStackInSlot(0, new ItemStack(tag.getCompoundTag("Refill")));
 
 		if (tag.hasKey("Offers")) {

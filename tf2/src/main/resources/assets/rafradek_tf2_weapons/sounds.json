@@ -632,6 +632,13 @@
     	"rafradek_tf2_weapons:weapon/phlog_end"
     ]
   },
+  "weapon.charge.phlog": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/pyro_paincrticialdeath02",
+    	"rafradek_tf2_weapons:weapon/pyro_paincrticialdeath03"
+    ]
+  },
   "weapon.fire.heater": {
     "category": "neutral",
     "sounds": [

@@ -154,15 +154,17 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	public ItemStack getPickedResult(RayTraceResult target) {
 		ItemStack stack = new ItemStack(TF2weapons.itemBuildingBox, 1,
 				(this instanceof EntitySentry ? 18 : (this instanceof EntityDispenser ? 20 : 22)) + this.getEntTeam());
-		stack.setTagCompound(new NBTTagCompound());
-		stack.getTagCompound().setTag("SavedEntity", new NBTTagCompound());
-		this.writeEntityToNBT(stack.getTagCompound().getCompoundTag("SavedEntity"));
+		
 		return stack;
 	}
 	
 	public void grab() {
 		if(!this.isDisabled()) {
-			this.entityDropItem(this.getPickedResult(null), 0);
+			ItemStack stack = this.getPickedResult(null);
+			stack.setTagCompound(new NBTTagCompound());
+			stack.getTagCompound().setTag("SavedEntity", new NBTTagCompound());
+			this.writeEntityToNBT(stack.getTagCompound().getCompoundTag("SavedEntity"));
+			this.entityDropItem(stack, 0);
 			// System.out.println("Saved:
 			// "+stack.getTagCompound().getCompoundTag("SavedEntity"));
 			this.setDead();

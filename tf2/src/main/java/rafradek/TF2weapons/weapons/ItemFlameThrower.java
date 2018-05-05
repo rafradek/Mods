@@ -324,6 +324,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			playerIn.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
 			TF2Util.addAndSendEffect(playerIn, new PotionEffect(TF2weapons.uber,40,0));
 			playerIn.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
+			playerIn.playSound(ItemFromData.getSound(itemStackIn, PropertyType.CHARGE_SOUND), 1f, 1f);
 			itemStackIn.getTagCompound().setBoolean("RageActive", true);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}

@@ -1262,6 +1262,7 @@
 		"Fire start sound": "rafradek_tf2_weapons:weapon.start.phlog",
 		"Fire stop sound": "rafradek_tf2_weapons:weapon.end.phlog",
 		"Fire loop sound": "rafradek_tf2_weapons:weapon.fire.phlog",
+		"Charge sound": "rafradek_tf2_weapons:weapon.charge.phlog",
 		"Stock": false,
 		"Cost": 27,
 		"Drop chance": 0.09,

@@ -80,6 +80,8 @@ public class EntityAIRepair extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 		this.searchTimer--;
+		if (this.entityHost.loadout.getStackInSlot(2).isEmpty())
+			return false;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){
 			List<EntityDispenser> list=this.entityHost.world.getEntitiesWithinAABB(EntityDispenser.class,
 				this.entityHost.getEntityBoundingBox().grow(10, 3, 10), new Predicate<EntityDispenser>() {

@@ -15,6 +15,7 @@ import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.ai.EntityAIRepair;
 import rafradek.TF2weapons.characters.ai.EntityAISetup;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class EntityEngineer extends EntityTF2Character {
 
@@ -143,5 +144,8 @@ public class EntityEngineer extends EntityTF2Character {
 	
 	public int getClassIndex() {
 		return 5;
+	}
+	public boolean isAmmoFull() {
+		return this.getWepCapability().getMetal() < WeaponsCapability.MAX_METAL_ENGINEER && super.isAmmoFull();
 	}
 }

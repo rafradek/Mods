@@ -11,6 +11,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.ai.EntityAIAirblast;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
@@ -81,6 +82,7 @@ public class EntityPyro extends EntityTF2Character {
 				this.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
 				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber,40,0));
 				this.getHeldItemMainhand().getTagCompound().setBoolean("RageActive", true);
+				this.playSound(ItemFromData.getSound(this.getHeldItemMainhand(), PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
 			}
 		}
 		super.onLivingUpdate();
