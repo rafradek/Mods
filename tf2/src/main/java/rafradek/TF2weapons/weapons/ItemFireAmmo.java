@@ -10,9 +10,10 @@ public class ItemFireAmmo extends ItemAmmo {
 	int uses;
 	int type;
 
-	public ItemFireAmmo(int type, int uses) {
+	public ItemFireAmmo(int type, int uses, int maxStack) {
 		this.type = type;
 		this.uses = uses;
+		this.setMaxStackSize(maxStack);
 		this.setHasSubtypes(false);
 	}
 
@@ -29,22 +30,33 @@ public class ItemFireAmmo extends ItemAmmo {
 	}
 
 	@Override
-	public int getItemStackLimit(ItemStack stack) {
-		return 1;
-	}
-
-	@Override
 	public int getMaxDamage(ItemStack stack) {
-		return uses;
+		return uses-1;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public void consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
+	public int getItemStackLimit(ItemStack stack) {
+		return this.getItemStackLimit();
+	}
+	
+	@Override
+	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
 		if (stack == STACK_FILL)
-			return;
+			return 0;
 		if (amount > 0) {
-			stack.damageItem(amount, living);
+			int left = Math.max(0, amount - (uses-stack.getItemDamage()));
+			if (stack.getCount() > 1) {
+				ItemStack remain = stack.splitStack(1);
+				remain.damageItem(amount, living);
+				if (!remain.isEmpty())
+				living.entityDropItem(remain,0).setPickupDelay(0);
+			}
+			else {
+				stack.damageItem(amount, living);
+			}
 
+			return left;
 			/*if (stack.getCount() <= 0 && living instanceof EntityPlayer) {
 				if (!living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
 					IItemHandlerModifiable invAmmo = (IItemHandlerModifiable) living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
@@ -61,5 +73,10 @@ public class ItemFireAmmo extends ItemAmmo {
 
 			}*/
 		}
+		return 0;
+	}
+	
+	public int getAmount(ItemStack stack) {
+		return (uses-stack.getItemDamage()) * stack.getCount();
 	}
 }

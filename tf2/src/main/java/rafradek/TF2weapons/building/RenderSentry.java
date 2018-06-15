@@ -160,7 +160,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 				tessellator.draw();
 				GlStateManager.popMatrix();
 			}
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			GlStateManager.disableBlend();
 			GlStateManager.enableLighting();
 			GlStateManager.enableTexture2D();

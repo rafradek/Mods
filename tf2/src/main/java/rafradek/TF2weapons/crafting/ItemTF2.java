@@ -16,7 +16,7 @@ import rafradek.TF2weapons.characters.ItemToken;
 public class ItemTF2 extends Item {
 
 	public static final String[] NAMES = new String[] { "ingotCopper", "ingotLead", "ingotAustralium", "scrapMetal",
-			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat" };
+			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat", "logicBoard" };
 
 	public ItemTF2() {
 		this.setHasSubtypes(true);
@@ -41,6 +41,7 @@ public class ItemTF2 extends Item {
 			return;
 		for (int i = 0; i < 8; i++)
 			par3List.add(new ItemStack(this, 1, i));
+		par3List.add(new ItemStack(this, 1, 11));
 	}
 	
 	@Override

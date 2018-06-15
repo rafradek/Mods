@@ -50,15 +50,17 @@ public class ItemBulletWeapon extends ItemWeapon {
 
 	public void handleShoot(EntityLivingBase living, ItemStack stack, World world, HashMap<Entity, float[]> map,
 			int critical, int flags) {
-		DamageSource var22 = TF2Util.causeDirectDamage(stack, living, critical);
-		((TF2DamageSource)var22).addAttackFlag(flags);
 		
-		if (!(this instanceof ItemMeleeWeapon))
-			var22.setProjectile();
-
 		Iterator<Entity> iterator = map.keySet().iterator();
 		while (iterator.hasNext()) {
+			DamageSource var22 = TF2Util.causeDirectDamage(stack, living, critical);
+			((TF2DamageSource)var22).addAttackFlag(flags);
+			
+			if (!(this instanceof ItemMeleeWeapon))
+				var22.setProjectile();
+			
 			Entity entity = iterator.next();
+			((TF2DamageSource)var22).setAttackPower(map.get(entity)[0]);
 			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, map.get(entity)[1], critical, false))
 				continue;
 			Vec3d pushvec = entity.getPositionVector().subtract(living.getPositionVector()).normalize();

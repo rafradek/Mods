@@ -4,8 +4,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
@@ -18,7 +20,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemHandlerHelper;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemJar extends ItemProjectileWeapon {
@@ -45,7 +50,8 @@ public class ItemJar extends ItemProjectileWeapon {
 
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		return !stack.getTagCompound().getBoolean("IsEmpty") && super.canFire(world, living, stack);
+		return !stack.getTagCompound().getBoolean("IsEmpty") && super.canFire(world, living, stack) && 
+				!(living instanceof EntityPlayer && ((EntityPlayer) living).getCooldownTracker().hasCooldown(this));
 	}
 
 	@Override
@@ -69,12 +75,15 @@ public class ItemJar extends ItemProjectileWeapon {
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
-			stack.shrink(1);
+			if(!TF2ConfigVars.freeUseItems)
+				stack.shrink(1);
+			if (living instanceof EntityPlayer)
+				((EntityPlayer) living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? this.getFiringSpeed(stack, living)/50 : getData(stack).getInt(PropertyType.COOLDOWN));
 		}
 		return true;
 	}
 
-	/*@Override
+	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean showDurabilityBar(ItemStack stack) {
 		Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
@@ -87,8 +96,8 @@ public class ItemJar extends ItemProjectileWeapon {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get(getData(stack).getName());
-		return (double) (value != null ? value : 0) / (double) 1200;
-	}*/
+		return (double) (value != null ? value : 0) / (double) 1600;
+	}
 
 	@Override
 	public int getMaxItemUseDuration(ItemStack stack) {
@@ -99,39 +108,28 @@ public class ItemJar extends ItemProjectileWeapon {
 	public EnumAction getItemUseAction(ItemStack stack) {
 		return EnumAction.DRINK;
 	}
-
+	
 	@Override
-	@Nullable
-	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
-		if (!(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
-			stack.shrink(1);
-
-		if (entityLiving instanceof EntityPlayer) {
-			((EntityPlayer) entityLiving).getCooldownTracker().setCooldown(this, 1360);
-			//entityLiving.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put(getData(stack).getName(), 1700);
-			EntityPlayer entityplayer = (EntityPlayer) entityLiving;
-			ItemStack newStack = stack.copy();
-			newStack.setCount( 1);
-			newStack.getTagCompound().setBoolean("IsEmpty", false);
-			if (!entityplayer.inventory.addItemStackToInventory(newStack))
-				entityplayer.dropItem(newStack, true);
+	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
+		super.onUpdate(stack, par2World, par3Entity, par4, par5);
+		if (!par2World.isRemote && par3Entity instanceof EntityPlayer && stack.getTagCompound().getBoolean("IsEmpty")) {
+			Integer value = WeaponsCapability.get(par3Entity).effectsCool
+					.get(getData(stack).getName());
+			if (value == null || value <= 0) {
+				ItemStack newStack = stack.copy();
+				newStack.setCount( 1);
+				newStack.getTagCompound().removeTag("IsEmpty");
+				String name = getData(stack).getName();
+				if(((EntityPlayer) par3Entity).inventory.addItemStackToInventory(newStack) || stack.getCount() == 1) {
+					if (stack.getCount() == 1)
+						((EntityPlayer) par3Entity).inventory.setInventorySlotContents(par4, newStack);
+					stack.shrink(1);
+					WeaponsCapability.get(par3Entity).addEffectCooldown(name, 1600);
+				}
+			}
 		}
-
-		return stack;
 	}
 
-	@Override
-	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
-			EnumHand hand) {
-		ItemStack itemStackIn= playerIn.getHeldItem(hand);
-		/*Integer value = playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
-				.get(getData(itemStackIn).getName());*/
-		if (itemStackIn.getTagCompound().getBoolean("IsEmpty") /*&& (value == null || value <= 0)*/) {
-			playerIn.setActiveHand(hand);
-			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
-		}
-		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
-	}
 
 	@Override
 	public boolean doMuzzleFlash(ItemStack stack, EntityLivingBase attacker, EnumHand hand) {

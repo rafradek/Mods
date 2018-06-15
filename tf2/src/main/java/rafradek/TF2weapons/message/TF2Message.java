@@ -18,6 +18,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
@@ -580,6 +581,36 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
+	
+	public static class EffectCooldownMessage extends TF2Message {
+		// public int shooter;
+
+		public String name;
+		public int time;
+
+		public EffectCooldownMessage() {
+
+		}
+
+		public EffectCooldownMessage(String name, int time) {
+			// this.shooter=shooter.getEntityId();
+			this.time=time;
+			this.name=name;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.name=new PacketBuffer(buf).readString(256);
+			this.time=buf.readShort();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			new PacketBuffer(buf).writeString(name);
+			buf.writeShort(time);
+		}
+
+	}
 	public static class ContractMessage extends TF2Message {
 		// public int shooter;
 
@@ -738,7 +769,7 @@ public abstract class TF2Message implements IMessage {
 		boolean dispenserPlayer;
 		boolean teleporterPlayer;
 		boolean teleporterEntity;
-		
+		boolean breakBlocks;
 		public InitClientMessage() {
 
 		}
@@ -752,6 +783,7 @@ public abstract class TF2Message implements IMessage {
 			this.dispenserPlayer = cat.get("Dispensers heal neutral players").getBoolean();
 			this.teleporterPlayer = cat.get("Neutral players can teleport").getBoolean();
 			this.teleporterEntity = cat.get("Entities can teleport").getBoolean();
+			this.breakBlocks = TF2ConfigVars.swapAttackButton;
 		}
 
 		@Override
@@ -760,6 +792,7 @@ public abstract class TF2Message implements IMessage {
 			this.dispenserPlayer = buf.readBoolean();
 			this.teleporterPlayer = buf.readBoolean();
 			this.teleporterEntity = buf.readBoolean();
+			this.breakBlocks = buf.readBoolean();
 		}
 
 		@Override
@@ -768,6 +801,7 @@ public abstract class TF2Message implements IMessage {
 			buf.writeBoolean(this.dispenserPlayer);
 			buf.writeBoolean(this.teleporterPlayer);
 			buf.writeBoolean(this.teleporterEntity);
+			buf.writeBoolean(this.breakBlocks);
 		}
 	}
 }

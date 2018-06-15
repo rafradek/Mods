@@ -17,8 +17,8 @@ public class ItemDisguiseKit extends Item {
 
 	public ItemDisguiseKit() {
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
-		this.setMaxStackSize(50);
-		this.setMaxDamage(25);
+		this.setMaxStackSize(1);
+		this.setMaxDamage(50);
 	}
 
 	public static void startDisguise(EntityLivingBase living, World world, String type) {
@@ -48,5 +48,9 @@ public class ItemDisguiseKit extends Item {
 		}
 		return false;
 	}
-
+	
+	public boolean getIsRepairable(ItemStack toRepair, ItemStack repair)
+    {
+        return repair.getItem() == TF2weapons.itemTF2 && repair.getMetadata() == 2;
+    }
 }

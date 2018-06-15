@@ -613,11 +613,11 @@
 		"Slot": 1,
 		"Effect type": "rafradek_tf2_weapons:critEff",
 		"Render": "rafradek_tf2_weapons:critacola",
-		"Duration": 540,
-		"Cooldown": 1200,
+		"Duration": 300,
+		"Cooldown": 600,
 		"Roll hidden": 1,
 		"Cost": 3,
-		"Description": "Increases speed by 25% and damage by 35% for 27 seconds"
+		"Description": "Increases speed by 25% and damage by 35% for 15 seconds"
 	},
 
 	"buffbanner": 
@@ -948,6 +948,7 @@
 		"Projectile": "jar",
 		"Render": "rafradek_tf2_weapons:jarate",
 		"Firing speed": 1250,
+		"Cooldown": 400,
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 0.96,
@@ -1530,7 +1531,7 @@
 		"Attributes": 
 		{
 			"MetalAsAmmo": 30,
-			"MetalOnHit": 7.5
+			"MetalOnHit": 9
 		}
 	},
 	"deadringer": 
@@ -1802,5 +1803,63 @@
 		"Drop chance": 0.09,
 		"Stock": false,
 		"Cost": 36
+	},
+	"thermalthruster": 
+	{
+		"Name": "Thermal Thruster",
+		"Class": "jetpack",
+		"Slot": 1,
+		"Mobs": "pyro",
+		"Render": "rafradek_tf2_weapons:buffbanner",
+		"Horn red sound": "rafradek_tf2_weapons:weapon.horn.banner.red",
+		"Horn blu sound": "rafradek_tf2_weapons:weapon.horn.banner.blu",
+		"Firing speed": 20,
+		"Drop chance": 0.07,
+		"Cooldown": 240,
+		
+		"Cost": 27,
+		"Armor": 5,
+		"Wear flags": 2,
+		"Stock": false,
+		"Description": "Charges over time\nUse horn to activate a buff\nthat increases damage dealt by 35%\nfor you and all allies nearby"
+	},
+	"trigger": 
+	{
+		"Name": "Jetpack Trigger",
+		"Class": "jetpacktrigger",
+		"Render": "rafradek_tf2_weapons:jetpack_trigger",
+		"Firing speed": 900,
+		"Attributes": 
+		{
+			"HolsterTimePenalty": 1.75
+		}
+	},
+	"gunsligner": 
+	{
+		"Name": "Gunslinger",
+		"Class": "wrench",
+		"Based on": "wrench",
+		"Render": "rafradek_tf2_weapons:gunslinger",
+		"Description": "Allows the user to construct Mini-Setries",
+		"Drop chance": 0.11,
+		"Cost": 22,
+		"Stock": false,
+		"Attributes": 
+		{
+			"HealthPenalty": 3,
+			"WeaponMode": 2,
+			"NoRandomCrit": 1,
+			"SentryBonus": 2
+		}
+	},
+	"pda": 
+	{
+		"Name": "PDA",
+		"Class": "pda",
+		"Render": "rafradek_tf2_weapons:pda",
+		"Slot": 3,
+		"Mobs": "engineer",
+		"Cost": 48,
+		"Stock": true
 	}
 }

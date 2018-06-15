@@ -142,7 +142,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		} else
 			this.comeCloser = 0;
 		
-		if (d0 <= range && this.comeCloser >= 20) {
+		if ((d0 <= range && this.comeCloser >= 20) || this.entityHost.getWepCapability().isExpJump()) {
 			if (!this.dodging) {
 				this.entityHost.getNavigator().clearPathEntity();
 				this.dodging = true;

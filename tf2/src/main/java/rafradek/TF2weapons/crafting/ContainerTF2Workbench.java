@@ -21,6 +21,7 @@ import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.ItemBuildingBox;
+import rafradek.TF2weapons.weapons.ItemWrench;
 
 public class ContainerTF2Workbench extends Container {
 	/** The crafting matrix inventory (3x3). */
@@ -96,12 +97,25 @@ public class ContainerTF2Workbench extends Container {
 			
 			stack.getSubCompound("BlockEntityTag").getTagList("Patterns", 10).appendTag(pattern);
 		}
-		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox && stack.getItemDamage()/2 == 11) {
-			ItemStack wrench=TF2Util.getFirstItem(player.inventory, stackL ->{
-				return TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1;
-			});
-			if(!wrench.isEmpty()) {
-				stack.setCount((int) TF2Attribute.getModifier("Teleporter Cost", wrench, 1, player));
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox) {
+			if (stack.getItemDamage()/2 == 11) {
+				ItemStack wrench = TF2Util.getFirstItem(player.inventory, stackL -> TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1);
+				if (!wrench.isEmpty()) {
+					stack.setCount((int) TF2Attribute.getModifier("Teleporter Cost", wrench, 1, player));
+				}
+			}
+			else if (stack.getItemDamage()/2 == 9) {
+				ItemStack gunslinger = TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench && TF2Attribute.getModifier("Weapon Mode", stackL, 0, player) == 2);
+				ItemStack bonusSentry = TF2Util.getFirstItem(player.inventory, stackL -> TF2Attribute.getModifier("Sentry Bonus", stackL, 1, player) != 1);
+				if (!gunslinger.isEmpty()) {
+					stack.setTagCompound(new NBTTagCompound());
+					stack.getTagCompound().setBoolean("Mini", true);
+					stack.setCount(2);
+				}
+				
+				if (!bonusSentry.isEmpty()) {
+					stack.setCount((int) TF2Attribute.getModifier("Sentry Bonus", bonusSentry, 1, player));
+				}
 			}
 		}
 		return stack;

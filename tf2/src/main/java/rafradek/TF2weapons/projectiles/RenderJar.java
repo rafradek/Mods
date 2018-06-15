@@ -31,7 +31,7 @@ public class RenderJar extends Render<EntityJar> {
 	public void doRender(EntityJar entity, double x, double y, double z, float yaw, float partialTick) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y + entity.height / 2, (float) z);
-		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
+		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick, 0.0F, 1.0F,
 				0.0F);
 		GL11.glRotatef(
@@ -49,9 +49,9 @@ public class RenderJar extends Render<EntityJar> {
 		if (entity.getCritical() == 2) {
 			// GlStateManager.disableTexture2D();
 			GlStateManager.disableLighting();
-			// GL11.glColor4f(0.0F, 0.0F, 1.0F, 1F);
+			// GlStateManager.color(0.0F, 0.0F, 1.0F, 1F);
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
-			// GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+			// GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 			// GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();
 		} else

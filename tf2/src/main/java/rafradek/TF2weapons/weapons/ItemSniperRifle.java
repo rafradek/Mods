@@ -2,6 +2,15 @@ package rafradek.TF2weapons.weapons;
 
 import java.util.UUID;
 
+import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -194,6 +203,90 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		}
 		else {
 			super.doFireSound(stack, living, world, critical);
+		}
+	}
+	
+	@Override
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder renderer, ScaledResolution resolution) {
+		// System.out.println("drawing");
+		WeaponsCapability cap = WeaponsCapability.get(player);
+		if (cap.isCharging()) {
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthMask(false);
+			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			// gui.drawTexturedModalRect(x,
+			// y, textureSprite, widthIn, heightIn);
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.scopeTexture);
+			double widthDrawStart = (double) (resolution.getScaledWidth() - resolution.getScaledHeight()) / 2;
+			double widthDrawEnd = widthDrawStart + resolution.getScaledHeight();
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos(widthDrawStart, resolution.getScaledHeight(), -90.0D).tex(0.0D, 1.0D).endVertex();
+			renderer.pos(widthDrawEnd, resolution.getScaledHeight(), -90.0D).tex(1.0D, 1.0D).endVertex();
+			renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
+			renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
+			tessellator.draw();
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blackTexture);
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos(0, resolution.getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
+			renderer.pos(widthDrawStart, resolution.getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
+			renderer.pos(widthDrawStart, 0.0D, -90.0D).tex(1d, 0d).endVertex();
+			renderer.pos(0, 0.0D, -90.0D).tex(0d, 0d).endVertex();
+			tessellator.draw();
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos(widthDrawEnd, resolution.getScaledHeight(), -90.0D).tex(0d, 1d).endVertex();
+			renderer.pos(resolution.getScaledWidth(), resolution.getScaledHeight(), -90.0D).tex(1d, 1d).endVertex();
+			renderer.pos(resolution.getScaledWidth(), 0.0D, -90.0D).tex(1d, 0d).endVertex();
+			renderer.pos(widthDrawEnd, 0.0D, -90.0D).tex(0d, 0d).endVertex();
+			tessellator.draw();
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.chargeTexture);
+			GlStateManager.color(0.5F, 0.5F, 0.5F, 0.7F);
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 100, (double) resolution.getScaledHeight() / 2 + 15, -90.0D).tex(0.508d, 0.25d)
+					.endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 100, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0.508d, 0d).endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
+			tessellator.draw();
+			if (cap.chargeTicks >= 20) {
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 121, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 121, (double) resolution.getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
+						.endVertex();
+				tessellator.draw();
+			}
+			double progress = cap.chargeTicks / ItemSniperRifle.getChargeTime(stack, player);
+			GlStateManager.color(1F, 1F, 1F, 1F);
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2 + 15, -90.0D).tex(0d, 0.25d).endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50 + progress * 50, (double) resolution.getScaledHeight() / 2 + 15, -90.0D)
+					.tex(progress * 0.508d, 0.25d).endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50 + progress * 50, (double) resolution.getScaledHeight() / 2, -90.0D)
+					.tex(progress * 0.508d, 0d).endVertex();
+			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
+			tessellator.draw();
+			if (progress == 1d) {
+				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 121, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0.125d, 0.57d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 121, (double) resolution.getScaledHeight() / 2 - 3, -90.0D).tex(0.125d, 0.25d)
+						.endVertex();
+				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 - 3, -90.0D).tex(0d, 0.25d)
+						.endVertex();
+				tessellator.draw();
+			}
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		}
 	}
 	

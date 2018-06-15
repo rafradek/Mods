@@ -30,8 +30,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.items.ItemHandlerHelper;
+import rafradek.TF2weapons.IItemSlotNumber;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.PlayerPersistStorage;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
@@ -47,6 +49,7 @@ import rafradek.TF2weapons.characters.EntityStatue;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 import rafradek.TF2weapons.pages.Contract;
+import rafradek.TF2weapons.weapons.ItemJetpack;
 import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -208,6 +211,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					else if (message.value == 29) {
 						player.world.getScoreboard().removePlayerFromTeams(player.getName());
 					} 
+					else if (message.value == 30) {
+						ItemStack stack = player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+						if (stack.getItem() instanceof ItemJetpack && ((ItemJetpack)stack.getItem()).canActivate(stack, player)) {
+							((ItemJetpack)stack.getItem()).activateJetpack(stack, player, true);
+						}
+					} 
 					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
@@ -244,38 +253,9 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					}
 					else if (message.value >= 100 && message.value<109) {
 						int id=message.value-100;
-						if(player != null && player.getActiveItemStack().getItem() instanceof ItemWrench) {
-							int dimension = 0;
-							BlockPos pos = null;
-							if(id == 8) {
-								dimension = player.dimension;
-								pos=player.getBedLocation(player.dimension);
-								if(pos == null) {
-									pos = player.getBedLocation(0);
-									dimension = 0;
-								}
-								if(pos != null)
-									pos = EntityPlayer.getBedSpawnLocation(TF2weapons.server.getWorld(dimension), pos, player.isSpawnForced(dimension));
-								else
-									pos = TF2weapons.server.getWorld(0).provider.getRandomizedSpawnPoint();
-							}
-							else if(EntityTeleporter.teleporters.containsKey(player.getUniqueID())) {
-								TeleporterData[] data=EntityTeleporter.teleporters.get(player.getUniqueID());
-								if(data[id]!=null) {
-									dimension = data[id].dimension;
-									pos = data[id];
-								}
-							}
-							if (pos != null) {
-								if (dimension != player.dimension)
-									player.world.getMinecraftServer().getPlayerList().transferPlayerToDimension(player, 
-											dimension, new TeleporterDim((WorldServer) player.world,pos));
-								player.setPositionAndUpdate(pos.getX()+0.5, pos.getY()+0.23, pos.getZ()+0.5);
-								player.getCooldownTracker().setCooldown(MapList.weaponClasses.get("wrench"), 200);
-								TF2Util.playSound(player, TF2Sounds.MOB_TELEPORTER_SEND, 1.0F, 1.0F);
-								player.resetActiveHand();
-								player.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-20);
-							}
+						if(player != null && player.getHeldItemMainhand().getItem() instanceof IItemSlotNumber) {
+							((IItemSlotNumber) player.getHeldItemMainhand().getItem()).onSlotSelection(player.getHeldItemMainhand(), player, id);
+							
 						}
 					}
 					else if (message.value >= 110 && message.value<119) {
@@ -294,7 +274,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 									}
 								}
 								if(!success) {
-									Iterator<BlockPos> it = player.world.getCapability(TF2weapons.WORLD_CAP, null).medicMercPos.get(player.getUniqueID()).iterator();
+									Iterator<BlockPos> it = PlayerPersistStorage.get(player).medicMercPos.iterator();
 									while (it.hasNext()){
 										BlockPos pos = it.next();
 										success = false;
@@ -331,7 +311,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 									}
 								}
 								if(!success) {
-									Iterator<BlockPos> it = player.world.getCapability(TF2weapons.WORLD_CAP, null).restMercPos.get(player.getUniqueID()).iterator();
+									Iterator<BlockPos> it = PlayerPersistStorage.get(player).restMercPos.iterator();
 									while (it.hasNext()){
 										BlockPos pos = it.next();
 										success = false;
@@ -429,6 +409,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					else if (message.value == 28) {
 						if (player != null) {
 							WeaponsCapability.get(player).expJumpGround=2;
+						}
+					}
+					else if (message.value == 30) {
+						ItemStack chest = Minecraft.getMinecraft().player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+						if (chest.getItem() instanceof ItemJetpack) {
+							((ItemJetpack)chest.getItem()).activateJetpack(chest, player, true);
 						}
 					}
 				}

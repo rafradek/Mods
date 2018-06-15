@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import rafradek.TF2weapons.building.ItemPDA;
 import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.decoration.ItemWearable;
@@ -25,6 +26,8 @@ import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 import rafradek.TF2weapons.weapons.ItemHuntsman;
 import rafradek.TF2weapons.weapons.ItemJar;
+import rafradek.TF2weapons.weapons.ItemJetpack;
+import rafradek.TF2weapons.weapons.ItemJetpackTrigger;
 import rafradek.TF2weapons.weapons.ItemKnife;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
@@ -86,6 +89,9 @@ public class MapList {
 		weaponClasses.put("cleaver", new ItemCleaver());
 		weaponClasses.put("parachute", new ItemParachute());
 		weaponClasses.put("huntsman", new ItemHuntsman());
+		weaponClasses.put("jetpack", new ItemJetpack());
+		weaponClasses.put("jetpacktrigger", new ItemJetpackTrigger());
+		weaponClasses.put("pda", new ItemPDA());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());

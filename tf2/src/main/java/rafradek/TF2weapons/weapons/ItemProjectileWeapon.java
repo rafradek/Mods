@@ -41,7 +41,7 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				// proj.setIsCritical(thisCritical);
 				world.spawnEntity(proj);
 				proj.setCritical(thisCritical);
-				proj.infinite=this.searchForAmmo(living, stack)==ItemAmmo.STACK_FILL;
+				proj.infinite = this.isProjectileInfinite(living, stack);
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
@@ -72,7 +72,9 @@ public class ItemProjectileWeapon extends ItemWeapon {
 		}
 	}
 
-	
+	public boolean isProjectileInfinite(EntityLivingBase living, ItemStack stack) {
+		return this.searchForAmmo(living, stack) == ItemAmmo.STACK_FILL;
+	}
 
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {

@@ -70,7 +70,7 @@ public class ItemToken extends Item {
 	}
 	
 	public static boolean allowUse(int livingclass, String clazz) {
-		return !(livingclass >= 0 && livingclass < CLASS_NAMES.length
+		return clazz.isEmpty() || !(livingclass >= 0 && livingclass < CLASS_NAMES.length
 				&& !clazz.contains(CLASS_NAMES[livingclass]));
 	}
 	

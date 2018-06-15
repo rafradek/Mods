@@ -16,7 +16,9 @@ import rafradek.TF2weapons.IWeaponItem;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2EventsClient;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
@@ -37,6 +39,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
@@ -49,7 +52,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 
-public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
+public abstract class ItemWeapon extends ItemUsable {
 	/*
 	 * public float damage; public float scatter; public int pellets; public
 	 * float maxDamage; public int damageFalloff; public float minDamage; public
@@ -158,14 +161,11 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			cap.focusShotTicks=0;
 		}
 		
-		if (/* living instanceof EntityTF2Ch\aracter&& */this.getAmmoType(
-				stack) != 0/* &&((EntityTF2Character)living).getAmmo()>=0 */) {
-			//
-
-			if (living instanceof EntityTF2Character && ((EntityTF2Character) living).getAmmo() >= 0 && !this.hasClip(stack))
+		if (!world.isRemote && this.getAmmoType(stack) != 0 && !this.hasClip(stack)) {
+			this.consumeAmmoGlobal(living, stack, 1);
+			/*if (living instanceof EntityTF2Character && ((EntityTF2Character) living).getAmmo() >= 0)
 				((EntityTF2Character) living).useAmmo(((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
-			else if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode
-					&& !this.hasClip(stack)) {
+			else if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode) {
 				if(TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0)
 					cap.setMetal(cap.getMetal()-((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
 				else {
@@ -174,7 +174,7 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 						((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
 								((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
 				}
-			}
+			}*/
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
 			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,!this.hasClip(stack)?this.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
@@ -307,26 +307,30 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 		
 		if (slot == EntityEquipmentSlot.MAINHAND && getData(stack) != ItemFromData.BLANK_DATA && stack.hasTagCompound() 
-				&& ItemToken.allowUse(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass, getData(stack).getString(PropertyType.CLASS))) {
-			int heads=Math.min((int)TF2Attribute.getModifier("Kill Count", stack, 0, null), stack.getTagCompound().getInteger("Heads"));
-			multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
-					new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier",
-							this.getWeaponDamage(stack, null, null) * this.getWeaponPelletCount(stack, null) - 1, 0));
-			multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(
-					ATTACK_SPEED_MODIFIER, "Weapon modifier", -4 + (1000D / this.getFiringSpeed(stack, null)), 0));
-			float addHealth = TF2Attribute.getModifier("Health", stack, 0, null)+heads * TF2Attribute.getModifier("Max Health Kill", stack, 0, null);
-			if (addHealth != 0)
-				multimap.put(SharedMonsterAttributes.MAX_HEALTH.getName(),
-						new AttributeModifier(HEALTH_MODIFIER, "Weapon modifier", addHealth, 0));
-			float addSpeed = TF2Attribute.getModifier("Speed", stack, 1 + heads * TF2Attribute.getModifier("Speed Kill", stack, 0, null), null);
-			if (addSpeed != 1)
-				multimap.put(SharedMonsterAttributes.MOVEMENT_SPEED.getName(),
-						new AttributeModifier(SPEED_MODIFIER, "Weapon modifier", addSpeed - 1, 2));
+				&& (stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass == -1 || getData(stack).getString(PropertyType.CLASS).isEmpty())
+				/*&& ItemToken.allowUse(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass, getData(stack).getString(PropertyType.CLASS))*/) {
+			this.addModifiersWithToken(stack, multimap);
 		}
 		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).usedClass = -1;
 		return multimap;
 	}
 
+	public void addModifiersWithToken(ItemStack stack, Multimap<String, AttributeModifier> multimap) {
+		int heads=Math.min((int)TF2Attribute.getModifier("Kill Count", stack, 0, null), stack.getTagCompound().getInteger("Heads"));
+		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
+				new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier",
+						this.getWeaponDamage(stack, null, null) * this.getWeaponPelletCount(stack, null) - 1, 0));
+		multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(
+				ATTACK_SPEED_MODIFIER, "Weapon modifier", -4 + (1000D / this.getFiringSpeed(stack, null)), 0));
+		float addHealth = TF2Attribute.getModifier("Health", stack, 0, null)+heads * TF2Attribute.getModifier("Max Health Kill", stack, 0, null);
+		if (addHealth != 0)
+			multimap.put(SharedMonsterAttributes.MAX_HEALTH.getName(),
+					new AttributeModifier(HEALTH_MODIFIER, "Weapon modifier", addHealth, 0));
+		float addSpeed = TF2Attribute.getModifier("Speed", stack, 1 + heads * TF2Attribute.getModifier("Speed Kill", stack, 0, null), null);
+		if (addSpeed != 1)
+			multimap.put(SharedMonsterAttributes.MOVEMENT_SPEED.getName(),
+					new AttributeModifier(SPEED_MODIFIER, "Weapon modifier", addSpeed - 1, 2));
+	}
 	public float critChance(ItemStack stack, Entity entity) {
 		float chance = 0.025f;
 		if (ItemUsable.lastDamage.containsKey(entity))
@@ -355,14 +359,14 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	@Override
 	public boolean altFireTick(ItemStack stack, EntityLivingBase living, World world) {
-		if(!world.isRemote && living instanceof EntityPlayer && living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal() >= 100 
+		if(!world.isRemote && living instanceof EntityPlayer && WeaponsCapability.get(living).hasMetal(100)
 				&& TF2Attribute.getModifier("Pick Building", stack, 0, living)>0) {
 			Vec3d forward=living.getLook(1f).scale(120).add(living.getPositionEyes(1));
 			RayTraceResult result=TF2Util.pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, forward.x, forward.y, forward.z, false, 0.5f, false).get(0);
-			if(result.entityHit != null && result.entityHit instanceof EntityBuilding && result.entityHit.isEntityAlive() && !((EntityBuilding)result.entityHit).isSapped() && ((EntityBuilding)result.entityHit).getOwner() == living) {
+			if(result.entityHit != null && result.entityHit instanceof EntityBuilding && !((EntityBuilding)result.entityHit).isDisabled()
+					&& ((EntityBuilding)result.entityHit).getOwner() == living && WeaponsCapability.get(living).consumeMetal(100, false) != 0) {
 				result.entityHit.setPosition(living.posX, living.posY, living.posZ);
 				((EntityBuilding) result.entityHit).grab();
-				living.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()-100);
 			}
 		}
 		return false;
@@ -373,7 +377,6 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 		return stack.hasTagCompound() ? this.getWeaponClipSize(stack, null) : 0;
 	}
 
-	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
 		float damage = ItemFromData.getData(stack).getFloat(PropertyType.DAMAGE);
 		if(living == null || living!=target){
@@ -451,7 +454,12 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 	public float getWeaponDamageFalloff(ItemStack stack) {
 		return ItemFromData.getData(stack).getFloat(PropertyType.DAMAGE_FALOFF);
 	}
-
+	
+	public float getWeaponDamageFalloffSq(ItemStack stack) {
+		float falloff = this.getWeaponDamageFalloff(stack);
+		return falloff * falloff;
+	}
+	
 	public int getWeaponReloadTime(ItemStack stack, EntityLivingBase living) {
 		return (int) (TF2Attribute.getModifier("Reload Time", stack,
 				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME), living));
@@ -497,7 +505,12 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 
 	@Override
 	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
-		return true;
+		if (TF2PlayerCapability.get(player).breakBlocks && !(this instanceof ItemMeleeWeapon)) {
+			player.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).removeModifier(Item.ATTACK_DAMAGE_MODIFIER);
+			return false;
+		}
+		else
+			return true;
 	}
 
 	@Override
@@ -568,11 +581,14 @@ public abstract class ItemWeapon extends ItemUsable implements IWeaponItem {
 			if (attacker instanceof EntityPlayerMP && target instanceof EntitySniper && !target.isEntityAlive() && 
 					&& TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
 					*/
-			float metalhit = TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
+			int metalhit = (int) TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
 			if (metalhit != 0) {
-				int restore=(int) (amount*metalhit/TF2ConfigVars.damageMultiplier);
-				if(!enemy && restore > 30)
-					restore=30;
+				int restore=(int) (((TF2DamageSource) source).getAttackPower()*metalhit/TF2ConfigVars.damageMultiplier);
+				if (attacker.getDistanceSqToEntity(target) > this.getWeaponDamageFalloffSq(stack))
+					restore /= 2;
+				int metaluse = this.getActualAmmoUse(stack, attacker, (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, attacker));
+				if(!enemy && restore > metaluse)
+					restore = metaluse;
 				attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal((int) (attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()+restore));
 			}
 			if (!target.isEntityAlive() && !(target instanceof EntityBuilding)

@@ -33,7 +33,7 @@ public class RenderProjectile extends Render<EntityProjectileBase> {
 	public void doRender(EntityProjectileBase entity, double x, double y, double z, float yaw, float partialTick) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y + entity.height / 2, (float) z);
-		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
+		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick - 90.0F,
 				0.0F, 1.0F, 0.0F);
 		GL11.glRotatef(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTick, 0.0F,

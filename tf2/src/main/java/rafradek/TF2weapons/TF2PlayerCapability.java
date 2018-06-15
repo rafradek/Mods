@@ -70,7 +70,11 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public short udpServerId;
 	public int medicCall;
 	public boolean medicCharge;
+	public boolean breakBlocks;
+	public boolean blockUse;
 	
+	public NBTTagCompound carrying;
+	public int carryingType;
 	
 	public TF2PlayerCapability(EntityPlayer entity) {
 		this.owner = entity;
@@ -104,7 +108,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				if (medicCharge)
 					this.medicCharge = false;
 				
-				Iterator<BlockPos> it = this.owner.world.getCapability(TF2weapons.WORLD_CAP, null).lostMercPos.get(this.owner.getUniqueID()).iterator();
+				Iterator<BlockPos> it = PlayerPersistStorage.get(this.owner).lostMercPos.iterator();
 				while (it.hasNext()){
 					BlockPos pos = it.next();
 					ArrayList<EntityTF2Character> list = new ArrayList<>();
@@ -303,6 +307,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			list.appendTag(com);
 		}
 		tag.setInteger("NextContractDay", this.nextContractDay);
+		if (this.carrying != null) {
+			tag.setTag("Carrying", this.carrying);
+			tag.setByte("CarryingType", (byte) this.carryingType);
+		}
 		return tag;
 	}
 
@@ -330,6 +338,12 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			//TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, contract), (EntityPlayerMP) this.owner);
 		}
 		this.nextContractDay=nbt.getInteger("NextContractDay");
+		this.carrying = (NBTTagCompound) nbt.getTag("Carrying");
+		this.carryingType = nbt.getByte("CarryingType");
 		
+	}
+
+	public static TF2PlayerCapability get(EntityPlayer player) {
+		return player.getCapability(TF2weapons.PLAYER_CAP, null);
 	}
 }

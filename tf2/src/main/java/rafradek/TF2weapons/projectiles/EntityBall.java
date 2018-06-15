@@ -7,6 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 
 public class EntityBall extends EntityProjectileSimple {
@@ -60,9 +62,11 @@ public class EntityBall extends EntityProjectileSimple {
 
 	@Override
 	public void onCollideWithPlayer(EntityPlayer entityIn) {
-		if (!this.world.isRemote && this.canBePickedUp && entityIn == this.shootingEntity && !this.infinite)
-			if (entityIn.inventory.addItemStackToInventory(new ItemStack(TF2weapons.itemAmmo, 1, 14)))
+		if (!this.world.isRemote && this.canBePickedUp) {
+			if (!this.infinite && entityIn.inventory.addItemStackToInventory(new ItemStack(TF2weapons.itemAmmo, 1, 14)))
 				this.setDead();
+
+		}
 	}
 
 	/*

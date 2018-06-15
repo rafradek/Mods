@@ -20,12 +20,12 @@
                             	"min": 0,
                             	"max": 0
                             },
-                            "valve_chance":0.07
+                            "valve_chance":0.06
                             
                         },
                         {
                             "function": "set_nbt",
-                            "tag": "{Australium:1,Strange:1}"
+                            "tag": "{Australium:1}"
                         }
                         
                     ]
@@ -42,12 +42,12 @@
                             	"min": 320,
                             	"max": 520
                             },
-                            "valve_chance":0.04
+                            "valve_chance":0.035
                             
                         },
                         {
                             "function": "set_nbt",
-                            "tag": "{Australium:1,Strange:1}"
+                            "tag": "{Australium:1}"
                         }
                     ]
                 },
@@ -63,12 +63,12 @@
                             	"min": 1080,
                             	"max": 1680
                             },
-                            "valve_chance":0.03
+                            "valve_chance":0.028
                             
                         },
                         {
                             "function": "set_nbt",
-                            "tag": "{Australium:1,Strange:1}"
+                            "tag": "{Australium:1}"
                         }
                     ]
                 }

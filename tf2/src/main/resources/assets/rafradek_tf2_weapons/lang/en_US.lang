@@ -246,6 +246,12 @@ gui.teleporter.help=Two teleporters must share the same channel, and one of them
 
 gui.dispenser.help=Heals, feed and generates metal\nRepairs items held in hand using materials stored inside\nDraws items from chests on the sides\nOutputs repaired items to chest in the back or front
 
+gui.build=Build
+gui.build.sentry=Sentry Gun
+gui.build.dispenser=Dispenser
+gui.build.entrance=Entrance
+gui.build.exit=Exit
+
 gui.command.1=1. Medic!
 gui.command.2=2. Help
 gui.command.3=3. Activate Ubercharge

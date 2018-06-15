@@ -11,11 +11,16 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -28,10 +33,17 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import rafradek.TF2weapons.TF2Attribute.State;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.building.EntityDispenser;
+import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.weapons.ItemAmmo;
+import rafradek.TF2weapons.weapons.ItemUsable;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
-public class ItemFromData extends Item {
+public class ItemFromData extends Item implements IItemOverlay{
 
 	public static final WeaponData BLANK_DATA = new WeaponData("toloadfiles");
 	public static final Predicate<WeaponData> VISIBLE_WEAPON = new Predicate<WeaponData>() {
@@ -334,5 +346,166 @@ public class ItemFromData extends Item {
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		return null;
+	}
+
+	@Override
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tesselator, BufferBuilder buffer, ScaledResolution resolution) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public boolean isAmmoSufficient(ItemStack stack, EntityLivingBase living, boolean all) {
+		return true;
+	}
+	
+	public void consumeAmmoGlobal(EntityLivingBase living, ItemStack stack, int amount) {
+		if (EntityDispenser.isNearDispenser(living.world, living))
+			return;
+		amount = this.getActualAmmoUse(stack, living, amount);
+		if (living instanceof EntityTF2Character)
+			((EntityTF2Character)living).useAmmo(amount);
+		if (!(living instanceof EntityPlayer) || ((EntityPlayer)living).isCreative())
+			return;
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).consumeMetal(amount, false);
+		}
+		if (amount > 0) {
+			// int
+			// type=ItemFromData.getData(stack).getInt(PropertyType.AMMO_TYPE);
+
+			// stack.getCount()-=amount;
+			ItemStack stackAmmo;
+			while (amount > 0 && !(stackAmmo = searchForAmmo(living, stack)).isEmpty()) {
+				if (stackAmmo.getItem() instanceof ItemAmmo) {
+					amount = ((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo, amount);
+				}
+				else {
+					if (stackAmmo.getItem() instanceof ItemArrow)
+						stack.getTagCompound().setTag("LastLoaded", stackAmmo.serializeNBT());
+					amount -= stackAmmo.getCount();
+					stackAmmo.shrink(amount);
+					
+				}
+				
+			}
+		}
+	}
+
+	public ItemStack searchForAmmo(EntityLivingBase owner, ItemStack stack) {
+		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
+			return ItemAmmo.STACK_FILL;
+
+		int type = ((ItemUsable) stack.getItem()).getAmmoType(stack);
+
+		if (type == 0 || (type == 14 && TF2ConfigVars.freeUseItems))
+			return ItemAmmo.STACK_FILL;
+		
+		if (owner instanceof EntityTF2Character) {
+			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getData(stack).getInt(PropertyType.SLOT)) > 0 ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
+		}
+		
+		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
+		if (metalammo != 0) {
+			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).hasMetal(metalammo) ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
+		}
+		
+		if (owner.world.isRemote && (type >= owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount.length || owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[type] > 0))
+			return ItemAmmo.STACK_FILL;
+		
+		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
+			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
+					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			//System.out.println("Ammo Search: "+inv.getSlots());
+			for (int i = 0; i < inv.getSlots(); i++) {
+				ItemStack stackCap = inv.getStackInSlot(i);
+				//System.out.println("Stack: "+stackCap);
+				if (!stackCap.isEmpty() && ((stackCap.getItem() instanceof ItemAmmo
+						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type) || (type == 1000 && stackCap.getItem() instanceof ItemArrow)) ){
+					//System.out.println("Found: "+i);
+					return stackCap;
+				}
+			}
+		}
+		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
+			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
+			if (stackInv != null && ((stackInv.getItem() instanceof ItemAmmo
+					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type) || (type == 1000 && stackInv.getItem() instanceof ItemArrow)))
+				return stackInv;
+		}
+		return ItemStack.EMPTY;
+	}
+
+	public int getAmmoType(ItemStack stack) {
+		return TF2Attribute.getModifier("No Ammo", stack, 0, null) != 0 ? 0:getData(stack).getInt(PropertyType.AMMO_TYPE);
+	}
+	
+	public int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
+		
+		int type = this.getAmmoType(stack);
+		
+		if (type == 0)
+			return 999;
+		
+		if (type == 14 && owner instanceof EntityPlayer && TF2ConfigVars.freeUseItems) {
+			return ((EntityPlayer)owner).getCooldownTracker().hasCooldown(this) ? 0 : 1;
+		}
+		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
+			return 999;
+
+		if (owner instanceof EntityTF2Character)
+			return (int) (((EntityTF2Character) owner).getAmmo() / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
+
+		if(TF2Attribute.getModifier("Ball Release", stack, 0, owner)>0)
+			stack=ItemFromData.getNewStack("sandmanball");
+		
+
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
+			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+		}
+		
+		
+
+		int ammoCount = 0;
+
+		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
+			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
+			.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			for (int i = 0; i < inv.getSlots(); i++) {
+				ItemStack stackCap = inv.getStackInSlot(i);
+				if (!stackCap.isEmpty() && stackCap.getItem() instanceof ItemAmmo
+						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type){
+					//System.out.println("Found: "+i);
+					ammoCount += ((ItemAmmo) stackCap.getItem()).getAmount(stackCap);
+				}
+				else if (type == 1000 && !stackCap.isEmpty() && stackCap.getItem() instanceof ItemArrow)
+					ammoCount += stackCap.getCount();
+			}
+		}
+		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
+			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
+			if (!stackInv.isEmpty() && stackInv.getItem() instanceof ItemAmmo
+					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type)
+				ammoCount += ((ItemAmmo) stackInv.getItem()).getAmount(stackInv);
+			else if (type == 1000 && !stackInv.isEmpty() && stackInv.getItem() instanceof ItemArrow)
+				ammoCount += stackInv.getCount();
+		}
+		return (int) (ammoCount / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
+	}
+	
+	public int getActualAmmoUse(ItemStack stack, EntityLivingBase living, int amount) {
+		if (this.getAmmoType(stack) == 0 || amount == 0)
+			return 0;
+
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0) {
+			amount = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, living);
+		}
+		stack.getTagCompound().setFloat("UsedAmmo", stack.getTagCompound().getFloat("UsedAmmo")
+				+ amount * TF2Attribute.getModifier("Ammo Eff", stack, 1, living));
+		amount = 0;
+		while (stack.getTagCompound().getFloat("UsedAmmo") >= 1) {
+			stack.getTagCompound().setFloat("UsedAmmo", stack.getTagCompound().getFloat("UsedAmmo") - 1);
+			amount++;
+		}
+		return amount;
 	}
 }

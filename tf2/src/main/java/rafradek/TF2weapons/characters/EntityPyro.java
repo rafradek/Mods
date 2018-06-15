@@ -1,6 +1,8 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -13,8 +15,12 @@ import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.ai.EntityAIAirblast;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
+import rafradek.TF2weapons.weapons.ItemHorn;
+import rafradek.TF2weapons.weapons.ItemJetpack;
 import rafradek.TF2weapons.weapons.ItemProjectileWeapon;
+import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 
 public class EntityPyro extends EntityTF2Character {
 
@@ -43,6 +49,13 @@ public class EntityPyro extends EntityTF2Character {
 
 	public float[] getDropChance() {
 		return new float[] { 0.062f, 0.12f, 0.11f };
+	}
+	
+	protected void addWeapons() {
+		super.addWeapons();
+		if(this.loadout.getStackInSlot(1).getItem() instanceof ItemJetpack) {
+			this.setItemStackToSlot(EntityEquipmentSlot.CHEST, this.loadout.getStackInSlot(1));
+		}
 	}
 	
 	@Override
@@ -83,6 +96,14 @@ public class EntityPyro extends EntityTF2Character {
 				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber,40,0));
 				this.getHeldItemMainhand().getTagCompound().setBoolean("RageActive", true);
 				this.playSound(ItemFromData.getSound(this.getHeldItemMainhand(), PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
+			}
+			
+			ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+			if (!this.world.isRemote && backpack.getItem() instanceof ItemJetpack) {
+				if (this.getAttackTarget() != null && this.getDistanceSqToEntity(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
+					((ItemJetpack)backpack.getItem()).activateJetpack(backpack, this, true);
+					
+				}
 			}
 		}
 		super.onLivingUpdate();

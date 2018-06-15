@@ -13,6 +13,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,8 +27,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.items.CapabilityItemHandler;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -109,6 +112,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public double lastPosZ;
 	public ItemStack lastWeapon = ItemStack.EMPTY;
 	
+	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
 	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
@@ -177,9 +181,34 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int getMetal() {
 		return this.dataManager.get(METAL);
 	}
+	public boolean hasMetal(int metal) {
+		boolean hasIngot = this.owner instanceof EntityPlayer 
+				&& TF2Util.hasEnoughItem(((EntityPlayer)this.owner).inventory, stackL -> stackL.getItem() == Items.IRON_INGOT, MathHelper.ceil((metal - this.getMetal())/ 50f));
+		return hasIngot || this.getMetal() >= metal;
+	}
+	public int consumeMetal(int metal, boolean allowPartial) {
+		int usedMetal = 0;
+		
+		if (this.owner instanceof EntityPlayer) {
+			ItemStack ingot = new ItemStack(Items.IRON_INGOT);
+			while(((allowPartial && this.getMetal() == 0) || (!allowPartial && this.getMetal() < metal)) && ((EntityPlayer)this.owner).inventory.hasItemStack(ingot)) {
+				((EntityPlayer)this.owner).inventory.clearMatchingItems(Items.IRON_INGOT, 0, 1, null);
+				this.setMetal(this.getMetal() + 50);
+			}
+		}
+		if (allowPartial || this.getMetal() >= metal) {
+			usedMetal = Math.min(this.getMetal(), metal);
+			this.setMetal(this.getMetal() - usedMetal);
+		}
+		return usedMetal;
+	}
 	
 	public void setMetal(int metal) {
-		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.owner instanceof EntityEngineer?MAX_METAL_ENGINEER:MAX_METAL));
+		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.owner instanceof EntityEngineer?TF2ConfigVars.maxMetalEngineer:MAX_METAL));
+	}
+	
+	public int getMaxMetal() {
+		return this.owner instanceof EntityEngineer ? TF2ConfigVars.maxMetalEngineer : WeaponsCapability.MAX_METAL;
 	}
 	
 	public float getPhlogRage() {
@@ -259,6 +288,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		return this.dataManager.get(TOKEN_USED);
 	}
 	
+	public void addEffectCooldown(String name, int time) {
+		this.effectsCool.put(name, time);
+		if (this.owner instanceof EntityPlayerMP)
+			TF2weapons.network.sendTo(new TF2Message.EffectCooldownMessage(name, time), (EntityPlayerMP) this.owner);
+	}
 	public void addHead(ItemStack weapon) {
 
 		this.collectedHeadsTime = owner.ticksExisted;
@@ -297,7 +331,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (entry.getValue() <= 0)
 				iterator.remove();
 		}
-
 		if (!this.owner.world.isRemote && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
 			this.dataManager.set(HEADS, this.dataManager.get(HEADS) - 1);
 			collectedHeadsTime = this.owner.ticksExisted;
@@ -360,6 +393,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
 			ItemUsable item = (ItemUsable) stack.getItem();
+			if (!(this.owner instanceof EntityPlayer) || (this.owner.world.isRemote && this.owner != ClientProxy.getLocalPlayer()))
+				item.onUpdate(stack, owner.world, owner, 0, true);
 			WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 			if(TF2Attribute.getModifier("Focus", stack, 0, owner)!=0){
 				this.focusShotTicks+=this.owner.isSprinting()?0:1;
@@ -457,7 +492,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 							stack.setItemDamage(stack.getItemDamage() - 1);
 							TF2weapons.proxy.playReloadSound(owner, stack);
 						}
-						item.consumeAmmoGlobal(owner, stack, consumeAmount);
+						if (!owner.world.isRemote)
+							item.consumeAmmoGlobal(owner, stack, consumeAmount);
 						if (!owner.world.isRemote && owner instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(
 									new TF2Message.UseMessage(stack.getItemDamage(), true, -1,EnumHand.MAIN_HAND),
@@ -595,13 +631,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	public void stateDo(EntityLivingBase player, ItemStack stack) {
 		ItemUsable item = (ItemUsable) stack.getItem();
-		// System.out.println(stack.getTagCompound().getByte("active"));
+
 		if ((this.state & 1) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
-			// System.out.println("firin");
+
 			item.fireTick(stack, player, player.world);
 		while (this.fire1Cool <= 0 && shouldShoot(player, 1)) {
 
-			// System.out.println("PLAJERRRR: "+player);
+		
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer)
 				message = this.predictionList.poll();

@@ -3,11 +3,14 @@ package rafradek.TF2weapons.weapons;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemMeleeWeapon extends ItemBulletWeapon {
@@ -42,7 +45,7 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 			ItemStack ballStack = getNewStack("sandmanball");
 			if (!this.searchForAmmo(living, ballStack).isEmpty()) {
 				if (living instanceof EntityPlayer)
-					((EntityPlayer)living).getCooldownTracker().setCooldown(this, this.getFiringSpeed(ballStack, living)/50);
+					((EntityPlayer)living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? this.getFiringSpeed(ballStack, living)/50 : 200);
 				ItemStack oldHeldItem = living.getHeldItemMainhand();
 				living.setHeldItem(EnumHand.MAIN_HAND, ballStack);
 				((ItemProjectileWeapon) ballStack.getItem()).use(ballStack, living, world, EnumHand.MAIN_HAND, null);
@@ -50,7 +53,12 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 			}
 		}
 	}
-
+	public void draw(WeaponsCapability weaponsCapability, ItemStack stack, EntityLivingBase living, World world) {
+		super.draw(weaponsCapability, stack, living, world);
+		if(living instanceof EntityPlayerMP)
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), 
+					false,this.getAmmoAmount(living, getNewStack("sandmanball")), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
+	}
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {

@@ -16,12 +16,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.util.text.TextFormatting;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.building.ItemPDA;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemBulletWeapon;
 import rafradek.TF2weapons.weapons.ItemChargingTarge;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
+import rafradek.TF2weapons.weapons.ItemJetpack;
 import rafradek.TF2weapons.weapons.ItemMedigun;
 import rafradek.TF2weapons.weapons.ItemMinigun;
 import rafradek.TF2weapons.weapons.ItemParachute;
@@ -86,7 +89,7 @@ public class TF2Attribute {
 	};
 	public static final Predicate<ItemStack> CHARGE_RATE = input -> {
 
-		return input.getItem() instanceof ItemSniperRifle || input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemCloak;
+		return input.getItem() instanceof ItemSniperRifle || input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemCloak || input.getItem() instanceof ItemJetpack;
 	};
 	public static final Predicate<ItemStack> DURATION = input -> {
 
@@ -110,11 +113,13 @@ public class TF2Attribute {
 			&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
 	public static final Predicate<ItemStack> MEDIGUN = input -> input.getItem() instanceof ItemMedigun;
 	public static final Predicate<ItemStack> BANNER = input -> input.getItem() instanceof ItemSoldierBackpack;
-	public static final Predicate<ItemStack> PARACHUTE = input -> input.getItem() instanceof ItemParachute;
+	public static final Predicate<ItemStack> BACKPACK = input -> input.getItem() instanceof ItemBackpack;
 	public static final Predicate<ItemStack> SHIELD = input -> input.getItem() instanceof ItemChargingTarge;
 	public static final Predicate<ItemStack> WATCH = input -> input.getItem() instanceof ItemCloak;
 	public static final Predicate<ItemStack> WRENCH = input -> input.getItem() instanceof ItemWrench;
-
+	public static final Predicate<ItemStack> JETPACK = input -> input.getItem() instanceof ItemJetpack;
+	public static final Predicate<ItemStack> PDA = input -> input.getItem() instanceof ItemPDA;
+	
 	public static enum Type {
 		PERCENTAGE, INVERTED_PERCENTAGE, ADDITIVE;
 	}
@@ -357,7 +362,7 @@ public class TF2Attribute {
 		new TF2Attribute(112, "Looting", "Looting", Type.ADDITIVE, 0, State.POSITIVE,
 				ITEM_WEAPON, 1, 3, 220, 2);
 		new TF2Attribute(113, "ArmorBonus", "Armor", Type.ADDITIVE, 0, State.HIDDEN,
-				Predicates.or(BANNER, PARACHUTE), 1, 3, 260, 1);
+				BACKPACK, 1, 3, 240, 2);
 		new TF2Attribute(114, "MeleeResistPenalty", "Melee Resist", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(115, "RangedResistBonus", "Ranged Resist", Type.PERCENTAGE, 1f, State.POSITIVE,
@@ -367,7 +372,17 @@ public class TF2Attribute {
 		new TF2Attribute(117, "Unblockable", "Unblockable", Type.ADDITIVE, 1f, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
 		new TF2Attribute(118, "SelfPushForceBonus", "Self Push Force", Type.PERCENTAGE, 1f, State.POSITIVE,
-				ITEM_WEAPON, 0.20f, 5, 160, 0);
+				Predicates.or(ITEM_WEAPON, JETPACK), 0.20f, 5, 160, 0);
+		new TF2Attribute(119, "Jetpack", "Jetpack", Type.ADDITIVE, 0f, State.POSITIVE,
+				JETPACK, 1f, 2, 250, 1);
+		new TF2Attribute(120, "SentryBonus", "Sentry Bonus", Type.PERCENTAGE, 1f, State.POSITIVE,
+				Predicates.<ItemStack>alwaysFalse(), 0, 0, 0, 1);
+		new TF2Attribute(121, "BuildingHealthBonus", "Building Health", Type.PERCENTAGE, 1f, State.POSITIVE,
+				PDA, 0.75f, 5, 200, 2);
+		new TF2Attribute(122, "SentryFireRateBonus", "Sentry Fire Rate", Type.PERCENTAGE, 1f, State.POSITIVE,
+				PDA, -0.1f, 3, 160, 1);
+		new TF2Attribute(123, "DispenserRangeBonus", "Dispenser Range", Type.PERCENTAGE, 1f, State.POSITIVE,
+				PDA, 1, 4, 160, 1);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
@@ -462,6 +477,8 @@ public class TF2Attribute {
 		float def = this.perLevel;
 		if (stack.getItem() instanceof ItemMinigun && this.effect.equals("Damage"))
 			def *= 0.5f;
+		else if (stack.getItem() instanceof ItemJetpack && this.effect.equals("Self Push Force"))
+			def *= 0.75f;
 		else if (stack.getItem() instanceof ItemChargingTarge && this.effect.equals("Charge"))
 			def *= 2.4f;
 		return def;
@@ -478,7 +495,7 @@ public class TF2Attribute {
 	}
 
 	public TF2Attribute getAttributeReplacement(ItemStack stack) {
-		if(this.name.equals("DamageBonus") && getModifier("Self Damage", stack, 1, null) <= 0)
+		if(this.name.equals("DamageBonus") && (getModifier("Self Damage", stack, 1, null) <= 0 || stack.getItem() instanceof ItemJetpack))
 			return MapList.nameToAttribute.get("SelfPushForceBonus");
 		return this;
 	}
@@ -496,6 +513,8 @@ public class TF2Attribute {
 			baseCost = (baseCost/3) * stack.getCount();
 		if (stack.getItem() instanceof ItemCloak)
 			baseCost *= 2;
+		else if (stack.getItem() instanceof ItemJetpack && this.effect.equals("Self Push Force"))
+			baseCost *= 0.75;
 		//int additionalCost = 0;
 		int lastUpgradesCost = stack.getTagCompound().getInteger("TotalCost");
 		/*if (lastUpgradesCost > 0) {

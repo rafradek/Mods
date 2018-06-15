@@ -1,10 +1,13 @@
 package rafradek.TF2weapons;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +20,7 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
@@ -135,6 +139,8 @@ public class ClientProxy extends CommonProxy {
 	public static ResourceLocation healingTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/gui/healing.png");
 	public static ResourceLocation buildingTexture = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/buildings.png");
+	public static ResourceLocation blueprintTexture = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/gui/blueprints.png");
 	public static ResourceLocation chargeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/charge.png");
 	public static final ResourceLocation VIGNETTE = new ResourceLocation("textures/misc/vignette.png");
 	public static List<WeaponSound> weaponSoundsToStart;
@@ -144,6 +150,7 @@ public class ClientProxy extends CommonProxy {
 	public static boolean buildingsUseEnergy;
 
 	public static final Logger LOGGER = (Logger) LogManager.getLogger();
+	public static Set<Class<? extends Block>> interactingBlocks;
 	@Override
 	public void registerItemBlock(ItemBlock item) {
 		for (int i = 0; i < 16; i++)
@@ -235,6 +242,27 @@ public class ClientProxy extends CommonProxy {
 		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
+		interactingBlocks = new HashSet<>();
+		Method usemethod = null;
+		for (Method method : Block.class.getMethods()) {
+			if (method.getName().equals("onBlockActivated") || method.getName().equals("func_180639_a")) {
+				usemethod = method;
+			}
+		}
+		for(Block block : ForgeRegistries.BLOCKS.getValues()) {
+			try {
+			if (!interactingBlocks.contains(block.getClass()))
+				for (Method method : block.getClass().getMethods()) {
+					if ((method.getName().equals("onBlockActivated") || method.getName().equals("func_180639_a"))&& !method.equals(usemethod)) {
+						interactingBlocks.add(block.getClass());
+						break;
+					}
+				}
+			}
+			catch (NoClassDefFoundError err) {
+				
+			}
+		}
 		try {
 					//System.out.println("Is Class: "+logger.getClass().getCanonicalName());
 					/*Filter filter= new AbstractFilter() {

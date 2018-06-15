@@ -23,6 +23,7 @@ public class TF2ConfigVars {
 	public static Configuration conf;
 	public static int destTerrain;
 	public static boolean medigunLock;
+	public static boolean swapAttackButton;
 	public static boolean fastMetalProduction;
 	public static boolean shootAttract;
 	public static boolean disableSpawn;
@@ -62,10 +63,18 @@ public class TF2ConfigVars {
 	public static int sentryUseEnergy;
 	public static int dispenserUseEnergy;
 	public static int teleporterUseEnergy;
+	public static boolean fastItemCooldown;
+	public static boolean freeUseItems;
+	public static int maxMetalEngineer;
+	public static boolean fastBuildEngineer;
+	public static boolean longDurationBanner;
+	public static boolean oldDispenser;
+	
 	public static Map<Class<? extends EntityLiving>, Integer> spawnRate;
 
 	public static ArrayList<ResourceLocation> repairBlacklist;
 	public static ArrayList<ResourceLocation> hostileBlacklist;
+
 	public TF2ConfigVars() {
 		// TODO Auto-generated constructor stub
 	}
@@ -81,11 +90,24 @@ public class TF2ConfigVars {
 		else
 			destTerrain=0;
 		medigunLock = conf.getBoolean("Medigun lock target", "gameplay", false, "Left Click selects healing target");
-		fastMetalProduction = conf.getBoolean("Fast metal production", "gameplay", false, "Dispensers produce metal every 5 seconds");
+		swapAttackButton = conf.getBoolean("Swap mouse buttons", "gameplay", false, "Swaps attack and use buttons on weapons");
+		
+		fastMetalProduction = conf.getBoolean("Fast metal production", "adaption", false, "Dispensers produce metal every 5 seconds");
+		healthScale = conf.getInt("TF2 - Minecraft health translation", "adaption", 200,-10000,10000, "How much 10 minecraft hearts are worth in TF2 health");
+		damageMultiplier = 200f/healthScale;
+		
+		fastItemCooldown = conf.getBoolean("Fast item cooldown", "adaption", true, "Sandman balls and cleavers recover faster than normal");
+		freeUseItems = conf.getBoolean("Free use items", "adaption", false, "Throwable and consumable items are free to use");
+		longDurationBanner = conf.getBoolean("Long duration banner", "adaption", true, "Banner buffs build longer and last longer");
+		boolean old = conf.hasKey("gameplay", "Fast metal production");
+		if (old) {
+			conf.moveProperty("gameplay", "TF2 - Minecraft health translation", "adaption");
+			conf.moveProperty("gameplay", "Fast metal production", "adaption");
+		}
 		
 		disableSpawn = conf.getBoolean("Disable mob spawning", "spawn rate", false, "Disable mod-specific mobs spawning");
 		overworldOnly = conf.getBoolean("Spawn only in overworld", "spawn rate", false, "Disable spawning in custom dimensions");
-		biomeCheck = conf.get("spawn rate", "Spawn in biomes", "All","Default - biomes that spawn vanilla monsters").setValidValues(new String[] { "All", "Default", "Vanilla only" }).getString();
+		biomeCheck = conf.get("spawn rate", "Spawn in biomes", "Default","Default - biomes that spawn vanilla monsters").setValidValues(new String[] { "All", "Default", "Vanilla only" }).getString();
 		disableBossSpawn = conf.getBoolean("Disable boss spawn", "spawn rate", false, "Disable random tf2 boss spawn");
 		disableInvasion =conf.getBoolean("Disable invasion event", "spawn rate", false, "Disable invasion event");
 		disableContracts =conf.getBoolean("Disable contracts", "gameplay", false, "Stop new contracts from appearing");
@@ -95,7 +117,7 @@ public class TF2ConfigVars {
 		TF2weapons.weaponVersion = TF2weapons.conf.getInt("Weapon Config Version", "internal", TF2weapons.getCurrentWeaponVersion(), 0, 1000, "");
 		conf.get("gameplay", "Disable structures", false).setRequiresMcRestart(true);
 		
-		boolean old = conf.hasKey("gameplay", "Natural mob detection");
+		old = conf.hasKey("gameplay", "Natural mob detection");
 		if (old) {
 			conf.moveProperty("gameplay", "Natural mob detection", "mercenary");
 		}
@@ -104,23 +126,19 @@ public class TF2ConfigVars {
 		shootAttract = conf.getBoolean("Shooting attracts mobs", "gameplay", true, "Gunfire made by players attracts mobs");
 		randomCrits = conf.getBoolean("Random critical hits", "gameplay", true, "Enables randomly appearing critical hits that deal 3x more damage");
 		
-		healthScale = conf.getInt("TF2 - Minecraft health translation", "gameplay", 200,-10000,10000, "How much 10 minecraft hearts are worth in TF2 health");
-		damageMultiplier = 200f/healthScale;
-		
 		deadRingerTrigger = conf.getBoolean("Feign death events", "gameplay", true, "Does feign death trigger death events, set to false in case of mod conflicts");
 		dynamicLights = conf.getBoolean("Dynamic Lights", "modcompatibility", true, "Enables custom light sources for AtomicStryker's Dynamic Lights mod")
 				&& Loader.isModLoaded("dynamiclights");
 		dynamicLightsProj = conf.getBoolean("Dynamic Lights - Projectiles", "modcompatibility", true, "Should projectiles emit light");
 		bossReappear = conf.getInt("Boss respawn cooldown", "gameplay", 360000, 0, Integer.MAX_VALUE, "Maximum boss reappear time in ticks. Bosses always spawn in full moon");
 		
-		dispenserRepair = conf.getFloat("Dispenser repair rate", "gameplay", 3, 0, 10000, "Repair per 1 metal. Reduced by enchants");
-		String[] blacklist = conf.getStringList("Repair blacklist", "gameplay", new String[0], "Item IDs that should not be repairable by dispensers");
+		
 		String[] hostileblacklist = conf.getStringList("Hostile entity blacklist", "gameplay", new String[] {
 				"minecraft:enderman", "minecraft:zombie_pigman"
 		}, "Entity IDs that should not be considered hostile");
 		
 		enableUdp = conf.getBoolean("Enable UDP (experimental)", "gameplay", false, "");
-		targetSentries = conf.getBoolean("Mobs target sentries", "gameplay", true, "Mobs will attack sentries that dont shoot");
+		
 		bossVolume = conf.getFloat("Boss volume (radius)", "sound volume", 4f, 0, 10, "Values above 1 increase sound radius only");
 		mercenaryVolume = conf.getFloat("Mercenary volume (radius)", "sound volume", 0.6f, 0, 10, "Values above 1 increase sound radius only");
 		gunVolume = conf.getFloat("Gun volume (radius)", "sound volume", 2f, 0, 10, "Applies only to players, values above 1 increase sound radius only");
@@ -128,11 +146,27 @@ public class TF2ConfigVars {
 		dropAmmo = conf.getFloat("Ammo drop chance", "gameplay", 0.15f, 0f, 1f, "Chance of dropping ammo from non-TF2 hostile creature");
 		speedMult = conf.getFloat("Mercenary speed multiplier", "mercenary", 0.8f, 0f, 2f, "Speed multiplier of mercenaries. Does not apply to owned mercenaries");
 		armorMult = conf.getFloat("Armored mercenary chance", "mercenary", 0.06f, 0f, 10f, "Base chance of armored mercenaries. Altered by difficulty level");
+		maxMetalEngineer = conf.getInt("Engineer max metal", "mercenary", 500,0, Integer.MAX_VALUE, "Starting metal for engineers");
+		fastBuildEngineer = conf.getBoolean("Engineer fast build", "mercenary", true, "Should engineers build at extra speed");
 		
-		buildingsUseEnergy = conf.getBoolean("Buildings use energy", "gameplay", false, "");
-		sentryUseEnergy = conf.getInt("Sentry energy use", "gameplay", 100, 0, 40000, "Energy use on attack");
-		dispenserUseEnergy = conf.getInt("Dispenser energy use", "gameplay", 15, 0, 40000, "Energy use on repairs and heals");
-		teleporterUseEnergy = conf.getInt("Teleport energy use", "gameplay", 20000, 0, 40000, "Energy use on teleport");
+		old = conf.hasKey("gameplay", "Buildings use energy");
+		if (old) {
+			conf.moveProperty("gameplay", "Dispenser repair rate", "building");
+			conf.moveProperty("gameplay", "Repair blacklist", "building");
+			conf.moveProperty("gameplay", "Buildings use energy", "building");
+			conf.moveProperty("gameplay", "Sentry energy use", "building");
+			conf.moveProperty("gameplay", "Dispenser energy use", "building");
+			conf.moveProperty("gameplay", "Teleport energy use", "building");
+			conf.moveProperty("gameplay", "Mobs target sentries", "building");
+		}
+		oldDispenser = conf.getBoolean("Old dispenser behavior", "building", false, "When enabled, no material is being used to repair");
+		buildingsUseEnergy = conf.getBoolean("Buildings use energy", "building", false, "");
+		sentryUseEnergy = conf.getInt("Sentry energy use", "building", 100, 0, 40000, "Energy use on attack");
+		dispenserUseEnergy = conf.getInt("Dispenser energy use", "building", 15, 0, 40000, "Energy use on repairs and heals");
+		teleporterUseEnergy = conf.getInt("Teleport energy use", "building", 20000, 0, 40000, "Energy use on teleport");
+		dispenserRepair = conf.getFloat("Dispenser repair rate", "building", 3, 0, 10000, "Repair per 1 metal. Reduced by enchants");
+		String[] blacklist = conf.getStringList("Repair blacklist", "building", new String[0], "Item IDs that should not be repairable by dispensers");
+		targetSentries = conf.getBoolean("Mobs target sentries", "building", true, "Mobs will attack sentries that dont shoot");
 		
 		if(!buildingsUseEnergy) {
 			sentryUseEnergy = 0;

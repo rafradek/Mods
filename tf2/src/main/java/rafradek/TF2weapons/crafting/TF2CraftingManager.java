@@ -38,13 +38,13 @@ public class TF2CraftingManager {
 		cola.setCount( 2);
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[1] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 13, 1),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[2] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 45, 2),
-				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[3] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 45, 3),
+		addRecipe(/*TF2CraftingManager.AMMO_RECIPES[2] = */new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoMinigun, 1, 0),
+				new Object[] { "ingotCopper", "ingotLead", "gunpowder", "ingotCopper", "ingotLead", "gunpowder", "gunpowder" }));
+		addRecipe(/*TF2CraftingManager.AMMO_RECIPES[3] = */new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoPistol, 4, 0),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[4] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 16, 4),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 64, 5),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[5] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoSMG, 3, 0),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[6] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 5, 6),
 				new Object[] { "ingotCopper", "ingotLead", "gunpowder" }));
@@ -62,7 +62,7 @@ public class TF2CraftingManager {
 				new Object[] { Items.SPECKLED_MELON, Items.GHAST_TEAR, new ItemStack(Items.DYE, 1, 15) });
 		addRecipe(new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoFire, 1),
 				new Object[] { "ingotIron", Items.MAGMA_CREAM, "ingotIron" }));
-		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 40, 9),
+		addRecipe(TF2CraftingManager.AMMO_RECIPES[9] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmoSyringe, 1, 0),
 				new Object[] { "ingotIron", "paper", "paper", "paneGlass" }));
 		ItemStack cleaver = ItemFromData.getNewStack("cleaver");
 		cleaver.setCount(1);
@@ -81,15 +81,19 @@ public class TF2CraftingManager {
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemHorn),
 				new Object[] { "CLC", "C C", " C ", 'C', "ingotCopper", 'L', "leather" }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 18),
-				new Object[] { "RDR", "GIG", "III", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'G',
-						"gunpowder", 'R', "dustRedstone" }));
+				new Object[] { "IDI", "GRG", "III", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'G',
+						"gunpowder", 'R', new ItemStack(TF2weapons.itemTF2, 1, 11) }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 20),
 				new Object[] { "MDR", "SIm", "rIG", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmoMedigun), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
-						"dustRedstone", 'r', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'S',
+						new ItemStack(TF2weapons.itemTF2, 1, 11), 'r', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'S',
 						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'm', new ItemStack(TF2weapons.itemAmmo, 1, 2) }));
-		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 22), new Object[] { "IAI", "RAR",
-				"IAI", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'R', "dustRedstone" }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 22), new Object[] { "IAI", "ARA",
+				"IAI", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'R', new ItemStack(TF2weapons.itemTF2, 1, 11) }));
+		addRecipe(new ShapedOreRecipe(null, ItemFromData.getNewStack("pda"), new Object[] { "SDT", "AGA","BRB",
+				'G', "paneGlass", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2), 'R', new ItemStack(TF2weapons.itemTF2, 1, 3)
+				, 'B', new ItemStack(Blocks.STONE_BUTTON), 'S', new ItemStack(TF2weapons.itemBuildingBox, 1, 18)
+				, 'D', new ItemStack(TF2weapons.itemBuildingBox, 1, 20), 'T', new ItemStack(TF2weapons.itemBuildingBox, 1, 22)}));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockAmmoFurnace),
 				new Object[] { "RIG", "SFr", "sIM", 'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
@@ -112,6 +116,8 @@ public class TF2CraftingManager {
 				new ItemStack(Items.FEATHER), 'B', new ItemStack(Items.LEATHER_BOOTS) }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemMantreads),
 				new Object[] { " B ", "III", 'I', "ingotIron", 'B', new ItemStack(Items.IRON_BOOTS) }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemTF2, 1, 11),
+				new Object[] { "C r", "CRr", "C r", 'C', Items.COMPARATOR, 'R', "blockRedstone", 'r', Items.REPEATER }));
 
 		ItemStack jarate = ItemFromData.getNewStack("jarate");
 		jarate.getTagCompound().setBoolean("IsEmpty", true);

@@ -34,7 +34,7 @@ public class RenderSyringe extends Render<EntityStickProjectile> {
 	public void doRender(EntityStickProjectile entity, double x, double y, double z, float yaw, float partialTick) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
-		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
+		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);
 		GL11.glScalef(0.25f, 0.25f, 0.25f);
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick, 0.0F, 1.0F,
 				0.0F);
@@ -49,9 +49,9 @@ public class RenderSyringe extends Render<EntityStickProjectile> {
 		if (entity.getCritical() == 2) {
 			// GlStateManager.disableTexture2D();
 			GlStateManager.disableLighting();
-			// GL11.glColor4f(0.0F, 0.0F, 1.0F, 1F);
+			// GlStateManager.color(0.0F, 0.0F, 1.0F, 1F);
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
-			// GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+			// GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 			// GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();
 		} else
@@ -69,7 +69,7 @@ public class RenderSyringe extends Render<EntityStickProjectile> {
 		 * model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 		 * GL11.glDisable(GL11.GL_BLEND); // GL11.glEnable(GL11.GL_ALPHA_TEST);
 		 */
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		GL11.glPopMatrix();
 		/*
 		 * IIcon iicon = TF2EventBusListener.pelletIcon;

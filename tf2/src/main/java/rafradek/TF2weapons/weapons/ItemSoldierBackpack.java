@@ -23,6 +23,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
@@ -45,8 +46,8 @@ public class ItemSoldierBackpack extends ItemBackpack {
 		return 1 - stack.getTagCompound().getFloat("Rage");
 	}
 
-	public void addRage(ItemStack stack, float damage, EntityLivingBase target) {
-		if (target instanceof EntityTF2Character)
+	public void addRage(ItemStack stack, float damage, EntityLivingBase target, EntityLivingBase attacker) {
+		if (target instanceof EntityTF2Character && !(attacker instanceof EntityPlayer))
 			damage *= 0.5f;
 		else if (!(target instanceof EntityPlayer))
 			damage *= 0.35f;
@@ -58,11 +59,10 @@ public class ItemSoldierBackpack extends ItemBackpack {
 		super.onArmorTickAny(world, player, itemStack);
 		if (!world.isRemote) {
 			if (player.ticksExisted % 5 == 0 && itemStack.getTagCompound().getBoolean("Active")) {
+				float duration = TF2Attribute.getModifier("Effect Duration", itemStack,
+						getData(itemStack).getInt(PropertyType.DURATION), player)*(TF2ConfigVars.longDurationBanner? 2 : 5);
 				itemStack.getTagCompound().setFloat("Rage",
-						Math.max(0,
-								itemStack.getTagCompound().getFloat("Rage")
-										- 1 / (TF2Attribute.getModifier("Effect Duration", itemStack,
-												getData(itemStack).getInt(PropertyType.DURATION), player) - 20)));
+						Math.max(0f, itemStack.getTagCompound().getFloat("Rage") - 1f / duration));
 				if (itemStack.getTagCompound().getFloat("Rage") <= 0)
 					itemStack.getTagCompound().setBoolean("Active", false);
 				for (EntityLivingBase living : world.getEntitiesWithinAABB(EntityLivingBase.class,

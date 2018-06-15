@@ -3,7 +3,15 @@ package rafradek.TF2weapons.weapons;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -192,7 +200,7 @@ public class ItemMedigun extends ItemUsable {
 			par1ItemStack.getTagCompound().setFloat("ubercharge",
 					Math.max(0, par1ItemStack.getTagCompound().getFloat("ubercharge") - 0.00625f));
 			if(par5 && effect != null && par3Entity.ticksExisted%4==0)
-				((EntityLivingBase)par3Entity).addPotionEffect(new PotionEffect(effect,15));
+				TF2Util.addAndSendEffect(((EntityLivingBase)par3Entity),new PotionEffect(effect,15));
 			if (par1ItemStack.getTagCompound().getFloat("ubercharge") == 0) {
 
 				par1ItemStack.getTagCompound().setBoolean("Activated", false);
@@ -204,7 +212,7 @@ public class ItemMedigun extends ItemUsable {
 				// (byte)0,par3Entity),par3Entity);
 			}
 		}
-		if(par5){
+		if(par5 && !par2World.isRemote){
 			Entity healTargetEnt = par2World.getEntityByID(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget());
 			if(healTargetEnt != null && healTargetEnt instanceof EntityLivingBase){
 				EntityLivingBase healTarget=(EntityLivingBase) healTargetEnt;
@@ -217,10 +225,10 @@ public class ItemMedigun extends ItemUsable {
 					// TF2Message.PropertyMessage("HealTarget",
 					// -1,par3Entity),par3Entity);
 				} else if (healTarget != null && healTarget instanceof EntityLivingBase) {
-					if(!par2World.isRemote)
+					
 						this.heal(par1ItemStack, (EntityLivingBase) par3Entity, par2World, (EntityLivingBase) healTarget);
 					if (effect != null && par1ItemStack.getTagCompound().getBoolean("Activated") && (healTarget.getActivePotionEffect(effect)==null||healTarget.ticksExisted%4==0))
-						healTarget.addPotionEffect(new PotionEffect(effect,15));
+						TF2Util.addAndSendEffect(healTarget,new PotionEffect(effect,15));
 					// TF2weapons.sendTracking(new
 					// TF2Message.PropertyMessage("UberCharged",
 					// (byte)1,healTarget),healTarget);
@@ -298,6 +306,7 @@ public class ItemMedigun extends ItemUsable {
 				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.NO_TARGET_SOUND), false,
 						1, stack);
 			// System.out.println("Stop heal");
+			
 			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() != -1) {
 				living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 				TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
@@ -308,6 +317,10 @@ public class ItemMedigun extends ItemUsable {
 				&& stack.getTagCompound().getFloat("ubercharge") == 1f) {
 			stack.getTagCompound().setBoolean("Activated", true);
 			TF2Util.playSound(living,ItemFromData.getSound(stack, PropertyType.UBER_START_SOUND), 0.75f, 1);
+			Entity healTargetEnt = world.getEntityByID(living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget());
+			if (healTargetEnt instanceof EntityLivingBase) {
+				((EntityLivingBase) healTargetEnt).addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation(ItemFromData.getData(stack).getString(PropertyType.EFFECT_TYPE)), 1));
+			}
 			
 			if (stack.getTagCompound().getBoolean("Strange")) {
 				stack.getTagCompound().setInteger("Ubercharges", stack.getTagCompound().getInteger("Ubercharges") + 1);
@@ -327,5 +340,57 @@ public class ItemMedigun extends ItemUsable {
 			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 		}
 		return false;
+	}
+	
+	@Override
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder renderer, ScaledResolution resolution) {
+		Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glDepthMask(false);
+		OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		
+		ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+		
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(resolution.getScaledWidth() - 138, resolution.getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 14, resolution.getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 14, resolution.getScaledHeight() - 50, 0.0D).tex(0.01D, 0.99D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 138, resolution.getScaledHeight() - 50, 0.0D).tex(0.0D, 0.99D).endVertex();
+		tessellator.draw();
+		
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(resolution.getScaledWidth() - 140, resolution.getScaledHeight() - 18, 0.0D).tex(0.0D, 0.265625D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 12, resolution.getScaledHeight() - 18, 0.0D).tex(1.0D, 0.265625D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 12, resolution.getScaledHeight() - 52, 0.0D).tex(1.0D, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 140, resolution.getScaledHeight() - 52, 0.0D).tex(0.0D, 0.0D).endVertex();
+		tessellator.draw();
+
+
+		float uber = stack.getTagCompound().getFloat("ubercharge");
+		Minecraft.getMinecraft().ingameGUI.drawString(Minecraft.getMinecraft().ingameGUI.getFontRenderer(), "UBERCHARGE: " + Math.round(uber * 100f) + "%",
+				resolution.getScaledWidth() - 130, resolution.getScaledHeight() - 48, 16777215);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(resolution.getScaledWidth() - 132, resolution.getScaledHeight() - 22, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 20, resolution.getScaledHeight() - 22, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 20, resolution.getScaledHeight() - 36, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 132, resolution.getScaledHeight() - 36, 0.0D).endVertex();
+		tessellator.draw();
+
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
+		renderer.begin(7, DefaultVertexFormats.POSITION);
+		renderer.pos(resolution.getScaledWidth() - 132, resolution.getScaledHeight() - 22, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 132 + 112 * uber, resolution.getScaledHeight() - 22, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 132 + 112 * uber, resolution.getScaledHeight() - 36, 0.0D).endVertex();
+		renderer.pos(resolution.getScaledWidth() - 132, resolution.getScaledHeight() - 36, 0.0D).endVertex();
+		tessellator.draw();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glDepthMask(true);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 	}
 }

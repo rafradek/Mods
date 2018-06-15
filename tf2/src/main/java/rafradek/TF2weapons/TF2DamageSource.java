@@ -14,5 +14,6 @@ public interface TF2DamageSource {
 	void setAttackSelf();
 	int getAttackFlags();
 	void addAttackFlag(int flag);
-	
+	float getAttackPower();
+	void setAttackPower(float power);
 }

@@ -2,6 +2,7 @@ package rafradek.TF2weapons.building;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -11,12 +12,14 @@ import com.google.common.base.Predicate;
 
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -64,6 +67,7 @@ public class EntitySentry extends EntityBuilding {
 	public boolean shootRocket;
 	public boolean shootBullet;
 	public int mercsKilled;
+	public float attackRateMult = 1;
 	//public SentryLookHelper lookHelper;
 	private static final DataParameter<Integer> AMMO = EntityDataManager.createKey(EntitySentry.class,
 			DataSerializers.VARINT);
@@ -75,7 +79,10 @@ public class EntitySentry extends EntityBuilding {
 			DataSerializers.BOOLEAN);
 	private static final DataParameter<Byte> TARGET = EntityDataManager.createKey(EntitySentry.class,
 			DataSerializers.BYTE);
+	private static final DataParameter<Boolean> MINI = EntityDataManager.createKey(EntitySentry.class,
+			DataSerializers.BOOLEAN);
 
+	private static final AttributeModifier MINI_HEALTH_MODIFIER = new AttributeModifier(UUID.fromString("1184831d-b1dc-40c8-86e6-34fa8f30bada"), "minisentry", -6, 0);
 	public EntitySentry(World worldIn) {
 		super(worldIn);
 		this.setSize(0.8f, 0.8f);
@@ -92,20 +99,26 @@ public class EntitySentry extends EntityBuilding {
 		}
 	}
 
-	public EntitySentry(World worldIn, EntityLivingBase owner) {
-		super(worldIn, owner);
-		this.setSize(0.8f, 0.8f);
-		//this.lookHelper=new SentryLookHelper(this);
-	}
-
 	@Override
 	public void adjustSize() {
-		if (this.getLevel() == 1)
-			this.setSize(0.8f, 0.8f);
-		else if (this.getLevel() == 2)
-			this.setSize(1f, 1f);
-		else if (this.getLevel() == 3)
-			this.setSize(1f, 1.2f);
+		if (this.getLevel() == 1) {
+			this.width = 0.8f;
+			this.height = 0.8f;
+		}
+		else if (this.getLevel() == 2) {
+			this.width = 1f;
+			this.height = 1f;
+		}
+		else if (this.getLevel() == 3) {
+			this.width = 1f;
+		 	this.height = 1.2f;
+		}
+		if (this.isMini()) {
+			this.width *= 0.65f;
+			this.height *= 0.65f;
+		}
+		this.height -=0.1f;
+		this.setSize(this.width, this.height+0.1f);
 		//System.out.println(x);
 	}
 
@@ -210,6 +223,7 @@ public class EntitySentry extends EntityBuilding {
 		this.dataManager.register(KILLS, 0);
 		this.dataManager.register(TARGET, (byte) -1);
 		this.dataManager.register(CONTROLLED, Boolean.valueOf(false));
+		this.dataManager.register(MINI, Boolean.valueOf(false));
 	}
 
 	public void shootRocket(EntityLivingBase owner) {
@@ -262,8 +276,13 @@ public class EntitySentry extends EntityBuilding {
 			if(this.getOwnerId() != null && this.ticksExisted % 10 == 0)
 				TF2Util.attractMobs(this, this.world);
 			this.attackDelay += this.getLevel() > 1 ? 2.5f : 5f;
+			if (this.isMini())
+				this.attackDelay /= 1.5f;
 			if (this.isControlled())
 				this.attackDelay /= 2f;
+			
+			this.attackDelay *= this.attackRateMult;
+			
 			this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
 					1f);
 			List<RayTraceResult> list = TF2Util.pierce(this.world, this, this.posX,
@@ -275,12 +294,14 @@ public class EntitySentry extends EntityBuilding {
 					DamageSource src = TF2Util.causeDirectDamage(sentryBullet, owner, 0).setProjectile();
 
 					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.sentryBullet,
-							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), 1.6f, src)) {
+							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), this.isMini() ? 0.8f : 1.6f, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();
 						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
+						if (this.isMini())
+							dist = dist.scale(0.55);
 						if(this.isControlled())
-							dist=dist.scale(0.25);
+							dist=dist.scale(0.35);
 						if(bullet.entityHit instanceof EntityLivingBase )
 							dist=dist.scale(1-((EntityLivingBase) bullet.entityHit).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue());
 						if(dist.lengthSquared()>0f) {
@@ -334,6 +355,10 @@ public class EntitySentry extends EntityBuilding {
 		return this.dataManager.get(TARGET);
 	}
 
+	public boolean isMini() {
+		return this.dataManager.get(MINI);
+	}
+	
 	public void setAmmo(int ammo) {
 		this.dataManager.set(AMMO, ammo);
 	}
@@ -353,7 +378,23 @@ public class EntitySentry extends EntityBuilding {
 	public void setTargetInfo(int target) {
 		this.dataManager.set(TARGET, (byte) target);
 	}
+	
+	public void setMini(boolean mini) {
+		this.dataManager.set(MINI, mini);
+		
+		if (mini) {
+			TF2Util.addModifierSafe(this, SharedMonsterAttributes.MAX_HEALTH, MINI_HEALTH_MODIFIER, true);
+			this.adjustSize();
+		}
+		
+		if (mini && this.isConstructing())
+			this.setHealth(Math.max(this.getHealth(), this.getMaxHealth()*0.5f));
+	}
 
+	public int getMaxLevel() {
+		return this.isMini() ? 1 : 3;
+	}
+	
 	public int getAttackFlags() {
 		if (this.getTargetInfo() == -1)
 			this.setTargetInfo(this.getOwner() != null && this.getOwner() instanceof EntityPlayer ? 
@@ -371,17 +412,20 @@ public class EntitySentry extends EntityBuilding {
 		par1NBTTagCompound.setShort("Kills", (short) this.getKills());
 		par1NBTTagCompound.setShort("MercKills", (short) this.mercsKilled);
 		par1NBTTagCompound.setShort("AttackFlags", (short) this.getTargetInfo());
+		par1NBTTagCompound.setBoolean("Mini", this.isMini());
+		par1NBTTagCompound.setFloat("AttackRateMult", this.attackRateMult);
 	}
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readEntityFromNBT(par1NBTTagCompound);
-
+		this.setMini(par1NBTTagCompound.getBoolean("Mini"));
 		this.setAmmo(par1NBTTagCompound.getShort("Ammo"));
 		this.setRocketAmmo(par1NBTTagCompound.getShort("RocketAmmo"));
 		this.setKills(par1NBTTagCompound.getShort("Kills"));
 		this.mercsKilled=par1NBTTagCompound.getShort("MercKills");
 		this.setTargetInfo(par1NBTTagCompound.getShort("AttackFlags"));
+		this.attackRateMult = par1NBTTagCompound.getFloat("AttackRateMult");
 	}
 
 	@Override
@@ -444,13 +488,17 @@ public class EntitySentry extends EntityBuilding {
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
-		if (!this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+			if (!this.world.isRemote)
 			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
 		return true;
 	}
 	
+	public int getBuildingID() {
+		return 0;
+	}
 	public void onDeath(DamageSource s){
 		super.onDeath(s);
 		/*if(s.getEntity() !=null && s.getEntity() instanceof EntityPlayer && s instanceof TF2DamageSource && !((TF2DamageSource)s).getWeapon().isEmpty() && ItemFromData.getData(((TF2DamageSource)s).getWeapon()).getName().equals("pistol")){
@@ -460,10 +508,10 @@ public class EntitySentry extends EntityBuilding {
 	
 	@SideOnly(Side.CLIENT)
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
-		ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+		ClientProxy.setColor(TF2Util.getTeamColor(this), 0.7f, 0, 0.25f, 0.8f);
 		
 		gui.drawTexturedModalRect(20, 2, 0, 112,124, 60);
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 		gui.drawTexturedModalRect(0, 0, 0, 48, 144, 64);
 		/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		renderer.pos(width / 2 - 72, height / 2 + 84, 0.0D).tex(0.0D, 0.4375D).endVertex();
@@ -479,7 +527,10 @@ public class EntitySentry extends EntityBuilding {
 		renderer.pos(67, 8, 0.0D).tex(0.9375D, imagePos).endVertex();
 		renderer.pos(19, 8, 0.0D).tex(0.75D, imagePos).endVertex();
 		tessellator.draw();
-
+		
+		if (!this.isEntityAlive())
+			return;
+		
 		imagePos = this.getLevel() == 3 ? 0D : 0.0625D;
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		renderer.pos(67, 57, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
@@ -509,14 +560,14 @@ public class EntitySentry extends EntityBuilding {
 		renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
 		renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
 		tessellator.draw();
-
+		
 		gui.drawString(gui.getFontRenderer(), Integer.toString(this.getKills()),
 				85, 9, 16777215);
 		float health = this.getHealth() / this.getMaxHealth();
 		if (health > 0.33f) {
-			GL11.glColor4f(0.9F, 0.9F, 0.9F, 1F);
+			GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
 		} else {
-			GL11.glColor4f(0.85F, 0.0F, 0.0F, 1F);
+			GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
 		}
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		for (int i = 0; i < health * 11; i++) {
@@ -529,7 +580,7 @@ public class EntitySentry extends EntityBuilding {
 			tessellator.draw();
 		}
 
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.33F);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
 		renderer.begin(7, DefaultVertexFormats.POSITION);
 		renderer.pos(85, 38, 0.0D).endVertex();
 		renderer.pos(140, 38, 0.0D).endVertex();
@@ -544,7 +595,7 @@ public class EntitySentry extends EntityBuilding {
 		renderer.pos(85, 42, 0.0D).endVertex();
 		tessellator.draw();
 
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.85F);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
 		renderer.begin(7, DefaultVertexFormats.POSITION);
 		renderer.pos(85, 38, 0.0D).endVertex();
 		renderer.pos(85 + (double) this.getAmmo() / (double) this.getMaxAmmo() * 55D,
@@ -561,6 +612,7 @@ public class EntitySentry extends EntityBuilding {
 		renderer.pos(85 + xOffset, 42, 0.0D).endVertex();
 		renderer.pos(85, 42, 0.0D).endVertex();
 		tessellator.draw();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 	
 	public int getGuiHeight() {
@@ -568,7 +620,7 @@ public class EntitySentry extends EntityBuilding {
 	}
 	
 	public int getConstructionTime() {
-		return 10500;
+		return this.isMini() ? 4200 : 10500;
 	}
 
 }

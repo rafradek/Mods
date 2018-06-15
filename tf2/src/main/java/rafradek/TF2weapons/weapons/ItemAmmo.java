@@ -71,12 +71,14 @@ public class ItemAmmo extends Item {
 		return AMMO_MAX_STACK[stack.getMetadata()];
 	}
 
-	public void consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
+	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
 		if (stack == STACK_FILL)
-			return;
+			return 0;
 		// if(EntityDispenser.isNearDispenser(living.world, living)) return;
 		if (amount > 0) {
+			int left = Math.max(0, amount - stack.getCount());
 			stack.shrink(amount);
+			return left;
 
 			/*if (stack.isEmpty() && living instanceof EntityPlayer) {
 				
@@ -95,6 +97,7 @@ public class ItemAmmo extends Item {
 				((EntityPlayer) living).inventory.deleteStack(stack);
 			}*/
 		}
+		return 0;
 	}
 
 	
@@ -103,5 +106,9 @@ public class ItemAmmo extends Item {
 		if (!world.isRemote)
 			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
 		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+	}
+	
+	public int getAmount(ItemStack stack) {
+		return stack.getCount();
 	}
 }

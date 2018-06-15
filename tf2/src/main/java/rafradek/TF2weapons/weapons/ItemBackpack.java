@@ -80,7 +80,7 @@ public class ItemBackpack extends ItemFromData {
 	}
 
 	@Override
-	public void onArmorTick(World world, final EntityPlayer player, ItemStack itemStack) {
+	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
 		this.onArmorTickAny(world, player, itemStack);
 	}
 	
@@ -88,7 +88,7 @@ public class ItemBackpack extends ItemFromData {
         return EntityEquipmentSlot.CHEST;
     }
 	
-	public void onArmorTickAny(World world, final EntityLivingBase player, ItemStack itemStack) {
+	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {
 				float heal = TF2Attribute.getModifier("Health Regen", itemStack, 0, player);

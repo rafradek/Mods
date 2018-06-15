@@ -164,8 +164,11 @@ public class ItemCloak extends ItemFromData {
 				stack.setItemDamage(Math.min(this.getMaxDamage(stack), 
 						stack.getItemDamage()+this.getMaxDamage(stack)-(int)TF2Attribute.getModifier("Cloak Drain", stack, this.getMaxDamage(stack),living)));
 			}
-			else
+			else {
 				living.playSound(ItemFromData.getSound(stack, PropertyType.DECLOAK_SOUND), 1.5f, 1);
+				if (this.isFeignDeath(stack, living))
+					living.setSilent(false);
+			}
 			if (!world.isRemote) {
 				// TF2weapons.sendTracking(new
 				// TF2Message.PropertyMessage("IsCloaked",

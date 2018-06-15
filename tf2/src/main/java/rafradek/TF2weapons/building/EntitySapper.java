@@ -22,14 +22,6 @@ public class EntitySapper extends EntityBuilding {
 		this.setSize(1f, 1.1f);
 	}
 
-	public EntitySapper(World worldIn, EntityLivingBase owner, EntityBuilding building, ItemStack sapper) {
-		super(worldIn, owner);
-		this.setSize(building.width + 0.1f, building.height + 0.1f);
-		// building.sapper=this;
-		this.sappedBuilding = building;
-		this.sapperItem = sapper;
-	}
-
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();

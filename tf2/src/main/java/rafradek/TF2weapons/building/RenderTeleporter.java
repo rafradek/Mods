@@ -71,10 +71,10 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			GlStateManager.disableLighting();
 			GL11.glEnable(GL11.GL_BLEND);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.7F);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 			/*
-			 * if(TF2weapons.getTeamForDisplay(living)==0){ GL11.glColor4f(1.0F,
-			 * 0.0F, 0.0F, 0.28F); } else{ GL11.glColor4f(0.0F, 0.0F, 1.0F,
+			 * if(TF2weapons.getTeamForDisplay(living)==0){ GlStateManager.color(1.0F,
+			 * 0.0F, 0.0F, 0.28F); } else{ GlStateManager.color(0.0F, 0.0F, 1.0F,
 			 * 0.28F); }
 			 */
 			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
@@ -86,7 +86,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 
 			if(living.getColor() != -1) {
 				float[] color=EntitySheep.getDyeRgb(EnumDyeColor.byDyeDamage(living.getColor()));
-				GL11.glColor4f(color[0], color[1], color[2], 0.85F);
+				GlStateManager.color(color[0], color[1], color[2], 0.85F);
 			
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 				renderer.pos(-0.5, 0.0D, 0.5).tex(0.75D, 1D).endVertex();
@@ -96,7 +96,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 				tessellator.draw();
 			}
 			
-			GL11.glColor4f(1F, 1F, 1F, 1.0F);
+			GlStateManager.color(1F, 1F, 1F, 1.0F);
 			GL11.glDisable(GL11.GL_BLEND);
 			// GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();

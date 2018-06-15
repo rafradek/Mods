@@ -1,25 +1,47 @@
 package rafradek.TF2weapons.weapons;
 
+import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.IItemSlotNumber;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.building.EntityTeleporter;
+import rafradek.TF2weapons.building.TeleporterDim;
+import rafradek.TF2weapons.building.EntityTeleporter.TeleporterData;
+import rafradek.TF2weapons.characters.ItemToken;
+import rafradek.TF2weapons.message.TF2Message;
 
-public class ItemWrench extends ItemMeleeWeapon {
+public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 
 	/*@Override
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par2List,
@@ -77,7 +99,7 @@ public class ItemWrench extends ItemMeleeWeapon {
 						metalLeft -= metalUse * 2;
 					}
 				}
-				if (building.getLevel() < 3) {
+				if (building.getLevel() < building.getMaxLevel()) {
 					metalUse = Math.min(Math.min(200 - building.getProgress(), (int)TF2Attribute.getModifier("Upgrade Rate", stack, 25 * metalMult, attacker)), metalLeft);
 					float teleUpgradeRate = building instanceof EntityTeleporter ? TF2Attribute.getModifier("Teleporter Cost", stack, 1f, attacker) : 1;
 					building.setProgress(Math.min(building.getProgress() + (int)(metalUse * teleUpgradeRate), 200));
@@ -105,7 +127,7 @@ public class ItemWrench extends ItemMeleeWeapon {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		ItemStack stack=living.getHeldItem(hand);
-		if(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()>=20 && TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 0) {
+		if(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()>=20 && TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 1) {
 			living.setActiveHand(hand);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
 		}
@@ -130,5 +152,72 @@ public class ItemWrench extends ItemMeleeWeapon {
 	}
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
+	}
+
+	@Override
+	public boolean catchSlotHotkey(ItemStack stack, EntityPlayer player) {
+		return ItemToken.allowUse(player, "engineer") && player.getItemInUseCount()<770;
+	}
+
+	@Override
+	public void onSlotSelection(ItemStack stack, EntityPlayer player, int slot) {
+		if (!player.world.isRemote && player.getActiveItemStack().getItem() instanceof ItemWrench) {
+			int dimension = 0;
+			BlockPos pos = null;
+			if(slot == 8) {
+				dimension = player.dimension;
+				pos=player.getBedLocation(player.dimension);
+				if(pos == null) {
+					pos = player.getBedLocation(0);
+					dimension = 0;
+				}
+				if(pos != null)
+					pos = EntityPlayer.getBedSpawnLocation(TF2weapons.server.getWorld(dimension), pos, player.isSpawnForced(dimension));
+				else
+					pos = TF2weapons.server.getWorld(0).provider.getRandomizedSpawnPoint();
+			}
+			else if(EntityTeleporter.teleporters.containsKey(player.getUniqueID())) {
+				TeleporterData[] data=EntityTeleporter.teleporters.get(player.getUniqueID());
+				if(data[slot]!=null) {
+					dimension = data[slot].dimension;
+					pos = data[slot];
+				}
+			}
+			if (pos != null) {
+				if (dimension != player.dimension)
+					player.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) player, 
+							dimension, new TeleporterDim((WorldServer) player.world,pos));
+				player.setPositionAndUpdate(pos.getX()+0.5, pos.getY()+0.23, pos.getZ()+0.5);
+				player.getCooldownTracker().setCooldown(MapList.weaponClasses.get("wrench"), 200);
+				TF2Util.playSound(player, TF2Sounds.MOB_TELEPORTER_SEND, 1.0F, 1.0F);
+				player.resetActiveHand();
+				player.getCapability(TF2weapons.WEAPONS_CAP, null).consumeMetal(20, false);
+			}
+		}
+	}
+	
+	@Override
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder renderer, ScaledResolution resolution) {
+		if (player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770) {
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			GL11.glDepthMask(false);
+			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+			GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
+			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(resolution.getScaledWidth()/2-80, resolution.getScaledHeight()/2-32, 64, 192, 64, 64);
+			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(resolution.getScaledWidth()/2+16, resolution.getScaledHeight()/2-32, 0, 192, 64, 64);
+			
+			gui.drawCenteredString(gui.getFontRenderer(), "(1-8)", resolution.getScaledWidth()/2-48, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
+			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.selectlocation"), resolution.getScaledWidth()/2, resolution.getScaledHeight()/2-50, 0xFFFFFFFF);
+			gui.drawCenteredString(gui.getFontRenderer(), "(9)", resolution.getScaledWidth()/2+48, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
+			
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		}
 	}
 }

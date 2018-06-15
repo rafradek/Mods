@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemCleaver extends ItemProjectileWeapon {
@@ -23,15 +24,20 @@ public class ItemCleaver extends ItemProjectileWeapon {
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
-			if(!(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode))
-			stack.shrink(1);
 			if(living instanceof EntityPlayer)
-				((EntityPlayer)living).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, living)/50);
+				((EntityPlayer)living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown?this.getFiringSpeed(stack, living) / 50 : 120);
+			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
+				stack.shrink(1);
+			
 		}
 		return true;
 	}
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return super.canFire(world, living, stack) && !(living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this));
+	}
+	
+	public boolean isProjectileInfinite(EntityLivingBase living, ItemStack stack) {
+		return TF2ConfigVars.freeUseItems || !(living instanceof EntityPlayer) || ((EntityPlayer)living).capabilities.isCreativeMode;
 	}
 }

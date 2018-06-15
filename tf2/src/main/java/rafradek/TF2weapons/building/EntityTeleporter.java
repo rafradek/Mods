@@ -4,8 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.lwjgl.opengl.GL11;
+
 import com.google.common.base.Predicate;
 
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
@@ -24,6 +31,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2ConfigVars;
@@ -63,11 +72,6 @@ public class EntityTeleporter extends EntityBuilding {
 
 	public EntityTeleporter(World worldIn) {
 		super(worldIn);
-		this.setSize(1f, 0.2f);
-	}
-
-	public EntityTeleporter(World worldIn, EntityLivingBase living) {
-		super(worldIn, living);
 		this.setSize(1f, 0.2f);
 	}
 
@@ -231,7 +235,8 @@ public class EntityTeleporter extends EntityBuilding {
 			}
 			return true;
 		}
-		if (!this.world.isRemote && player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
+			if (!this.world.isRemote)
 			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
@@ -255,6 +260,10 @@ public class EntityTeleporter extends EntityBuilding {
 	public void setExit(boolean exit) {
 		// if(this.getOwner()!=null&&exit&&teleporters.get(UUID.fromString(this.getOwnerId()))[this.getID()]!=null)
 		// return;
+		if (this.tpID == -1) {
+			tpCount++;
+			this.tpID = tpCount;
+		}
 		this.dataManager.set(EXIT, exit);
 		if (this.getOwnerId() != null)
 			this.updateTeleportersData(false);
@@ -387,6 +396,10 @@ public class EntityTeleporter extends EntityBuilding {
 		return this.getOwnerId() != null ? TF2ConfigVars.teleporterUseEnergy : 0;
 	}
 	
+	public int getBuildingID() {
+		return 2 + (this.isExit() ? 1 : 0);
+	}
+	
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
@@ -405,12 +418,215 @@ public class EntityTeleporter extends EntityBuilding {
 		this.tpID = par1NBTTagCompound.getInteger("TeleID");
 		this.setTeleports(par1NBTTagCompound.getShort("Teleports"));
 		this.getDataManager().set(CHANNEL, par1NBTTagCompound.getByte("TeleExitID"));
-		if(teleporters.get(this.getOwnerId())[this.getID()] == null || teleporters.get(this.getOwnerId())[this.getID()].id == this.tpID)
+		if(!this.world.isRemote && ((teleporters.get(this.getOwnerId())[this.getID()] == null || teleporters.get(this.getOwnerId())[this.getID()].id == this.tpID)))
 			//this.setID(par1NBTTagCompound.getByte("TeleExitID"));
 			this.setExit(par1NBTTagCompound.getBoolean("TeleExit"));
+		if (this.world.isRemote)
+			this.getDataManager().set(EXIT,par1NBTTagCompound.getBoolean("TeleExit"));
 		this.getDataManager().set(COLOR, par1NBTTagCompound.getByte("Color"));
 	}
 
+	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
+        // GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        // gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+        // event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+		ClientProxy.setColor(TF2Util.getTeamColor(this), 0.7f, 0, 0.25f, 0.8f);
+        gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
+        /*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.0D, 0.1875D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D, 0.1875D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D, 0D).endVertex();
+        renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.0D, 0D).endVertex();
+        tessellator.draw();*/
+
+        double imagePos = this.isExit() ? 0.1875D : 0;
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(19, 48, 0.0D).tex(0.5625D + imagePos, 0.9375D).endVertex();
+		renderer.pos(69, 48, 0.0D).tex(0.75D + imagePos, 0.9375D).endVertex();
+		renderer.pos(69, 0, 0.0D).tex(0.75D + imagePos, 0.75D).endVertex();
+		renderer.pos(19, 0, 0.0D).tex(0.5625D + imagePos, 0.75D).endVertex();
+		tessellator.draw();
+
+		if (!this.isEntityAlive())
+			return;
+		
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+        renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
+        renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
+        renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
+        tessellator.draw();
+
+        imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
+        renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
+        tessellator.draw();
+
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+            renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
+            renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
+            renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
+            renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
+            tessellator.draw();
+        }
+        if (this.getTPprogress() <= 0) {
+			gui.drawString(gui.getFontRenderer(),
+					this.getTeleports() + " (ID: " + (this.getID() + 1) + ")", 85,
+					10, 16777215);
+		}
+        
+        float health = this.getHealth() / this.getMaxHealth();
+        if (health > 0.33f) {
+            GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
+        } else {
+            GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
+        }
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        for (int i = 0; i < health * 8; i++) {
+
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
+            renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
+        if (this.getTPprogress() > 0) {
+	       
+	        renderer.begin(7, DefaultVertexFormats.POSITION);
+	        renderer.pos(85, 21, 0.0D).endVertex();
+	        renderer.pos(140, 21, 0.0D).endVertex();
+	        renderer.pos(140, 7, 0.0D).endVertex();
+	        renderer.pos(85, 7, 0.0D).endVertex();
+	        tessellator.draw();
+        }
+
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(140, 41, 0.0D).endVertex();
+            renderer.pos(140, 27, 0.0D).endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
+        if (this.getTPprogress() > 0) {
+        	double tpProgress = (1 - ((double) this.getTPprogress() / (this.getLevel() == 1 ? 200 : (this.getLevel() == 2 ? 100 : 60)))) * 55;
+	        
+	        renderer.begin(7, DefaultVertexFormats.POSITION);
+	        renderer.pos(85, 21, 0.0D).endVertex();
+	        renderer.pos(85 + tpProgress, 21, 0.0D).endVertex();
+	        renderer.pos(85 + tpProgress, 7, 0.0D).endVertex();
+	        renderer.pos(85, 7, 0.0D).endVertex();
+	        tessellator.draw();
+        }
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
+                    .endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
+                    .endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+		// GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+		// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+		// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+
+        
+/*
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(69, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(0.9375D, 0.3125D).endVertex();
+		renderer.pos(83, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(1D, 0.3125D).endVertex();
+		renderer.pos(83, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(1D, 0.25D).endVertex();
+		renderer.pos(69, event.getResolution().getScaledHeight() / 2 + 34, 0.0D).tex(0.9375D, 0.25D).endVertex();
+		tessellator.draw();
+
+		imagePos = teleporter.getLevel() == 1 ? 0.3125D : teleporter.getLevel() == 2 ? 0.375D : 0.4375D;
+		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+		renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 46, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+		renderer.pos(event.getResolution().getScaledWidth() / 2 - 6, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(1D, imagePos).endVertex();
+		renderer.pos(event.getResolution().getScaledWidth() / 2 - 22, event.getResolution().getScaledHeight() / 2 + 30, 0.0D).tex(0.9375D, imagePos).endVertex();
+		tessellator.draw();
+
+		if (teleporter.getLevel() < 3) {
+			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(0.9375D, 0.125D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 70, 0.0D).tex(1D, 0.125D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 11, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(1D, 0.0625).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 5, event.getResolution().getScaledHeight() / 2 + 54, 0.0D).tex(0.9375D, 0.0625).endVertex();
+			tessellator.draw();
+		}
+		if (teleporter.getTPprogress() <= 0) {
+			gui.drawString(gui.getFontRenderer(),
+					teleporter.getTeleports() + " (ID: " + (teleporter.getID() + 1) + ")", event.getResolution().getScaledWidth() / 2 + 13,
+					event.getResolution().getScaledHeight() / 2 + 38, 16777215);
+		}
+		float health = teleporter.getHealth() / teleporter.getMaxHealth();
+		if (health > 0.33f) {
+			GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
+		} else {
+			GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
+		}
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		for (int i = 0; i < health * 8; i++) {
+
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 67 - i * 5, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 63, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 - 53, event.getResolution().getScaledHeight() / 2 + 71 - i * 5, 0.0D).endVertex();
+			tessellator.draw();
+		}
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
+		if (teleporter.getTPprogress() > 0) {
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+			tessellator.draw();
+		}
+		if (teleporter.getLevel() < 3) {
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 68, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+			tessellator.draw();
+		}
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
+		if (teleporter.getTPprogress() > 0) {
+			double tpProgress = (1 - ((double) teleporter.getTPprogress() / (teleporter.getLevel() == 1 ? 200 : (teleporter.getLevel() == 2 ? 100 : 60)))) * 55;
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 49, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + tpProgress, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 35, 0.0D).endVertex();
+			tessellator.draw();
+		}
+		if (teleporter.getLevel() < 3) {
+			renderer.begin(7, DefaultVertexFormats.POSITION);
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 69, 0.0D).endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 69, 0.0D)
+					.endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13 + teleporter.getProgress() * 0.275D, event.getResolution().getScaledHeight() / 2 + 55, 0.0D)
+					.endVertex();
+			renderer.pos(event.getResolution().getScaledWidth() / 2 + 13, event.getResolution().getScaledHeight() / 2 + 55, 0.0D).endVertex();
+			tessellator.draw();
+		}*/
+	}
+	
 	public static class TeleporterData extends BlockPos {
 
 		public final int dimension;

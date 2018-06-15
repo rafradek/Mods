@@ -72,11 +72,14 @@ import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.PlayerPersistStorage;
 import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
@@ -156,6 +159,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public ArrayList<AttributeModifier> playerAttributes = new ArrayList<>();
 	public boolean[] isEmpty;
 	protected boolean noEquipment;
+	private boolean initial;
 
 	public EntityTF2Character(World p_i1738_1_) {
 		super(p_i1738_1_);
@@ -163,7 +167,12 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.tasks.addTask(1, new EntityAIMoveTowardsRestriction2(this, 1.25f));
 		this.tasks.addTask(1, avoidSentry = new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
 			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSqToEntity(this) < 435;
-		}, 21, 1.0f, 1.0f));
+		}, 21, 1.0f, 1.0f){
+			public boolean shouldContinueExecuting()
+		    {
+		        return super.shouldContinueExecuting() && !(this.closestLivingEntity == null || this.closestLivingEntity.getDistanceSqToEntity(EntityTF2Character.this) > 435);
+		    }
+		});
 		this.tasks.addTask(2, new EntityAIFollowTrader(this));
 		this.tasks.addTask(3, new EntityAIFindDispenser(this, 20f));
 		this.tasks.addTask(6, wander = new EntityAIWander(this, 1.0D));
@@ -496,8 +505,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				this.alert = false;
 			}
 		}
-		if (this.getHeldItem(EnumHand.MAIN_HAND) != null && this.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemUsable)
-			this.getHeldItem(EnumHand.MAIN_HAND).getItem().onUpdate(getHeldItem(EnumHand.MAIN_HAND), world, this, 0, true);
 
 		for (int i = 19; i > 0; i--)
 			this.lastRotation[i] = this.lastRotation[i - 1];
@@ -576,6 +583,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		for (int j = 0; j < this.ammoCount.length; j++) {
 			this.ammoCount[j] = this.getMaxAmmo(j);
 		}
+		
 		return p_110161_1_;
 	}
 
@@ -699,8 +707,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 			// this.world.getCapability(TF2weapons.WORLD_CAP,
 			// null).lostMercPos.remove(this.getOwnerId(), this.getPos());
-			this.world.getCapability(TF2weapons.WORLD_CAP, null).medicMercPos.remove(this.getOwnerId(), this.getPos());
-			this.world.getCapability(TF2weapons.WORLD_CAP, null).restMercPos.remove(this.getOwnerId(), this.getPos());
+			PlayerPersistStorage.get(this.world, this.getOwnerId()).medicMercPos.remove(this.getPos());
+			PlayerPersistStorage.get(this.world, this.getOwnerId()).restMercPos.remove(this.getPos());
 		}
 
 		this.tradeLevel = tag.getByte("TradeLevel");
@@ -751,12 +759,18 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			tag.setUniqueId("Owner", this.getOwnerId());
 			tag.setString("OwnerName", this.ownerName);
 			tag.setByte("Order", (byte) this.getOrder().ordinal());
-			if (this.getOrder() == Order.FOLLOW)
-				this.world.getCapability(TF2weapons.WORLD_CAP, null).lostMercPos.put(this.getOwnerId(), this.getPos());
-			else if (this.getOrder() == Order.HOLD && this instanceof EntityMedic)
-				this.world.getCapability(TF2weapons.WORLD_CAP, null).medicMercPos.put(this.getOwnerId(), this.getPos());
-			else if (this.getOrder() == Order.HOLD && !(this instanceof EntityEngineer))
-				this.world.getCapability(TF2weapons.WORLD_CAP, null).restMercPos.put(this.getOwnerId(), this.getPos());
+			if (this.getOrder() == Order.FOLLOW) {
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).lostMercPos.add(this.getPos());
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).setSave();
+			}
+			else if (this.getOrder() == Order.HOLD && this instanceof EntityMedic) {
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).medicMercPos.add(this.getPos());
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).setSave();
+			}
+			else if (this.getOrder() == Order.HOLD && !(this instanceof EntityEngineer)) {
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).restMercPos.add(this.getPos());
+				this.world.getCapability(TF2weapons.WORLD_CAP, null).getPlayerStorage(this.getOwnerId()).setSave();
+			}
 		}
 		tag.setByte("TradeLevel", (byte) this.tradeLevel);
 		tag.setByteArray("Empty", new byte[] { (byte) (isEmpty[0] ? 1 : 0), (byte) (isEmpty[1] ? 1 : 0), (byte) (isEmpty[2] ? 1 : 0), (byte) (isEmpty[3] ? 1 : 0) });
@@ -766,21 +780,20 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	public boolean getCanSpawnHere() {
-		if (detectBanner() || TF2EventsCommon.isSpawnEvent(world))
-			return !(TF2ConfigVars.overworldOnly && this.dimension != 0) && this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
+		if (detectBanner())
+			return this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
 
-		if (this.isDead) {
+		if (this.isDead || (TF2ConfigVars.overworldOnly && this.dimension != 0)) {
 			return false;
 		}
 
-		boolean validLight = this.isValidLightLevel();
-		Chunk chunk = this.world.getChunkFromBlockCoords(new BlockPos(MathHelper.floor(this.posX), 0, MathHelper.floor(this.posZ)));
-		boolean spawnDay = this.rand.nextInt(32) == 0 && chunk.getRandomWithSeed(987234911L).nextInt(10) == 0;
-
-		if (!spawnDay && !validLight)
+		boolean naturalGround = TF2Util.isNaturalBlock(world, this.getPosition().down(), world.getBlockState(this.getPosition().down()));
+		boolean validLight = this.isValidLightLevel(naturalGround, TF2EventsCommon.isSpawnEvent(world));
+		
+		if (!validLight)
 			return false;
 		int time = (int) Math.min((this.world.getWorldInfo().getWorldTime() / 24000), 4);
-
+		
 		return (time == 4 || this.rand.nextInt(4) < time) && this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
 	}
 
@@ -837,22 +850,26 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		}
 	}
 
-	protected boolean isValidLightLevel() {
+	protected boolean isValidLightLevel(boolean isNaturalBlock, boolean event) {
+		
 		BlockPos blockpos = new BlockPos(this.posX, this.getEntityBoundingBox().minY, this.posZ);
-
-		if (this.world.getLightFor(EnumSkyBlock.SKY, blockpos) > this.rand.nextInt(32))
+		int skylight = this.world.getLightFor(EnumSkyBlock.SKY, blockpos);
+		if (16 + skylight < this.rand.nextInt(32))
 			return false;
 		else {
+			int lightbl = this.world.getLightFor(EnumSkyBlock.BLOCK, blockpos);
+			if ((!isNaturalBlock && skylight < 13) || (lightbl > 1 && !event))
+				return false;
 			int i = this.world.getLightFromNeighbors(blockpos);
-
-			if (this.world.isThundering()) {
+			/*if (this.world.isThundering()) {
 				int j = this.world.getSkylightSubtracted();
 				this.world.setSkylightSubtracted(10);
 				i = this.world.getLightFromNeighbors(blockpos);
 				this.world.setSkylightSubtracted(j);
-			}
-
-			return i <= 4 + this.rand.nextInt(4);
+			}*/
+			Chunk chunk = this.world.getChunkFromBlockCoords(blockpos);
+			boolean spawnDay = event || (this.rand.nextInt(32) == 0 && chunk.getRandomWithSeed(987234911L).nextInt(10) == 0);
+			return spawnDay || i <= 4 + this.rand.nextInt(4);
 		}
 	}
 

@@ -52,6 +52,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
+		
 		if (par5 && par1ItemStack.getTagCompound() != null)
 			// System.out.println("EntityTicked" + cap.state+ par3Entity);
 			if ((cap.state == 0 || cap.state == 4) && cap.chargeTicks > 0) {

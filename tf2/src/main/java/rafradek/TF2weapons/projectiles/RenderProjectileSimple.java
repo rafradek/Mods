@@ -45,7 +45,7 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 	public void doRender(EntityProjectileSimple entity, double x, double y, double z, float yaw, float partialTick) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
-		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
+		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);
 		if(entity.getType() != 2 && entity.getType() != 3)
 			GL11.glScalef(0.25f, 0.25f, 0.25f);
 		if (entity.getType() != 3) {
@@ -64,7 +64,7 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 		if (entity.getCritical() == 2)
 		GlStateManager.disableLighting();
 	
-		// GL11.glColor4f(0.0F, 0.0F, 1.0F, 1F);
+		// GlStateManager.color(0.0F, 0.0F, 1.0F, 1F);
 		if(entity.getType() == 2)
 			Minecraft.getMinecraft().getRenderItem().renderItem(ItemFromData.getNewStack("cleaver"), ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
 		else if (entity.getType() == 3) {
@@ -131,13 +131,13 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 		}
 		else	
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
-		// GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+		// GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 		// GlStateManager.enableTexture2D();
 		if (entity.getCritical() == 2)
 			GlStateManager.disableLighting();
 		GlStateManager.enableLighting();
 		
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 		/*
 		 * GL11.glScalef(1.5f, 1.5f, 1.5f); GL11.glEnable(GL11.GL_BLEND);
 		 * //GL11.glDisable(GL11.GL_ALPHA_TEST); OpenGlHelper.glBlendFunc(770,

@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
@@ -30,7 +31,7 @@ public class EntityEngineer extends EntityTF2Character {
 		this.tasks.addTask(3, new EntityAIRepair(this, 1, 2f));
 		this.tasks.addTask(5, new EntityAISetup(this));
 		this.tasks.removeTask(wander);
-		this.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(500);
+		this.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(TF2ConfigVars.maxMetalEngineer);
 		if (this.attack != null)
 			attack.setRange(20);
 	}
@@ -40,8 +41,19 @@ public class EntityEngineer extends EntityTF2Character {
 		return TF2weapons.lootEngineer;
 	}
 
+	@Override
+	protected void addWeapons() {
+		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("engineer", 3, this.rand, false, true, this.noEquipment));
+		super.addWeapons();
+		
+	}
 	public float[] getDropChance() {
-		return new float[] { 0.12f, 0.12f, 0.08f };
+		return new float[] { 0.12f, 0.12f, 0.08f, 0.02f };
+	}
+	
+	@Override
+	public int[] getValidSlots() {
+		return new int[] { 0, 1, 2, 3 };
 	}
 	
 	@Override
@@ -146,6 +158,10 @@ public class EntityEngineer extends EntityTF2Character {
 		return 5;
 	}
 	public boolean isAmmoFull() {
-		return this.getWepCapability().getMetal() < WeaponsCapability.MAX_METAL_ENGINEER && super.isAmmoFull();
+		return this.getWepCapability().getMetal() >= (hasSentryAndDispenser() ? 40 : Math.min(TF2ConfigVars.maxMetalEngineer, WeaponsCapability.MAX_METAL)) && super.isAmmoFull();
+	}
+	
+	public boolean hasSentryAndDispenser() {
+		return this.sentry != null && this.sentry.isEntityAlive() && this.dispenser != null && this.dispenser.isEntityAlive();
 	}
 }

@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.characters.ai;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.Path;
 import rafradek.TF2weapons.TF2Util;
@@ -13,7 +14,7 @@ public class EntityAIFindDispenser extends EntityAIBase {
 	public float range;
 	public float rangeSq;
 	
-	public EntityDispenser target;
+	public Entity target;
 	public Path path;
 	
 	public int delay;
@@ -29,9 +30,8 @@ public class EntityAIFindDispenser extends EntityAIBase {
 	public boolean shouldExecute() {
 		// TODO Auto-generated method stub
 		if(this.host.getAmmo() <= 0 || (this.host.getAttackTarget() == null && (this.host.getHealth()<this.host.getMaxHealth() || !this.host.isAmmoFull()))) {
-			for(EntityDispenser disp : host.world.getEntitiesWithinAABB(EntityDispenser.class, this.host.getEntityBoundingBox().grow(range, range/4f, range), disp -> {
-				return disp.isEntityAlive() && host.getDistanceSqToEntity(disp) <= rangeSq && TF2Util.isOnSameTeam(host, disp);
-			})) {
+			Entity disp = TF2Util.findAmmoSource(host, range, true);
+			if (disp != null) {
 				this.target = disp;
 				this.path=host.getNavigator().getPathToEntityLiving(disp);
 				return this.path != null;

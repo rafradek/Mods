@@ -108,7 +108,7 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 				renderer.pos(-0.04, 0.04, 0).endVertex();
 				renderer.pos(0.04, -0.04, 0).endVertex();
 				tessellator.draw();
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 				GL11.glDisable(GL11.GL_BLEND);
 				GlStateManager.enableLighting();
 				GlStateManager.enableTexture2D();

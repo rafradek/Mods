@@ -15,6 +15,7 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	private boolean selfdmg;
 	private int attackFlags;
 
+	public float power = 1;
 	public DamageSourceDirect(ItemStack weapon, Entity shooter, int critical) {
 		super("bullet", shooter);
 		this.weapon = weapon;
@@ -103,6 +104,16 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	@Override
 	public void addAttackFlag(int flag) {
 		this.attackFlags+=flag;
+	}
+
+	@Override
+	public float getAttackPower() {
+		return this.power;
+	}
+
+	@Override
+	public void setAttackPower(float power) {
+		this.power = power;
 	}
 
 	/*@Override

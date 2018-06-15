@@ -141,6 +141,9 @@ public class ItemMonsterPlacerPlus extends Item {
 								((EntityBuilding) entity).setConstructing(true);
 								((EntityBuilding) entity).redeploy = true;
 							}
+							if (entity instanceof EntitySentry && itemStackIn.hasTagCompound() && itemStackIn.getTagCompound().getBoolean("Mini"))
+								((EntitySentry)entity).setMini(true);
+							
 							entity.rotationYaw = playerIn.rotationYawHead;
 							entity.renderYawOffset = playerIn.rotationYawHead;
 							entity.rotationYawHead = playerIn.rotationYawHead;
@@ -167,7 +170,7 @@ public class ItemMonsterPlacerPlus extends Item {
 		EntityLiving entity = null;
 
 		for (int j = 0; j < 1; ++j) {
-			int team = 0;
+			int team = par1%2;
 			if (par1 < 18) {
 				switch (par1%9) {
 				case 0: entity = new EntityScout(par0World); break;

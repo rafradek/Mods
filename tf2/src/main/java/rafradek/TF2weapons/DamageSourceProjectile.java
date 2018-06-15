@@ -16,6 +16,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public boolean notProjectile;
 	public boolean selfdmg;
 	private int attackFlags;
+	private float power = 1;
 	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter, int critical) {
 		super("bullet", projectile, shooter);
 		this.weapon = weapon;
@@ -118,6 +119,15 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 		this.attackFlags+=flag;
 	}
 
+	@Override
+	public float getAttackPower() {
+		return this.power;
+	}
+
+	@Override
+	public void setAttackPower(float power) {
+		this.power = power;
+	}
 	/*@Override
 	public void onShieldBlock(EntityLivingBase living) {
 		// TODO Auto-generated method stub

@@ -46,7 +46,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 
 	@Override
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
-		return super.canAltFire(worldObj, player, item) && TF2Attribute.getModifier("Cannot Airblast", item, 0, player) == 0 && item.getTagCompound().getShort("reload") <= 0;
+		return super.canAltFire(worldObj, player, item) && item.getTagCompound().getShort("reload") <= 0;
 	}
 
 	@Override
@@ -142,89 +142,101 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
-		
-		living.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool = 750;
-		if (world.isRemote) {
-			if (ClientProxy.fireSounds.get(living) != null)
-				ClientProxy.fireSounds.get(living).setDone();
-			// Minecraft.getMinecraft().getSoundHandler().stopSound(ClientProxy.fireSounds.get(living));
-			return;
+		if (TF2Attribute.getModifier("Cannot Airblast", stack, 0, living) != 0) {
+			if (TF2Attribute.getModifier("Rage Crit", stack, 0, living)!=0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
+				living.setActiveHand(EnumHand.MAIN_HAND);
+				living.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
+				TF2Util.addAndSendEffect(living, new PotionEffect(TF2weapons.uber,40,0));
+				living.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
+				living.playSound(ItemFromData.getSound(stack, PropertyType.CHARGE_SOUND), 1f, 1f);
+				stack.getTagCompound().setBoolean("RageActive", true);
+			}
 		}
-		if(!(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode) && this.getAmmoAmount(living, stack)<15)
-			return;
-		this.consumeAmmoGlobal(living, stack, 15);
-		// String airblastSound=getData(stack).get("Airblast
-		// Sound").getString();
-		TF2Util.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
-
-		Vec3d lookVec = living.getLook(1f);
-		Vec3d eyeVec = new Vec3d(living.posX, living.posY + living.getEyeHeight(), living.posZ);
-		eyeVec.add(lookVec);
-		float size = TF2Attribute.getModifier("Flame Range", stack, 5, living);
-		List<Entity> list = world.getEntitiesWithinAABB(Entity.class,
-				new AxisAlignedBB(eyeVec.x - size, eyeVec.y - size, eyeVec.z - size,
-						eyeVec.x + size, eyeVec.y + size, eyeVec.z + size));
-		// System.out.println("aiming: "+lookVec+" "+eyeVec+" "+centerVec);
-		for (Entity entity : list) {
-			// System.out.println("dist: "+entity.getDistanceSq(living.posX,
-			// living.posY + (double)living.getEyeHeight(), living.posZ));
-			if (!isPushable(living, entity)
-					|| entity.getDistanceSq(living.posX, living.posY + living.getEyeHeight(), living.posZ) > size * size
-					|| !TF2Util.lookingAt(living, 60, entity.posX, entity.posY + entity.height / 2, entity.posZ))
-				continue;
-			if (entity instanceof IThrowableEntity && !(entity instanceof EntityStickybomb))
-				((IThrowableEntity) entity).setThrower(living);
-			else if (entity instanceof EntityArrow) {
-				((EntityArrow) entity).shootingEntity = living;
-				((EntityArrow) entity).setDamage(((EntityArrow) entity).getDamage() * 1.35);
+		else {
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool = 750;
+			if (world.isRemote) {
+				if (ClientProxy.fireSounds.get(living) != null)
+					ClientProxy.fireSounds.get(living).setDone();
+				// Minecraft.getMinecraft().getSoundHandler().stopSound(ClientProxy.fireSounds.get(living));
+				return;
 			}
-			if (entity instanceof IProjectile) {
-				IProjectile proj = (IProjectile) entity;
-				float speed = (float) Math.sqrt(entity.motionX * entity.motionX + entity.motionY * entity.motionY
-						+ entity.motionZ * entity.motionZ)
-						* (0.65f + TF2Attribute.getModifier("Flame Range", stack, 0.5f, living));
-				List<RayTraceResult> rayTraces = TF2Util.pierce(world, living, eyeVec.x, eyeVec.y,
-						eyeVec.z, eyeVec.x + lookVec.x * 256, eyeVec.y + lookVec.y * 256,
-						eyeVec.z + lookVec.z * 256, false, 0.08f, false);
-				if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
-					// System.out.println("hit: "+mop.hitVec);
-					proj.setThrowableHeading(rayTraces.get(0).hitVec.x - entity.posX,
-							rayTraces.get(0).hitVec.y - entity.posY - entity.height/2, rayTraces.get(0).hitVec.z - entity.posZ,
-							speed, 0);
-				else
-					proj.setThrowableHeading(eyeVec.x + lookVec.x * 256 - entity.posX,
-							eyeVec.y + lookVec.y * 256 - entity.posY,
-							eyeVec.z + lookVec.z * 256 - entity.posZ, speed, 0);
-			} else {
-				double mult = (entity instanceof EntityLivingBase ? 
-						1-((EntityLivingBase) entity).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() : 0.2)
-						+ TF2Attribute.getModifier("Flame Range", stack, 0.8f, living);
-				entity.motionX = lookVec.x * 0.6 * mult;
-				entity.motionY = (lookVec.y * 0.2 + 0.36) * mult;
-				entity.motionZ = lookVec.z * 0.6 * mult;
-			}
-			if (entity instanceof EntityProjectileBase){
-				((EntityProjectileBase) entity).reflected=true;
-				((EntityProjectileBase) entity).setCritical(Math.max(((EntityProjectileBase) entity).getCritical(), 1));
-				if(entity instanceof EntityRocket && ((EntityRocket)entity).shootingEntity instanceof EntityPlayer){
-					living.getCapability(TF2weapons.WEAPONS_CAP, null).tickAirblasted=living.ticksExisted;
+			int ammoUse = this.getActualAmmoUse(stack, living, 15);
+			if(!(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode) && this.getAmmoAmount(living, stack)<ammoUse)
+				return;
+			this.consumeAmmoGlobal(living, stack, ammoUse);
+			// String airblastSound=getData(stack).get("Airblast
+			// Sound").getString();
+			TF2Util.playSound(living, ItemFromData.getSound(stack, PropertyType.AIRBLAST_SOUND), 1f, 1f);
+	
+			Vec3d lookVec = living.getLook(1f);
+			Vec3d eyeVec = new Vec3d(living.posX, living.posY + living.getEyeHeight(), living.posZ);
+			eyeVec.add(lookVec);
+			float size = TF2Attribute.getModifier("Flame Range", stack, 5, living);
+			List<Entity> list = world.getEntitiesWithinAABB(Entity.class,
+					new AxisAlignedBB(eyeVec.x - size, eyeVec.y - size, eyeVec.z - size,
+							eyeVec.x + size, eyeVec.y + size, eyeVec.z + size));
+			// System.out.println("aiming: "+lookVec+" "+eyeVec+" "+centerVec);
+			for (Entity entity : list) {
+				// System.out.println("dist: "+entity.getDistanceSq(living.posX,
+				// living.posY + (double)living.getEyeHeight(), living.posZ));
+				if (!isPushable(living, entity)
+						|| entity.getDistanceSq(living.posX, living.posY + living.getEyeHeight(), living.posZ) > size * size
+						|| !TF2Util.lookingAt(living, 60, entity.posX, entity.posY + entity.height / 2, entity.posZ))
+					continue;
+				if (entity instanceof IThrowableEntity && !(entity instanceof EntityStickybomb))
+					((IThrowableEntity) entity).setThrower(living);
+				else if (entity instanceof EntityArrow) {
+					((EntityArrow) entity).shootingEntity = living;
+					((EntityArrow) entity).setDamage(((EntityArrow) entity).getDamage() * 1.35);
 				}
+				if (entity instanceof IProjectile) {
+					IProjectile proj = (IProjectile) entity;
+					float speed = (float) Math.sqrt(entity.motionX * entity.motionX + entity.motionY * entity.motionY
+							+ entity.motionZ * entity.motionZ)
+							* (0.65f + TF2Attribute.getModifier("Flame Range", stack, 0.5f, living));
+					List<RayTraceResult> rayTraces = TF2Util.pierce(world, living, eyeVec.x, eyeVec.y,
+							eyeVec.z, eyeVec.x + lookVec.x * 256, eyeVec.y + lookVec.y * 256,
+							eyeVec.z + lookVec.z * 256, false, 0.08f, false);
+					if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
+						// System.out.println("hit: "+mop.hitVec);
+						proj.setThrowableHeading(rayTraces.get(0).hitVec.x - entity.posX,
+								rayTraces.get(0).hitVec.y - entity.posY - entity.height/2, rayTraces.get(0).hitVec.z - entity.posZ,
+								speed, 0);
+					else
+						proj.setThrowableHeading(eyeVec.x + lookVec.x * 256 - entity.posX,
+								eyeVec.y + lookVec.y * 256 - entity.posY,
+								eyeVec.z + lookVec.z * 256 - entity.posZ, speed, 0);
+				} else {
+					double mult = (entity instanceof EntityLivingBase ? 
+							1-((EntityLivingBase) entity).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() : 0.2)
+							+ TF2Attribute.getModifier("Flame Range", stack, 0.8f, living);
+					entity.motionX = lookVec.x * 0.6 * mult;
+					entity.motionY = (lookVec.y * 0.2 + 0.36) * mult;
+					entity.motionZ = lookVec.z * 0.6 * mult;
+				}
+				if (entity instanceof EntityProjectileBase){
+					((EntityProjectileBase) entity).reflected=true;
+					((EntityProjectileBase) entity).setCritical(Math.max(((EntityProjectileBase) entity).getCritical(), 1));
+					if(entity instanceof EntityRocket && ((EntityRocket)entity).shootingEntity instanceof EntityPlayer){
+						living.getCapability(TF2weapons.WEAPONS_CAP, null).tickAirblasted=living.ticksExisted;
+					}
+				}
+				if (!(entity instanceof EntityLivingBase)) {
+					// String throwObjectSound=getData(stack).get("Airblast Rocket
+					// Sound").getString();
+					entity.playSound(ItemFromData.getSound(stack, PropertyType.AIRBLAST_ROCKET_SOUND), 1.5f, 1f);
+					//System.out.println("class: " + entity.getName());
+				}
+				if(living instanceof EntityPlayerMP){
+					((EntityPlayerMP)living).addStat(TF2Achievements.PROJECTILES_REFLECTED);
+					/*if(((EntityPlayerMP)living).getStatFile().readStat(TF2Achievements.PROJECTILES_REFLECTED)>=100){
+						((EntityPlayerMP)living).addStat(TF2Achievements.HOT_POTATO);
+					}*/
+				}
+				EntityTracker tracker = ((WorldServer) world).getEntityTracker();
+				tracker.sendToTrackingAndSelf(entity, new SPacketEntityVelocity(entity));
+				tracker.sendToTrackingAndSelf(entity, new SPacketEntityTeleport(entity));
 			}
-			if (!(entity instanceof EntityLivingBase)) {
-				// String throwObjectSound=getData(stack).get("Airblast Rocket
-				// Sound").getString();
-				entity.playSound(ItemFromData.getSound(stack, PropertyType.AIRBLAST_ROCKET_SOUND), 1.5f, 1f);
-				//System.out.println("class: " + entity.getName());
-			}
-			if(living instanceof EntityPlayerMP){
-				((EntityPlayerMP)living).addStat(TF2Achievements.PROJECTILES_REFLECTED);
-				/*if(((EntityPlayerMP)living).getStatFile().readStat(TF2Achievements.PROJECTILES_REFLECTED)>=100){
-					((EntityPlayerMP)living).addStat(TF2Achievements.HOT_POTATO);
-				}*/
-			}
-			EntityTracker tracker = ((WorldServer) world).getEntityTracker();
-			tracker.sendToTrackingAndSelf(entity, new SPacketEntityVelocity(entity));
-			tracker.sendToTrackingAndSelf(entity, new SPacketEntityTeleport(entity));
 		}
 	}
 	
@@ -319,7 +331,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn = playerIn.getHeldItem(hand);
-		if (TF2Attribute.getModifier("Rage Crit", itemStackIn, 0, playerIn)!=0 &&playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
+		/*if (TF2Attribute.getModifier("Rage Crit", itemStackIn, 0, playerIn)!=0 &&playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
 			playerIn.setActiveHand(hand);
 			playerIn.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
 			TF2Util.addAndSendEffect(playerIn, new PotionEffect(TF2weapons.uber,40,0));
@@ -327,7 +339,7 @@ public class ItemFlameThrower extends ItemProjectileWeapon {
 			playerIn.playSound(ItemFromData.getSound(itemStackIn, PropertyType.CHARGE_SOUND), 1f, 1f);
 			itemStackIn.getTagCompound().setBoolean("RageActive", true);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
-		}
+		}*/
 		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
 	}
 }

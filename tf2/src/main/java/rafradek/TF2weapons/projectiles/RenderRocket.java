@@ -33,7 +33,7 @@ public class RenderRocket extends Render<EntityRocket> {
 	public void doRender(EntityRocket entity, double x, double y, double z, float yaw, float partialTick) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
-		GL11.glColor4f(0.7F, 0.7F, 0.7F, 1F);
+		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);
 		GL11.glRotatef(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTick - 90.0F,
 				0.0F, 1.0F, 0.0F);
 		GL11.glRotatef(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTick, 0.0F,
@@ -48,7 +48,7 @@ public class RenderRocket extends Render<EntityRocket> {
 			GlStateManager.disableLighting();
 			ClientProxy.setColor(TF2Util.getTeamColor(((EntityProjectileBase) entity).shootingEntity), 1f, 0f, 0f, 1f);
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 			GlStateManager.enableTexture2D();
 			GlStateManager.enableLighting();
 		} else
@@ -66,7 +66,7 @@ public class RenderRocket extends Render<EntityRocket> {
 		 * model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 		 * GL11.glDisable(GL11.GL_BLEND); // GL11.glEnable(GL11.GL_ALPHA_TEST);
 		 */
-		GL11.glColor4f(1F, 1F, 1F, 1F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		GL11.glPopMatrix();
 		/*
 		 * IIcon iicon = TF2EventBusListener.pelletIcon;

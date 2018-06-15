@@ -217,7 +217,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64+0.03);
 				 * tessellator.draw();
 				 */
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1F);
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 				GL11.glDisable(GL11.GL_BLEND);
 				GlStateManager.enableTexture2D();
 				GlStateManager.enableLighting();

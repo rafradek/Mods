@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.potion.Potion;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -90,8 +91,11 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 			}
 			else {
 				if((this.attackTarget.getHealth()/this.attackTarget.getMaxHealth() < 0.35F && (this.attackTarget.ticksExisted - this.attackTarget.getRevengeTimer()) < 25)
-						|| (this.attackTarget instanceof EntityPlayer && this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge))
+						|| (this.attackTarget instanceof EntityPlayer && this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge)) {
+					Potion effect=Potion.getPotionFromResourceLocation(ItemFromData.getData(this.entityHost.getHeldItemMainhand()).getString(PropertyType.EFFECT_TYPE));
+					if (this.attackTarget.getActivePotionEffect(effect) == null)
 					((ItemMedigun)this.entityHost.getHeldItemMainhand().getItem()).startUse(this.entityHost.getHeldItemMainhand(), this.entityHost, this.entityHost.world, 0, 2);
+				}
 			}
 
 		} else {

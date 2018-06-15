@@ -66,7 +66,7 @@ public class AustraliumRecipe implements IRecipe {
 				stack2.setTagCompound(new NBTTagCompound());
 			stack2.setCount( 1);
 			stack2.getTagCompound().setBoolean("Australium", true);
-			stack2.getTagCompound().setBoolean("Strange", true);
+			//stack2.getTagCompound().setBoolean("Strange", true);
 		}
 		return stack2;
 	}

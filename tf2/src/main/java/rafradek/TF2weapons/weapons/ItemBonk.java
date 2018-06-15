@@ -14,6 +14,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
@@ -47,7 +48,7 @@ public class ItemBonk extends ItemFromData {
 		Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get(getData(stack).getName());
 		return (double) (value != null ? value : 0)
-				/ (double) ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN);
+				/ (double) (TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN) : 600);
 	}
 
 	@Override
@@ -67,11 +68,11 @@ public class ItemBonk extends ItemFromData {
 	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
 		
 		entityLiving.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put(getData(stack).getName(),
-				ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN));
+				TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN) : 600);
 		entityLiving.addPotionEffect(new PotionEffect(
 				Potion.getPotionFromResourceLocation(getData(stack).getString(PropertyType.EFFECT_TYPE)),
-				ItemFromData.getData(stack).getInt(PropertyType.DURATION)));
-		if (!(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
+				TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.DURATION) : 160));
+		if (!TF2ConfigVars.freeUseItems && !(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
 			stack.shrink(1);
 		return stack;
 	}
