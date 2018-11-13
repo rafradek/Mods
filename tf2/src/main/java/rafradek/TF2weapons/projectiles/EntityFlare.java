@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.projectiles;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
@@ -39,6 +40,10 @@ public class EntityFlare extends EntityProjectileSimple {
 		return 15728880;
 	}
 
+	public void addDamageTypes(DamageSource source) {
+		source.setFireDamage();
+	}
+	
 	@Override
 	public boolean isBurning() {
 		return true;

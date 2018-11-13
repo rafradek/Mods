@@ -2,6 +2,7 @@ package rafradek.TF2weapons.characters.ai;
 
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -64,8 +65,10 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		return this.entityHost.loadout.getStackInSlot(1)!=null && !(this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
-				&&this.entityHost.loadout.getStackInSlot(1).getItem() instanceof ItemStickyLauncher && this.entityHost.getAttackTarget()==null;
+		if (this.entityHost.isRobot() || this.entityHost.getAttackTarget() != null || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
+			return false;
+		ItemStack stickybomb = this.entityHost.loadout.getStackInSlot(1);
+		return stickybomb.getItem() instanceof ItemStickyLauncher && ((ItemUsable) stickybomb.getItem()).isAmmoSufficient(stickybomb, this.entityHost, true);
 	}
 
 	/**

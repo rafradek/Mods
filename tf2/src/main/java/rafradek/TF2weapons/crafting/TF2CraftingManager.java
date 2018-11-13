@@ -68,6 +68,8 @@ public class TF2CraftingManager {
 		cleaver.setCount(1);
 		addRecipe(new ShapedOreRecipe(null,cleaver, new Object[] { "I", "W", 'I', "ingotIron", 'W', "stickWood"}));
 		addRecipe(new AustraliumRecipe());
+		addRecipe(new RecipeApplyEffect(TF2weapons.itemStrangifier));
+		addRecipe(new RecipeApplyEffect(TF2weapons.itemKillstreak));
 		addRecipe(new JumperRecipe("rocketlauncher","rocketjumper"));
 		addRecipe(new JumperRecipe("stickybomblauncher","stickyjumper"));
 		addRecipe(new ShapedOreRecipe(null, ItemFromData.getNewStack("cloak"), new Object[] { "AAA", "LGL", "AAA", 'A',
@@ -80,6 +82,8 @@ public class TF2CraftingManager {
 				new Object[] { " R ", "IRI", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemHorn),
 				new Object[] { "CLC", "C C", " C ", 'C', "ingotCopper", 'L', "leather" }));
+		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("trigger"),
+				new Object[] { "I ", "I ", "IS", 'I', "ingotIron", 'S', "stickWood" }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 18),
 				new Object[] { "IDI", "GRG", "III", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'G',
 						"gunpowder", 'R', new ItemStack(TF2weapons.itemTF2, 1, 11) }));
@@ -115,7 +119,9 @@ public class TF2CraftingManager {
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemScoutBoots), new Object[] { "FFF", "FBF", "FFF", 'F',
 				new ItemStack(Items.FEATHER), 'B', new ItemStack(Items.LEATHER_BOOTS) }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemMantreads),
-				new Object[] { " B ", "III", 'I', "ingotIron", 'B', new ItemStack(Items.IRON_BOOTS) }));
+				new Object[] { "LBL", " I ", 'I', "ingotIron", 'B', new ItemStack(Items.IRON_BOOTS), 'L', "leather" }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemGunboats),
+				new Object[] { " B ", "III", 'I', "ingotIron", 'B', new ItemStack(Items.IRON_BOOTS)}));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemTF2, 1, 11),
 				new Object[] { "C r", "CRr", "C r", 'C', Items.COMPARATOR, 'R', "blockRedstone", 'r', Items.REPEATER }));
 

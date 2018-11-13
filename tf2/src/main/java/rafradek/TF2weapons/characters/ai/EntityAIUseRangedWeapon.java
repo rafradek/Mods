@@ -44,6 +44,10 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	public double fireAtFeet;
 	public double lastMotionY;
 
+	public Vec3d velTarget;
+	public Vec3d posTarget;
+	public int ticksUpdatePos;
+	
 	public float gravity;
 
 	public boolean explosive;
@@ -92,6 +96,9 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		return this.shouldExecute();
 	}
 
+	private int getPosUpdateTime() {
+		return Math.round(this.entityHost.scaleWithDifficulty(18, 1));
+	}
 	/**
 	 * Resets the task
 	 */
@@ -110,6 +117,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;
+		this.posTarget = null;
+		this.velTarget = null;
 	}
 
 	@Override
@@ -121,6 +130,17 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		if (this.attackTarget == null)
 			return;
 		
+		int updateTime = this.getPosUpdateTime();
+		if (--this.ticksUpdatePos < 0 || this.posTarget == null) {
+			
+			if (this.posTarget != null)
+				this.velTarget = this.attackTarget.getPositionVector().subtract(this.posTarget).scale(1D/updateTime);
+			else
+				this.velTarget = Vec3d.ZERO;
+			this.posTarget = this.attackTarget.getPositionVector();
+			this.ticksUpdatePos = updateTime;
+		}
+		
 		ItemStack item = this.entityHost.getHeldItem(EnumHand.MAIN_HAND);
 		
 		if (!(item.getItem() instanceof ItemWeapon))
@@ -130,9 +150,11 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		double d0 = this.entityHost.getDistanceSq(this.attackTarget.posX, this.attackTarget.getEntityBoundingBox().minY,
 				this.attackTarget.posZ);
 
-		double lookX = this.attackTarget.posX;
-		double lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
-		double lookZ = this.attackTarget.posZ;
+		int moveTicks = updateTime - this.ticksUpdatePos;
+		
+		double lookX = this.posTarget.x + this.velTarget.x * moveTicks;
+		double lookY = this.posTarget.y + this.attackTarget.getEyeHeight() + this.velTarget.y * moveTicks;
+		double lookZ = this.posTarget.z + this.velTarget.z * moveTicks;
 		boolean shouldFireProj = true;
 		float dist = this.entityHost.getDistanceToEntity(this.attackTarget);
 		if (this.projSpeed > 0) {
@@ -140,13 +162,13 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			
 			int ticksToReach = MathHelper.ceil(dist / this.projSpeed);
 
-			lookX += (this.attackTarget.posX - this.entityHost.targetPrevPos[1]) * ticksToReach * 1;
-			lookZ += (this.attackTarget.posZ - this.entityHost.targetPrevPos[5]) * ticksToReach * 1;
-			lookY = this.attackTarget.posY + this.attackTarget.height / 2;
+			lookX += this.velTarget.x * ticksToReach * 1;
+			lookZ += this.velTarget.z * ticksToReach * 1;
+			lookY = this.posTarget.y + this.attackTarget.height / 2 + this.velTarget.y * moveTicks;
 			if (this.fireAtFeet == -1 || this.entityHost.world.rayTraceBlocks(new Vec3d(this.entityHost.posX,
 					this.entityHost.posY + this.entityHost.getEyeHeight(), this.entityHost.posZ),
 					new Vec3d(lookX, lookY, lookZ), false, true, false) != null)
-				lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
+				lookY += this.attackTarget.getEyeHeight() - this.attackTarget.height / 2;
 			double yFall = !this.attackTarget.onGround? -this.attackTarget.motionY : 0;
 			if (!this.attackTarget.isInWater()) {
 				int ticksGrav = ticksToReach-1;
@@ -189,7 +211,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				|| (this.projSpeed > 0 && this.attackTarget.motionY > 0);
 		
 		boolean fire = stay && this.entityHost.getActivePotionEffect(TF2weapons.stun) == null && shouldFireProj && !charged && TF2Util.lookingAt(this.entityHost,
-				(this.explosive && d0 < 16 ? 30 : 0) + weapon.getWeaponSpreadBase(item, this.entityHost) * (this.projSpeed > 0 ? 100 : 1) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist)),
+				(this.explosive && d0 < 16 ? 30 : 0) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist) + MathHelper.atan2(weapon.getWeaponSpreadBase(item, this.entityHost),1)),
 				lookX, lookY, lookZ);
 		
 		if (!this.reloading && (this.entityHost.world.getDifficulty() != EnumDifficulty.HARD || !fire)

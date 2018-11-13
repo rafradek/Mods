@@ -4,8 +4,9 @@ import net.minecraft.item.ItemStack;
 
 public interface TF2DamageSource {
 
-	public static int BACKSTAB=1;
-	public static int HEADSHOT=2;
+	public static int BACKSTAB = 1;
+	public static int HEADSHOT = 2;
+	public static int SENTRY_PDA = 4;
 	
 	ItemStack getWeapon();
 	ItemStack getWeaponOrig();
@@ -14,6 +15,11 @@ public interface TF2DamageSource {
 	void setAttackSelf();
 	int getAttackFlags();
 	void addAttackFlag(int flag);
+	
+	default boolean hasAttackFlag(int flag) {
+		return (this.getAttackFlags() & flag) == flag;
+	}
+	
 	float getAttackPower();
 	void setAttackPower(float power);
 }

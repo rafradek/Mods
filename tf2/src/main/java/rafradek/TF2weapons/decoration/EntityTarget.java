@@ -22,8 +22,9 @@ public class EntityTarget extends EntityArmorStand {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public EntityTarget(World worldIn, double d, double d1, double e) {
+	public EntityTarget(World worldIn, double d, double d1, double e, boolean creative) {
 		super(worldIn, d, d1, e);
+		this.creative = creative;
 	}
 
 	private static final DataParameter<Float> LAST_DAMAGE = EntityDataManager.<Float>createKey(EntityTarget.class, DataSerializers.FLOAT);
@@ -35,6 +36,9 @@ public class EntityTarget extends EntityArmorStand {
 	public int lastAttack;
 	public int deltaTime;
 	public float total;
+	
+	public boolean creative;
+	
 	public void onUpdate() {
 		super.onUpdate();
 		if(!this.world.isRemote && this.ticksExisted % 5 == 0) {
@@ -75,6 +79,24 @@ public class EntityTarget extends EntityArmorStand {
             }
             else
             {
+            	if ((float)this.hurtResistantTime > (float)this.maxHurtResistantTime / 2.0F)
+                {
+                    if (amount <= this.lastDamage)
+                    {
+                        return false;
+                    }
+
+                    amount -= this.lastDamage;
+                    this.lastDamage = amount;
+                }
+                else
+                {
+                    this.lastDamage = amount;
+                    this.hurtResistantTime = this.maxHurtResistantTime;
+                    this.maxHurtTime = 10;
+                    this.hurtTime = this.maxHurtTime;
+                }
+            	
             	amount = ForgeHooks.onLivingDamage(this, source, this.applyPotionDamageCalculations(source, ArmorProperties.applyArmor(this, (NonNullList<ItemStack>) this.getArmorInventoryList(), source, ForgeHooks.onLivingHurt(this, source, amount))));
             	this.dataManager.set(LAST_DAMAGE, amount);
             	this.dps[0] += amount;
@@ -86,12 +108,13 @@ public class EntityTarget extends EntityArmorStand {
             	this.lastAttack = this.ticksExisted;
             	
             	this.total += amount;
+            	this.hurtResistantTime = 10;
             	DecimalFormat format = new DecimalFormat("#.##");
             	this.setCustomNameTag("Last: "+format.format(this.getLastDamage())+ " DPS: "+format.format(total * (20f/(this.lastAttack - this.startAttack  + this.deltaTime)))+" Total: "+format.format(total));
                 for (ItemStack stack : this.getArmorInventoryList()) {
                 	stack.setItemDamage(0);
                 }
-            	return false;
+            	return this.creative;
             }
         }
         else

@@ -1,21 +1,87 @@
 package rafradek.TF2weapons;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.ItemCrate.CrateContent;
+import rafradek.TF2weapons.ItemFromData.AttributeProvider;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.decoration.ItemWearable;
+import rafradek.TF2weapons.weapons.WeaponsCapability;
 
 public class ItemCrate extends ItemFromData {
+	
+	public static class PropertyContent extends PropertyType<CrateContent> {
+		
+		public PropertyContent(int id, String name, Class<CrateContent> type) {
+			super(id, name, type);
+		}
+
+		@Override
+		public CrateContent deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
+				JsonDeserializationContext context) throws JsonParseException {
+			CrateContent content = new CrateContent();
+			HashMap<String, Integer> map = new HashMap<>();
+			for (Entry<String, JsonElement> attribute : json.getAsJsonObject().entrySet()) {
+				String itemName = attribute.getKey();
+				int chance = attribute.getValue().getAsInt();
+				content.content.put(itemName, chance);
+				content.maxCrateValue+=chance;
+			}
+			return content;
+		}
+		
+		public void serialize(DataOutput buf, WeaponData data, CrateContent value) throws IOException {
+			buf.writeByte(value.content.size());
+			for (Entry<String, Integer> entry : value.content.entrySet()) {
+				buf.writeUTF(entry.getKey());
+				buf.writeShort(entry.getValue());
+			}
+		}
+		
+		public CrateContent deserialize(DataInput buf, WeaponData data) throws IOException {
+			int attributeCount = buf.readByte();
+			CrateContent content = new CrateContent();
+			for (int i = 0; i < attributeCount; i++) {
+				String entry = buf.readUTF();
+				int value = buf.readShort();
+				content.content.put(entry, value);
+				content.maxCrateValue += value;
+			}
+			return content;
+		}
+	}
+
+	public static class CrateContent {
+		public HashMap<String, Integer> content = new HashMap<>();
+		public int maxCrateValue;
+	}
+
 	public ItemCrate() {
 		this.setMaxStackSize(64);
 	}
@@ -24,6 +90,12 @@ public class ItemCrate extends ItemFromData {
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand); 
+		if (!worldIn.isRemote && !itemStackIn.getTagCompound().getBoolean("Open")) {
+			if (playerIn.inventory.hasItemStack(new ItemStack(TF2weapons.itemTF2, 1, 7))) {
+				itemStackIn.getTagCompound().setBoolean("Open", true);
+				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 7, 1, null);
+			}
+		}
 		if (!worldIn.isRemote && itemStackIn.getTagCompound().getBoolean("Open")) {
 			//ArrayList<String> list = new ArrayList<String>();
 			
@@ -34,9 +106,9 @@ public class ItemCrate extends ItemFromData {
 				((ItemWearable)stack.getItem()).applyRandomEffect(stack, playerIn.getRNG());
 			}
 			else{
-				int choosen=playerIn.getRNG().nextInt(getData(itemStackIn).maxCrateValue);
+				int choosen=playerIn.getRNG().nextInt(getData(itemStackIn).get(PropertyType.CONTENT).maxCrateValue);
 				int currVal=0;
-				for (Entry<String, Integer> entry : getData(itemStackIn).crateContent.entrySet()){
+				for (Entry<String, Integer> entry : getData(itemStackIn).get(PropertyType.CONTENT).content.entrySet()){
 					currVal+=entry.getValue();
 					if(choosen<currVal){
 						 stack=ItemFromData.getNewStack(entry.getKey());
@@ -60,6 +132,7 @@ public class ItemCrate extends ItemFromData {
 			itemStackIn.shrink(1);
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}
+		else
 		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
 	}
 
@@ -82,7 +155,7 @@ public class ItemCrate extends ItemFromData {
 			}
 
 			tooltip.add("Possible content:");
-			for (String name : getData(stack).crateContent.keySet()) {
+			for (String name : getData(stack).get(PropertyType.CONTENT).content.keySet()) {
 				WeaponData data = MapList.nameToData.get(name);
 				if (data != null)
 					tooltip.add(data.getString(PropertyType.NAME));

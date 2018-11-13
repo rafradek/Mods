@@ -39,6 +39,7 @@ import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.building.EntityTeleporter;
 import rafradek.TF2weapons.building.TeleporterDim;
 import rafradek.TF2weapons.building.EntityTeleporter.TeleporterData;
@@ -49,7 +50,9 @@ import rafradek.TF2weapons.characters.EntityStatue;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 import rafradek.TF2weapons.pages.Contract;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemJetpack;
+import rafradek.TF2weapons.weapons.ItemJetpackTrigger;
 import rafradek.TF2weapons.weapons.ItemParachute;
 import rafradek.TF2weapons.weapons.ItemSoldierBackpack;
 import rafradek.TF2weapons.weapons.ItemUsable;
@@ -197,7 +200,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
 					} 
 					else if (message.value == 25) {
-						ItemStack stack=player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+						ItemStack stack = ItemBackpack.getBackpack(player);
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemParachute) {
 							stack.getTagCompound().setBoolean("Deployed", !stack.getTagCompound().getBoolean("Deployed"));
 						}
@@ -207,13 +210,13 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && !WeaponsCapability.get(player).knockbackActive && WeaponsCapability.get(player).getKnockbackRage() >= 1f) {
 							WeaponsCapability.get(player).knockbackActive = true;
 						}
-					} 
+					}
 					else if (message.value == 29) {
 						player.world.getScoreboard().removePlayerFromTeams(player.getName());
 					} 
 					else if (message.value == 30) {
-						ItemStack stack = player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
-						if (stack.getItem() instanceof ItemJetpack && ((ItemJetpack)stack.getItem()).canActivate(stack, player)) {
+						ItemStack stack = ItemBackpack.getBackpack(player);
+						if (stack.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack", stack, 0f, player) >= 2f && ((ItemJetpack)stack.getItem()).canActivate(stack, player) ) {
 							((ItemJetpack)stack.getItem()).activateJetpack(stack, player, true);
 						}
 					} 
@@ -402,7 +405,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							ItemStack stack = player.getHeldItemMainhand();
 							if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 								//System.out.println("dd");
-								WeaponsCapability.get(player).fire1Cool-= ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, player)));
+								WeaponData.getCapability(stack).fire1Cool-=((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, player)));
 							}
 						}
 					}
@@ -412,7 +415,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						}
 					}
 					else if (message.value == 30) {
-						ItemStack chest = Minecraft.getMinecraft().player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+						ItemStack chest = ItemBackpack.getBackpack(player);
 						if (chest.getItem() instanceof ItemJetpack) {
 							((ItemJetpack)chest.getItem()).activateJetpack(chest, player, true);
 						}
@@ -475,13 +478,16 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 				if ((oldState & 2) < (message.value & 2)) {
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
-					cap.stateDo(player, stack);
+					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getAltFiringSpeed(stack, player) / 2);
+					cap.stateDo(player, stack, EnumHand.MAIN_HAND);
+					
 				} else if ((oldState & 2) > (message.value & 2))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
 				if ((oldState & 1) < (message.value & 1)) {
+					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) / 2);
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
-					cap.stateDo(player, stack);
+					cap.stateDo(player, stack, EnumHand.MAIN_HAND);
 				} else if ((oldState & 1) > (message.value & 1))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
 			}

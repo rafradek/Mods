@@ -21,6 +21,8 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			"textures/entity/tf2/red/Teleporter.png");
 	private static final ResourceLocation TELEPORTER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Teleporter.png");
+	private static final ResourceLocation TELEPORTER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Teleporter.png");
 	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/box.png");
 	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
@@ -37,7 +39,12 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 	protected ResourceLocation getEntityTexture(EntityTeleporter par1EntityLiving) {
 		// System.out.println("class: "+clazz);
 		boolean constr=par1EntityLiving.isConstructing();
-		return par1EntityLiving.getEntTeam() == 0 ? constr ? BOX_RED : TELEPORTER_RED : constr ? BOX_BLU : TELEPORTER_BLU;
+		switch (par1EntityLiving.getEntTeam()) {
+		case 0: return constr ? BOX_RED : TELEPORTER_RED;
+		case 1: return constr ? BOX_BLU : TELEPORTER_BLU;
+		case 2: return constr ? BOX_BLU : TELEPORTER_ROBOT;
+		default: return constr ? BOX_BLU : TELEPORTER_BLU;
+		}
 	}
 
 	@Override

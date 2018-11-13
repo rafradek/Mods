@@ -60,12 +60,10 @@ public class EntityAINearestChecked extends EntityAITarget {
 
 							d0 *= 0.7F * f;
 						}
-						if (taskOwner instanceof EntitySentry)
-							d0*=1;
 						if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
 										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
-							d0 = taskOwner instanceof EntityBuilding ? 0 : 1;
+							d0 = 1;
 						boolean fastCheck = allowBehind || (!(target instanceof EntityPlayer)
 								&& (TF2ConfigVars.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
 										&& ((EntityTF2Character) taskOwner).natural));

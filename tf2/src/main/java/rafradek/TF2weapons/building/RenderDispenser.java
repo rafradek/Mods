@@ -23,6 +23,8 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 			"textures/entity/tf2/red/Dispenser.png");
 	private static final ResourceLocation DISPENSER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Dispenser.png");
+	private static final ResourceLocation DISPENSER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Dispenser.png");
 	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/box.png");
 	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
@@ -44,7 +46,12 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityDispenser par1EntityLiving) {
 		boolean constr=par1EntityLiving.isConstructing();
-		return par1EntityLiving.getEntTeam() == 0 ? constr ? BOX_RED : DISPENSER_RED : constr ? BOX_BLU : DISPENSER_BLU;
+		switch (par1EntityLiving.getEntTeam()) {
+		case 0: return constr ? BOX_RED : DISPENSER_RED;
+		case 1: return constr ? BOX_BLU : DISPENSER_BLU;
+		case 2: return constr ? BOX_BLU : DISPENSER_ROBOT;
+		default: return constr ? BOX_BLU : DISPENSER_BLU;
+		}
 	}
 
 	@Override

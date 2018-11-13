@@ -1,0 +1,93 @@
+{
+    "pools": [
+        {
+        	"name": "robot_1",	
+            "rolls": 1,
+             "conditions": [
+                {
+                    "condition": "random_chance_with_looting",
+                    "chance": 0.5,
+                    "looting_multiplier": 0.17
+                },
+                {
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:1b}",
+                    "negate": false
+                }
+            ],
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:itemTF2",
+                    "weight": 2,
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 13
+                        }
+                    ]
+                },
+                {
+                    "type": "loot_table",
+                    "name": "rafradek_tf2_weapons:entities/robotpartmed",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 14
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+        	"name": "robot_2",	
+            "rolls": 1,
+             "conditions": [
+                {
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:2b}",
+                    "negate": false
+                }
+            ],
+            "entries": [
+                {
+                    "type": "loot_table",
+                    "name": "rafradek_tf2_weapons:entities/robotpartmed",
+                    "weight": 3,
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 14
+                        },
+                        {
+                            "function": "looting_enchant",
+                            "count": {
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:itemTF2",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 15
+                        },
+                        {
+                            "function": "looting_enchant",
+                            "count": {
+                                "min": 0,
+                                "max": 1
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

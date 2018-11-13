@@ -14,9 +14,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemAmmoBelt;
 
 @SideOnly(Side.CLIENT)
@@ -45,13 +47,22 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 		if (inventory != null) {
 			for (int i = 0; i < 4; i++) {
 				ItemStack stack = inventory.getStackInSlot(i);
-				if (!stack.isEmpty() && stack.getItem() != null)
+				if (!stack.isEmpty())
+					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
+							headPitch, scale);
+			}
+		}
+		if (entitylivingbaseIn instanceof EntityTF2Character) {
+			ItemStackHandler loadout = ((EntityTF2Character)entitylivingbaseIn).loadout;
+			for (int i = 0; i < loadout.getSlots(); i++) {
+				ItemStack stack = loadout.getStackInSlot(i);
+				if (!stack.isEmpty())
 					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
 							headPitch, scale);
 			}
 		}
 		for (ItemStack stack : entitylivingbaseIn.getArmorInventoryList())
-			if (!stack.isEmpty() && stack.getItem() != null)
+			if (!stack.isEmpty())
 				renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
 						headPitch, scale);
 	}
@@ -62,7 +73,8 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 		if (stack.getItem() instanceof ItemFromData) {
 
 			Minecraft minecraft = Minecraft.getMinecraft();
-			if ((ItemFromData.getData(stack).getInt(PropertyType.WEAR) & 1) == 1) {
+			int visibility = ((ItemFromData)stack.getItem()).getVisibilityFlags(stack, entitylivingbaseIn);
+			if ((visibility & 1) == 1) {
 				GlStateManager.pushMatrix();
 
 				if (entitylivingbaseIn.isSneaking())
@@ -80,7 +92,7 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 				GlStateManager.popMatrix();
 			}
 
-			if ((ItemFromData.getData(stack).getInt(PropertyType.WEAR) & 2) == 2) {
+			if ((visibility & 2) == 2) {
 				GlStateManager.pushMatrix();
 				GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
 				ItemWearable.usedModel = 1;

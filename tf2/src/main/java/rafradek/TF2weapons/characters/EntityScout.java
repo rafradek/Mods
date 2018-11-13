@@ -86,16 +86,18 @@ public class EntityScout extends EntityTF2Character {
 			this.ballCooldown--;
 			if(this.getAttackTarget() == null || this.getAttackTarget().getActivePotionEffect(TF2weapons.stun) == null) {
 				this.switchSlot(2);
-				if(this.getAttackTarget() != null && this.getWepCapability().fire1Cool<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
+				if(this.getAttackTarget() != null && this.getWepCapability().getPrimaryCooldown()<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
 					((ItemWeapon)this.getHeldItemMainhand().getItem()).altUse(getHeldItemMainhand(), this, world);
-					this.getWepCapability().fire1Cool=1000;
+					this.getWepCapability().setPrimaryCooldown(1000);
 				}
 			}
-			else {
+			else if (!this.isRobot()){
 				this.switchSlot(1);
 				this.getHeldItemMainhand().setCount(16);
 			}
 		}
+		else
+			this.switchSlot(0);
 	}
 
 	@Override

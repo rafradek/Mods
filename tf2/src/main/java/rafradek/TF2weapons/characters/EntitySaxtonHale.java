@@ -1,9 +1,12 @@
 package rafradek.TF2weapons.characters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Predicate;
 
+import akka.util.Collections;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -38,6 +41,7 @@ import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
@@ -104,24 +108,39 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		for (int i = 0; i < weaponCount; i++) {
 			ItemStack item = weapons.get(i);
 			int cost = ItemFromData.getData(item).getInt(PropertyType.COST);
-			ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
-			ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
-			this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
-					nugget.getCount() > 0 && ingot.getCount() > 0 ? nugget : ItemStack.EMPTY, item, 0, 100));
+			this.addTradeOffer(item, cost);
 		}
-		int hatCount = 4 + this.rand.nextInt(6);
+		int hatCount = 2 + this.rand.nextInt(3);
 
 		for (int i = 0; i < hatCount; i++) {
 
 			ItemStack item = ItemFromData.getRandomWeaponOfClass("cosmetic", this.rand, false);
 			int cost = ItemFromData.getData(item).getInt(PropertyType.COST);
-			ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
-			ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
-			this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
-					nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, item, 0, 100));
+			this.addTradeOffer(item, cost);
 		}
+		
+		/*ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
+		list.removeIf(attr -> attr == null || attr.perKill == 0);
+		for (int i = 0; i < 3; i++) {
+			int level = 0;
+			float rand = this.rand.nextFloat();
+			if (rand < 0.02)
+				level = 2;
+			else if (rand < 0.2)
+				level = 1;
+			ItemStack item = new ItemStack(TF2weapons.itemKillstreak, 1, list.get(this.rand.nextInt(list.size())).id + level << 9);
+			int cost = level * 24;
+			this.addTradeOffer(item, cost);
+		}*/
 	}
 
+	
+	private void addTradeOffer(ItemStack toBuy, int cost) {
+		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
+		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
+		this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
+				nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
+	}
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		if (this.isEntityInvulnerable(source))

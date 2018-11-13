@@ -19,8 +19,8 @@ import rafradek.TF2weapons.WeaponData.PropertyType;
 
 public class ItemAmmoPackage extends Item{
 
-	public static final int[] AMMO_PACKAGE_MIN=new int[]{0,3,10,10,3,20,1,2,2,20,200,2,50,2,1};
-	public static final int[] AMMO_PACKAGE_MAX=new int[]{0,3,10,10,4,25,2,3,3,40,200,3,50,3,2};
+	public static final int[] AMMO_PACKAGE_MIN=new int[]{0,3,10,10,3,20,1,2,2,20,60,2,200,2,1};
+	public static final int[] AMMO_PACKAGE_MAX=new int[]{0,3,10,10,4,25,2,3,3,40,60,3,200,3,2};
 	public ItemAmmoPackage() {
 		this.setHasSubtypes(true);
 		this.setMaxStackSize(1);

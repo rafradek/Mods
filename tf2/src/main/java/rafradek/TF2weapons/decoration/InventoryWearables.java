@@ -1,24 +1,30 @@
 package rafradek.TF2weapons.decoration;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.capabilities.Capability;
+import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.ItemToken;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.WeaponsCapability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public class InventoryWearables extends InventoryBasic implements ICapabilityProvider, INBTSerializable<NBTTagList> {
 
-	public EntityPlayer owner;
+	public EntityLivingBase owner;
 	public static final int USED_SLOTS = 5;
-	public InventoryWearables(EntityPlayer ply) {
+	private final NonNullList<ItemStack> inventoryContentsOld;
+	public InventoryWearables(EntityLivingBase ply) {
 		super("Wearables", false, 13);
+		this.inventoryContentsOld = NonNullList.withSize(13, ItemStack.EMPTY);
 		owner=ply;
 		// TODO Auto-generated constructor stub
 	}
@@ -30,6 +36,17 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 		return true;
 	}
 
+	public void updateSlots() {
+		for (int i = 0; i < USED_SLOTS; i++) {
+			ItemStack stack = this.getStackInSlot(i);
+			ItemStack old = inventoryContentsOld.get(i);
+			if (!ItemStack.areItemStacksEqual(stack, old)) {
+				inventoryContentsOld.set(i, old);
+				TF2Util.sendTracking(new TF2Message.WearableChangeMessage(owner, i, stack),owner);
+			}
+		}
+	}
+	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		// TODO Auto-generated method stub

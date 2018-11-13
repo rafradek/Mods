@@ -19,7 +19,7 @@ import rafradek.TF2weapons.characters.ItemToken;
 
 public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 	public ItemBuildingBox() {
-		this.setCreativeTab(TF2weapons.tabutilitytf2);
+		this.setCreativeTab(TF2weapons.tabspawnertf2);
 		this.setUnlocalizedName("buildingbox");
 		this.setHasSubtypes(true);
 		this.setMaxStackSize(1);

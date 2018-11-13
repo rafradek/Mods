@@ -1,29 +1,42 @@
 package rafradek.TF2weapons;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.Random;
 import java.util.UUID;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.IEntityOwnable;
+import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
+import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.boss.EntityWither;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityEnderman;
@@ -34,6 +47,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -52,18 +66,22 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.oredict.OreDictionary;
 import rafradek.TF2weapons.TF2EventsCommon.DestroyBlockEntry;
+import rafradek.TF2weapons.TF2EventsCommon.InboundDamage;
+import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.boss.EntityMerasmus;
 import rafradek.TF2weapons.boss.EntityMonoculus;
@@ -72,7 +90,10 @@ import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.IEntityTF2;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemFireAmmo;
 import rafradek.TF2weapons.weapons.ItemMeleeWeapon;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
@@ -91,22 +112,29 @@ public class TF2Util {
 	};
 	
 	public static int[] colorCode = new int[32];
-	
+	public static final float[] ASIN_VALUES = new float[512];
 	public static List<RayTraceResult> pierce(World world, Entity living, double startX, double startY, double startZ, double endX, double endY, double endZ,
 			boolean headshot, float size, boolean pierce, Predicate<Entity> selector) {
 		ArrayList<RayTraceResult> targets = new ArrayList<>();
 		Vec3d var17 = new Vec3d(startX, startY, startZ);
 		Vec3d var3 = new Vec3d(endX, endY, endZ);
+		boolean split = var3.subtract(var17).lengthSquared() > 16384D;
+		Vec3d mid = new Vec3d((startX + endX) / 2D, (startY + endY) / 2D, (startZ + endZ) / 2D);
 		RayTraceResult var4 = world.rayTraceBlocks(var17, var3, false, true, false);
-		var17 = new Vec3d(startX, startY, startZ);
-		var3 = new Vec3d(endX, endY, endZ);
 	
-		if (var4 != null)
+		if (var4 != null/* || (var4 = world.rayTraceBlocks(mid, var3, false, true, false)) != null*/)
 			var3 = new Vec3d(var4.hitVec.x, var4.hitVec.y, var4.hitVec.z);
-	
+		else
+			var3 = new Vec3d(endX, endY, endZ);
 		Entity var5 = null;
-		List<Entity> var6 = world.getEntitiesWithinAABBExcludingEntity(living,
-				new AxisAlignedBB(startX, startY, startZ, endX, endY, endZ).grow(2D, 2D, 2D));
+		Iterable<Entity> var6;
+		if (var3.subtract(var17).lengthSquared() > 16384D)
+			var6 = Iterables.concat(living.world.getEntitiesWithinAABBExcludingEntity(living,
+				new AxisAlignedBB(startX, startY, startZ, mid.x, mid.y, mid.z).grow(2D, 2D, 2D)), living.world.getEntitiesWithinAABBExcludingEntity(living,
+						new AxisAlignedBB(mid.x, mid.y, mid.z, endX, endY, endZ).grow(2D, 2D, 2D)));
+		else
+			var6 = living.world.getEntitiesWithinAABBExcludingEntity(living,
+					new AxisAlignedBB(startX, startY, startZ, endX, endY, endZ).grow(2D, 2D, 2D));
 		// System.out.println("shoot: "+startX+","+startY+","+startZ+", do:
 		// "+endX+","+endY+","+endZ+" Count: "+var6.size());
 		double var7 = 0.0D;
@@ -122,6 +150,10 @@ public class TF2Util {
 				AxisAlignedBB var12 = target.getEntityBoundingBox().grow(size, (double) size, size);
 				RayTraceResult var13 = var12.calculateIntercept(var17, var3);
 	
+				if (var13 == null && var12.contains(var3)) {
+					var13 = new RayTraceResult(var3, EnumFacing.EAST);
+				}
+				
 				if (var13 != null) {
 					double var14 = var17.squareDistanceTo(var13.hitVec);
 	
@@ -132,12 +164,13 @@ public class TF2Util {
 					} else if (pierce)
 						targets.add(TF2Util.getTraceResult(target, var13, size, headshot, var17, var3));
 				}
+					
 				target.setEntityBoundingBox(oldBB);
 			}
 		// var4.hitInfo=false;
 		if (!pierce && var5 != null && !(var5 instanceof EntityLivingBase && ((EntityLivingBase) var5).getHealth() <= 0))
 			targets.add(TF2Util.getTraceResult(var5, collideVec, size, headshot, var17, var3));
-		if (targets.isEmpty() && var4 != null && var4.typeOfHit == Type.BLOCK)
+		if ((pierce || targets.isEmpty()) && var4 != null && var4.typeOfHit == Type.BLOCK)
 			targets.add(var4);
 		else if (targets.isEmpty())
 			targets.add(new RayTraceResult(Type.MISS, var3, null, null));
@@ -151,7 +184,8 @@ public class TF2Util {
 
 	public static RayTraceResult getTraceResult(Entity target, RayTraceResult hitVec, float size, boolean headshot, Vec3d start, Vec3d end) {
 		RayTraceResult result = new RayTraceResult(target, hitVec.hitVec);
-		if (headshot && target instanceof EntityLivingBase && !(target instanceof EntityBuilding)) {
+		
+		if (headshot && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).hasHead())) {
 			Boolean var13 = TF2Util.getHead((EntityLivingBase)target).calculateIntercept(start, end.add(end.subtract(start).normalize())) != null;
 			result.hitInfo = var13;
 		}
@@ -161,22 +195,17 @@ public class TF2Util {
 
 	public static AxisAlignedBB getHead(EntityLivingBase target){
 		double ymax = target.posY + target.getEyeHeight();
-		AxisAlignedBB head = new AxisAlignedBB(target.posX - 0.25, ymax - 0.16, target.posZ - 0.25, target.posX + 0.25, ymax + 0.25, target.posZ + 0.25);
-		//if (target instanceof EntityCreeper || target instanceof EntityEnderman || target instanceof EntityIronGolem)
-		//	head=head.offset(0, -0.2, 0);
-		if (target.width >= 0.63) {
-			float offsetX = -MathHelper.sin(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
-	       // float f1 = -MathHelper.sin((rotationPitchIn + pitchOffset) * 0.017453292F);
-	        float offsetZ = MathHelper.cos(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
-			/*double offsetX = MathHelper.cos(target.renderYawOffset / 180.0F * (float) Math.PI) * target.width / 2;
-			double offsetZ = -(double) (MathHelper.sin(target.renderYawOffset / 180.0F * (float) Math.PI) * target.width / 2);// cos*/
-			// double offsetX2=- (double)(MathHelper.sin(living.rotationYaw
-			// / 180.0F * (float)Math.PI) * var5.width/2);
-			// double offsetZ2=(double)(MathHelper.cos(living.rotationYaw /
-			// 180.0F * (float)Math.PI) * var5.width/2);//cos
-			// System.out.println("Offsets: "+offsetX+" "+offsetZ+"
-			// "+offsetX2+" "+offsetZ2);
-			head=head.offset(offsetX, 0, offsetZ);
+		boolean custom = target instanceof IEntityTF2;
+		AxisAlignedBB head;
+		if (!custom || (head = ((IEntityTF2)target).getHeadBox()) == null) {
+			head = new AxisAlignedBB(target.posX - 0.25, ymax - 0.16, target.posZ - 0.25, target.posX + 0.25, ymax + 0.25, target.posZ + 0.25);
+
+			if (target.width >= 0.63) {
+				float offsetX = -MathHelper.sin(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
+		        float offsetZ = MathHelper.cos(target.renderYawOffset * 0.017453292F) * Math.max(0f,target.width*0.6f-0.32f);
+		        
+				head = head.offset(offsetX, 0, offsetZ);
+			}
 		}
 		return head;
 	}
@@ -196,7 +225,34 @@ public class TF2Util {
 		return new Vec3d(Math.max(a, b) * radius * MathHelper.cos((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b))),
 				Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b))), 0);
 	}
-
+	
+	public static Vec3d radiusRandom2D(float radius, Random random, float yaw, float pitch, double dist) {
+		/*
+		 * double x=random.nextDouble()*radius*2-radius; radius -= Math.abs(x);
+		 * double y=random.nextDouble()*radius*2-radius;
+		 */
+	
+		/*
+		 * double t = 4*Math.PI*random.nextDouble()*radius-radius; double u =
+		 * (random.nextDouble()*radius*2-radius)+(random.nextDouble()*radius*2-
+		 * raddddddddius); double r = u>1?2-u:u;
+		 */
+		float a = random.nextFloat(), b = random.nextFloat();
+		double x = Math.max(a, b) * radius * MathHelper.cos((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));
+		double y = Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));
+		double z = 1;
+		
+		float f = MathHelper.cos(yaw);
+        float f1 = MathHelper.sin(yaw);
+        float f2 = MathHelper.cos(pitch);
+        float f3 = MathHelper.sin(pitch);
+        
+        double y1 = y * (double)f2 + z * (double)f3;
+        double z1 = z * (double)f2 - y * (double)f3;
+        double x1 = x * (double)f + z1 * (double)f1;
+        double z2 = z1 * (double)f - x * (double)f1;
+		return new Vec3d(x1 * dist, y1 * dist, z2 * dist);
+	}
 	public static boolean isUsingShield(Entity shielded, DamageSource source) {
 		if (shielded instanceof EntityLivingBase && ((EntityLivingBase) shielded).isActiveItemStackBlocking()) {
 			Vec3d location = source.getDamageLocation();
@@ -263,16 +319,16 @@ public class TF2Util {
 	
 		if (calculateddamage == 0)
 			return 0f;
-		if (target == living || target instanceof EntityBuilding)
+		if (target == living)
 			return calculateddamage;
-		if (critical == 2)
+		if (critical == 2 && !(target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding()))
 			calculateddamage *= 3;
 		else if (critical == 1)
 			calculateddamage *= 1.35f;
 		if (target == TF2weapons.dummyEnt)
 			distance *= 0.5f;
 		float falloff=weapon.getWeaponDamageFalloff(stack);
-		if (!(target instanceof EntityTF2Boss) &&  falloff> 0 && (critical < 2 || target == living))
+		if (!(target instanceof IEntityTF2 && !((IEntityTF2)target).hasDamageFalloff()) &&  falloff> 0 && (critical < 2 || target == living))
 			if (distance <= falloff)
 				// calculateddamage *=weapon.maxDamage - ((distance /
 				// (float)weapon.damageFalloff) *
@@ -297,12 +353,7 @@ public class TF2Util {
 		if (target instanceof EntityEnderman && !(stack.getItem() instanceof ItemMeleeWeapon || TF2Attribute.getModifier("Unblockable", stack, 0, living) != 0))
 			calculateddamage *= 0.4f;
 		
-		if (living != null && target instanceof EntityLivingBase && living.hasCapability(TF2weapons.WEAPONS_CAP, null) 
-				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotRemaining>0){
-			
-			if(! (target instanceof EntityPlayer || target instanceof EntityArmorStand))
-				calculateddamage += Math.min(50, ((EntityLivingBase) target).getHealth()*calculateddamage * 0.01f * TF2Attribute.getModifier("Focus", stack, 0, living));
-		}
+		
 		/*
 		 * if (living instanceof IRangedWeaponAttackMob)
 		 * calculateddamage*=((IRangedWeaponAttackMob)living).
@@ -427,10 +478,12 @@ public class TF2Util {
 	public static boolean dealDamage(Entity entity, World world, EntityLivingBase living, ItemStack stack, int critical, float damage, DamageSource source) {
 		if (world.isRemote || damage == 0)
 			return false;
-		double lvelocityX = entity.motionX;
-		double lvelocityY = entity.motionY;
-		double lvelocityZ = entity.motionZ;
-		entity.hurtResistantTime = 0;
+		
+		if (TF2ConfigVars.batchDamage == 0) {
+			entity.hurtResistantTime = 0;
+			if (entity instanceof MultiPartEntityPart && !(((MultiPartEntityPart)entity).parent instanceof EntityDragon))
+				((Entity)(((MultiPartEntityPart)entity).parent)).hurtResistantTime = 0;
+		}
 		
 		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer)) {
 			if(world.getDifficulty() == EnumDifficulty.NORMAL) {
@@ -447,21 +500,44 @@ public class TF2Util {
 	
 		if (entity == living && source instanceof TF2DamageSource && living instanceof EntityPlayer && living.getTeam() != null) {
 			((TF2DamageSource) source).setAttackSelf();
-			//TF2weapons.dummyEnt.world = world;
 		}
 		
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && ItemFromData.getData(stack).hasProperty(PropertyType.HIT_SOUND))
-			TF2Util.playSound(entity, ItemFromData.getSound(stack, PropertyType.HIT_SOUND), ItemFromData.getData(stack).getName().equals("fryingpan") ? 2F : 0.7F, 1F);
-		//System.out.println("dealt: " + damage);
+			((ItemWeapon)stack.getItem()).playHitSound(stack, living, entity);
 		boolean knockback = canHit(living, entity);
 		if (knockback && isUsingShield(entity, source) && source.getDamageLocation() == null && TF2Attribute.getModifier("Unblockable", stack, 0, living) != 1) {
 			((EntityLivingBase)entity).getActiveItemStack().damageItem((int) (damage*(source.isExplosion()?4f:2f)), (EntityLivingBase) entity);
 			damage*=source.isExplosion() ? 0.3f : 0.45f;
 		}
+		
+		
+		boolean invPeriod = entity.hurtResistantTime > (entity instanceof EntityLivingBase ? ((EntityLivingBase)entity).maxHurtResistantTime / 2f : 10f);
+		
+		if (TF2ConfigVars.batchDamage == 1 && world.getCapability(TF2weapons.WORLD_CAP, null).damage.containsKey(entity)) {
+			damage += world.getCapability(TF2weapons.WORLD_CAP, null).damage.get(entity).damage;
+			world.getCapability(TF2weapons.WORLD_CAP, null).damage.remove(entity);
+		}
+		
+		if (knockback && !(invPeriod && TF2ConfigVars.batchDamage == 1)) {
+			return dealDamageActual(entity, world, living, stack, critical, damage, source);
+		}
+		else if(knockback && invPeriod && TF2ConfigVars.batchDamage == 1) {
+			InboundDamage inbound = world.getCapability(TF2weapons.WORLD_CAP, null).damage.get(entity);
+			if (inbound != null) {
+				damage += inbound.damage;
+			}
+			world.getCapability(TF2weapons.WORLD_CAP, null).damage.put(entity, new InboundDamage(source, damage, critical, living, stack));
+			return true;
+		}
+		return false;
+	}
+	public static boolean dealDamageActual(Entity entity, World world, EntityLivingBase living, ItemStack stack, int critical, float damage, DamageSource source) {
+		double lvelocityX = entity.motionX;
+		double lvelocityY = entity.motionY;
+		double lvelocityZ = entity.motionZ;
 		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth()+((EntityLivingBase)entity).getAbsorptionAmount():0f;
 		
-		if (knockback && entity.attackEntityFrom(source, damage)) {
-			//System.out.println("realD");
+		if (entity.attackEntityFrom(source, damage)) {
 			if (source instanceof TF2DamageSource && !((TF2DamageSource)source).getWeaponOrig().isEmpty())
 				stack=((TF2DamageSource)source).getWeaponOrig();
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon)
@@ -472,33 +548,21 @@ public class TF2Util {
 					ItemUsable.lastDamage.put(living, new float[20]);
 				ItemUsable.lastDamage.get(living)[0] += damage;
 			}
-			
 			if (entity instanceof EntityLivingBase) {
 	
 				EntityLivingBase livingTarget = (EntityLivingBase) entity;
 				
 				try {
 					if (living instanceof EntityTF2Character && ((EntityTF2Character) living).isSharing()) {
-						for(Field field :EntityLivingBase.class.getDeclaredFields()) {
-							if(field.getName().equals("recentlyHit") || field.getName().equals("field_70718_bc")) {
-								field.setAccessible(true);
-								field.setInt(entity, 100);
-							}
-							else if(((EntityTF2Character) living).getOwner() != null && 
-									(field.getName().equals("attackingPlayer") || field.getName().equals("field_70717_bb"))) {
-								field.setAccessible(true);
-								field.set(entity, ((EntityTF2Character) living).getOwner());
-							}
+						ReflectionAccess.entityRecentlyHit.setInt(entity, 100);
+						if(((EntityTF2Character) living).getOwner() != null) {
+							ReflectionAccess.entityAttackingPlayer.set(entity, ((EntityTF2Character) living).getOwner());
 						}
 					}
 				}
 				catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				// System.out.println(livingTarget.getHealth());
-				// System.out.println("Scaled"+source.isDifficultyScaled()+"
-				// "+damage);
 				livingTarget.hurtResistantTime = 20;
 				if (critical == 2)
 					TF2Util.playSound(entity, TF2Sounds.MISC_CRIT, 1.5F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
@@ -506,28 +570,16 @@ public class TF2Util {
 					TF2Util.playSound(entity, TF2Sounds.MISC_MINI_CRIT, 1.5F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
 				if (!(entity instanceof EntityBuilding))
 					TF2Util.playSound(entity, TF2Sounds.MISC_PAIN, 1F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
-				/*
-				 * if (living instanceof EntityPlayer && !world.isRemote) {
-				 * EntityPlayer player = (EntityPlayer) living; String
-				 * string=""; for(int i=0; i<20;i++){
-				 * string+=ItemUsable.lastDamage.get(living)[i]+" "; }
-				 * 
-				 * //player.addChatMessage(string); //
-				 * player.addChatMessage("Health: " + livingTarget.getHealth() +
-				 * "/" + livingTarget.getMaxHealth() + " Armor: " +
-				 * livingTarget.getTotalArmorValue()*4+
-				 * "% Critical: "+critical+" Distance: "+distance); }
-				 */
 				livingTarget.isAirBorne = false;
 				livingTarget.motionX = lvelocityX;
 				livingTarget.motionY = lvelocityY;
 				livingTarget.motionZ = lvelocityZ;
 				livingTarget.velocityChanged = false;
 			}
+			return true;
 		}
-		return knockback;
+		return false;
 	}
-
 	public static float damageBlock(BlockPos pos, EntityLivingBase living, World world, ItemStack stack, int critical, float damage, Vec3d forwardVec, Explosion explosion) {
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
@@ -538,8 +590,10 @@ public class TF2Util {
 		DestroyBlockEntry finalEntry = null;
 		int entryId = 0;
 		int emptyId = -1;
-		for (int i = 0; i < TF2EventsCommon.destroyProgress.size(); i++) {
-			DestroyBlockEntry entry = TF2EventsCommon.destroyProgress.get(i);
+		TF2WorldStorage cap= world.getCapability(TF2weapons.WORLD_CAP, null);
+		
+		for (int i = 0; i < cap.destroyProgress.size(); i++) {
+			DestroyBlockEntry entry = cap.destroyProgress.get(i);
 			if (emptyId == -1 && entry == null)
 				emptyId = i;
 			if (entry != null && entry.world == world && entry.pos.equals(pos)) {
@@ -551,11 +605,11 @@ public class TF2Util {
 		if (finalEntry == null) {
 			finalEntry = new DestroyBlockEntry(pos, world);
 			if (emptyId != -1) {
-				TF2EventsCommon.destroyProgress.set(emptyId, finalEntry);
+				cap.destroyProgress.set(emptyId, finalEntry);
 				entryId = emptyId;
 			} else {
-				TF2EventsCommon.destroyProgress.add(finalEntry);
-				entryId = TF2EventsCommon.destroyProgress.size() - 1;
+				cap.destroyProgress.add(finalEntry);
+				entryId = cap.destroyProgress.size() - 1;
 			}
 	
 		}
@@ -579,7 +633,7 @@ public class TF2Util {
 				block.dropBlockAsItem(world, pos, state, 0);
 				block.onBlockExploded(world, pos, explosion);
 			}
-			TF2EventsCommon.destroyProgress.remove(finalEntry);
+			cap.destroyProgress.remove(finalEntry);
 	
 			boolean flag = (living == null || !(living instanceof EntityPlayer) && world.isAirBlock(pos)) || block.removedByPlayer(state, world, pos, (EntityPlayer) living, true);
 	
@@ -662,7 +716,10 @@ public class TF2Util {
 		float blockDmg = TF2Attribute.getModifier("Destroy Block", weapon, 0, shooter)
 				* calculateDamage(TF2weapons.dummyEnt, world, shooter, weapon, critical, distance);
 	
-		TF2Explosion explosion = new TF2Explosion(world, exploder, x, y, z, size, direct, blockDmg,1);
+		if(blockDmg > 0 && TF2Attribute.getModifier("Onyx Projectile", weapon, 0, shooter) != 0)
+			blockDmg *= TF2Attribute.getModifier("Onyx Projectile", weapon, 0, shooter);
+		SoundEvent sound = ItemFromData.getSound(weapon, PropertyType.EXPLOSION_SOUND);
+		TF2Explosion explosion = new TF2Explosion(world, exploder, x, y, z, size, direct, blockDmg,1, sound);
 	
 		// System.out.println("ticks: "+this.ticksExisted);
 		explosion.isFlaming = false;
@@ -705,8 +762,11 @@ public class TF2Util {
 					ent.addVelocity(vec.x*3, 0, vec.y*3);*/
 				
 			}
-			if(ent==shooter)
-				dmg= TF2Attribute.getModifier("Self Damage", weapon, dmg, shooter);
+			if(ent == shooter) {
+				dmg = TF2Attribute.getModifier("Self Damage", weapon, dmg, shooter);
+				if (shooter.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemGunboats)
+					dmg *= 0.4f;
+			}
 			
 			DamageSource source;
 			if (TF2Attribute.getModifier("Unblockable", weapon, 0, shooter) == 1)
@@ -714,6 +774,12 @@ public class TF2Util {
 			else
 				source = TF2Util.causeBulletDamage(weapon, shooter, criticalloc, exploder);
 			
+			boolean fromSentry = exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase;
+			
+			if (fromSentry) {
+				if (((EntityProjectileBase)exploder).sentry.fromPDA)
+					((TF2DamageSource)source).addAttackFlag(TF2DamageSource.SENTRY_PDA);
+			}
 			dealDamage(ent, world, shooter, weapon, criticalloc, entry.getValue() * dmg,
 					source.setExplosion());
 			/*if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
@@ -722,10 +788,11 @@ public class TF2Util {
 					((EntityPlayerMP) shooter).addStat(TF2Achievements.CRIT_ROCKET_KILL);
 				}
 			}*/
-			if (exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase) {
+			if (fromSentry) {
 				EntitySentry sentry=((EntityProjectileBase)exploder).sentry;
 				((EntityLivingBase) ent).setLastAttackedEntity(sentry);
 				((EntityLivingBase) ent).setRevengeTarget(sentry);
+				
 				if (!ent.isEntityAlive())
 					sentry.setKills(sentry.getKills() + 1);
 			}
@@ -736,34 +803,37 @@ public class TF2Util {
 		while (iterator.hasNext()) {
 			EntityPlayer entityplayer = iterator.next();
 	
-			if (entityplayer.getDistanceSq(x, y, z) < 4096.0D)
-				((EntityPlayerMP) entityplayer).connection
-						.sendPacket(new SPacketExplosion(x, y, z, size, explosion.affectedBlockPositions, explosion.getKnockbackMap().get(entityplayer)));
+			if (entityplayer.getDistanceSq(x, y, z) < 4096.0D && explosion.getKnockbackMap().containsKey(entityplayer))
+				TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(explosion.getKnockbackMap().get(entityplayer), true), (EntityPlayerMP) entityplayer);
+				/*((EntityPlayerMP) entityplayer).connection
+						.sendPacket(new SPacketExplosion(x, y, z, size, explosion.affectedBlockPositions, explosion.getKnockbackMap().get(entityplayer)));*/
 		}
 	}
 
 	public static int calculateCritPre(ItemStack stack, EntityLivingBase living) {
 		int thisCritical = 0;
-		
+		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		if (living.getActivePotionEffect(TF2weapons.crit) != null || living.getActivePotionEffect(TF2weapons.buffbanner) != null)
 			thisCritical = 1;
-		if ( thisCritical == 0 && (living.getCapability(TF2weapons.WEAPONS_CAP, null).focusedShot(stack) || living.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotRemaining>0))
+		if ( thisCritical == 0 && (cap.focusedShot(stack) || cap.focusShotRemaining>0))
 			thisCritical = 1;
 		if (TF2ConfigVars.randomCrits && !stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 			ItemWeapon item = (ItemWeapon) stack.getItem();
 			if ((!item.rapidFireCrits(stack) && item.hasRandomCrits(stack, living) && living.getRNG().nextFloat() <= item.critChance(stack, living))
-					|| living.getCapability(TF2weapons.WEAPONS_CAP, null).getCritTime() > 0)
+					|| cap.getCritTime() > 0)
 				thisCritical = 2;
 		}
 		if (living.getActivePotionEffect(TF2weapons.critBoost) != null)
 			thisCritical = 2;
-		
+		if (cap.hitNoMiss > 0 && cap.hitNoMiss + 1 >= TF2Attribute.getModifier("Hit Crit", stack, 0, living)) {
+			thisCritical = 2;
+		}
 		if (!stack.isEmpty() && (!(stack.getItem() instanceof ItemWeapon) || stack.getItem() instanceof ItemMeleeWeapon)
-				&& (living.getActivePotionEffect(TF2weapons.charging) != null || living.getCapability(TF2weapons.WEAPONS_CAP, null).ticksBash > 0))
-			if (thisCritical < 2 && (living.getCapability(TF2weapons.WEAPONS_CAP, null).ticksBash > 0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).bashCritical)
+				&& (living.getActivePotionEffect(TF2weapons.charging) != null || cap.ticksBash > 0))
+			if (thisCritical < 2 && (cap.ticksBash > 0 && cap.bashCritical)
 					|| (living.getActivePotionEffect(TF2weapons.charging) != null && living.getActivePotionEffect(TF2weapons.charging).getDuration() < 14))
 				thisCritical = 2;
-			else if (thisCritical == 0 && (living.getCapability(TF2weapons.WEAPONS_CAP, null).ticksBash > 0 || living.getActivePotionEffect(TF2weapons.charging).getDuration() < 35))
+			else if (thisCritical == 0 && (cap.ticksBash > 0 || living.getActivePotionEffect(TF2weapons.charging).getDuration() < 35))
 				thisCritical = 1;
 		return thisCritical;
 	}
@@ -788,6 +858,22 @@ public class TF2Util {
 	
 	}
 
+	public static Vec3d rangeRandom3D(float radius, Random random) {
+		float yaw = random.nextFloat() * 2f * (float)Math.PI;
+		float y = random.nextFloat() * 2f - 1f;
+		float x = MathHelper.cos(yaw) * MathHelper.cos(asin(y));
+		float z = MathHelper.sin(yaw) * MathHelper.cos(asin(y));
+		
+		return new Vec3d(x * radius,y * radius,z * radius);
+	}
+	
+	public static float asin(float value) {
+		if (value >= 0)
+			return ASIN_VALUES[(int)(value*511f)];
+		else
+			return -ASIN_VALUES[(int)(-value*511f)];
+	}
+	
 	public static void stun(EntityLivingBase living, int duration, boolean noMovement) {
 		if (!(living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode)) {
 			living.addPotionEffect(new PotionEffect(TF2weapons.stun, duration, noMovement ? 1 : 0));
@@ -805,7 +891,7 @@ public class TF2Util {
 				&& !isOnSameTeam(living, living2);
 	}
 
-	public static void igniteAndAchievement(Entity target, EntityLivingBase living, int sec) {
+	public static void igniteAndAchievement(Entity target, EntityLivingBase living, int sec, float upgrade) {
 	
 		/*if (living instanceof EntityPlayerMP) {
 			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null) && target.getDataManager().get(TF2EventsCommon.ENTITY_EXP_JUMP)) {
@@ -817,9 +903,39 @@ public class TF2Util {
 					((EntityPlayer) living).addStat(TF2Achievements.ATTENTION_GETTER);
 			}
 		}*/
-		target.setFire(sec);
+
+		try {
+			int fire = ReflectionAccess.entityFire.getInt(target);
+			if (target instanceof EntityLivingBase) {
+				upgrade *= TF2Attribute.getModifier("Afterburn Reduction", ItemBackpack.getBackpack((EntityLivingBase) target), 1, living);
+				fire *= 40f/EnchantmentProtection.getFireTimeForEntity((EntityLivingBase)target, 40);
+			}
+			
+			if (fire <= 0)
+				target.setFire(1 + MathHelper.ceil(sec * upgrade));
+			
+			else if (fire < 20 * MathHelper.ceil(8 * upgrade) + 20) {
+				
+				target.setFire(Math.min(MathHelper.ceil(fire/20f) + Math.round(sec * upgrade),MathHelper.ceil(8 * upgrade)));
+			}
+			//	ReflectionAccess.entityFire.setInt(target, Math.min(fire + MathHelper.ceil(sec * upgrade) * 20, 20 * MathHelper.ceil(8 * upgrade) + fire % 20));
+			//fire = ReflectionAccess.entityFire.getInt(target);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
+	
+	public static void sendParticle(EnumTF2Particles type, Entity tracking, double x, double y, double z, double offsetX, double offsetY, double offsetZ, int count, int... params){
+		sendTracking(new TF2Message.ParticleSpawnMessage(type.ordinal(), x, y, z, offsetX, offsetY, offsetZ, count, params), tracking);
+	}
+	
+	public static void sendParticle(EnumTF2Particles type, World world, double x, double y, double z, double offsetX, double offsetY, double offsetZ, int count, int... params){
+		TF2weapons.network.sendToAllAround(new TF2Message.ParticleSpawnMessage(type.ordinal(), x, y, z, offsetX, offsetY, offsetZ, count, params),
+				new TargetPoint(world.provider.getDimension(), x, y, z, type.getRange()));
+	}
+	
 	public static void sendTracking(IMessage message,Entity entity){
 		if(entity instanceof EntityPlayerMP)
 			TF2weapons.network.sendTo(message, (EntityPlayerMP) entity);
@@ -873,6 +989,26 @@ public class TF2Util {
 		return ItemStack.EMPTY;
 	}
 	
+	public static ItemStack getBestItem(IInventory inventory, Comparator<ItemStack> comp, Predicate<ItemStack> pred) {
+		ItemStack greater = ItemStack.EMPTY;
+		for (int i = 0; i<inventory.getSizeInventory(); i++) {
+			ItemStack stack=inventory.getStackInSlot(i);
+			if ((pred == null || pred.apply(stack)) && comp.compare(stack, greater) > 0)
+				greater = stack;
+		}
+		return greater;
+	}
+	
+	public static ItemStack getBestItem(IItemHandler inventory, Comparator<ItemStack> comp, Predicate<ItemStack> pred) {
+		ItemStack greater = ItemStack.EMPTY;
+		for (int i = 0; i<inventory.getSlots(); i++) {
+			ItemStack stack=inventory.getStackInSlot(i);
+			if ((pred == null || pred.apply(stack)) && comp.compare(stack, greater) > 0)
+				greater = stack;
+		}
+		return greater;
+	}
+	
 	public static ItemStack mergeStackByDamage(IItemHandler inventory, ItemStack stack) {
 		if (stack.isEmpty() || stack.getCount() > 1)
 			return stack;
@@ -909,6 +1045,33 @@ public class TF2Util {
 		}
 		return count >= amount;
 	}
+	public static boolean hasEnoughItem(IItemHandler inventory, Predicate<ItemStack> pred, int amount) {
+		int count = 0;
+		if (amount <= 0)
+			return true;
+		for (int i = 0; i<inventory.getSlots(); i++) {
+			ItemStack stack=inventory.getStackInSlot(i);
+			if (!stack.isEmpty() && pred.apply(stack)) {
+				count += stack.getCount();
+				if (count >= amount)
+					return true;
+			}
+			
+		}
+		return count >= amount;
+	}
+	public static int removeItemsMatching(IItemHandler inventory, int amount, Predicate<ItemStack> match) {
+		int left = amount;
+		for (int i = 0; i < inventory.getSlots(); i++) {
+			if (match.apply(inventory.getStackInSlot(i))) {
+				left = left - inventory.extractItem(i, left, false).getCount();
+				if (left <= 0)
+					return 0;
+			}
+		}
+		return left;
+	}
+	
 	public static void attractMobs(EntityLivingBase living, World world) {
 		if (!world.isRemote && TF2ConfigVars.shootAttract && world.getDifficulty().getDifficultyId()>1) {
 			
@@ -947,6 +1110,7 @@ public class TF2Util {
 	public static void addModifierSafe(EntityLivingBase living, IAttribute attribute, AttributeModifier modifier, boolean saved) {
 		living.getEntityAttribute(attribute).removeModifier(modifier.getID());
 		living.getEntityAttribute(attribute).applyModifier(modifier);
+		living.getEntityAttribute(attribute).getAttributeValue();
 		if(!saved)
 			modifier.setSaved(false);
 	}
@@ -1052,6 +1216,14 @@ public class TF2Util {
 		return block == biome.topBlock.getBlock() || block == biome.fillerBlock.getBlock();
 	}
 	
+	public static Vec2f getAngleFromFacing(EnumFacing facing) {
+		switch (facing) {
+		case UP: return new Vec2f(0,90);
+		case DOWN: return new Vec2f(0,-90);
+		default : return new Vec2f(facing.getHorizontalAngle(),0);
+		}
+	}
+	
 	public static void stomp(EntityLivingBase living) {
 		for (EntityLivingBase target : living.world.getEntitiesWithinAABB(EntityLivingBase.class,
 				living.getEntityBoundingBox().grow(0.25, -living.motionY, 0.25), new Predicate<EntityLivingBase>() {
@@ -1072,7 +1244,46 @@ public class TF2Util {
 			}
 		}
 	}
+	
+	public static void extractData(String input, File output, File source) {
+		try {
+			if (source.isFile()) {
+				ZipFile zip = new ZipFile(source);
+				ZipEntry entry = zip.getEntry(input);
+				if (entry != null) {
+
+					InputStream zin = zip.getInputStream(entry);
+					byte[] bytes = new byte[(int) entry.getSize()];
+					zin.read(bytes);
+					FileOutputStream str = new FileOutputStream(output);
+					str.write(bytes);
+					str.flush();
+					str.close();
+					zin.close();
+
+				}
+			}
+			else {
+				File inputFile = new File(source, input);
+				FileInputStream istr = new FileInputStream(inputFile);
+
+				byte[] bytes = new byte[(int) inputFile.length()];
+				istr.read(bytes);
+				FileOutputStream str = new FileOutputStream(output);
+				str.write(bytes);
+				str.flush();
+				str.close();
+				istr.close();
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	static {
+		for (int i = 0; i < 512; i++) {
+			ASIN_VALUES[i] = (float) Math.asin(i/511D);
+		}
 		for (int i = 0; i < 32; ++i)
         {
             int j = (i >> 3 & 1) * 85;

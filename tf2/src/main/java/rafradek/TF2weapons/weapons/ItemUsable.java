@@ -65,7 +65,7 @@ public abstract class ItemUsable extends ItemFromData {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);
 		return new ActionResult<ItemStack>((this.canAltFire(worldIn, playerIn, itemStackIn)
 				&& this.getAltFiringSpeed(itemStackIn, playerIn) != Short.MAX_VALUE )
-				|| TF2ConfigVars.swapAttackButton || playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool>0 ? EnumActionResult.SUCCESS
+				|| TF2ConfigVars.swapAttackButton || playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPrimaryCooldown()>0 ? EnumActionResult.SUCCESS
 						: EnumActionResult.PASS,
 				itemStackIn);
 	}
@@ -79,6 +79,8 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
+		if ((oldState & 1) == 1 && (newState & 1) == 0)
+			WeaponsCapability.get(living).hitNoMiss = 0;
 		return false;
 	}
 
@@ -95,7 +97,13 @@ public abstract class ItemUsable extends ItemFromData {
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 		WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 		EntityLivingBase living=(EntityLivingBase) par3Entity;
-		if (stackcap.active == 0 && par5) {
+		
+		if (stackcap.fire1Cool > 0)
+			stackcap.fire1Cool -= 50;
+		if (stackcap.fire2Cool > 0)
+			stackcap.fire2Cool -= 50;
+		
+		if (stackcap.active == 0 && (par5 || stack == living.getHeldItemOffhand())) {
 			stackcap.active = 1;
 			// itemProperties.get(par2World.isRemote).get(par3Entity).setShort("reloadd",
 			// (short) 800);
@@ -104,8 +112,8 @@ public abstract class ItemUsable extends ItemFromData {
 				float addHealth=(float) living.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH).getModifier(ItemWeapon.HEALTH_MODIFIER).getAmount();
 				living.setHealth((living.getMaxHealth())/(living.getMaxHealth()-addHealth)*living.getHealth());
 			}
-			cap.fire1Cool = this.getDeployTime(stack, living);
-			cap.fire2Cool = this.getDeployTime(stack, living);
+			stackcap.fire1Cool = Math.max(stackcap.fire1Cool, this.getDeployTime(stack, living));
+			stackcap.fire2Cool = Math.max(stackcap.fire2Cool, this.getDeployTime(stack, living));
 		} else if (stackcap.active > 0
 				&& stack != living.getHeldItemOffhand() && !par5) {
 			if (stackcap.active == 2 && (cap.state & 3) > 0)
@@ -197,8 +205,8 @@ public abstract class ItemUsable extends ItemFromData {
 	public int getFiringSpeed(ItemStack stack, EntityLivingBase living) {
 		int speed=(int) (TF2Attribute.getModifier("Fire Rate", stack,
 				ItemFromData.getData(stack).getInt(PropertyType.FIRE_SPEED), living));
-		if(living != null && this.isDoubleWielding(living))
-			speed *= this.getDoubleWieldBonus(stack, living);
+		if(living != null && isDoubleWielding(living))
+			speed *= this.getDoubleWieldBonus(stack, living) * 2;
 		if(TF2Attribute.getModifier("Fire Rate Health", stack, 1f, living) != 1f)
 			speed *= this.getHealthBasedBonus(stack, living, TF2Attribute.getModifier("Fire Rate Health", stack, 1f, living));
 		if(living != null && (WeaponsCapability.get(living).isExpJump() || living.isElytraFlying()) && TF2Attribute.getModifier("Airborne Bonus", stack, 0, living) != 0)
@@ -220,11 +228,11 @@ public abstract class ItemUsable extends ItemFromData {
 		return (player.world.isRemote && !TF2ConfigVars.swapAttackButton) || (!player.world.isRemote && !TF2PlayerCapability.get(player).breakBlocks);
 	}
 
-	public boolean isDoubleWielding(EntityLivingBase living) {
-		return ItemFromData.getData(living.getHeldItemMainhand()) != ItemFromData.BLANK_DATA
-				&& ItemFromData.getData(living.getHeldItemOffhand()) == ItemFromData
-						.getData(living.getHeldItemMainhand())
-				&& this.getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1;
+	public static boolean isDoubleWielding(EntityLivingBase living) {
+		return ItemFromData.getData(living.getHeldItemMainhand()) != ItemFromData.BLANK_DATA 
+				&& living.getHeldItemMainhand().getItem() instanceof ItemUsable && living.getHeldItemOffhand().getItem() instanceof ItemUsable
+				&& ((ItemUsable) living.getHeldItemOffhand().getItem()).getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1
+				&& ((ItemUsable) living.getHeldItemMainhand().getItem()).getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1;
 	}
 
 	public float getDoubleWieldBonus(ItemStack stack, EntityLivingBase living) {
@@ -259,8 +267,11 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 	@Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
-		if(newStack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null) && !slotChanged)
+		if(newStack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null) && !slotChanged) {
 			newStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active=oldStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active;
+			newStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool = oldStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool;
+			newStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool = oldStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool;
+		}
 		return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
 	}
 	
@@ -274,7 +285,7 @@ public abstract class ItemUsable extends ItemFromData {
 			original = original | 4;
 			if((original & 1) == 0)
 				original = original | 1;
-			else if(WeaponsCapability.get(living).fire1Cool == 0)
+			else if(WeaponsCapability.get(living).getPrimaryCooldown() == 0)
 				original = original & 6;
 			//System.out.println("Act post: "+original);
 		}

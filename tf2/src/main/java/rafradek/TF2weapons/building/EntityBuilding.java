@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.base.Optional;
 
 import net.minecraft.client.gui.GuiIngame;
@@ -60,7 +63,7 @@ import rafradek.TF2weapons.characters.EntityEngineer;
 import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.weapons.ItemSapper;
 
-public class EntityBuilding extends EntityCreature implements IEntityOwnable, IEntityTF2{
+public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEntityTF2{
 
 	private static final DataParameter<Byte> VIS_TEAM = EntityDataManager.createKey(EntityBuilding.class,
 			DataSerializers.BYTE);
@@ -79,6 +82,8 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	protected static final DataParameter<Optional<UUID>> OWNER_UUID = EntityDataManager.createKey(EntityBuilding.class,
 			DataSerializers.OPTIONAL_UNIQUE_ID);
 	
+	private static final Logger LOGGER = LogManager.getLogger();
+	
 	public static final UUID UPGRADE_HEALTH_UUID= UUID.fromString("1184831d-b1dc-40c8-86e6-34fa8f30bada");
 	
 	public static final DamageSource DETONATE = new DamageSource("detonate").setDamageBypassesArmor().setDamageIsAbsolute();
@@ -86,6 +91,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	public static final int DISPENSER_COST = 100;
 	public static final int TELEPORTER_COST = 50;
 	public static final int SENTRY_MINI_COST = 100;
+	public static final int SENTRY_DISPOSABLE_COST = 60;
 	
 	public EntityLivingBase owner;
 	public BuildingSound buildingSound;
@@ -101,6 +107,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	private boolean engMade;
 	public ItemStackHandler charge;
 	public boolean fromPDA;
+	private int disposableID = -1;
 	
 	public EntityBuilding(World worldIn) {
 		super(worldIn);
@@ -173,7 +180,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	}
 	
 	public void grab() {
-		if(!this.isDisabled()) {
+		if(!this.isDisabled() && this.disposableID == -1) {
 			if (this.fromPDA) {
 				NBTTagCompound tag = new NBTTagCompound();
 				this.writeEntityToNBT(tag);
@@ -292,11 +299,19 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 	
 	public void clearReferences() {
 		if (this.getOwnerId() != null && this.fromPDA) {
-			
-			PlayerPersistStorage.get(this.world, getOwnerId()).buildings[this.getBuildingID()] = null;
+			if (this.disposableID == -1)
+				PlayerPersistStorage.get(this.world, getOwnerId()).buildings[this.getBuildingID()] = null;
+			else {
+				try {
+					PlayerPersistStorage.get(this.world, getOwnerId()).disposableBuildings.remove(this.getUniqueID());
+				}
+				catch (IndexOutOfBoundsException e) {
+					LOGGER.error("Disposable ID out of bounds");
+				}
+			}
 		}
 	}
-	
+
 	@Override
 	public void onUpdate() {
 		
@@ -319,14 +334,23 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 			
 			if (this.fromPDA && this.ticksExisted % 5 == 0) {
 				PlayerPersistStorage storage = PlayerPersistStorage.get(this.world, this.getOwnerId());
-				if (storage.buildings[this.getBuildingID()] == null || 
-						!storage.buildings[this.getBuildingID()].getFirst().equals(this.getUniqueID())) {
-					this.setHealth(0);
-					this.onDeath(DETONATE);
-					return;
+				if (this.disposableID == -1) {
+					if (storage.buildings[this.getBuildingID()] == null || 
+							!storage.buildings[this.getBuildingID()].getFirst().equals(this.getUniqueID())) {
+						this.setHealth(0);
+						this.onDeath(DETONATE);
+						return;
+					}
+					NBTTagCompound tag = storage.buildings[this.getBuildingID()].getSecond();
+					this.writeEntityToNBT(tag);
 				}
-				NBTTagCompound tag = storage.buildings[this.getBuildingID()].getSecond();
-				this.writeEntityToNBT(tag);
+				else {
+					if (!storage.disposableBuildings.contains(this.getUniqueID())) {
+						this.setHealth(0);
+						this.onDeath(DETONATE);
+						return;
+					}
+				}
 				//storage.buildings[this.getBuildingID()] = new Tuple<>(this.getUniqueID(),tag);
 			}
 			
@@ -523,6 +547,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		par1NBTTagCompound.setByte("TicksOwnerless", (byte) this.ticksNoOwner);
 		par1NBTTagCompound.setTag("Charge", this.charge.serializeNBT());
 		par1NBTTagCompound.setInteger("Energy", this.energy.getEnergyStored());
+		par1NBTTagCompound.setByte("DisposableID", (byte) this.disposableID);
 		if (this.getOwnerId() != null) {
 			par1NBTTagCompound.setUniqueId("Owner", this.getOwnerId());
 			par1NBTTagCompound.setString("OwnerName", this.ownerName);
@@ -548,6 +573,7 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
 		this.fromPDA=tag.getBoolean("FromPDA");
 		this.charge.deserializeNBT(tag.getCompoundTag("Charge"));
 		this.energy.receiveEnergy(tag.getInteger("Energy"), false);
+		this.disposableID = tag.getByte("DisposableID");
 		if (tag.getByte("Sapper") != 0)
 			this.setSapped(this, ItemStack.EMPTY);
 		
@@ -657,7 +683,47 @@ public class EntityBuilding extends EntityCreature implements IEntityOwnable, IE
     		return TF2Attribute.getModifier("Weapon Mode", wrench, 0f, null) == 2 ? EntityBuilding.SENTRY_MINI_COST : EntityBuilding.SENTRY_COST;
     	if (building == 1)
     		return EntityBuilding.DISPENSER_COST;
+    	else if (building == 4)
+    		return EntityBuilding.SENTRY_DISPOSABLE_COST;
     	else
     		return (int) (EntityBuilding.TELEPORTER_COST / TF2Attribute.getModifier("Teleporter Cost", wrench, 1f, null));
     }
+
+	@Override
+	public boolean hasHead() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public AxisAlignedBB getHeadBox() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasDamageFalloff() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isBuilding() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean isBackStabbable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public int getDisposableID() {
+		return disposableID;
+	}
+
+	public void setDisposableID(int disposableID) {
+		this.disposableID = disposableID;
+	}
 }

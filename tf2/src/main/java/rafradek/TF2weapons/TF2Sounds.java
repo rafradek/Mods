@@ -11,6 +11,7 @@ public class TF2Sounds {
 	public static final SoundEvent MISC_PAIN = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.pain"));
 	public static final SoundEvent MISC_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit"));
 	public static final SoundEvent MISC_MINI_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit.mini"));
+	public static final SoundEvent RAZORBACK_BREAK = register(new ResourceLocation(TF2weapons.MOD_ID, "weapon.razorback"));
 	public static final SoundEvent MOB_ENGINEER_HURT = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.engineer.hurt"));
 	public static final SoundEvent MOB_ENGINEER_DEATH = register(
@@ -179,12 +180,15 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.charge"));
 	public static final SoundEvent WEAPON_SHIELD_HIT = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.hit"));
+	public static final SoundEvent WEAPON_MACHINA = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "weapon.fire.machina"));
 	public static final SoundEvent WEAPON_SHIELD_HIT_RANGE = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.hit.range"));
 	public static final SoundEvent DISCIPLINARY_SPEED = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.powerup.disciplinary"));
 	public static final SoundEvent DOUBLE_DONK = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
+	
 	public static void registerSounds() {
 		/*
 		 * IForgeRegistry<SoundEvent>

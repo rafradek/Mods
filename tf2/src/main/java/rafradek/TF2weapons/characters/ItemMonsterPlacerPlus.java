@@ -42,7 +42,7 @@ public class ItemMonsterPlacerPlus extends Item {
 
 	public ItemMonsterPlacerPlus() {
 		this.setHasSubtypes(true);
-		this.setCreativeTab(TF2weapons.tabutilitytf2);
+		this.setCreativeTab(TF2weapons.tabspawnertf2);
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class ItemMonsterPlacerPlus extends Item {
 
 		for (int j = 0; j < 1; ++j) {
 			int team = par1%2;
-			if (par1 < 18) {
+			if (par1 < 18 || (par1 >= 36 && par1 < 45)) {
 				switch (par1%9) {
 				case 0: entity = new EntityScout(par0World); break;
 				case 1: entity = new EntitySoldier(par0World); break;
@@ -184,6 +184,8 @@ public class ItemMonsterPlacerPlus extends Item {
 				case 8: entity = new EntitySpy(par0World); break;
 				}
 				team = par1 / 9;
+				if (par1 >= 36)
+					team = 2;
 			}
 			else if (par1 / 2 == 9)
 				entity = new EntitySentry(par0World);
@@ -210,7 +212,8 @@ public class ItemMonsterPlacerPlus extends Item {
 				entityliving.renderYawOffset = entityliving.rotationYaw;
 				TF2CharacterAdditionalData data = new TF2CharacterAdditionalData();
 				data.team = team;
-				data.noEquipment = spawner != null && spawner.isSneaking();
+				data.noEquipment = team < 2 && spawner != null && spawner.isSneaking();
+				data.isGiant = team == 2 && spawner != null && spawner.isSneaking();
 				if (nbtdata == null)
 					entityliving.onInitialSpawn(par0World.getDifficultyForLocation(new BlockPos(entityliving)), data);
 				entityliving.playLivingSound();
@@ -241,11 +244,14 @@ public class ItemMonsterPlacerPlus extends Item {
 			return;
 		for (int i = 0; i < 18; i++)
 			par3List.add(new ItemStack(this, 1, i));
+		for (int i = 36; i < 45; i++)
+			par3List.add(new ItemStack(this, 1, i));
 		par3List.add(new ItemStack(this, 1, 26));
 		par3List.add(new ItemStack(this, 1, 27));
 		par3List.add(new ItemStack(this, 1, 28));
 		par3List.add(new ItemStack(this, 1, 29));
 		par3List.add(new ItemStack(this, 1, 30));
+		
 	}
 
 	@Override
@@ -253,7 +259,7 @@ public class ItemMonsterPlacerPlus extends Item {
 		String s = ("" + I18n.translateToLocal(this.getUnlocalizedName() + ".name")).trim();
 		int i = p_77653_1_.getItemDamage();
 		String s1 = "Saxton Hale";
-		if (i < 18)
+		if (i < 18 || (i >= 36 && i < 45))
 			s1 = ItemToken.CLASS_NAMES[i%9];
 		if (p_77653_1_.getItemDamage() == 27)
 			s1 = s1.concat(" (Hostile)");
@@ -271,5 +277,7 @@ public class ItemMonsterPlacerPlus extends Item {
 			ITooltipFlag advanced) {
 		if (stack.getMetadata() < 18)
 		tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn with default equipment");
+		if (stack.getMetadata() >= 36 && stack.getMetadata() < 45)
+			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn a giant");
 	}
 }

@@ -2,6 +2,7 @@ package rafradek.TF2weapons;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.particle.IParticleFactory;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemMeshDefinition;
@@ -38,11 +40,13 @@ import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemBow;
@@ -94,28 +98,35 @@ import rafradek.TF2weapons.projectiles.EntityBall;
 import rafradek.TF2weapons.projectiles.EntityCritEffect;
 import rafradek.TF2weapons.projectiles.EntityFlameEffect;
 import rafradek.TF2weapons.projectiles.EntityFlare;
+import rafradek.TF2weapons.projectiles.EntityFuryFireball;
 import rafradek.TF2weapons.projectiles.EntityGrenade;
 import rafradek.TF2weapons.projectiles.EntityJar;
+import rafradek.TF2weapons.projectiles.EntityOnyx;
 import rafradek.TF2weapons.projectiles.EntityProjectileSimple;
 import rafradek.TF2weapons.projectiles.EntityRocket;
 import rafradek.TF2weapons.projectiles.EntityRocketEffect;
 import rafradek.TF2weapons.projectiles.EntityStickybomb;
+import rafradek.TF2weapons.projectiles.ModelRocket;
 import rafradek.TF2weapons.projectiles.EntityStickProjectile;
 import rafradek.TF2weapons.projectiles.RenderBall;
 import rafradek.TF2weapons.projectiles.RenderFlare;
 import rafradek.TF2weapons.projectiles.RenderGrenade;
 import rafradek.TF2weapons.projectiles.RenderJar;
+import rafradek.TF2weapons.projectiles.RenderProjectile;
 import rafradek.TF2weapons.projectiles.RenderProjectileSimple;
 import rafradek.TF2weapons.projectiles.RenderRocket;
+import rafradek.TF2weapons.projectiles.RenderSprite;
 import rafradek.TF2weapons.projectiles.RenderStickybomb;
 import rafradek.TF2weapons.projectiles.RenderSyringe;
 import rafradek.TF2weapons.weapons.EntityBulletTracer;
 import rafradek.TF2weapons.weapons.EntityMuzzleFlash;
 import rafradek.TF2weapons.weapons.GuiDisguiseKit;
 import rafradek.TF2weapons.weapons.ItemAmmo;
+import rafradek.TF2weapons.weapons.ItemKillstreakKit;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.OnFireSound;
 import rafradek.TF2weapons.weapons.ParticleBulletHole;
+import rafradek.TF2weapons.weapons.ParticleExplosion;
 import rafradek.TF2weapons.weapons.ReloadSound;
 import rafradek.TF2weapons.weapons.WeaponLoopSound;
 import rafradek.TF2weapons.weapons.WeaponSound;
@@ -149,6 +160,7 @@ public class ClientProxy extends CommonProxy {
 	public static boolean inRenderHandTicked;
 	public static boolean buildingsUseEnergy;
 
+	public static EnumMap<EnumTF2Particles, IParticleFactory> particleFactories= new EnumMap<>(EnumTF2Particles.class);
 	public static final Logger LOGGER = (Logger) LogManager.getLogger();
 	public static Set<Class<? extends Block>> interactingBlocks;
 	@Override
@@ -193,6 +205,8 @@ public class ClientProxy extends CommonProxy {
 					return 0x1B013A;
 				else if(stack.getItemDamage() == 30)
 					return 0x20582B;
+				else if(stack.getItemDamage() < 45)
+					return 0x2AAAFF;
 				return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
 			}, TF2weapons.itemPlacer);
 		List<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
@@ -282,6 +296,8 @@ public class ClientProxy extends CommonProxy {
 		} catch (Exception e) {
 			
 		}
+		particleFactories.put(EnumTF2Particles.EXPLOSION, new ParticleExplosion.Factory());
+		particleFactories.put(EnumTF2Particles.BULLET_TRACER, new EntityBulletTracer.Factory());
 	}
 
 	@Override
@@ -325,8 +341,10 @@ public class ClientProxy extends CommonProxy {
 		
 		ModelResourceLocation spawnEgg = new ModelResourceLocation("spawn_egg", "inventory");
 
-		for (int i = 0; i < 31; i++)
-			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemPlacer, i, spawnEgg);
+		ModelBakery.registerItemVariants(TF2weapons.itemPlacer, spawnEgg);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemPlacer, stack -> {
+			return spawnEgg;
+		});
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDisguiseKit, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":disguise_kit", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemSandvich, 0,
@@ -351,6 +369,12 @@ public class ClientProxy extends CommonProxy {
 				"inventory");
 		final ModelResourceLocation teleporterBlu = new ModelResourceLocation(TF2weapons.MOD_ID + ":teleporterblu",
 				"inventory");
+		final ModelResourceLocation killstreak = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit",
+				"inventory");
+		final ModelResourceLocation killstreakSpec = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit_specialized",
+				"inventory");
+		final ModelResourceLocation killstreakPro = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit_professional",
+				"inventory");
 
 		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
 				teleporterRed, teleporterBlu);
@@ -372,8 +396,28 @@ public class ClientProxy extends CommonProxy {
 							return teleporterBlu;
 					}
 				});
+		ModelBakery.registerItemVariants(TF2weapons.itemKillstreak, killstreak, killstreakSpec, killstreakPro);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemKillstreak,
+				new ItemMeshDefinition() {
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						switch (((ItemKillstreakKit)stack.getItem()).getLevel(stack)) {
+						case 1: return killstreak;
+						case 2: return killstreakSpec;
+						case 3: return killstreakPro;
+						default: return killstreak;
+						}
+					}
+				});
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoFire, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_fire", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoPistol, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":pistol_mag", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoSMG, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":smg_mag", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemStrangifier, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":strangifier", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemChocolate, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":chocolate", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTarget, 0,
@@ -504,6 +548,11 @@ public class ClientProxy extends CommonProxy {
 				return new RenderJar(manager);
 			}
 		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityOnyx.class, manager -> {
+			ResourceLocation texture = new ResourceLocation(TF2weapons.MOD_ID, "textures/entity/projectile/onyx.png");
+			return new RenderProjectile(new ModelRocket(), texture, texture, manager);
+		});
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntitySentry.class, new IRenderFactory<EntitySentry>() {
 			@Override
 			public Render<EntitySentry> createRenderFor(RenderManager manager) {
@@ -554,6 +603,18 @@ public class ClientProxy extends CommonProxy {
 				return new RenderMonoculus(manager);
 			}
 		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityFuryFireball.class,
+				new IRenderFactory<EntityFuryFireball>() {
+					@Override
+					public RenderSprite<EntityFuryFireball> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderSprite<EntityFuryFireball>(manager, 1f, null) {
+							protected TextureAtlasSprite getSprite(EntityFuryFireball entity) {
+								return Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(Items.FIRE_CHARGE);
+							}
+						};
+					}
+				});
 		RenderingRegistry.registerEntityRenderingHandler(EntitySaxtonHale.class,
 				new IRenderFactory<EntitySaxtonHale>() {
 					@Override

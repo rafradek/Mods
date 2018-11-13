@@ -28,6 +28,7 @@ import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 
 public class ItemMinigun extends ItemBulletWeapon {
@@ -154,7 +155,6 @@ public class ItemMinigun extends ItemBulletWeapon {
 			
 			float ammo=TF2Attribute.getModifier("Ammo Spinned", stack, 0, living);
 			int spinuptime=(int) TF2Attribute.getModifier("Minigun Spinup", stack, 18, living);
-			
 			if(cap.chargeTicks >= spinuptime || (living instanceof EntityPlayer && ((EntityPlayer) living).isCreative())) {
 				if(cap.minigunTicks<20)
 					cap.minigunTicks+=1;
@@ -184,7 +184,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 							})){
 								
 								TF2Util.dealDamage(target, world, living, stack, 0, flamedmg, TF2Util.causeDirectDamage(stack, living, 0).setFireDamage());
-								TF2Util.igniteAndAchievement(target, living, 7);
+								TF2Util.igniteAndAchievement(target, living, 6, 1);
 							}
 						}
 					}
@@ -201,7 +201,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 			if(world.isRemote)
 				ClientProxy.removeSprint();
 			
-			if (cap.fire1Cool <= 0 && cap.chargeTicks < spinuptime)
+			if (WeaponData.getCapability(stack).fire1Cool <= 0 && cap.chargeTicks < spinuptime)
 				cap.chargeTicks += 1;
 		}
 	}

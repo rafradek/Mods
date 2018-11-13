@@ -128,6 +128,7 @@
 		"Damage": 0.87,
 		"Max damage": 1.4,
 		"Min damage": 0.5,
+		"Armor penetration scale": 0.8,
 		"Random crits": true,
 		"Rapidfire crits": true,
 		"Damage falloff": 9.75,
@@ -157,7 +158,7 @@
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.pistol",
 		"Firing speed": 170,
 		"Pellets": 1,
-		"Spread": 0.04,
+		"Spread": 0.03,
 		"Damage": 1.5,
 		"Max damage": 1.5,
 		"Min damage": 0.5,
@@ -229,6 +230,7 @@
 		"Damage": 5,
 		"Max damage": 1,
 		"Min damage": 1,
+		"Armor penetration scale": 0.4,
 		"Random crits": false,
 		"Rapidfire crits": false,
 		"Damage falloff": 9.75,
@@ -257,6 +259,7 @@
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.rocketlauncher",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.rocketlauncher",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 800,
 		"Pellets": 1,
 		"Spread": 0,
@@ -297,7 +300,7 @@
 		"Airblast rocket sound": "rafradek_tf2_weapons:weapon.airblast.rocket.flamethrower",
 		"Firing speed": 50,
 		"Pellets": 1,
-		"Spread": 4,
+		"Spread": 0.04,
 		"Projectile speed": 1.257,
 		"Penetrate": true,
 		"Damage": 0.75,
@@ -331,6 +334,7 @@
 		"Render": "rafradek_tf2_weapons:grenadelauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.grenadelauncher",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.rocketlauncher",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 600,
 		"Pellets": 1,
 		"Spread": 0,
@@ -367,9 +371,10 @@
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.stickylauncher",
 		"Charge sound": "rafradek_tf2_weapons:weapon.charge.stickylauncher",
 		"Detonate sound": "rafradek_tf2_weapons:weapon.detonate.stickylauncher",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 600,
 		"Pellets": 1,
-		"Spread": 4,
+		"Spread": 0.035,
 		"Projectile speed": 0.7667625,
 		"Damage": 12,
 		"Max damage": 1.2,
@@ -404,7 +409,7 @@
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.syringegun",
 		"Firing speed": 100,
 		"Pellets": 1,
-		"Spread": 2,
+		"Spread": 0.025,
 		"Projectile speed": 0.9525,
 		"Damage": 1,
 		"Max damage": 1.2,
@@ -523,7 +528,28 @@
 		"Spread recovery": false,
 		"Hidden": true
 	},
-
+	
+	"sentryheatbullet": 
+	{
+		"Name": "Sentry Bullet",
+		"Class": "bullet",
+		"Slot": 0,
+		"Mobs": "engineer",
+		"Render": "rafradek_tf2_weapons:rocketlauncher",
+		
+		"Firing speed": 500,
+		"Pellets": 1,
+		"Spread": 0,
+		"Damage": 6,
+		"Max damage": 1,
+		"Min damage": 1,
+		"Random crits": false,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Spread recovery": false,
+		"Hidden": true
+	},
+	
 	"sentryrocket": 
 	{
 		"Name": "Sentry Rocket",
@@ -532,6 +558,7 @@
 		"Projectile": "rocket",
 		"Mobs": "engineer",
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 3000,
 		"Pellets": 1,
 		"Spread": 0,
@@ -1018,7 +1045,7 @@
 		"Slot": 1,
 		"Render": "rafradek_tf2_weapons:wrangler",
 		"Drop chance": 0.07,
-		"Firing speed": 50,
+		"Firing speed": 0,
 		"Cost": 22,
 		"Description": "Allows you to control the nearest sentry"
 	},
@@ -1184,6 +1211,7 @@
 		"Based on": "rocketlauncher",
 		"Stock": false,
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.directhit",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.directhit",
 		"Render": "rafradek_tf2_weapons:direct_hit",
 		"Cost": 30,
 		"Attributes": 
@@ -1211,7 +1239,7 @@
 			"AmmoEfficiencyBonus": 0.2,
 			"DamagePenalty": 0.35,
 			"ExplosionRadiusPenalty": 0.8,
-			"SpreadAdd": 3
+			"SpreadAdd": 0.05
 		}
 	},
 	
@@ -1221,6 +1249,7 @@
 		"Class": "projectile",
 		"Based on": "rocketlauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.rocketjumper",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.rocketjumper",
 		"Render": "rafradek_tf2_weapons:rocketjumper",
 		"Stock": false,
 		"Mobs": "",
@@ -1240,6 +1269,7 @@
 		"Class": "stickybomb",
 		"Based on": "stickybomblauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.stickyjumper",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.rocketjumper",
 		"Render": "rafradek_tf2_weapons:stickyjumper",
 		"Stock": false,
 		"Mobs": "",
@@ -1484,11 +1514,13 @@
 		"Charge sound": "rafradek_tf2_weapons:weapon.charge.stickylauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.loosecannon",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.loosecannon",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.loosecannon",
 		"Description": "Can be charged by holding fire button\nCannonballs does not explode on impact",
 		"Drop chance": 0.11,
 		"Cost": 25,
 		"Damage": 6,
-		"Knockback": 16,
+		"Armor penetration scale": 1.6,
+		"Knockback": 20,
 		"Penetrate": true,
 		"Stock": false,
 		"Attributes": 
@@ -1623,7 +1655,7 @@
 		{
 			"DamagePenalty": 0.4,
 			"PelletBonus": 6,
-			"SpreadAdd": 8,
+			"SpreadAdd": 0.075,
 			"AmmoEfficiencyPenalty": 1.5,
 			"FireRatePenalty": 1.5,
 			"ClipSizePenalty": 0.5,
@@ -1649,10 +1681,10 @@
 		
 		"Attributes": 
 		{
-			"DamagePenalty": 0.4,
-			"FireRateBonus": 0.17,
+			"DamagePenalty": 0.5,
+			"FireRateBonus": 0.23,
 			"WeaponMode": 2,
-			"AmmoEfficiencyBonus": 0.4
+			"AmmoEfficiencyBonus": 0.5
 		}
 	},
 	"rocketminigun": 
@@ -1661,12 +1693,13 @@
 		"Class": "minigun",
 		"Based on": "minigun",
 		"Projectile": "rocket",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Pellets": 1,
 		"Projectile speed": 1.04,
 		"Damage": 5,
 		"Drop chance": 0,
 		"Roll hidden": 2,
-		"Spread": 6,
+		"Spread": 0.08,
 		"Hidden": true,
 		"Cost": 80,
 		"Ammo type": 7,
@@ -1674,24 +1707,6 @@
 		{
 			"FireRatePenalty": 1.3,
 			"AmmoEfficiencyBonus": 0.4
-		}
-	},
-	"puncturizer": 
-	{
-		"Name": "Puncturize",
-		"Class": "projectile",
-		"Based on": "syringegun",
-		"Drop chance": 0,
-		"Roll hidden": 2,
-		"Hidden": true,
-		"Cost": 80,
-		"Attributes": 
-		{
-			"SpreadPenalty": 3,
-			"PelletBonus": 10,
-			"FireRatePenalty": 2.5,
-			"ClipSizePenalty": 0.1,
-			"AmmoEfficiencyPenalty": 3
 		}
 	},
 	"bigone": 
@@ -1721,6 +1736,7 @@
 		"Based on": "rocketlauncher",
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.airstrike",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.airstrike",
 		"Cost": 30,
 		"Stock": false,
 		"Attributes": 
@@ -1811,8 +1827,10 @@
 		"Slot": 1,
 		"Mobs": "pyro",
 		"Render": "rafradek_tf2_weapons:buffbanner",
-		"Horn red sound": "rafradek_tf2_weapons:weapon.horn.banner.red",
-		"Horn blu sound": "rafradek_tf2_weapons:weapon.horn.banner.blu",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.thermalthruster",
+		"Charge sound": "rafradek_tf2_weapons:weapon.charge.thermalthruster",
+		"Fire loop sound": "rafradek_tf2_weapons:weapon.loop.thermalthruster",
+		"Fire stop sound": "rafradek_tf2_weapons:weapon.shutdown.thermalthruster",
 		"Firing speed": 20,
 		"Drop chance": 0.07,
 		"Cooldown": 240,
@@ -1821,7 +1839,7 @@
 		"Armor": 5,
 		"Wear flags": 2,
 		"Stock": false,
-		"Description": "Charges over time\nUse horn to activate a buff\nthat increases damage dealt by 35%\nfor you and all allies nearby"
+		"Description": "Use the jetpack trigger to activate"
 	},
 	"trigger": 
 	{
@@ -1829,6 +1847,7 @@
 		"Class": "jetpacktrigger",
 		"Render": "rafradek_tf2_weapons:jetpack_trigger",
 		"Firing speed": 900,
+		"Description": "To use with the Thermal Thruster equipped",
 		"Attributes": 
 		{
 			"HolsterTimePenalty": 1.75
@@ -1840,6 +1859,8 @@
 		"Class": "wrench",
 		"Based on": "wrench",
 		"Render": "rafradek_tf2_weapons:gunslinger",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gunslinger",
+		"Special 1 sound": "rafradek_tf2_weapons:weapon.hit.gunslinger.special",
 		"Description": "Allows the user to construct Mini-Setries",
 		"Drop chance": 0.11,
 		"Cost": 22,
@@ -1849,7 +1870,8 @@
 			"HealthPenalty": 3,
 			"WeaponMode": 2,
 			"NoRandomCrit": 1,
-			"SentryBonus": 2
+			"SentryBonus": 2,
+			"HitCrit": 3
 		}
 	},
 	"pda": 
@@ -1860,6 +1882,238 @@
 		"Slot": 3,
 		"Mobs": "engineer",
 		"Cost": 48,
-		"Stock": true
+		"Stock": true,
+		"Description": "Right click while sneaking to disable HUD"
+	},
+	"righterousbison": 
+	{
+		"Name": "Righterous Bison",
+		"Class": "projectile",
+		"Slot": 1,
+		"Mobs": "soldier",
+		"Projectile": "energy",
+		"Render": "rafradek_tf2_weapons:rescue_ranger",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.bison",
+		"Reload sound": "rafradek_tf2_weapons:weapon.reload.bison",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.bison",
+		"Firing speed": 800,
+		"Pellets": 1,
+		"Spread": 0,
+		"Projectile speed": 1.19,
+		"Damage": 2,
+		"Max damage": 1.2,
+		"Min damage": 0.6,
+		"Armor penetration scale": 10,
+		"Dual wield speed": 0.65,
+		"Random crits": true,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": true,
+		"Reloads full clip": false,
+		"Reload time first": 920,
+		"Reload time": 400,
+		"Clip size": 4,
+		"Max ammo": 32,
+		"Knockback": 3,
+		"Spread recovery": false,
+		"Ammo type": 0,
+		"Recoil": 7,
+		"Efficient range": 30,
+		"Drop chance": 0.09,
+		"Stock": false,
+		"Cost": 13,
+		"Description": "Does extra damage to armored enemies",
+		"Attributes": 
+		{
+			"DamageBuildingPenalty": 0.2
+		}
+	},
+	"onyxblaster":
+	{
+		"Name": "Onyx Blaster",
+		"Class": "bullet",
+		"Based on": "shotgun",
+		"Projectile": "onyx",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
+		"Mobs": "",
+		"Firing speed": 800,
+		"Damage": 0.54,
+		"Drop chance": 0.0,
+		"Roll hidden": 1,
+		"Cost": 45,
+		"Projectile speed": 2.6,
+		"Hidden": true,
+		"Roll hidden": 1,
+		"Reloads clip": false,
+		"Stock": false,
+		"Attributes": 
+		{
+			"OnyxProjectile": 6
+		}
+	},
+	"sydneysleeper":
+	{
+		"Name": "Sydney Sleeper",
+		"Class": "sniperrifle",
+		"Based on": "sniperrifle",
+		"Cost": 45,
+		"Stock": false,
+		"Attributes": 
+		{
+			"ChargeBonus": 1.25,
+			"JarateOnHit": 2,
+			"NoHeadshot": 1
+		}
+	},
+	"dragonsfury": 
+	{
+		"Name": "Dragon's Furry",
+		"Class": "airblast",
+		"Slot": 0,
+		"Mobs": "pyro",
+		"Projectile": "fireball",
+		"Render": "rafradek_tf2_weapons:flamethrower",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.dragonsfury",
+		"Reload sound": "rafradek_tf2_weapons:weapon.reload.dragonsfury",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.dragonsfury",
+		"Hit world sound": "",
+		"Special 1 sound": "rafradek_tf2_weapons:weapon.hit.dragonsfury.bonus",
+		"Airblast sound": "rafradek_tf2_weapons:weapon.airblast.flamethrower",
+		"Airblast rocket sound": "rafradek_tf2_weapons:weapon.airblast.rocket.flamethrower",
+		"Firing speed": 800,
+		"Pellets": 1,
+		"Spread": 0,
+		"Projectile speed": 2.86,
+		"Penetrate": true,
+		"Damage": 7.5,
+		"Max damage": 1.2,
+		"Min damage": 0.5,
+		"Random crits": true,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": false,
+		"Max ammo": 350,
+		"Knockback": 5,
+		"Spread recovery": false,
+		"Ammo type": 10,
+		"Efficient range": 10,
+		"Drop chance": 0.05,
+		"Stock": false,
+		"Cost": 33,
+		"Description": "OwO",
+		"Attributes":
+		{
+			"AmmoEfficiencyPenalty": 9,
+			"FireRateHitBonus": 1.5,
+			"AirblastRatePenalty": 2,
+			"DamageNonBurnPenalty": 0.33,
+			"BurnOnHit": 2
+		}
+	},
+	"razorback": 
+	{
+		"Name": "Razorback",
+		"Class": "backpackgeneric",
+		"Slot": 1,
+		"Mobs": "sniper",
+		"Render": "rafradek_tf2_weapons:conch",
+		"Drop chance": 0.07,
+		"Cost": 18,
+		"Armor": 4,
+		"Wear flags": 2,
+		"Attributes": 
+		{
+			"NoBackstab": 1
+		}
+	},
+	"dangershield": 
+	{
+		"Name": "Darwin's Danger Shield'",
+		"Class": "backpackgeneric",
+		"Slot": 1,
+		"Mobs": "sniper",
+		"Render": "rafradek_tf2_weapons:conch",
+		"Drop chance": 0.07,
+		"Cost": 18,
+		"Armor": 4,
+		"Wear flags": 2,
+		"Attributes": 
+		{
+			"FireResistBonus": 0.5,
+			"AfterburnReductionBonus": 0.25
+		}
+	},
+	"shortstop": 
+	{
+		"Name": "Shortstop",
+		"Class": "bullet",
+		"Slot": 0,
+		"Mobs": "scout",
+		"Render": "rafradek_tf2_weapons:pistol",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shortstop",
+		"Reload sound": "rafradek_tf2_weapons:weapon.reload.shortstop",
+		"Firing speed": 360,
+		"Pellets": 4,
+		"Spread": 0.04,
+		"Damage": 1.2,
+		"Max damage": 1.5,
+		"Min damage": 0.5,
+		"Random crits": true,
+		"Rapidfire crits": true,
+		"Damage falloff": 9.75,
+		"Reloads clip": true,
+		"Reloads full clip": true,
+		"Reload time first": 1560,
+		"Reload time": 1560,
+		"Clip size": 4,
+		"Max ammo": 32,
+		"Knockback": 3,
+		"Spread recovery": false,
+		"Ammo type": 1,
+		"Recoil": 0,
+		"Efficient range": 20,
+		"Drop chance": 0.1,
+		"Stock": false,
+		"Cost": 18
+	},
+	"supernailgun": 
+	{
+		"Name": "Super Nailgun",
+		"Class": "projectile",
+		"Slot": 0,
+		"Mobs": "medic",
+		"Projectile": "syringe",
+		"Render": "rafradek_tf2_weapons:syringegun",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.syringegun",
+		"Reload sound": "rafradek_tf2_weapons:weapon.reload.syringegun",
+		"Firing speed": 100,
+		"Pellets": 1,
+		"Spread": 0.005,
+		"Projectile speed": 1.3,
+		"Damage": 1.7,
+		"Max damage": 1.2,
+		"Min damage": 0.5,
+		"Random crits": true,
+		"Rapidfire crits": true,
+		"Damage falloff": 9.75,
+		"Reloads clip": false,
+		"Reloads full clip": false,
+		"Reload time first": 1600,
+		"Reload time": 1600,
+		"Clip size": 40,
+		"Max ammo": 150,
+		"Knockback": 3,
+		"Spread recovery": false,
+		"Ammo type": 9,
+		"Efficient range": 16,
+		"Drop chance": 0,
+		"Stock": false,
+		"Roll hidden": 1,
+		"Hidden": true,
+		"Cost": 45,
+		"Attributes": 
+		{
+			"Gravity": -0.0381
+		}
 	}
 }

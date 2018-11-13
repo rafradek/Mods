@@ -103,7 +103,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(200);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.098D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(0D);
 
 	}
@@ -498,16 +498,17 @@ public class EntityMerasmus extends EntityTF2Boss {
 					this.host.getNavigator().clearPathEntity();
 					this.host.playSound(TF2Sounds.MOB_MERASMUS_SPELL, 2F, 1F);
 					boolean attacked=false;
-					for(EntityLivingBase living:world.getEntitiesWithinAABB(EntityLivingBase.class, this.host.getEntityBoundingBox().grow(12, 5, 12), new Predicate<EntityLivingBase>(){
+					double range = 10d + this.host.level * 0.6;
+					for(EntityLivingBase living:world.getEntitiesWithinAABB(EntityLivingBase.class, this.host.getEntityBoundingBox().grow(range, range * 0.4, range), new Predicate<EntityLivingBase>(){
 
 						@Override
 						public boolean apply(EntityLivingBase input) {
 							// TODO Auto-generated method stub
-							return input.getDistanceSqToEntity(host)<144&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
+							return input.getDistanceSqToEntity(host)<range * range&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
 						}
 						
 					})){
-						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 6);
+						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 4.4f + this.host.level * 0.6f);
 						living.addVelocity(0, 1.25, 0);
 						living.fallDistance=-10;
 						attacked=true;

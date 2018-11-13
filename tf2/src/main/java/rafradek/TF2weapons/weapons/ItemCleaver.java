@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.EntityDummy;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
@@ -38,6 +39,7 @@ public class ItemCleaver extends ItemProjectileWeapon {
 	}
 	
 	public boolean isProjectileInfinite(EntityLivingBase living, ItemStack stack) {
-		return TF2ConfigVars.freeUseItems || !(living instanceof EntityPlayer) || ((EntityPlayer)living).capabilities.isCreativeMode;
+		return !(living instanceof EntityDummy) 
+				&& (TF2ConfigVars.freeUseItems || !(living instanceof EntityPlayer) || ((EntityPlayer)living).capabilities.isCreativeMode);
 	}
 }

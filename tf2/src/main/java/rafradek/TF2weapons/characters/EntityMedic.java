@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.characters;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -9,17 +10,24 @@ import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
+import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAIUseMedigun;
+import rafradek.TF2weapons.weapons.ItemChargingTarge;
 
 public class EntityMedic extends EntityTF2Character {
 
@@ -55,6 +63,14 @@ public class EntityMedic extends EntityTF2Character {
 
 	}
 
+	protected void addWeapons() {
+		super.addWeapons();
+		if (this.isGiant()) {
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("HealRateBonus"), 10000f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("OverHealBonus"), 0f);
+		}
+	}
+	
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootMedic;
@@ -65,7 +81,7 @@ public class EntityMedic extends EntityTF2Character {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(30.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.2D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.14111D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
@@ -163,7 +179,8 @@ public class EntityMedic extends EntityTF2Character {
 
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (!(this.getAttackTarget() instanceof EntityPlayer || (this.getAttackTarget() instanceof IEntityOwnable && ((IEntityOwnable) this.getAttackTarget()).getOwnerId() != null))) {
+		if (TF2ConfigVars.scaleAttributes && 
+				!(this.getAttackTarget() instanceof EntityPlayer || (this.getAttackTarget() instanceof IEntityOwnable && ((IEntityOwnable) this.getAttackTarget()).getOwnerId() != null))) {
 			if (attribute.equals("Heal"))
 				return this.scaleWithDifficulty(0.75f, 1f);
 			if (attribute.equals("Overheal"))

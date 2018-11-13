@@ -106,9 +106,9 @@ public class ItemMedigun extends ItemUsable {
 			}
 		}
 		if (target.getHealth() >= target.getMaxHealth()
-				&& target.getAbsorptionAmount() < target.getMaxHealth() * this.getMaxOverheal(stack, living)) {
+				&& target.getAbsorptionAmount() < target.getMaxHealth() * this.getMaxOverheal(stack, living, target)) {
 			target.setAbsorptionAmount(Math.min(target.getAbsorptionAmount() + overheal,
-					target.getMaxHealth() * this.getMaxOverheal(stack, living)));
+					target.getMaxHealth() * this.getMaxOverheal(stack, living, null)));
 			target.getDataManager().set(TF2EventsCommon.ENTITY_OVERHEAL,
 					target.getAbsorptionAmount()/*
 												 * Math.max(target.getEntityData
@@ -123,7 +123,7 @@ public class ItemMedigun extends ItemUsable {
 		}
 		
 		if (target.getHealth() >= target.getMaxHealth()
-				&& target.getAbsorptionAmount() >= target.getMaxHealth() * (this.getMaxOverheal(stack, living) - 0.075))
+				&& target.getAbsorptionAmount() >= target.getMaxHealth() * (this.getMaxOverheal(stack, living, target) - 0.075))
 			ubercharge /= 2;
 		if (!stack.getTagCompound().getBoolean("Activated") && stack.getTagCompound().getFloat("ubercharge") < 1) {
 			stack.getTagCompound().setFloat("ubercharge",
@@ -278,7 +278,9 @@ public class ItemMedigun extends ItemUsable {
 		return TF2Attribute.getModifier("Heal", stack, ItemFromData.getData(stack).getFloat(PropertyType.HEAL), living);
 	}
 
-	public float getMaxOverheal(ItemStack stack, EntityLivingBase living) {
+	public float getMaxOverheal(ItemStack stack, EntityLivingBase living, EntityLivingBase target) {
+		if (target instanceof EntityTF2Character && ((EntityTF2Character)target).isGiant())
+			return 0;
 		return TF2Attribute.getModifier("Overheal", stack,
 				ItemFromData.getData(stack).getFloat(PropertyType.MAX_OVERHEAL), living);
 	}

@@ -4,14 +4,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -24,115 +28,141 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.config.Property.Type;
+import rafradek.TF2weapons.weapons.ItemKillstreakKit;
 
-public class WeaponData {
+public class WeaponData implements ICapabilityProvider {
 
-	public static final Gson DESERIALIZER = new Gson();
+	private static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(WeaponData.class, new WeaponData.Serializer()).create();
 
-	public static PropertyType[] propertyTypes = new PropertyType[256];
-
+	
+	public static PropertyType<?>[] propertyTypes = new PropertyType[256];
+	public static Map<String, JsonDeserializer<ICapabilityProvider>> propertyDeserializers;
+	
 	public static class Serializer implements JsonDeserializer<WeaponData> {
 
 		@Override
 		public WeaponData deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
 				JsonDeserializationContext context) throws JsonParseException {
-
-			return null;
+			WeaponData data = new WeaponData();
+			//Map<ResourceLocation, ICapabilityProvider> providers = new HashMap<>();
+			
+			for (Entry<String, JsonElement> property : json.getAsJsonObject().entrySet())
+				/*if (propertyDeserializers.containsKey(property.getKey()))
+					providers.put(new ResourceLocation(property.getKey()), propertyDeserializers.get(property.getKey()).deserialize(property.getValue(), typeOfT, context));
+				else
+					data.addProperty(property.getKey(), property.getValue().getAsString());*/
+				data.addProperty(property.getKey(), property.getValue(), context);
+			
+			//data.addCapabilities(providers);
+			return data;
 		}
 
 	}
+	
+	public static abstract class SpecialProperty implements ICapabilityProvider {
+		
+		public abstract void serialize(DataOutput buf, WeaponData data) throws IOException;
+		public abstract void deserialize(DataInput buf, WeaponData data) throws IOException;
+	}
+	
+	public static class PropertyType<T> implements JsonDeserializer<T>{
 
-	public static class PropertyType {
-
-		public static final PropertyType FIRE_SOUND = new PropertyType(3, "Fire sound", Type.STRING);
-		public static final PropertyType RENDER = new PropertyType(2, "Render", Type.STRING);
-		public static final PropertyType SLOT = new PropertyType(1, "Slot", Type.INTEGER);
-		public static final PropertyType NAME = new PropertyType(0, "Name", Type.STRING);
-		public static final PropertyType RELOAD_SOUND = new PropertyType(4, "Reload sound", Type.STRING);
-		public static final PropertyType FIRE_SPEED = new PropertyType(5, "Firing speed", Type.INTEGER);
-		public static final PropertyType PELLETS = new PropertyType(6, "Pellets", Type.INTEGER);
-		public static final PropertyType DAMAGE = new PropertyType(7, "Damage", Type.DOUBLE);
-		public static final PropertyType MAX_DAMAGE = new PropertyType(8, "Max damage", Type.DOUBLE);
-		public static final PropertyType MIN_DAMAGE = new PropertyType(9, "Min damage", Type.DOUBLE);
-		public static final PropertyType RANDOM_CRITS = new PropertyType(10, "Random crits", Type.BOOLEAN);
-		public static final PropertyType RAPIDFIRE_CRITS = new PropertyType(11, "Rapidfire crits", Type.BOOLEAN);
-		public static final PropertyType DAMAGE_FALOFF = new PropertyType(12, "Damage falloff", Type.DOUBLE);
-		public static final PropertyType RELOADS_CLIP = new PropertyType(13, "Reloads clip", Type.BOOLEAN);
-		public static final PropertyType RELOADS_FULL_CLIP = new PropertyType(14, "Reloads full clip", Type.BOOLEAN);
-		public static final PropertyType RELOAD_TIME_FIRST = new PropertyType(15, "Reload time first", Type.INTEGER);
-		public static final PropertyType RELOAD_TIME = new PropertyType(16, "Reload time", Type.INTEGER);
-		public static final PropertyType CLIP_SIZE = new PropertyType(17, "Clip size", Type.INTEGER);
-		public static final PropertyType KNOCKBACK = new PropertyType(18, "Knockback", Type.INTEGER);
-		public static final PropertyType SPREAD_RECOVERY = new PropertyType(19, "Spread recovery", Type.BOOLEAN);
-		public static final PropertyType DUAL_WIELD_SPEED = new PropertyType(20, "Dual wield speed", Type.DOUBLE);
-		public static final PropertyType FIRE_LOOP_SOUND = new PropertyType(21, "Fire loop sound", Type.STRING);
-		public static final PropertyType SPIN_SOUND = new PropertyType(22, "Spin sound", Type.STRING);
-		public static final PropertyType WIND_UP_SOUND = new PropertyType(23, "Wind up sound", Type.STRING);
-		public static final PropertyType WIND_DOWN_SOUND = new PropertyType(24, "Wind down sound", Type.STRING);
-		public static final PropertyType FIRE_START_SOUND = new PropertyType(25, "Fire start sound", Type.STRING);
-		public static final PropertyType FIRE_STOP_SOUND = new PropertyType(26, "Fire stop sound", Type.STRING);
-		public static final PropertyType AIRBLAST_SOUND = new PropertyType(27, "Airblast sound", Type.STRING);
-		public static final PropertyType AIRBLAST_ROCKET_SOUND = new PropertyType(37, "Airblast rocket sound",
-				Type.STRING);
-		public static final PropertyType HIDDEN = new PropertyType(38, "Hidden", Type.BOOLEAN);
-		public static final PropertyType CLOAK_SOUND = new PropertyType(28, "Cloak sound", Type.STRING);
-		public static final PropertyType DECLOAK_SOUND = new PropertyType(29, "Decloak sound", Type.STRING);
-		public static final PropertyType BUILD_HIT_SUCCESS_SOUND = new PropertyType(30, "Build hit success sound",
-				Type.STRING);
-		public static final PropertyType BUILD_HIT_FAIL_SOUND = new PropertyType(31, "Build hit fail sound",
-				Type.STRING);
-		public static final PropertyType EFFECT_TYPE = new PropertyType(32, "Effect type", Type.STRING);
-		public static final PropertyType DURATION = new PropertyType(33, "Duration", Type.INTEGER);
-		public static final PropertyType COOLDOWN = new PropertyType(34, "Cooldown", Type.INTEGER);
-		public static final PropertyType HEAL_START_SOUND = new PropertyType(35, "Heal start sound", Type.STRING);
-		public static final PropertyType NO_TARGET_SOUND = new PropertyType(36, "No target sound", Type.STRING);
-		public static final PropertyType CHARGED_SOUND = new PropertyType(39, "Charged sound", Type.STRING);
-		public static final PropertyType UBER_START_SOUND = new PropertyType(40, "Uber start sound", Type.STRING);
-		public static final PropertyType UBER_STOP_SOUND = new PropertyType(41, "Uber stop sound", Type.STRING);
-		public static final PropertyType HEAL = new PropertyType(42, "Heal", Type.DOUBLE);
-		public static final PropertyType MAX_OVERHEAL = new PropertyType(43, "Max overheal", Type.DOUBLE);
-		public static final PropertyType RANGE = new PropertyType(44, "Range", Type.DOUBLE);
-		public static final PropertyType PROJECTILE_SPEED = new PropertyType(45, "Projectile speed", Type.DOUBLE);
-		public static final PropertyType PROJECTILE = new PropertyType(46, "Projectile", Type.STRING);
-		public static final PropertyType BASED_ON = new PropertyType(47, "Based on", Type.STRING);
-		public static final PropertyType RENDER_BACKSTAB = new PropertyType(48, "Render backstab", Type.STRING);
-		public static final PropertyType CHARGE_SOUND = new PropertyType(49, "Charge sound", Type.STRING);
-		public static final PropertyType DETONATE_SOUND = new PropertyType(50, "Detonate sound", Type.STRING);
-		public static final PropertyType CLASS = new PropertyType(51, "Class", Type.STRING);
-		public static final PropertyType SPREAD = new PropertyType(52, "Spread", Type.DOUBLE);
-		public static final PropertyType HIT_SOUND = new PropertyType(53, "Hit sound", Type.STRING);
-		public static final PropertyType AMMO_TYPE = new PropertyType(54, "Ammo type", Type.INTEGER);
-		public static final PropertyType ROLL_HIDDEN = new PropertyType(55, "Roll hidden", Type.INTEGER);
-		public static final PropertyType MOB_TYPE = new PropertyType(56, "Mobs", Type.STRING);
-		public static final PropertyType RECOIL = new PropertyType(57, "Recoil", Type.DOUBLE);
-		public static final PropertyType DROP_CHANCE = new PropertyType(58, "Drop chance", Type.DOUBLE);
-		public static final PropertyType COST = new PropertyType(59, "Cost", Type.INTEGER);
-		public static final PropertyType WEAR = new PropertyType(60, "Wear flags", Type.INTEGER);
-		public static final PropertyType ARMOR_IMAGE = new PropertyType(61, "Overlay", Type.STRING);
-		public static final PropertyType HEAD_MODEL = new PropertyType(62, "Head model", Type.STRING);
-		public static final PropertyType BODY_MODEL = new PropertyType(63, "Body model", Type.STRING);
-		public static final PropertyType ARMOR = new PropertyType(64, "Armor", Type.DOUBLE);
-		public static final PropertyType ARMOR_TOUGHNESS = new PropertyType(65, "Armor toughness", Type.DOUBLE);
-		public static final PropertyType HORN_RED_SOUND = new PropertyType(66, "Horn red sound", Type.STRING);
-		public static final PropertyType HORN_BLU_SOUND = new PropertyType(67, "Horn blu sound", Type.STRING);
-		public static final PropertyType DESC = new PropertyType(68, "Description", Type.STRING);
-		public static final PropertyType HIT_WORLD_SOUND = new PropertyType(69, "Hit world sound", Type.STRING);
-		public static final PropertyType HIT_LOOP_SOUND = new PropertyType(70, "Hit loop sound", Type.STRING);
-		public static final PropertyType EFFICIENT_RANGE = new PropertyType(71, "Efficient range", Type.DOUBLE);
-		public static final PropertyType STOCK = new PropertyType(72, "Stock", Type.BOOLEAN);
-		public static final PropertyType NO_FIRE_SOUND = new PropertyType(73, "No fire sound", Type.STRING);
-		public static final PropertyType CHARGED_FIRE_SOUND = new PropertyType(73, "Charged fire sound", Type.STRING);
-		public static final PropertyType PENETRATE = new PropertyType(74, "Penetrate", Type.BOOLEAN);
-		public static final PropertyType OVERRIDE = new PropertyType(75, "Weapon override", Type.STRING);
-		public static final PropertyType MAX_AMMO = new PropertyType(76, "Max ammo", Type.INTEGER);
-		public Type type;
+		public static final PropertyType<String> FIRE_SOUND = new PropertyType<>(3, "Fire sound", String.class);
+		public static final PropertyType<String> RENDER = new PropertyType<>(2, "Render", String.class);
+		public static final PropertyType<Integer> SLOT = new PropertyType<>(1, "Slot", Integer.class);
+		public static final PropertyType<String> NAME = new PropertyType<>(0, "Name", String.class);
+		public static final PropertyType<String> RELOAD_SOUND = new PropertyType<>(4, "Reload sound", String.class);
+		public static final PropertyType<Integer> FIRE_SPEED = new PropertyType<>(5, "Firing speed", Integer.class);
+		public static final PropertyType<Integer> PELLETS = new PropertyType<>(6, "Pellets", Integer.class);
+		public static final PropertyType<Float> DAMAGE = new PropertyType<>(7, "Damage", Float.class);
+		public static final PropertyType<Float> MAX_DAMAGE = new PropertyType<>(8, "Max damage", Float.class);
+		public static final PropertyType<Float> MIN_DAMAGE = new PropertyType<>(9, "Min damage", Float.class);
+		public static final PropertyType<Boolean> RANDOM_CRITS = new PropertyType<>(10, "Random crits", Boolean.class);
+		public static final PropertyType<Boolean> RAPIDFIRE_CRITS = new PropertyType<>(11, "Rapidfire crits", Boolean.class);
+		public static final PropertyType<Float> DAMAGE_FALOFF = new PropertyType<>(12, "Damage falloff", Float.class);
+		public static final PropertyType<Boolean> RELOADS_CLIP = new PropertyType<>(13, "Reloads clip", Boolean.class);
+		public static final PropertyType<Boolean> RELOADS_FULL_CLIP = new PropertyType<>(14, "Reloads full clip", Boolean.class);
+		public static final PropertyType<Integer> RELOAD_TIME_FIRST = new PropertyType<>(15, "Reload time first", Integer.class);
+		public static final PropertyType<Integer> RELOAD_TIME = new PropertyType<>(16, "Reload time", Integer.class);
+		public static final PropertyType<Integer> CLIP_SIZE = new PropertyType<>(17, "Clip size", Integer.class);
+		public static final PropertyType<Integer> KNOCKBACK = new PropertyType<>(18, "Knockback", Integer.class);
+		public static final PropertyType<Boolean> SPREAD_RECOVERY = new PropertyType<>(19, "Spread recovery", Boolean.class);
+		public static final PropertyType<Float> DUAL_WIELD_SPEED = new PropertyType<>(20, "Dual wield speed", Float.class);
+		public static final PropertyType<String> FIRE_LOOP_SOUND = new PropertyType<>(21, "Fire loop sound", String.class);
+		public static final PropertyType<String> SPIN_SOUND = new PropertyType<>(22, "Spin sound", String.class);
+		public static final PropertyType<String> WIND_UP_SOUND = new PropertyType<>(23, "Wind up sound", String.class);
+		public static final PropertyType<String> WIND_DOWN_SOUND = new PropertyType<>(24, "Wind down sound", String.class);
+		public static final PropertyType<String> FIRE_START_SOUND = new PropertyType<>(25, "Fire start sound", String.class);
+		public static final PropertyType<String> FIRE_STOP_SOUND = new PropertyType<>(26, "Fire stop sound", String.class);
+		public static final PropertyType<String> AIRBLAST_SOUND = new PropertyType<>(27, "Airblast sound", String.class);
+		public static final PropertyType<String> AIRBLAST_ROCKET_SOUND = new PropertyType<>(37, "Airblast rocket sound",
+				String.class);
+		public static final PropertyType<Boolean> HIDDEN = new PropertyType<>(38, "Hidden", Boolean.class);
+		public static final PropertyType<String> CLOAK_SOUND = new PropertyType<>(28, "Cloak sound", String.class);
+		public static final PropertyType<String> DECLOAK_SOUND = new PropertyType<>(29, "Decloak sound", String.class);
+		public static final PropertyType<String> BUILD_HIT_SUCCESS_SOUND = new PropertyType<>(30, "Build hit success sound",
+				String.class);
+		public static final PropertyType<String> BUILD_HIT_FAIL_SOUND = new PropertyType<>(31, "Build hit fail sound",
+				String.class);
+		public static final PropertyType<String> EFFECT_TYPE = new PropertyType<>(32, "Effect type", String.class);
+		public static final PropertyType<Integer> DURATION = new PropertyType<>(33, "Duration", Integer.class);
+		public static final PropertyType<Integer> COOLDOWN = new PropertyType<>(34, "Cooldown", Integer.class);
+		public static final PropertyType<String> HEAL_START_SOUND = new PropertyType<>(35, "Heal start sound", String.class);
+		public static final PropertyType<String> NO_TARGET_SOUND = new PropertyType<>(36, "No target sound", String.class);
+		public static final PropertyType<String> CHARGED_SOUND = new PropertyType<>(39, "Charged sound", String.class);
+		public static final PropertyType<String> UBER_START_SOUND = new PropertyType<>(40, "Uber start sound", String.class);
+		public static final PropertyType<String> UBER_STOP_SOUND = new PropertyType<>(41, "Uber stop sound", String.class);
+		public static final PropertyType<Float> HEAL = new PropertyType<>(42, "Heal", Float.class);
+		public static final PropertyType<Float> MAX_OVERHEAL = new PropertyType<>(43, "Max overheal", Float.class);
+		public static final PropertyType<Float> RANGE = new PropertyType<>(44, "Range", Float.class);
+		public static final PropertyType<Float> PROJECTILE_SPEED = new PropertyType<>(45, "Projectile speed", Float.class);
+		public static final PropertyType<String> PROJECTILE = new PropertyType<>(46, "Projectile", String.class);
+		public static final PropertyType<String> BASED_ON = new PropertyType<>(47, "Based on", String.class);
+		public static final PropertyType<String> RENDER_BACKSTAB = new PropertyType<>(48, "Render backstab", String.class);
+		public static final PropertyType<String> CHARGE_SOUND = new PropertyType<>(49, "Charge sound", String.class);
+		public static final PropertyType<String> DETONATE_SOUND = new PropertyType<>(50, "Detonate sound", String.class);
+		public static final PropertyType<String> CLASS = new PropertyType<>(51, "Class", String.class);
+		public static final PropertyType<Float> SPREAD = new PropertyType<>(52, "Spread", Float.class);
+		public static final PropertyType<String> HIT_SOUND = new PropertyType<>(53, "Hit sound", String.class);
+		public static final PropertyType<Integer> AMMO_TYPE = new PropertyType<>(54, "Ammo type", Integer.class);
+		public static final PropertyType<Integer> ROLL_HIDDEN = new PropertyType<>(55, "Roll hidden", Integer.class);
+		public static final PropertyType<String> MOB_TYPE = new PropertyType<>(56, "Mobs", String.class);
+		public static final PropertyType<Float> RECOIL = new PropertyType<>(57, "Recoil", Float.class);
+		public static final PropertyType<Float> DROP_CHANCE = new PropertyType<>(58, "Drop chance", Float.class);
+		public static final PropertyType<Integer> COST = new PropertyType<>(59, "Cost", Integer.class);
+		public static final PropertyType<Integer> WEAR = new PropertyType<>(60, "Wear flags", Integer.class);
+		public static final PropertyType<String> ARMOR_IMAGE = new PropertyType<>(61, "Overlay", String.class);
+		public static final PropertyType<String> HEAD_MODEL = new PropertyType<>(62, "Head model", String.class);
+		public static final PropertyType<String> BODY_MODEL = new PropertyType<>(63, "Body model", String.class);
+		public static final PropertyType<Float> ARMOR = new PropertyType<>(64, "Armor", Float.class);
+		public static final PropertyType<Float> ARMOR_TOUGHNESS = new PropertyType<>(65, "Armor toughness", Float.class);
+		public static final PropertyType<String> HORN_RED_SOUND = new PropertyType<>(66, "Horn red sound", String.class);
+		public static final PropertyType<String> HORN_BLU_SOUND = new PropertyType<>(67, "Horn blu sound", String.class);
+		public static final PropertyType<String> DESC = new PropertyType<>(68, "Description", String.class);
+		public static final PropertyType<String> HIT_WORLD_SOUND = new PropertyType<>(69, "Hit world sound", String.class);
+		public static final PropertyType<String> HIT_LOOP_SOUND = new PropertyType<>(70, "Hit loop sound", String.class);
+		public static final PropertyType<Float> EFFICIENT_RANGE = new PropertyType<>(71, "Efficient range", Float.class);
+		public static final PropertyType<Boolean> STOCK = new PropertyType<>(72, "Stock", Boolean.class);
+		public static final PropertyType<String> NO_FIRE_SOUND = new PropertyType<>(73, "No fire sound", String.class);
+		public static final PropertyType<String> CHARGED_FIRE_SOUND = new PropertyType<>(73, "Charged fire sound", String.class);
+		public static final PropertyType<Boolean> PENETRATE = new PropertyType<>(74, "Penetrate", Boolean.class);
+		public static final PropertyType<String> OVERRIDE = new PropertyType<>(75, "Weapon override", String.class);
+		public static final PropertyType<Integer> MAX_AMMO = new PropertyType<>(76, "Max ammo", Integer.class);
+		public static final PropertyType<String> EXPLOSION_SOUND = new PropertyType<>(77, "Explosion sound", String.class);
+		public static final PropertyType<Float> ARMOR_PEN_SCALE= new PropertyType<>(78, "Armor penetration scale", Float.class);
+		public static final PropertyType<String> SPECIAL_1_SOUND = new PropertyType<>(79, "Special 1 sound", String.class);
+		public static final PropertyType<String> SPECIAL_2_SOUND = new PropertyType<>(80, "Special 2 sound", String.class);
+		public static final PropertyType<ItemFromData.AttributeProvider> ATTRIBUTES = new ItemFromData.PropertyAttribute(81, "Attributes", ItemFromData.AttributeProvider.class);
+		public static final PropertyType<ItemCrate.CrateContent> CONTENT = new ItemCrate.PropertyContent(82, "Content", ItemCrate.CrateContent.class);
+		public Class<T> type;
 		public int id;
 		public String name;
 
-		private PropertyType(int id, String name, Type type) {
+		public PropertyType(int id, String name, Class<T> type) {
 			this.name = name;
 			this.id = id;
 			this.type = type;
@@ -144,76 +174,48 @@ public class WeaponData {
 
 		}
 
-		public int getInt(WeaponData data) {
-			return data.properties.get(this).intValue;
+		public void serialize(DataOutput buf, WeaponData data, T value) throws IOException {
+			
+			if (this.type == Boolean.class)
+				buf.writeBoolean((Boolean) value);
+			else if (this.type == Integer.class)
+				buf.writeInt((Integer) value);
+			else if (this.type == Float.class)
+				buf.writeFloat((Float) value);
+			else if (this.type == String.class)
+				buf.writeUTF((String) value);
 		}
 
-		public String getString(WeaponData data) {
-			return data.properties.get(this).stringValue;
+		public T deserialize(DataInput buf, WeaponData data) throws IOException {
+			T prop = null;
+			if (this.type == Boolean.class)
+				prop = type.cast(buf.readBoolean());
+			else if (this.type == Integer.class)
+				prop = type.cast(buf.readInt());
+			else if (this.type == Float.class)
+				prop = type.cast(buf.readFloat());
+			else if (this.type == String.class)
+				prop = type.cast(buf.readUTF());
+			return prop;
+			//data.properties.put(this, prop);
 		}
 
-		public boolean getBoolean(WeaponData data) {
-			return data.properties.get(this).booleanValue;
-		}
-
-		public float getFloat(WeaponData data) {
-			return data.properties.get(this).floatValue;
-		}
-
-		public void serialize(DataOutput buf, WeaponData data) throws IOException {
-			buf.writeByte(this.id);
-			switch (type) {
-			case BOOLEAN:
-				buf.writeBoolean(getBoolean(data));
-				break;
-			case INTEGER:
-				buf.writeInt(getInt(data));
-				break;
-			case DOUBLE:
-				buf.writeFloat(getFloat(data));
-				break;
-			case STRING:
-				buf.writeUTF(getString(data));
-				break;
-			default:
-			}
-		}
-
-		public void deserialize(DataInput buf, WeaponData data) throws IOException {
-			Property prop = new Property();
-			data.properties.put(this, prop);
-			switch (type) {
-			case BOOLEAN:
-				prop.booleanValue = buf.readBoolean();
-				break;
-			case INTEGER:
-				prop.intValue = buf.readInt();
-				break;
-			case DOUBLE:
-				prop.floatValue = buf.readFloat();
-				break;
-			case STRING:
-				prop.stringValue = buf.readUTF();
-			default:
-			}
-		}
-
-		public Property fromString(String string) {
+		/*public Object fromString(String string) {
 			// TODO Auto-generated method stub
-			Property property = new Property();
+			Object property = null;
 			try {
 				switch (type) {
 				case BOOLEAN:
-					property.booleanValue = string.equals("true");
+					property = string.equals("true");
 					break;
 				case INTEGER:
-					property.intValue = Integer.parseInt(string);
+					property = Integer.parseInt(string);
 					break;
 				case STRING:
-					property.stringValue = string;
+					property = string;
 					break;
 				case DOUBLE:
-					property.floatValue = Float.parseFloat(string);
+					property = Float.parseFloat(string);
 					break;
 				default:
 				}
@@ -221,35 +223,56 @@ public class WeaponData {
 				System.err.println("Failed to parse property value: " + string + " key: " + this.name);
 			}
 			return property;
-		}
+		}*/
 
 		public boolean hasKey(WeaponData data) {
 			return data.properties.get(this) != null;
 		}
+
+		@Override
+		public T deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+			
+			if (type == Boolean.class)
+				return type.cast(json.getAsBoolean());
+			else if (type == Integer.class)
+				return type.cast(json.getAsInt());
+			else if (type == String.class)
+				return type.cast(json.getAsString());
+			else if (type == Float.class)
+				return type.cast(json.getAsFloat());
+			return null;
+		}
 	}
 
-	public HashMap<PropertyType, Property> properties;
+	public HashMap<PropertyType<?>, Object> properties;
 
-	public HashMap<TF2Attribute, Float> attributes;
-	public HashMap<String, Integer> crateContent;
+	public CapabilityDispatcher capabilities;
 
 	public int maxCrateValue;
 	private String name;
 
-	public WeaponData(String name) {
-		this.name = name;
+	public WeaponData() {
 		this.properties = new HashMap<>();
-		this.attributes = new HashMap<>();
-		this.crateContent = new HashMap<>();
+		
+	}
+	
+	public WeaponData(String name) {
+		this();
+		this.name = name;
 	}
 
-	public static class Property {
+	public void addCapabilities(Map<ResourceLocation, ICapabilityProvider> map) {
+		this.capabilities = new CapabilityDispatcher(map);
+	}
+	
+	public static class Property<T> {
 
 		public float floatValue;
 		public int intValue;
 		public String stringValue = "";
 		public boolean booleanValue;
 
+		public T value;
 		/*
 		 * public Property(){ setValue() } public abstract T getValue(); public
 		 * abstract void setValue(T value); public abstract void
@@ -258,35 +281,49 @@ public class WeaponData {
 		 */
 	}
 
-	public int getInt(PropertyType propType) {
-		Property property = this.properties.get(propType);
+	public int getInt(PropertyType<Integer> propType) {
+		Integer property = (Integer) this.properties.get(propType);
 		if (property != null)
-			return property.intValue;
+			return property;
 		return 0;
 	}
 
-	public String getString(PropertyType propType) {
-		Property property = this.properties.get(propType);
+	public String getString(PropertyType<String> propType) {
+		String property = (String) this.properties.get(propType);
 		if (property != null)
-			return property.stringValue;
+			return property;
 		return "";
 	}
 
-	public boolean getBoolean(PropertyType propType) {
-		Property property = this.properties.get(propType);
+	public boolean getBoolean(PropertyType<Boolean> propType) {
+		Boolean property = (Boolean) this.properties.get(propType);
 		if (property != null)
-			return property.booleanValue;
+			return property;
 		return false;
 	}
 
-	public float getFloat(PropertyType propType) {
-		Property property = this.properties.get(propType);
+	public float getFloat(PropertyType<Float> propType) {
+		Float property = (Float) this.properties.get(propType);
 		if (property != null)
-			return property.floatValue;
-		return 0;
+			return property;
+		return 0f;
 	}
 
-	public boolean hasProperty(PropertyType property) {
+	@SuppressWarnings("unchecked")
+	public <A> A get(PropertyType<A> propType) {
+		A property = (A) (this.properties.get(propType));
+		return property;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <A> A get(PropertyType<A> propType, A def) {
+		A property = (A) (this.properties.get(propType));
+		if (property != null)
+			return property;
+		return def;
+	}
+	
+	public boolean hasProperty(PropertyType<?> property) {
 		return this.properties.containsKey(property);
 	}
 	/*
@@ -324,10 +361,11 @@ public class WeaponData {
 	 * return value; } }
 	 */
 
-	public void addProperty(String name, String string) {
+	public void addProperty(String name, JsonElement element, JsonDeserializationContext context) {
 
-		PropertyType type = MapList.propertyTypes.get(name);
-		this.properties.put(type, type.fromString(string));
+		PropertyType<?> propType = MapList.propertyTypes.get(name);
+		this.properties.put(propType, propType.deserialize(element, propType.type, context));
+		//this.properties.put(type, type.fromString(string));
 	}
 
 	public String getName() {
@@ -337,160 +375,22 @@ public class WeaponData {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	/*
-	 * public static ArrayList<WeaponData> parseFile(File file){
-	 * 
-	 * ArrayList<WeaponData> list=new ArrayList<>(); BufferedReader buffer =
-	 * null; UnicodeInputStreamReader input = null; try { if (file.canRead()) {
-	 * input = new UnicodeInputStreamReader(new FileInputStream(file), "UTF-8");
-	 * buffer = new BufferedReader(input);
-	 * 
-	 * String line; WeaponData currentData = null; //Property.Type type = null;
-	 * ArrayList<String> tmpList = null; int lineNum = 0; String name = null;
-	 * 
-	 * while (true) { lineNum++; line = buffer.readLine();
-	 * 
-	 * if (line == null) { break; }
-	 * 
-	 * int nameStart = -1, nameEnd = -1; boolean skip = false; boolean quoted =
-	 * false; boolean isFirstNonWhitespaceCharOnLine = true;
-	 * 
-	 * for (int i = 0; i < line.length() && !skip; ++i) { if
-	 * (Character.isLetterOrDigit(line.charAt(i)) ||
-	 * Configuration.ALLOWED_CHARS.indexOf(line.charAt(i)) != -1 || (quoted &&
-	 * line.charAt(i) != '"')) { if (nameStart == -1) { nameStart = i; }
-	 * 
-	 * nameEnd = i; isFirstNonWhitespaceCharOnLine = false; } else if
-	 * (Character.isWhitespace(line.charAt(i))) { // ignore space characters }
-	 * else { switch (line.charAt(i)) { case '#': if (tmpList != null) // allow
-	 * special characters as part of string lists break; skip = true; continue;
-	 * 
-	 * case '"': if (tmpList != null) // allow special characters as part of
-	 * string lists break; if (quoted) { quoted = false; } if (!quoted &&
-	 * nameStart == -1) { quoted = true; } break;
-	 * 
-	 * case '{': if (tmpList != null) // allow special characters as part of
-	 * string lists break; name = line.substring(nameStart, nameEnd + 1); name =
-	 * name.toLowerCase(Locale.ENGLISH); currentData = new WeaponData(name);
-	 * list.add(currentData); name = null;
-	 * 
-	 * break;
-	 * 
-	 * case '}': if (tmpList != null) // allow special characters as part of
-	 * string lists break; if (currentData == null) { throw new
-	 * RuntimeException(String.
-	 * format("Config file corrupt, attempted to close to many categories '%s:%d'"
-	 * , file.getName(), lineNum)); } currentData=null; break;
-	 * 
-	 * case '=': if (tmpList != null) // allow special characters as part of
-	 * string lists break; name = line.substring(nameStart, nameEnd + 1);
-	 * 
-	 * if (currentData == null) { throw new
-	 * RuntimeException(String.format("'%s' has no scope in '%s:%d'", name,
-	 * file.getName(), lineNum)); }
-	 * 
-	 * //MapList.propertyTypes.get(name).fromString(line.substring(i + 1));
-	 * currentData.addProperty(name, line.substring(i + 1)); //Property prop =
-	 * new Property(); i = line.length();
-	 * 
-	 * 
-	 * 
-	 * break;
-	 * 
-	 * case ':': if (tmpList != null) // allow special characters as part of
-	 * string lists break; //type =
-	 * Property.Type.tryParse(line.substring(nameStart, nameEnd + 1).charAt(0));
-	 * nameStart = nameEnd = -1; break;
-	 * 
-	 * case '<': if ((tmpList != null && i + 1 == line.length()) || (tmpList ==
-	 * null && i + 1 != line.length())) { throw new
-	 * RuntimeException(String.format("Malformed list property \"%s:%d\"",
-	 * file.getName(), lineNum)); } else if (i + 1 == line.length()) { name =
-	 * line.substring(nameStart, nameEnd + 1);
-	 * 
-	 * if (currentData == null) { throw new
-	 * RuntimeException(String.format("'%s' has no scope in '%s:%d'", name,
-	 * file.getName(), lineNum)); }
-	 * 
-	 * tmpList = new ArrayList<String>();
-	 * 
-	 * skip = true; }
-	 * 
-	 * break;
-	 * 
-	 * case '>': if (tmpList == null) { throw new
-	 * RuntimeException(String.format("Malformed list property \"%s:%d\"",
-	 * file.getName(), lineNum)); }
-	 * 
-	 * if (isFirstNonWhitespaceCharOnLine) { name = null; tmpList = null; } //
-	 * else allow special characters as part of string lists break;
-	 * 
-	 * default: if (tmpList != null) // allow special characters as part of
-	 * string lists break; throw new
-	 * RuntimeException(String.format("Unknown character '%s' in '%s:%d'",
-	 * line.charAt(i), file, lineNum)); } isFirstNonWhitespaceCharOnLine =
-	 * false; } }
-	 * 
-	 * if (quoted) { throw new
-	 * RuntimeException(String.format("Unmatched quote in '%s:%d'", file,
-	 * lineNum)); } else if (tmpList != null && !skip) { String[]
-	 * strTable=line.trim().split(":");
-	 * 
-	 * String attributeName=strTable[0]; String attributeValue=strTable[1];
-	 * Iterator<String> iterator2 = MapList.nameToAttribute.keySet().iterator();
-	 * //System.out.println("to je"+attributeName+" "+attributeValue); boolean
-	 * has=false;
-	 * 
-	 * while(iterator2.hasNext()) { if(iterator2.next().equals(attributeName)){
-	 * currentData.attributes.put(MapList.nameToAttribute.get(attributeName),
-	 * Float.parseFloat(attributeValue)); has=true; } } if(has==false){
-	 * currentData.attributes.put(TF2Attribute.attributes[Integer.parseInt(
-	 * attributeName)], Float.parseFloat(attributeValue)); } } } } } catch
-	 * (IOException e) { e.printStackTrace(); } finally { if (buffer != null) {
-	 * try { buffer.close(); } catch (IOException e){} } if (input != null) {
-	 * try { input.close(); } catch (IOException e){} } } return list; }
-	 */
+	
 	public static ArrayList<WeaponData> parseFile(File file) {
 		ArrayList<WeaponData> list = new ArrayList<>();
+		
 		try {
 			String s = Files.toString(file, Charsets.UTF_8);
 			JsonObject tree = new JsonParser().parse(s).getAsJsonObject();
 			for (Entry<String, JsonElement> entry : tree.getAsJsonObject().entrySet()) {
-				WeaponData data = new WeaponData(entry.getKey());
-				for (Entry<String, JsonElement> property : entry.getValue().getAsJsonObject().entrySet())
-					if (property.getKey().equals("Attributes") && property.getValue().isJsonObject())
-						for (Entry<String, JsonElement> attribute : property.getValue().getAsJsonObject().entrySet()) {
-							String attributeName = attribute.getKey();
-							float attributeValue = attribute.getValue().getAsFloat();
-							Iterator<String> iterator2 = MapList.nameToAttribute.keySet().iterator();
-							// System.out.println("to je"+attributeName+"
-							// "+attributeValue);
-							boolean has = false;
-
-							while (iterator2.hasNext())
-								if (iterator2.next().equals(attributeName)) {
-									data.attributes.put(MapList.nameToAttribute.get(attributeName), attributeValue);
-									has = true;
-								}
-							if (has == false)
-								data.attributes.put(TF2Attribute.attributes[Integer.parseInt(attributeName)],
-										attributeValue);
-						}
-					else if (property.getKey().equals("Content") && property.getValue().isJsonObject())
-						for (Entry<String, JsonElement> attribute : property.getValue().getAsJsonObject().entrySet()) {
-							String itemName = attribute.getKey();
-							int chance = attribute.getValue().getAsInt();
-							data.crateContent.put(itemName, chance);
-							data.maxCrateValue+=chance;
-						}
-					else
-						data.addProperty(property.getKey(), property.getValue().getAsString());
+				WeaponData data = GSON.fromJson(entry.getValue(), WeaponData.class);
+				data.name = entry.getKey();
+				
 				list.add(data);
 			}
 		} catch (Exception e) {
-			System.err.println("Skipped reading weapon data from file: " + file.getName());
-			e.printStackTrace();
+			TF2weapons.LOGGER.error("Skipped reading weapon data from file: {}", file.getName());
+			TF2weapons.LOGGER.catching(Level.ERROR, e);
 		}
 		return list;
 	}
@@ -502,7 +402,8 @@ public class WeaponData {
 		public boolean cached=false;
 		public int active;
 		public int usedClass = -1;
-		
+		public int fire1Cool = 0;
+		public int fire2Cool = 0;
 		/*public static WeaponData get(ItemStack stack) {
 			WeaponData value=ItemFromData.BLANK_DATA;
 			if(!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
@@ -531,6 +432,27 @@ public class WeaponData {
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {
 				NBTTagCompound attributelist;
+				cachedAttrMult.clear();
+				cachedAttrAdd.clear();
+				attributelist = MapList.buildInAttributes.get(ItemFromData.getData(stack).getName());
+				if(attributelist != null)
+					for(String name : attributelist.getKeySet()) {
+						NBTBase tag = attributelist.getTag(name);
+						if (tag instanceof NBTTagFloat) {
+							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
+							
+							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+								if (!cachedAttrAdd.containsKey(attribute.effect))
+									cachedAttrAdd.put(attribute.effect, 0f);
+								cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
+							}
+							else {
+								if (!cachedAttrMult.containsKey(attribute.effect))
+									cachedAttrMult.put(attribute.effect, 1f);
+								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
+							}
+						}
+					}
 				if(stack.hasTagCompound()) {
 					attributelist=stack.getTagCompound().getCompoundTag("Attributes");
 					for(String name : attributelist.getKeySet()) {
@@ -551,27 +473,26 @@ public class WeaponData {
 								
 						}
 					}
-				}
-				attributelist=MapList.buildInAttributes.get(ItemFromData.getData(stack).getName());
-				if(attributelist != null)
-					for(String name : attributelist.getKeySet()) {
-						NBTBase tag = attributelist.getTag(name);
-						if (tag instanceof NBTTagFloat) {
-							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
-							
-							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
-								if (!cachedAttrAdd.containsKey(attribute.effect))
-									cachedAttrAdd.put(attribute.effect, 0f);
-								cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+((NBTTagFloat) tag).getFloat());
-							}
-							else {
-								if (!cachedAttrMult.containsKey(attribute.effect))
-									cachedAttrMult.put(attribute.effect, 1f);
-								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
-							}
+					if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
+						TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
+						float value = ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
+								stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS));
+						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
+							if (!cachedAttrAdd.containsKey(attribute.effect))
+								cachedAttrAdd.put(attribute.effect, 0f);
+							cachedAttrAdd.put(attribute.effect, cachedAttrAdd.get(attribute.effect)+value);
+						}
+						else {
+							if (!cachedAttrMult.containsKey(attribute.effect))
+								cachedAttrMult.put(attribute.effect, 1f);
+							if (value > attribute.defaultValue)
+								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect) + value - attribute.defaultValue);
+							else
+								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*value);
 						}
 					}
-					this.cached=true;
+				}
+				this.cached=true;
 			}
 			Float valueadd=cachedAttrAdd.get(nameattr);
 			Float valuemult=cachedAttrMult.get(nameattr);
@@ -596,5 +517,21 @@ public class WeaponData {
 			return null;
 		}
 		
+	}
+	
+	public static WeaponDataCapability getCapability(ItemStack stack) {
+		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
+	}
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		// TODO Auto-generated method stub
+		return capabilities.hasCapability(capability, facing);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		// TODO Auto-generated method stub
+		return capabilities.getCapability(capability, facing);
 	}
 }

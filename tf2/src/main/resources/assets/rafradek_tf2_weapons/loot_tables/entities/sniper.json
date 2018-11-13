@@ -11,6 +11,11 @@
                     "condition": "random_chance_with_looting",
                     "chance": 0.6,
                     "looting_multiplier": 0.2
+                },
+                {
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:0b}",
+                    "negate": false
                 }
             ],
             "entries": [
@@ -46,6 +51,11 @@
              	{
                     "condition": "killed_by_player_team",
                     "team": true
+                },
+                {
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:0b}",
+                    "negate": false
                 }
             ],
             "entries": [
@@ -75,6 +85,28 @@
                 {
                     "type": "loot_table",
                     "name": "rafradek_tf2_weapons:ammo/smg",
+                    "weight": 1
+                }
+            ]
+        },
+        {
+        	"name": "robot_pyro_raf",	
+            "rolls": 1,
+            "conditions": [
+           		{
+                    "condition": "killed_by_player_team"
+                },
+            	{
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:0b}",
+                    "negate": true
+                }
+            ],
+            "entries": [
+            
+            	{
+                    "type": "loot_table",
+                    "name": "rafradek_tf2_weapons:entities/robot",
                     "weight": 1
                 }
             ]

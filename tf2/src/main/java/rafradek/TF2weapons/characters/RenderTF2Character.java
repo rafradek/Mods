@@ -29,44 +29,62 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 			"textures/entity/tf2/red/Heavy.png");
 	private static final ResourceLocation HEAVY_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Heavy.png");
+	private static final ResourceLocation HEAVY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Heavy.png");
 	private static final ResourceLocation SCOUT_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Scout.png");
 	private static final ResourceLocation SCOUT_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Scout.png");
+	private static final ResourceLocation SCOUT_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Scout.png");
 	private static final ResourceLocation SNIPER_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Sniper.png");
 	private static final ResourceLocation SNIPER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Sniper.png");
+	private static final ResourceLocation SNIPER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Sniper.png");
 	private static final ResourceLocation SOLDIER_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Soldier.png");
 	private static final ResourceLocation SOLDIER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Soldier.png");
+	private static final ResourceLocation SOLDIER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Soldier.png");
 	private static final ResourceLocation DEMOMAN_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Demoman.png");
 	private static final ResourceLocation DEMOMAN_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Demoman.png");
+	private static final ResourceLocation DEMOMAN_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Demoman.png");
 	private static final ResourceLocation PYRO_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Pyro.png");
 	private static final ResourceLocation PYRO_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Pyro.png");
+	private static final ResourceLocation PYRO_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Pyro.png");
 	private static final ResourceLocation MEDIC_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Medic.png");
 	private static final ResourceLocation MEDIC_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Medic.png");
+	private static final ResourceLocation MEDIC_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Medic.png");
 	private static final ResourceLocation SPY_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Spy.png");
 	private static final ResourceLocation SPY_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Spy.png");
+	private static final ResourceLocation SPY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Spy.png");
 	private static final ResourceLocation ENGINEER_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Engineer.png");
 	private static final ResourceLocation ENGINEER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Engineer.png");
+	private static final ResourceLocation ENGINEER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Engineer.png");
 
 	public ModelBiped modelHeavy = new ModelHeavy();
 	public ModelBiped modelMain;
 
 	public RenderTF2Character(RenderManager renderManager) {
-		super(renderManager, new ModelBiped(), 0.5F);
+		super(renderManager, new ModelTF2Character(), 0.5F);
 		this.modelMain=(ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
 		this.addLayer(new LayerBipedArmor(this));
@@ -84,7 +102,29 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		else
 			clazz = par1EntityLiving.getClassIndex();
 		// System.out.println("class: "+clazz);
-		if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
+		if (par1EntityLiving.getEntTeam() == 2 && !WeaponsCapability.get(par1EntityLiving).isDisguised()) {
+			switch (clazz) {
+			case 0:
+				return SCOUT_ROBOT;
+			case 1:
+				return SOLDIER_ROBOT;
+			case 2:
+				return PYRO_ROBOT;
+			case 3:
+				return DEMOMAN_ROBOT;
+			case 4:
+				return HEAVY_ROBOT;
+			case 5:
+				return ENGINEER_ROBOT;
+			case 6:
+				return MEDIC_ROBOT;
+			case 7:
+				return SNIPER_ROBOT;
+			case 8:
+				return SPY_ROBOT;
+			}
+		}
+		else if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
 				&& WeaponsCapability.get(par1EntityLiving).isDisguised()))
 			switch (clazz) {
 			case 0:
@@ -229,8 +269,11 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
     {
 		float f = 0.9375F;
 		if(entitylivingbaseIn instanceof EntityHeavy)
-			f=1f;
-        
+			f = 1f;
+        if (entitylivingbaseIn.getRobotSize() == 2)
+        	f *= 1.75f;
+        else if (entitylivingbaseIn.getRobotSize() == 3)
+        	f *= 2f;
         GlStateManager.scale(f, f, f);
     }
 	private void setModel(EntityLivingBase living) {

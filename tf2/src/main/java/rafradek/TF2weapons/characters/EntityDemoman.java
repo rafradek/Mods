@@ -14,6 +14,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
@@ -63,6 +64,12 @@ public class EntityDemoman extends EntityTF2Character {
 			if(!sword.isEmpty())
 				this.loadout.setStackInSlot(2,sword); 
 		}
+		if (this.isGiant()) {
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"), 0.5f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ClipSizeBonus"), 4f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ReloadRateBonus"), 0.25f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("SpreadAdd"), 3f);
+		}
 	}
 	/*
 	 * protected ResourceLocation getLootTable() { return
@@ -82,7 +89,7 @@ public class EntityDemoman extends EntityTF2Character {
 		
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(18.5D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.25D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12347D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
@@ -97,7 +104,7 @@ public class EntityDemoman extends EntityTF2Character {
 		return data;
 	}
 	public int getDefaultSlot(){
-		return !this.loadout.getStackInSlot(1).isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge ? 1:0;
+		return this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge ? 2:0;
 	}
 	
 	public void onLivingUpdate(){
@@ -109,7 +116,8 @@ public class EntityDemoman extends EntityTF2Character {
 				if(this.getAttackTarget() != null && this.getAttackTarget().getDistanceSqToEntity(bomb)<7&&this.getEntitySenses().canSee(this.getAttackTarget())&&this.getAttackTarget().canEntityBeSeen(bomb))
 					((ItemWeapon)this.loadout.getStackInSlot(1).getItem()).altFireTick(this.loadout.getStackInSlot(1), this, world);
 			}
-			if(this.ticksExisted%4==0&&this.loadout.getStackInSlot(1) != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
+			boolean chargetick = this.ticksExisted%4==0;
+			if(chargetick && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
 				this.setHeldItem(EnumHand.OFF_HAND, this.loadout.getStackInSlot(1));
 				this.switchSlot(2);
 				if(this.getAttackTarget() != null && this.getEntitySenses().canSee(this.getAttackTarget())){
@@ -120,6 +128,10 @@ public class EntityDemoman extends EntityTF2Character {
 						this.addPotionEffect(new PotionEffect(TF2weapons.charging, 40));
 					}
 				}
+			}
+			else if (chargetick && this.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemChargingTarge) {
+				this.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
+				this.switchSlot(this.getDefaultSlot());
 			}
 		}
 	}

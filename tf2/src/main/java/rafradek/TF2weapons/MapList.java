@@ -3,8 +3,11 @@ package rafradek.TF2weapons;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonDeserializer;
+
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import rafradek.TF2weapons.building.ItemPDA;
 import rafradek.TF2weapons.characters.EntityScout;
 import rafradek.TF2weapons.characters.EntityTF2Character;
@@ -13,11 +16,16 @@ import rafradek.TF2weapons.projectiles.EntityBall;
 import rafradek.TF2weapons.projectiles.EntityCleaver;
 import rafradek.TF2weapons.projectiles.EntityFlame;
 import rafradek.TF2weapons.projectiles.EntityFlare;
+import rafradek.TF2weapons.projectiles.EntityFuryFireball;
 import rafradek.TF2weapons.projectiles.EntityGrenade;
 import rafradek.TF2weapons.projectiles.EntityJar;
+import rafradek.TF2weapons.projectiles.EntityOnyx;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
+import rafradek.TF2weapons.projectiles.EntityProjectileEnergy;
 import rafradek.TF2weapons.projectiles.EntityRocket;
 import rafradek.TF2weapons.projectiles.EntityStickProjectile;
+import rafradek.TF2weapons.weapons.ItemAirblast;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemBonk;
 import rafradek.TF2weapons.weapons.ItemBulletWeapon;
 import rafradek.TF2weapons.weapons.ItemChargingTarge;
@@ -46,12 +54,13 @@ public class MapList {
 
 	//public static Map<Class<? extends EntityTF2Character>, Integer> classNumbers;
 	public static Map<String, Item> weaponClasses;
-	public static Map<String, WeaponData.PropertyType> propertyTypes;
+	public static Map<String, WeaponData.PropertyType<?>> propertyTypes;
 	public static Map<String, Class<? extends EntityProjectileBase>> projectileClasses;
 	public static Map<String, WeaponData> nameToData;
 	public static Map<String, TF2Attribute> nameToAttribute;
 	public static Map<String, ItemUsable> specialWeapons;
 	public static Map<String, NBTTagCompound> buildInAttributes;
+	
 	// public static Map<MinigunLoopSound, EntityLivingBase > fireCritSounds;
 	// public static Map<List<SpawnListEntry>, SpawnListEntry> scoutSpawn;
 
@@ -59,10 +68,13 @@ public class MapList {
 		weaponClasses = new HashMap<String, Item>();
 		projectileClasses = new HashMap<String, Class<? extends EntityProjectileBase>>();
 		nameToData = new HashMap<String, WeaponData>();
-		propertyTypes = new HashMap<String, WeaponData.PropertyType>();
+		propertyTypes = new HashMap<String, WeaponData.PropertyType<?>>();
 		nameToAttribute = new HashMap<String, TF2Attribute>();
 		buildInAttributes = new HashMap<String, NBTTagCompound>();
 		specialWeapons = new HashMap<String, ItemUsable>();
+		/*WeaponData.propertyDeserializers = new HashMap<String, JsonDeserializer<ICapabilityProvider>>();
+		WeaponData.propertyDeserializers.put("Attributes", new ItemFromData.AttributeSerializer());
+		WeaponData.propertyDeserializers.put("Content", new ItemCrate.CrateSerializer());*/
 		//classNumbers = new HashMap<>();
 		
 		//classNumbers.put(EntityScout.class, 0);
@@ -92,6 +104,8 @@ public class MapList {
 		weaponClasses.put("jetpack", new ItemJetpack());
 		weaponClasses.put("jetpacktrigger", new ItemJetpackTrigger());
 		weaponClasses.put("pda", new ItemPDA());
+		weaponClasses.put("airblast", new ItemAirblast());
+		weaponClasses.put("backpackgeneric", new ItemBackpack());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
@@ -104,6 +118,7 @@ public class MapList {
 
 		projectileClasses.put("rocket", EntityRocket.class);
 		projectileClasses.put("fire", EntityFlame.class);
+		projectileClasses.put("fireball", EntityFuryFireball.class);
 		projectileClasses.put("flare", EntityFlare.class);
 		projectileClasses.put("grenade", EntityGrenade.class);
 		projectileClasses.put("syringe", EntityStickProjectile.class);
@@ -112,5 +127,7 @@ public class MapList {
 		projectileClasses.put("repairclaw", EntityStickProjectile.class);
 		projectileClasses.put("arrow", EntityStickProjectile.class);
 		projectileClasses.put("cleaver", EntityCleaver.class);
+		projectileClasses.put("energy", EntityProjectileEnergy.class);
+		projectileClasses.put("onyx", EntityOnyx.class);
 	}
 }

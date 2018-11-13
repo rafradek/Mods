@@ -23,13 +23,7 @@ public class EntityAISwitchWeapons extends EntityAIBase {
 
 	@Override
 	public void resetTask() {
-		// System.out.println("Stop");
-		this.host.getNavigator().clearPathEntity();
-		/*
-		 * if(this.host.cloak.getTagCompound().getBoolean("Active")){
-		 * ((ItemCloak)this.host.cloak.getItem()).altUse(this.host.cloak,
-		 * this.host, this.host.world); }
-		 */
+		
 	}
 
 	@Override

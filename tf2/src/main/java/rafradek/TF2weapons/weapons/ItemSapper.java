@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -31,7 +32,8 @@ public class ItemSapper extends ItemBulletWeapon {
 			((EntityBuilding) target).playSound(TF2Sounds.MOB_SAPPER_PLANT, 1.3f, 1);
 			if (((EntityBuilding) target).getOwner() != null)
 				((EntityBuilding) target).getOwner().setRevengeTarget(attacker);
-			stack.shrink(1);
+			if (!TF2ConfigVars.freeUseItems)
+				stack.shrink(1);
 			if (stack.getCount() <= 0 && attacker instanceof EntityPlayer)
 				((EntityPlayer) attacker).inventory.deleteStack(stack);
 		}

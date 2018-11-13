@@ -164,4 +164,8 @@ public class EntityEngineer extends EntityTF2Character {
 	public boolean hasSentryAndDispenser() {
 		return this.sentry != null && this.sentry.isEntityAlive() && this.dispenser != null && this.dispenser.isEntityAlive();
 	}
+	
+	public boolean canBecomeGiant() {
+		return false;
+	}
 }

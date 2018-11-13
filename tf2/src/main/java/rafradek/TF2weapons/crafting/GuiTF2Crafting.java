@@ -127,41 +127,9 @@ public class GuiTF2Crafting extends GuiContainer {
 			itemsToRender = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
 			if (currentRecipe >= 0 && currentRecipe < TF2CraftingManager.INSTANCE.getRecipeList().size()) {
 				IRecipe recipe = TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe);
-				if (recipe instanceof AustraliumRecipe) {
-					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(1, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(2, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(3, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(5, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(6, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(7, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(8, new ItemStack(TF2weapons.itemTF2, 1, 2));
-					itemsToRender.set(4, new ItemStack(TF2weapons.itemTF2, 1, 9));
-				} else if (recipe instanceof JumperRecipe) {
-					itemsToRender.set(0, new ItemStack(Items.FEATHER));
-					itemsToRender.set(1, new ItemStack(Items.FEATHER));
-					itemsToRender.set(2, new ItemStack(Items.FEATHER));
-					itemsToRender.set(3, new ItemStack(Items.FEATHER));
-					itemsToRender.set(5, new ItemStack(Items.FEATHER));
-					itemsToRender.set(6, new ItemStack(Items.FEATHER));
-					itemsToRender.set(7, new ItemStack(Items.FEATHER));
-					itemsToRender.set(8, new ItemStack(Items.FEATHER));
-					itemsToRender.set(4, ItemFromData.getNewStack(((JumperRecipe)recipe).nameBefore));
-				} else if (recipe instanceof RecipeToScrap) {
-					for (int i = 0; i < (((RecipeToScrap)recipe).token == -1 ? 2 : 3); i++) {
-						itemsToRender.set(i, new ItemStack(TF2weapons.itemTF2, 1, 9));
-						if(((RecipeToScrap)recipe).token != -1) {
-							itemsToRender.get(i).setTagCompound(new NBTTagCompound());
-							itemsToRender.get(i).getTagCompound().setByte("Token", (byte) ((RecipeToScrap)recipe).token);
-						}
-					}
-				} else if (recipe instanceof RecipeFromScrap) {
-					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 3));
-					itemsToRender.set(1, new ItemStack(TF2weapons.itemTF2, 1, 3));
-					itemsToRender.set(2, new ItemStack(TF2weapons.itemToken, 1, 0));
-				} else if (recipe instanceof OpenCrateRecipe) {
-					itemsToRender.set(0, new ItemStack(TF2weapons.itemTF2, 1, 7));
-					itemsToRender.set(1, ItemFromData.getNewStack("crate1"));
+				if (recipe instanceof IRecipeTF2) {
+					for (int i = 0; i < 9; i++)
+						itemsToRender.set(i, ((IRecipeTF2)recipe).getSuggestion(i));
 				}
 				else{
 					List<Ingredient> input = recipe.getIngredients();

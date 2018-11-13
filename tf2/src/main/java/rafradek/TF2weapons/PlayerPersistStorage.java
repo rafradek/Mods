@@ -1,5 +1,6 @@
 package rafradek.TF2weapons;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 	public HashSet<BlockPos> restMercPos = new HashSet<>();
 	@SuppressWarnings("unchecked")
 	public Tuple<UUID, NBTTagCompound>[] buildings = new Tuple[4];
+	public ArrayList<UUID> disposableBuildings = new ArrayList<UUID>(5);
 	public boolean save = false;
 	public PlayerPersistStorage(UUID uuid) {
 		this.uuid = uuid;
@@ -73,7 +75,11 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 			tag.setUniqueId("TeleporterBUUID", buildings[3].getFirst());
 			tag.setTag("TeleporterB", buildings[3].getSecond());
 		}
-		
+		tag.setByte("DispBuildingsCount", (byte) disposableBuildings.size());
+		for (int i = 0; i < disposableBuildings.size(); i++) {
+			tag.setUniqueId("SentryAdd"+i+"UUID", disposableBuildings.get(i));
+			//tag.setTag("SentryAdd"+i, disposableBuildings.get(i).getSecond());
+		}
 		return tag;
 	}
 
@@ -113,32 +119,48 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 		
 		if (nbt.hasUniqueId("TeleporterBUUID"))
 			this.buildings[3] = new Tuple<>(nbt.getUniqueId("TeleporterBUUID"), nbt.getCompoundTag("TeleporterB"));
+		
+		int count = nbt.getByte("DispBuildingsCount");
+		for (int i = 0; i < count; i++) {
+			this.disposableBuildings.add(nbt.getUniqueId("SentryAdd"+i+"UUID"));
+		}
 	}
 
 	public void setSave() {
 		this.save = true;
 	}
 	
-	public void setBuilding(EntityBuilding building) {
+	public void setBuilding(EntityBuilding building, int maxsentries) {
 		NBTTagCompound tag = new NBTTagCompound();
 		building.writeEntityToNBT(tag);
-		if (building instanceof EntitySentry)
-			this.buildings[0] = new Tuple<>(building.getUniqueID(), tag);
-		else if (building instanceof EntityDispenser)
-			this.buildings[1] = new Tuple<>(building.getUniqueID(), tag);
-		else if (building instanceof EntityTeleporter && ((EntityTeleporter)building).isExit())
-			this.buildings[3] = new Tuple<>(building.getUniqueID(), tag);
-		else
-			this.buildings[2] = new Tuple<>(building.getUniqueID(), tag);
+		if (building.getDisposableID() != -1) {
+			this.disposableBuildings.add(building.getUniqueID());
+			if (this.disposableBuildings.size() > maxsentries) {
+				this.disposableBuildings.remove(0);
+			}
+		}
+		else {
+			if (building instanceof EntitySentry)
+				this.buildings[0] = new Tuple<>(building.getUniqueID(), tag);
+			else if (building instanceof EntityDispenser)
+				this.buildings[1] = new Tuple<>(building.getUniqueID(), tag);
+			else if (building instanceof EntityTeleporter && ((EntityTeleporter)building).isExit())
+				this.buildings[3] = new Tuple<>(building.getUniqueID(), tag);
+			else
+				this.buildings[2] = new Tuple<>(building.getUniqueID(), tag);
+		}
 		this.setSave();
 	}
 	
 	public boolean hasBuilding(int slot) {
-		return this.buildings[slot] != null;
+		return slot != 4 && this.buildings[slot] != null;
 	}
 
 	public boolean allowBuilding(EntityBuilding building) {
-		return this.buildings[building.getBuildingID()] == null || this.buildings[building.getBuildingID()].getFirst().equals(building.getUniqueID());
+		if (building.getDisposableID() == -1)
+			return this.buildings[building.getBuildingID()] == null || this.buildings[building.getBuildingID()].getFirst().equals(building.getUniqueID());
+		else
+			return this.disposableBuildings.contains(building.getUniqueID());
 	}
 	
 	public static PlayerPersistStorage get(EntityPlayer player) {

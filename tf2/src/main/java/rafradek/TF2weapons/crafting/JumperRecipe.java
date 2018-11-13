@@ -7,8 +7,9 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2weapons;
 
-public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
 
 	String nameBefore;
 	String nameAfter;
@@ -82,6 +83,12 @@ public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEn
 	public boolean canFit(int width, int height) {
 		// TODO Auto-generated method stub
 		return width >= 3 && height >=3;
+	}
+
+	@Override
+	public ItemStack getSuggestion(int slot) {
+		// TODO Auto-generated method stub
+		return slot == 4 ?  ItemFromData.getNewStack(this.nameBefore) : new ItemStack(Items.FEATHER);
 	}
 
 }

@@ -5,6 +5,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2EventsClient;
 import rafradek.TF2weapons.TF2Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.IParticleFactory;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -15,20 +16,34 @@ import net.minecraft.world.World;
 
 public class EntityBulletTracer extends Particle {
 
-	private int duration;
+	private float duration;
 	private boolean nextDead;
 	private float length;
 
+	private boolean motionless;
+	
 	public EntityBulletTracer(World par1World, double startX, double startY, double startZ, double x, double y,
-			double z, int duration, int crits, EntityLivingBase shooter, int type, float length) {
+			double z, int speed, int color, float length) {
 		super(par1World, startX, startY, startZ);
 		this.particleScale = 0.2f;
-		this.duration = duration;
 		//this.special = special;
-		
-		this.motionX = (x - startX) / duration;
-		this.motionY = (y - startY) / duration;
-		this.motionZ = (z - startZ) / duration;
+		double dist = new Vec3d(startX, startY, startZ).distanceTo(new Vec3d(x,y,z));
+		if (speed > 0) {
+			this.duration = (float) dist/speed;
+			this.motionX = (x - startX) / duration;
+			this.motionY = (y - startY) / duration;
+			this.motionZ = (z - startZ) / duration;
+			this.length = length;
+
+		}
+		else {
+			this.motionless = true;
+			this.duration = length;
+			this.length = (float) dist * 1000;
+			this.motionX = (x - startX) / dist* 0.001;
+			this.motionY = (y - startY) / dist* 0.001;
+			this.motionZ = (z - startZ) / dist* 0.001;
+		}
 		/*if (type == 1) {
 			crits=2;
 			this.motionX *= 0.001;
@@ -42,8 +57,17 @@ public class EntityBulletTracer extends Particle {
 		// this.setParticleTextureIndex(81);
 		this.multipleParticleScaleBy(2);
 
-		this.length = length;
+		
 		// TODO Auto-generated constructor stub
+		if (color == 0)
+			this.setRBGColorF(0.97f, 0.76f, 0.51f);
+		else
+			this.setRBGColorF((color >> 16) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
+	}
+	
+	public EntityBulletTracer(World par1World, double startX, double startY, double startZ, double x, double y,
+			double z, int duration, int crits, EntityLivingBase shooter, int type, float length) {
+		this(par1World, startX, startY, startZ, x, y, z, duration, 0, length);
 		if (crits != 2)
 			this.setRBGColorF(0.97f, 0.76f, 0.51f);
 		else {
@@ -52,13 +76,11 @@ public class EntityBulletTracer extends Particle {
 					MathHelper.clamp((color >> 8 & 255) / 255f, 0.2f, 1f), MathHelper.clamp((color & 255) / 255f, 0.2f, 1f));
 		}
 	}
-
+	
 	@Override
 	public void onUpdate() {
 		if (nextDead)
 			this.setExpired();
-		if (this.world.rayTraceBlocks(new Vec3d(posX, posY, posZ),
-				new Vec3d(posX + motionX, posY + motionY, posZ + motionZ)) != null)
 			nextDead = true;
 		// this.setVelocity(0, 0, 0);
 		super.onUpdate();
@@ -67,7 +89,7 @@ public class EntityBulletTracer extends Particle {
 		this.motionZ *= 1.025D;
 		if (duration > 0) {
 			duration--;
-			if (duration == 0)
+			if (duration <= 0)
 				this.setExpired();
 		}
 	}
@@ -87,10 +109,24 @@ public class EntityBulletTracer extends Particle {
 		int i = this.getBrightnessForRender(partialTicks);
 		int j = i >> 16 & 65535;
 		int k = i & 65535;
-
-		float xNext = (float) (x + this.motionX * 2 * this.length);
-		float yNext = (float) (y + this.motionY * 2 * this.length);
-		float zNext = (float) (z + this.motionZ * 2 * this.length);
+		
+		float xNext;
+		float yNext;
+		float zNext;
+		
+		if (motionless) {
+			xNext = (float) (x + this.motionX * length);
+			yNext = (float) (y + this.motionY * length);
+			zNext = (float) (z + this.motionZ * length);
+		}
+		else {
+			float length = 2 * this.length;
+			if (this.duration < 1)
+				length *= this.duration - (int)this.duration;
+			xNext = (float) (x + this.motionX * length);
+			yNext = (float) (y + this.motionY * length);
+			zNext = (float) (z + this.motionZ * length);
+		}
 
 		float xMin = this.particleTexture.getMinU();
 		float xMax = this.particleTexture.getMaxU();
@@ -162,5 +198,16 @@ public class EntityBulletTracer extends Particle {
 
 	public float getBrightness(float p_70013_1_) {
 		return 1.0F;
+	}
+	
+	public static class Factory implements IParticleFactory {
+
+		@Override
+		public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn, double zSpeedIn,
+				int... p_178902_15_) {
+			// TODO Auto-generated method stub
+			return new EntityBulletTracer(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn, p_178902_15_[0], p_178902_15_[1],((float)p_178902_15_[2]/64f));
+		}
+		
 	}
 }

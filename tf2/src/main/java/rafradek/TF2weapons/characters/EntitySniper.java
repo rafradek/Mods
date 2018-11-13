@@ -1,15 +1,19 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.weapons.ItemSniperRifle;
+import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class EntitySniper extends EntityTF2Character {
 
@@ -49,6 +53,12 @@ public class EntitySniper extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 
+	protected void addWeapons() {
+		super.addWeapons();
+		if (this.isRobot())
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("NoHeadshot"), 1f);
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 		if (!this.world.isRemote && this.getHeldItemMainhand().getItem() instanceof ItemSniperRifle && (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
@@ -68,6 +78,15 @@ public class EntitySniper extends EntityTF2Character {
 				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemSniperRifle.slowdownUUID) == null){
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks = 0;
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).setCharging(false);
+		}
+		
+		if (this.getAttackTarget() != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon) {
+			if (this.usedSlot == 0 && this.getAttackTarget().getDistanceSqToEntity(this) < 42) {
+				this.switchSlot(1);
+			}
+			else if (this.usedSlot == 1 && this.getAttackTarget().getDistanceSqToEntity(this) > 42) {
+				this.switchSlot(0);
+			}
 		}
 		// System.out.println("state:
 		// "+this.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().getBoolean("Zoomed")+"
@@ -138,5 +157,9 @@ public class EntitySniper extends EntityTF2Character {
 	
 	public int getClassIndex() {
 		return 7;
+	}
+	
+	public boolean canBecomeGiant() {
+		return false;
 	}
 }

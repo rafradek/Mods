@@ -218,8 +218,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
 				Vec3d pos = TF2Util.radiusRandom2D(2.7f, this.rand);
-				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
-						pos.y + this.posZ, 0, 0, 0, new int[0]);
+				this.world.spawnParticle(EnumParticleTypes.REDSTONE, pos.x + this.posX, this.posY - 0.5,
+						pos.y + this.posZ, 0.55, 0.12, 1, new int[0]);
 			}
 		if (this.ticksExisted == 1) {
 

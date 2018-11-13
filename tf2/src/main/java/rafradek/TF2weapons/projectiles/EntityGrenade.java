@@ -3,9 +3,11 @@ package rafradek.TF2weapons.projectiles;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.MobEffects;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
@@ -72,17 +74,22 @@ public class EntityGrenade extends EntityProjectileBase {
 			if(getBomb()==0) {
 				this.explode(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.entityHit, 1);
 			}
-			else {
-				this.attackDirect(entityHit, 1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false);
-				if(mop.sideHit==EnumFacing.EAST || mop.sideHit==EnumFacing.WEST)
+			else if (!this.hitEntities.contains(entityHit)){
+				
+				if (this.attackDirect(entityHit, 1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false, mop.hitVec) && entityHit instanceof EntityLivingBase) {
+					((EntityLivingBase)entityHit).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS,20,3));
+					
+				}
+				
+				/*if(mop.sideHit==EnumFacing.EAST || mop.sideHit==EnumFacing.WEST)
 					this.onHitBlockX();
 				else if(mop.sideHit==EnumFacing.NORTH || mop.sideHit==EnumFacing.SOUTH)
 					this.onHitBlockZ();
 				else
-					this.onHitBlockY(null);
-				this.motionX*=0.4;
+					this.onHitBlockY(null);*/
+				this.motionX*=0.6;
 				this.motionY*=0.65;
-				this.motionZ*=0.4;
+				this.motionZ*=0.6;
 			}
 		}
 	}

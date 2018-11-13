@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message.WearableChangeMessage;
 
 public class TF2WearableChangeHandler implements IMessageHandler<TF2Message.WearableChangeMessage, IMessage> {
@@ -17,9 +18,14 @@ public class TF2WearableChangeHandler implements IMessageHandler<TF2Message.Wear
 			@Override
 			public void run() {
 				Entity entity = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
-				if (entity != null)
-					entity.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(message.slot,
-							message.stack);
+				if (entity != null) {
+					if (message.slot < 20)
+						entity.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(message.slot,
+								message.stack);
+					else if (entity instanceof EntityTF2Character)
+						((EntityTF2Character)entity).loadout.setStackInSlot(message.slot-20, message.stack);
+				}
+					
 			}
 		});
 		return null;

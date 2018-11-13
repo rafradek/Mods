@@ -2,6 +2,7 @@ package rafradek.TF2weapons.projectiles;
 
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -13,6 +14,7 @@ import com.google.common.collect.Iterables;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
 import atomicstryker.dynamiclights.client.IDynamicLightSource;
+import io.netty.buffer.ByteBuf;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
@@ -57,7 +59,7 @@ import net.minecraft.world.World;
 
 @Optional.Interface(iface = "atomicstryker.dynamiclights.client.IDynamicLightSource", modid = "dynamiclights", striprefs = true)
 public abstract class EntityProjectileBase extends Entity
-		implements IProjectile, IThrowableEntity, IDynamicLightSource {
+		implements IProjectile, IThrowableEntity, IDynamicLightSource, IEntityAdditionalSpawnData {
 	public HashSet<Entity> hitEntities = new HashSet<Entity>();
 	// private Block field_145790_g;
 	/** Seems to be some sort of timer for animating an arrow. */
@@ -75,8 +77,9 @@ public abstract class EntityProjectileBase extends Entity
 	public boolean infinite;
 	
 	public double cachedGravity = -1;
-	
+	public float damageModifier = 1f;
 	public float chargeLevel;
+	
 	private static final DataParameter<Byte> CRITICAL = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BYTE);
 	public static final DataParameter<Byte> TYPE = EntityDataManager.createKey(EntityProjectileBase.class,
@@ -122,17 +125,19 @@ public abstract class EntityProjectileBase extends Entity
 		if (trace.lengthSquared() < 2)
 			trace = look;
 		this.setPosition(this.posX, this.posY, this.posZ);
-		/*this.motionX = -MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI)
-				* MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI);
-		this.motionZ = MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI)
-				* MathHelper.cos(this.rotationPitch / 180.0F * (float) Math.PI);
-		this.motionY = (-MathHelper.sin(this.rotationPitch / 180.0F * (float) Math.PI));*/
+		boolean nospread = false;
+		if(TF2Attribute.getModifier("Onyx Projectile", this.usedWeapon, 0, shooter) != 0){
+			this.damageModifier = TF2Attribute.getModifier("Onyx Projectile", this.usedWeapon, 0, shooter);
+			nospread = true;
+		}
+		
 		this.setThrowableHeading(trace.x - this.posX, trace.y - this.posY, trace.z - this.posZ,
 				((ItemWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
-				((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter));
+				nospread ? 0 : ((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter) * (133.3333333f));
 		if(((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity)){
 			this.setPenetrate();
 		}
+		
 		if(((ItemWeapon) this.usedWeapon.getItem()).holdingMode(this.usedWeapon, shooter) != 0) {
 			this.chargeLevel = ((ItemWeapon) this.usedWeapon.getItem()).getCharge(shooter, usedWeapon);
 		}
@@ -165,27 +170,24 @@ public abstract class EntityProjectileBase extends Entity
 	 * direction.
 	 */
 	@Override
-	public void setThrowableHeading(double p_70186_1_, double p_70186_3_, double p_70186_5_, float p_70186_7_,
-			float p_70186_8_) {
-		float f2 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_3_ * p_70186_3_ + p_70186_5_ * p_70186_5_);
+	public void setThrowableHeading(double p_70186_1_, double p_70186_3_, double p_70186_5_, float speed,
+			float spread) {
+		
+		float f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
+		float yaw = (float) (MathHelper.atan2(p_70186_1_, p_70186_5_));
+		float pitch = (float) (MathHelper.atan2(p_70186_3_, f3));
+		Vec3d rand = TF2Util.radiusRandom2D(spread * 0.0075f, world.rand, yaw, pitch, speed);
 		// System.out.println("motion: "+p_70186_1_+" "+p_70186_3_+"
 		// "+p_70186_5_+" "+f2);
-		p_70186_1_ /= f2;
-		p_70186_3_ /= f2;
-		p_70186_5_ /= f2;
-		p_70186_1_ += this.rand.nextGaussian() * (this.rand.nextBoolean() ? -1 : 1) * 0.007499999832361937D
-				* p_70186_8_;
-		p_70186_3_ += this.rand.nextGaussian() * (this.rand.nextBoolean() ? -1 : 1) * 0.007499999832361937D
-				* p_70186_8_;
-		p_70186_5_ += this.rand.nextGaussian() * (this.rand.nextBoolean() ? -1 : 1) * 0.007499999832361937D
-				* p_70186_8_;
-		p_70186_1_ *= p_70186_7_;
-		p_70186_3_ *= p_70186_7_;
-		p_70186_5_ *= p_70186_7_;
+		p_70186_1_ = rand.x;
+		p_70186_3_ = rand.y;
+		p_70186_5_ = rand.z;
+		
 		this.motionX = p_70186_1_;
 		this.motionY = p_70186_3_;
 		this.motionZ = p_70186_5_;
-		float f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
+		
+		f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
 		this.prevRotationYaw = this.rotationYaw = (float) (MathHelper.atan2(p_70186_1_, p_70186_5_) * 180.0D / Math.PI);
 		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(p_70186_3_, f3) * 180.0D / Math.PI);
 	}
@@ -228,33 +230,37 @@ public abstract class EntityProjectileBase extends Entity
 		float size = this.getExplosionSize() * TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity);
 		if(TF2Attribute.getModifier("Airborne Bonus", this.usedWeapon, 0, this.shootingEntity) != 0) 
 			size *= 0.8f;
-		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult, this.getCritical(), 
+		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult * this.damageModifier, this.getCritical(), 
 						(float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
 					.distanceTo(new Vec3d(x, y, z)));
 	}
 
-	public void attackDirect(Entity target, double pushForce, boolean headshot) {
+	public void addDamageTypes(DamageSource source) {
+		
+	}
+	
+	public boolean attackDirect(Entity target, double pushForce, boolean headshot, Vec3d hitPos) {
 		if (!this.world.isRemote) {
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
 				float distance = (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
-				
-				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 2 : this.getCritical(),
+				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 
+						((ItemWeapon) this.usedWeapon.getItem()).getHeadshotCrit(shootingEntity, this.usedWeapon) : this.getCritical(),
 						this.usedWeapon);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
-						distance);
+						distance) * this.damageModifier;
 				DamageSource src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this);
+				this.addDamageTypes(src);
+				
 				if (headshot)
 					((TF2DamageSource)src).addAttackFlag(TF2DamageSource.HEADSHOT);
 				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical, false);
 				if(!proceed || TF2Util.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
 						src)) {
-					if (!((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity))
+					if (!this.canPenetrate())
 						this.setDead();
 					if(proceed) {
-						if (this.isBurning())
-							target.setFire(7);
-						Vec3d pushvec=new Vec3d(this.motionX,this.motionY,this.motionZ).normalize();
+						Vec3d pushvec=new Vec3d(target.posX - hitPos.x, target.posY + target.height/2 - hitPos.y, target.posZ - hitPos.z).normalize();
 						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
 								*  0.01625D*dmg);
 						if(target instanceof EntityLivingBase) {
@@ -266,9 +272,11 @@ public abstract class EntityProjectileBase extends Entity
 						if(target instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(new TF2Message.VelocityAddMessage(pushvec,target.isAirBorne), (EntityPlayerMP) target);
 					}
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 	
 	@Override
@@ -799,7 +807,6 @@ public abstract class EntityProjectileBase extends Entity
 	}
 	
 	@Override
-	@SideOnly(Side.CLIENT)
 	public boolean isInRangeToRenderDist(double distance) {
 		double d0 = this.getEntityBoundingBox().getAverageEdgeLength();
 
@@ -829,4 +836,19 @@ public abstract class EntityProjectileBase extends Entity
 		// TODO Auto-generated method stub
 		return 9;
 	}
+	
+	@Override
+    public void writeSpawnData(ByteBuf buffer) {
+    	buffer.writeInt((int) (this.motionX * 8000D));
+    	buffer.writeInt((int) (this.motionY * 8000D));
+    	buffer.writeInt((int) (this.motionZ * 8000D));
+    }
+	
+	@Override
+    public void readSpawnData(ByteBuf buffer) {
+    	this.motionX = buffer.readInt() / 8000D;
+    	this.motionY = buffer.readInt() / 8000D;
+    	this.motionZ = buffer.readInt() / 8000D;
+    }
+    
 }

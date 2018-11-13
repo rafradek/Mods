@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.EntityDummy;
 import rafradek.TF2weapons.TF2ConfigVars;
 
 public class EntityCleaver extends EntityProjectileSimple {
@@ -19,7 +20,7 @@ public class EntityCleaver extends EntityProjectileSimple {
 	public EntityCleaver(World world, EntityLivingBase living, EnumHand hand) {
 		super(world, living, hand);
 		this.usedWeapon.setCount(1);
-		this.infinite = TF2ConfigVars.freeUseItems;
+		//this.infinite = TF2ConfigVars.freeUseItems && !(living instanceof EntityDummy);
 		
 	}
 

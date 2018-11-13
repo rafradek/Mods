@@ -3,6 +3,7 @@ package rafradek.TF2weapons.projectiles;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -13,7 +14,7 @@ import rafradek.TF2weapons.TF2weapons;
 
 public class EntityStickybomb extends EntityProjectileBase {
 
-	
+	public int stickCooldown;
 	public EntityStickybomb(World p_i1756_1_) {
 		super(p_i1756_1_);
 		this.setSize(0.3f, 0.3f);
@@ -30,7 +31,12 @@ public class EntityStickybomb extends EntityProjectileBase {
 		return 3;
 	}
 
-	
+	public boolean attackEntityFrom(DamageSource source, float damage){
+		if (source.isExplosion() && !TF2Util.isOnSameTeam(source.getTrueSource(), this.shootingEntity)) {
+			this.addStickCooldown();
+		}
+		return super.attackEntityFrom(source, damage);
+	}
 	
 	@Override
 	protected void entityInit() {
@@ -64,9 +70,17 @@ public class EntityStickybomb extends EntityProjectileBase {
 
 	}
 
+	public void addStickCooldown() {
+		this.stickCooldown = 20;
+		this.setSticked(false);
+	}
+	
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
+		if (this.stickCooldown > 0) {
+			this.stickCooldown--;
+		}
 		if (this.shootingEntity == null || !this.shootingEntity.isEntityAlive())
 			this.setDead();
 	}
@@ -90,7 +104,7 @@ public class EntityStickybomb extends EntityProjectileBase {
 
 	@Override
 	public boolean isSticky() {
-		return true;
+		return this.stickCooldown <= 0;
 	}
 
 	@Override

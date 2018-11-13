@@ -37,12 +37,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
+import rafradek.TF2weapons.EnumTF2Particles;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.ReflectionAccess;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -51,6 +55,7 @@ import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.characters.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.characters.ai.EntityAISentryAttack;
 import rafradek.TF2weapons.characters.ai.EntityAISentryIdle;
+import rafradek.TF2weapons.characters.ai.EntityAISpotTarget;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.projectiles.EntityProjectileBase;
@@ -59,7 +64,7 @@ import rafradek.TF2weapons.weapons.WeaponsCapability;
 public class EntitySentry extends EntityBuilding {
 
 	public ItemStack sentryBullet = ItemFromData.getNewStack("sentrybullet");
-	public ItemStack sentryBullet2 = ItemFromData.getNewStack("sentrybullet2");
+	public ItemStack sentryHeat = ItemFromData.getNewStack("sentryheat");
 	public ItemStack sentryRocket = ItemFromData.getNewStack("sentryrocket");
 	public float rotationDefault = 0;
 	public float attackDelay;
@@ -81,21 +86,18 @@ public class EntitySentry extends EntityBuilding {
 			DataSerializers.BYTE);
 	private static final DataParameter<Boolean> MINI = EntityDataManager.createKey(EntitySentry.class,
 			DataSerializers.BOOLEAN);
+	private static final DataParameter<Integer> HEAT = EntityDataManager.createKey(EntitySentry.class,
+			DataSerializers.VARINT);
 
-	private static final AttributeModifier MINI_HEALTH_MODIFIER = new AttributeModifier(UUID.fromString("1184831d-b1dc-40c8-86e6-34fa8f30bada"), "minisentry", -6, 0);
+	private static final AttributeModifier MINI_HEALTH_MODIFIER = new AttributeModifier(UUID.fromString("1184831d-b1dc-40c8-86e6-34fa8f5abada"), "minisentry", -6, 0);
 	public EntitySentry(World worldIn) {
 		super(worldIn);
 		this.setSize(0.8f, 0.8f);
-		for(Field field:EntityLiving.class.getDeclaredFields()) {
-			if(field.getName().equals("lookHelper") || field.getName().equals("field_70749_g")) {
-				field.setAccessible(true);
-				try {
-					field.set(this, new SentryLookHelper(this));
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+		try {
+			ReflectionAccess.entityLookHelper.set(this, new SentryLookHelper(this));
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -156,7 +158,7 @@ public class EntitySentry extends EntityBuilding {
 	public void applyTasks() {
 
 		//this.targetTasks.addTask(1, new EntityAISentryOwnerHurt(this, true));
-		this.targetTasks.addTask(2, new EntityAINearestChecked(this, EntityLivingBase.class, true, false,
+		this.targetTasks.addTask(2, new EntityAISpotTarget(this, EntityLivingBase.class, true, true,
 				new Predicate<EntityLivingBase>() {
 					@Override
 					public boolean apply(EntityLivingBase target) {
@@ -205,7 +207,7 @@ public class EntitySentry extends EntityBuilding {
 
 	@Override
 	public ItemStack getHeldItem(EnumHand hand) {
-		return sentryRocket;
+		return hand == EnumHand.MAIN_HAND ? sentryRocket : (this.isHeat() ? sentryHeat : sentryBullet);
 	}
 
 	@Override
@@ -224,6 +226,7 @@ public class EntitySentry extends EntityBuilding {
 		this.dataManager.register(TARGET, (byte) -1);
 		this.dataManager.register(CONTROLLED, Boolean.valueOf(false));
 		this.dataManager.register(MINI, Boolean.valueOf(false));
+		this.dataManager.register(HEAT, 0);
 	}
 
 	public void shootRocket(EntityLivingBase owner) {
@@ -271,36 +274,76 @@ public class EntitySentry extends EntityBuilding {
 		Vec3d attackPos = this.isControlled()
 				? new Vec3d(this.getLookHelper().getLookPosX(), this.getLookHelper().getLookPosY(),
 						this.getLookHelper().getLookPosZ())
-				: this.getAttackTarget().getPositionVector().addVector(0, this.getAttackTarget().getEyeHeight(), 0);
+				: this.getAttackTarget().getPositionEyes(1).subtract(this.getPositionEyes(1))
+				.normalize().scale(30).add(this.getPositionVector());
 		while (this.attackDelay <= 0 && this.getAmmo() > 0 && this.consumeEnergy(this.getMinEnergy())) {
 			if(this.getOwnerId() != null && this.ticksExisted % 10 == 0)
 				TF2Util.attractMobs(this, this.world);
-			this.attackDelay += this.getLevel() > 1 ? 2.5f : 5f;
+			float cooldown = this.getLevel() > 1 ? 2.5f : 5f;
+			//this.attackDelay += this.getLevel() > 1 ? 2.5f : 5f;
 			if (this.isMini())
-				this.attackDelay /= 1.5f;
+				cooldown /= 1.5f;
+			if (this.isHeat()) {
+				cooldown *= this.getLevel() > 1 ? 5f : 4f;
+			}
 			if (this.isControlled())
-				this.attackDelay /= 2f;
+				cooldown /= 2f;
 			
-			this.attackDelay *= this.attackRateMult;
+			cooldown *= this.attackRateMult;
 			
-			this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
-					1f);
+			this.attackDelay += cooldown;
+			if (this.isHeat()) {
+				this.playSound(TF2Sounds.WEAPON_MACHINA, 2f, 1f);
+			}
+			else {
+				this.playSound(this.getLevel() == 1 ? TF2Sounds.MOB_SENTRY_SHOOT_1 : TF2Sounds.MOB_SENTRY_SHOOT_2, 1.5f,
+						1f);
+			}
+			
+			float damage = 1.6f;
+			if (this.isHeat()) {
+				damage = 4.25f + this.getHeat() * 1.25f;
+				if (this.getLevel() > 1)
+					damage *= 1.25f;
+			}
+			if (this.isMini())
+				damage *= 0.5f;
+			
 			List<RayTraceResult> list = TF2Util.pierce(this.world, this, this.posX,
 					this.posY + this.getEyeHeight(), this.posZ, attackPos.x, attackPos.y, attackPos.z,
-					false, 0.08f, false);
-			for (RayTraceResult bullet : list)
+					false, this.isHeat() ? 0.25f + this.getHeat() * 0.2f : 0.01f, this.isHeat());
+			for (RayTraceResult bullet : list) {
+				if (bullet == list.get(0)) {
+					if (!this.isHeat())
+						TF2Util.sendParticle(EnumTF2Particles.BULLET_TRACER, this, this.posX, this.posY + this.getEyeHeight(), this.posZ, 
+								bullet.hitVec.x, bullet.hitVec.y, bullet.hitVec.z, 1,13, 0, 64);
+					else
+						TF2Util.sendParticle(EnumTF2Particles.BULLET_TRACER, this, this.posX, this.posY + this.getEyeHeight(), this.posZ, 
+								bullet.hitVec.x, bullet.hitVec.y, bullet.hitVec.z, 1,0, TF2Util.getTeamColor(this), 1280);
+				}
 				if (bullet.entityHit != null) {
 
-					DamageSource src = TF2Util.causeDirectDamage(sentryBullet, owner, 0).setProjectile();
-
-					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.sentryBullet,
-							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), this.isMini() ? 0.8f : 1.6f, src)) {
+					DamageSource src = TF2Util.causeDirectDamage(this.getHeldItemOffhand(), owner, 0).setProjectile();
+					if (this.fromPDA)
+						((TF2DamageSource)src).addAttackFlag(TF2DamageSource.SENTRY_PDA);
+					
+					float range = bullet.entityHit.getDistanceToEntity(this);
+					if (range >= (float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue())
+						range =  Math.max(0.5f,(float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() / range);
+					else
+						range = 1;
+					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.getHeldItemOffhand(),
+							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), range * damage, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();
 						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
 						if (this.isMini())
 							dist = dist.scale(0.55);
 						if(this.isControlled())
+							dist=dist.scale(0.35);
+						if (this.isHeat())
+							dist=dist.scale(1.5f + 1.5f * this.getHeat());
+						if ((bullet.entityHit instanceof EntityTF2Character) && ((EntityTF2Character) bullet.entityHit).isGiant())
 							dist=dist.scale(0.35);
 						if(bullet.entityHit instanceof EntityLivingBase )
 							dist=dist.scale(1-((EntityLivingBase) bullet.entityHit).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue());
@@ -316,7 +359,7 @@ public class EntitySentry extends EntityBuilding {
 								if (!bullet.entityHit.isEntityAlive()) {
 									this.setKills(this.getKills() + 1);
 									if(owner instanceof EntityPlayer && bullet.entityHit instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
-										owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.sentryBullet);
+										owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
 									}
 										
 								}
@@ -324,6 +367,7 @@ public class EntitySentry extends EntityBuilding {
 						}
 					}
 				}
+			}
 			this.setAmmo(this.getAmmo() - 1);
 		}
 	}
@@ -359,6 +403,14 @@ public class EntitySentry extends EntityBuilding {
 		return this.dataManager.get(MINI);
 	}
 	
+	public boolean isHeat() {
+		return this.getHeat() > 0;
+	}
+	
+	public int getHeat() {
+		return this.dataManager.get(HEAT);
+	}
+	
 	public void setAmmo(int ammo) {
 		this.dataManager.set(AMMO, ammo);
 	}
@@ -377,6 +429,10 @@ public class EntitySentry extends EntityBuilding {
 
 	public void setTargetInfo(int target) {
 		this.dataManager.set(TARGET, (byte) target);
+	}
+	
+	public void setHeat(int heat) {
+		this.dataManager.set(HEAT, heat);
 	}
 	
 	public void setMini(boolean mini) {
@@ -622,5 +678,4 @@ public class EntitySentry extends EntityBuilding {
 	public int getConstructionTime() {
 		return this.isMini() ? 4200 : 10500;
 	}
-
 }

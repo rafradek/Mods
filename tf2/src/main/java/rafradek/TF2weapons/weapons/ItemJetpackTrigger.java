@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.weapons;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -19,10 +20,9 @@ public class ItemJetpackTrigger extends ItemUsable {
 
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand, PredictionMessage message) {
-		ItemStack jetpack = living.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+		ItemStack jetpack = ItemBackpack.getBackpack(living);
 		if(!world.isRemote && jetpack.getItem() instanceof ItemJetpack && ((ItemJetpack)jetpack.getItem()).canActivate(jetpack, living)) {
 			((ItemJetpack)jetpack.getItem()).activateJetpack(jetpack, living, false);
-			
 		}
 		return false;
 	}
@@ -47,5 +47,27 @@ public class ItemJetpackTrigger extends ItemUsable {
 	@Override
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
 		return (short) this.getFiringSpeed(item, player);
+	}
+	
+	@Override
+	public boolean showInfoBox(ItemStack stack, EntityPlayer player) {
+		return true;
+	}
+
+	@Override
+	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
+		ItemStack backpack = ItemBackpack.getBackpack(player);
+		if (backpack.getItem() instanceof ItemJetpack) {
+			String charge = "";
+			int progress = 20 - (int)((float)backpack.getTagCompound().getShort("Charge")/(float)((ItemJetpack) backpack.getItem()).getCooldown(backpack, player)*20f);
+			for(int i=0;i<20;i++){
+				if(i<progress)
+					charge=charge+"|";
+				else
+					charge=charge+".";
+			}
+			return new String[]{"CHARGES: "+backpack.getTagCompound().getByte("Charges"),charge};
+		}
+		return new String[]{"CHARGES: 0",""};
 	}
 }

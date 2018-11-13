@@ -1,17 +1,28 @@
 package rafradek.TF2weapons;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.Multimap;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.play.client.CPacketInput;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.ResourceLocation;
@@ -21,15 +32,18 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.building.ItemPDA;
 import rafradek.TF2weapons.characters.EntityMedic;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.weapons.ItemAmmo;
+import rafradek.TF2weapons.weapons.ItemWrench;
 
 public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 
@@ -72,14 +86,18 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public boolean medicCharge;
 	public boolean breakBlocks;
 	public boolean blockUse;
+	public float robotsKilledInvasion;
 	
 	public NBTTagCompound carrying;
 	public int carryingType;
+	@SuppressWarnings("unchecked")
+	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
 	
 	public TF2PlayerCapability(EntityPlayer entity) {
 		this.owner = entity;
 		this.lostItems=new ItemStackHandler(27);
 		this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
+		
 	}
 
 	public void tick() {
@@ -125,7 +143,6 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				}
 			}
 			this.medicCall--;
-			if (this.medicCharge && this.owner.ticksExisted % 20 == 0)
 				
 
 			if(this.sendContractsNextTick)
@@ -134,6 +151,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				}
 			
 			int contractDay;
+			if (this.robotsKilledInvasion > 0 && !TF2EventsCommon.isSpawnEvent(this.owner.world)) {
+				this.giveRobotAwards();
+			}
 			if(!TF2ConfigVars.disableContracts && this.contracts.size()<2 && (contractDay=((EntityPlayerMP) this.owner).getStatFile().readStat(TF2Achievements.CONTRACT_DAY)) != 0  
 					&&this.owner.world.getWorldTime()%24000 > 1000 && this.owner.world.getWorldTime()/24000>=contractDay) {
 				String name="kill";
@@ -158,8 +178,64 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				TF2weapons.network.sendTo(new TF2Message.ContractMessage(-1, contract), (EntityPlayerMP) this.owner);
 			}
 		}
+		else if (this.owner == Minecraft.getMinecraft().player){
+			((EntityPlayerSP)this.owner).connection.sendPacket(new CPacketInput(owner.moveStrafing, owner.moveForward,
+					((EntityPlayerSP)this.owner).movementInput.jump, ((EntityPlayerSP)this.owner).movementInput.sneak));
+		}
 	}
 
+	public void giveRobotAwards() {
+		float chance = ((EntityPlayerMP)this.owner).getStatFile().readStat(TF2weapons.robotsKilled);
+		chance = (1f + Math.min(2f, chance / 130f)) * Math.min(40f,(float)Math.pow(this.robotsKilledInvasion, 0.75)) * (owner.getRNG().nextFloat() + 1f);
+		while (chance >= 4f) {
+			int itemtype = owner.getRNG().nextInt(2);
+			float cost = 0f;
+			ItemStack item = ItemStack.EMPTY;
+			if (itemtype == 0 && chance >= 4.5f) {
+				boolean australium = chance > 18 && owner.getRNG().nextInt(6) == 0;
+				float chl = chance;
+				item = ItemFromData.getRandomWeapon(owner.getRNG(), Predicates.and(data -> {
+					return chl > (australium ? 2f : 0.5f) * data.getInt(PropertyType.COST) ;
+				},ItemFromData.VISIBLE_WEAPON));
+				if (!item.isEmpty()) {
+					cost = 0.5f * ItemFromData.getData(item).getInt(PropertyType.COST);
+					if (australium) {
+						cost *= 4f;
+						item.getTagCompound().setBoolean("Australium", true);
+						item.getTagCompound().setBoolean("Strange", true);
+					}
+					float upgradecost = (chance-cost) * owner.getRNG().nextFloat() * 0.5f;
+					TF2Attribute.upgradeItemStack(item, (int)upgradecost * 20, owner.getRNG());
+					cost += upgradecost;
+				}
+			}
+			if (cost == 0 && itemtype == 1 && chance >= 3) {
+				ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
+				list.removeIf(attr -> attr == null || attr.perKill == 0);			
+				int level = 0;
+				cost = 3f;
+				float rand = owner.getRNG().nextFloat();
+				if (rand < 0.1f && chance >= 27f) {
+					level = 2;
+					cost = 27f;
+				}
+				else if (rand < 0.35f && chance >= 9f) {
+					level = 1;
+					cost = 9f;
+				}
+				item = new ItemStack(TF2weapons.itemKillstreakFabricator, 1, list.get(owner.getRNG().nextInt(list.size())).id + (level << 9));
+			}
+			if (!item.isEmpty()) {
+				chance -= cost;
+				ItemHandlerHelper.giveItemToPlayer(owner, item);
+			}
+			else
+				break;
+		}
+		((EntityPlayerMP)this.owner).sendMessage(new TextComponentString("You were awarded"));
+		this.robotsKilledInvasion = 0;
+	}
+	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 		// TODO Auto-generated method stub
@@ -200,87 +276,20 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 	}
 
-	/*
-	 * public static void tick(boolean client){
-	 * 
-	 * Map<EntityLivingBase,Integer>
-	 * map=TF2ActionHandler.playerAction.get(client);
-	 * 
-	 * if(map.isEmpty()) return; Iterator<EntityLivingBase>
-	 * iterator=map.keySet().iterator(); while(iterator.hasNext()) {
-	 * EntityLivingBase player = iterator.next();
-	 * 
-	 * if(player.isDead||player.deathTime>0){
-	 * 
-	 * iterator.remove(); continue; } int state=0; if(map.get(player)!=null){
-	 * state=map.get(player); }
-	 * 
-	 * ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
-	 * 
-	 * WeaponsCapability cap=player.getCapability(TF2weapons.WEAPONS_CAP, null);
-	 * 
-	 * cap.lastFire-=50; if (!stack.isEmpty()&&stack.getItem() instanceof
-	 * ItemUsable) { ItemUsable item=(ItemUsable) stack.getItem();
-	 * 
-	 * //if(!client) //System.out.println(client+" rel "
-	 * +item.getTagCompound().getShort("reload")+" "+state+" "+item.
-	 * getDisplayName()); if (cap.reloadCool > 0) { cap.reloadCool-=50; } if
-	 * (cap.fire1Cool > 0) { cap.fire1Cool-=50; } if (cap.fire2Cool > 0) {
-	 * cap.fire2Cool-=50; }
-	 * 
-	 * if(client){ //((EntityPlayerMP)player).isChangingQuantityOnly=state>0;
-	 * stack.animationsToGo=0; } if(player instanceof EntityTF2Character){
-	 * EntityTF2Character shooter=((EntityTF2Character)player);
-	 * if(shooter.getAttackTarget() != null){
-	 * shooter.targetPrevPos[1]=shooter.targetPrevPos[0];
-	 * shooter.targetPrevPos[3]=shooter.targetPrevPos[2];
-	 * shooter.targetPrevPos[5]=shooter.targetPrevPos[4];
-	 * shooter.targetPrevPos[0]=shooter.getAttackTarget().posX;
-	 * shooter.targetPrevPos[2]=shooter.getAttackTarget().posY;
-	 * shooter.targetPrevPos[4]=shooter.getAttackTarget().posZ; } }
-	 * 
-	 * state=stateDo(player, stack, state,cap, client);
-	 * if((!client||player!=Minecraft.getMinecraft().player)&&stack.getItem()
-	 * instanceof ItemRangedWeapon &&
-	 * ((ItemRangedWeapon)stack.getItem()).hasClip(stack)){
-	 * if(((state&4)!=0||stack.getItemDamage()==stack.getMaxDamage())&&(state&8)
-	 * ==0&&stack.getItemDamage()!=0&& cap.reloadCool<=0
-	 * &&(cap.fire1Cool<=0||((ItemRangedWeapon)stack.getItem()).
-	 * IsReloadingFullClip(stack))){ state+=8;
-	 * 
-	 * cap.reloadCool=((ItemRangedWeapon)stack.getItem()).
-	 * getWeaponFirstReloadTime(stack,player);
-	 * 
-	 * if(!client&&player instanceof EntityPlayerMP)
-	 * TF2weapons.network.sendTo(new
-	 * TF2Message.UseMessage(stack.getItemDamage(), true,EnumHand.MAIN_HAND),
-	 * (EntityPlayerMP) player);
-	 * 
-	 * if(client&&((ItemRangedWeapon)stack.getItem()).IsReloadingFullClip(stack)
-	 * ){ TF2weapons.proxy.playReloadSound(player,stack); }
-	 * 
-	 * } else if(cap.fire1Cool<=0||((ItemRangedWeapon)stack.getItem()).
-	 * IsReloadingFullClip(stack)){ while ((state&8)!=0&&cap.reloadCool <= 0 &&
-	 * stack.getItemDamage()!=0) {
-	 * if(((ItemRangedWeapon)stack.getItem()).IsReloadingFullClip(stack)){
-	 * stack.setItemDamage(0); if(item.isDoubleWielding(player)){
-	 * player.getHeldItemOffhand().setItemDamage(0); } } else {
-	 * stack.setItemDamage(stack.getItemDamage() - 1);
-	 * TF2weapons.proxy.playReloadSound(player,stack); } if(!client&&player
-	 * instanceof EntityPlayerMP) TF2weapons.network.sendTo(new
-	 * TF2Message.UseMessage(stack.getItemDamage(), true,EnumHand.MAIN_HAND),
-	 * (EntityPlayerMP) player);
-	 * 
-	 * cap.reloadCool+=((ItemRangedWeapon)stack.getItem()).getWeaponReloadTime(
-	 * stack,player);
-	 * 
-	 * if(stack.getItemDamage()==0){ state-=8; cap.reloadCool=0; } } } } } else
-	 * { player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).
-	 * removeModifier(ItemMinigun.slowdown);
-	 * player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).
-	 * removeModifier(ItemSniperRifle.slowdown); } map.put(player, state); } }
-	 */
-
+	public int calculateMaxSentries() {
+		ItemStack wrench = TF2Util.getBestItem(this.owner.inventory, (stack1, stack2) -> {
+			float sentries1 = TF2Attribute.getModifier("Sentry Bonus", stack1, 1, this.owner);
+			float sentries2 = TF2Attribute.getModifier("Sentry Bonus", stack2, 1, this.owner);
+			return sentries1 > sentries2 ? 1 : sentries1 == sentries2 ? 0 : -1;
+		}, stack -> stack.getItem() instanceof ItemWrench);
+		ItemStack pda = TF2Util.getBestItem(this.owner.inventory, (stack1, stack2) -> {
+			float sentries1 = TF2Attribute.getModifier("Extra Sentry", stack1, 0, this.owner);
+			float sentries2 = TF2Attribute.getModifier("Extra Sentry", stack2, 0, this.owner);
+			return sentries1 > sentries2 ? 1 : sentries1 == sentries2 ? 0 : -1;
+		}, stack -> stack.getItem() instanceof ItemPDA);
+		return (int) (TF2Attribute.getModifier("Sentry Bonus", wrench, 1, this.owner) * TF2Attribute.getModifier("Extra Sentry", pda, 0, this.owner));
+	}
+	
 	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
@@ -311,6 +320,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			tag.setTag("Carrying", this.carrying);
 			tag.setByte("CarryingType", (byte) this.carryingType);
 		}
+		tag.setFloat("RobotsKilled", (short) this.robotsKilledInvasion);
 		return tag;
 	}
 
@@ -340,7 +350,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.nextContractDay=nbt.getInteger("NextContractDay");
 		this.carrying = (NBTTagCompound) nbt.getTag("Carrying");
 		this.carryingType = nbt.getByte("CarryingType");
-		
+		this.robotsKilledInvasion = nbt.getFloat("RobotsKilled");
 	}
 
 	public static TF2PlayerCapability get(EntityPlayer player) {

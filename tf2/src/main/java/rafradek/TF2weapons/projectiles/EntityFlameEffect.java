@@ -59,9 +59,9 @@ public class EntityFlameEffect extends Particle {
 			float f2 = MathHelper.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
 			float speed = ((ItemProjectileWeapon) living.getHeldItemMainhand().getItem())
 					.getProjectileSpeed(living.getHeldItemMainhand(), living);
-			motionX = (motionX / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
-			motionY = (motionY / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
-			motionZ = (motionZ / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
+			motionX = (motionX / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionX;
+			motionY = (motionY / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionY;
+			motionZ = (motionZ / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionZ;
 	
 			return new EntityFlameEffect(world, posX + motionX * step, posY + motionY * step, posZ + motionZ * step,
 					motionX, motionY, motionZ,

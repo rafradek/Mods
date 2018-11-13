@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
@@ -14,7 +16,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.ItemToken;
 
-public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
 
 	public int token;
 	
@@ -77,4 +79,17 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 		return width * height >= 2;
 	}
 
+	@Override
+	public ItemStack getSuggestion(int slot) {
+		if (slot < 2 && this.token == -1) {
+			return new ItemStack(TF2weapons.itemTF2, 1, 9);
+		}
+		else if (slot < 3 && token != -1){
+			ItemStack stack = new ItemStack(TF2weapons.itemTF2, 1, 9);
+			stack.setTagCompound(new NBTTagCompound());
+			stack.getTagCompound().setByte("Token", (byte) this.token);
+			return stack;
+		}
+		return ItemStack.EMPTY;
+	}
 }

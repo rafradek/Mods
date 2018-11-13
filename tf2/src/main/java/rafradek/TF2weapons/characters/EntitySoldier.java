@@ -1,6 +1,8 @@
 package rafradek.TF2weapons.characters;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -11,6 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
@@ -42,7 +45,7 @@ public class EntitySoldier extends EntityTF2Character {
 		this.experienceValue = 15;
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 		// ItemUsable.getNewStack("Minigun"));
-
+		this.tasks.addTask(5, new UseBackpack());
 	}
 
 	/*
@@ -53,7 +56,16 @@ public class EntitySoldier extends EntityTF2Character {
 	protected void addWeapons() {
 		super.addWeapons();
 		if(this.loadout.getStackInSlot(1).getItem() instanceof ItemBackpack) {
-			this.setItemStackToSlot(EntityEquipmentSlot.CHEST, this.loadout.getStackInSlot(1));
+			this.loadout.getStackInSlot(1).getTagCompound().setFloat("Rage", 1f);
+			if (this.isGiant())
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("EffectDurationBonus"), 999f);
+			//this.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(2, this.loadout.getStackInSlot(1));
+		
+		}
+		if (this.isGiant()) {
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"), 0.5f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ClipSizeBonus"), 3f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ReloadRateBonus"), 0.3f);
 		}
 	}
 	@Override
@@ -68,11 +80,15 @@ public class EntitySoldier extends EntityTF2Character {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.35D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.25D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10583D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 
+	public void setRobot(int robot) {
+		super.setRobot(robot);
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 
@@ -80,7 +96,7 @@ public class EntitySoldier extends EntityTF2Character {
 			if (this.rocketJumper && this.getHealth() > 7f
 					&& !this.airborne && this.onGround && this.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == 0)
 				this.rocketJump = true;
-			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
+			if(!this.isRobot() && this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
 				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.getStackInSlot(1).getItemDamage()!=this.loadout.getStackInSlot(1).getMaxDamage() && this.getDistanceSqToEntity(this.getAttackTarget())<36){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
@@ -90,13 +106,15 @@ public class EntitySoldier extends EntityTF2Character {
 				}
 			}
 		}
-		ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
-		if (!this.world.isRemote && backpack.getItem() instanceof ItemSoldierBackpack) {
-			if (this.getActiveItemStack().getItem() instanceof ItemHorn && (72000 - this.getItemInUseCount()) > ItemFromData.getData(backpack).getInt(PropertyType.FIRE_SPEED)) {
+		
+		if (!this.world.isRemote && this.getActiveItemStack().getItem() instanceof ItemHorn) {
+			ItemStack backpack = ItemBackpack.getBackpack(this);
+			if (backpack.getItem() instanceof ItemSoldierBackpack && (72000 - this.getItemInUseCount()) > ItemFromData.getData(backpack).getInt(PropertyType.FIRE_SPEED)) {
 				this.stopActiveHand();
 				this.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
 			}
 		}
+		
 		//if (!this.world.isRemote)
 			//System.out.println(this.moveForward+ " "+this.moveStrafing);
 		
@@ -130,7 +148,7 @@ public class EntitySoldier extends EntityTF2Character {
 	}
 
 	public void activateBackpack() {
-		ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+		ItemStack backpack = ItemBackpack.getBackpack(this);
 		if (backpack.getTagCompound().getFloat("Rage") >= 1) {
 			this.setHeldItem(EnumHand.OFF_HAND, new ItemStack(TF2weapons.itemHorn));
 			this.setActiveHand(EnumHand.OFF_HAND);
@@ -163,7 +181,7 @@ public class EntitySoldier extends EntityTF2Character {
 	public void onEquipItem(int slot, ItemStack stack) {
 		super.onEquipItem(slot, stack);
 		this.attack.fireAtFeet = slot == 0 ? TF2Attribute.getModifier("Explosion Radius", stack, 1, this) : 0;
-		this.rocketJumper = TF2Attribute.getModifier("Airborne Bonus", stack, 0, this) != 0 || this.rand.nextBoolean();
+		this.rocketJumper = !this.isRobot() && (TF2Attribute.getModifier("Airborne Bonus", stack, 0, this) != 0 || this.rand.nextBoolean());
 	}
 	
 	@Override
@@ -203,6 +221,26 @@ public class EntitySoldier extends EntityTF2Character {
 	}
 	public int getClassIndex() {
 		return 1;
+	}
+	
+	public class UseBackpack extends EntityAIBase {
+
+		@Override
+		public boolean shouldExecute() {
+			// TODO Auto-generated method stub
+			
+			if (getOwner() == null && getDiff() > 1 && (getAttackTarget() != null || isGiant()) && activeItemStack.isEmpty()) {
+				ItemStack backpack = ItemBackpack.getBackpack(EntitySoldier.this);
+				return backpack.getItem() instanceof ItemSoldierBackpack &&
+						backpack.getTagCompound().getFloat("Rage") >= 1 ;
+			}
+			return false;
+		}
+		
+		public void updateTask() {
+			activateBackpack();
+			System.out.println("Activating");
+		}
 	}
 	/*
 	 * @Override public float getAttributeModifier(String attribute) {

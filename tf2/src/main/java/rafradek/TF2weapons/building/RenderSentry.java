@@ -17,13 +17,21 @@ import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.characters.EntityHeavy;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 
 public class RenderSentry extends RenderLiving<EntitySentry> {
 
 	private static final ResourceLocation SENTRY_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/Sentry.png");
+	private static final ResourceLocation SENTRY_MINI_RED = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/red/Sentrymini.png");
 	private static final ResourceLocation SENTRY_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/Sentry.png");
+	private static final ResourceLocation SENTRY_MINI_BLU = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/blu/Sentrymini.png");
+	private static final ResourceLocation SENTRY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Sentry.png");
 	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/box.png");
 	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
@@ -44,9 +52,20 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 	protected ResourceLocation getEntityTexture(EntitySentry par1EntityLiving) {
 		// System.out.println("class: "+clazz);
 		boolean constr=par1EntityLiving.isConstructing();
-		return par1EntityLiving.getEntTeam() == 0 ? constr ? BOX_RED : SENTRY_RED : constr ? BOX_BLU : SENTRY_BLU;
+		switch (par1EntityLiving.getEntTeam()) {
+		case 0: return constr ? BOX_RED : par1EntityLiving.isMini() ? SENTRY_MINI_RED : SENTRY_RED;
+		case 1: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
+		case 2: return constr ? BOX_BLU : SENTRY_ROBOT;
+		default: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
+		}
 	}
 
+	protected void preRenderCallback(EntitySentry entitylivingbaseIn, float partialTickTime)
+    {
+		if (entitylivingbaseIn.isMini())
+			GlStateManager.scale(0.65, 0.65, 0.65);
+    }
+	
 	@Override
 	public void doRender(EntitySentry living, double p_76986_2_, double p_76986_4_, double p_76986_6_, float p_76986_8_,
 			float p_76986_9_) {
@@ -61,6 +80,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 				this.mainModel = this.level3;
 		}
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
+		
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder BufferBuilder = tessellator.getBuffer();
 		if (living.isControlled()) {

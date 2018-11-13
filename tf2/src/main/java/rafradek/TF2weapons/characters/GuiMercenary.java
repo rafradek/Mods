@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMerchant;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -28,6 +30,7 @@ public class GuiMercenary extends GuiMerchant {
 		this.mercenary = mercenary;
 		this.inv=inv;
 		this.inventorySlots=new ContainerMercenary(Minecraft.getMinecraft().player, mercenary, worldIn);
+		
 		this.xSize += 54;
 		//merInv=mercenary.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 		// TODO Auto-generated constructor stub
@@ -96,6 +99,7 @@ public class GuiMercenary extends GuiMerchant {
 			this.drawHoveringText("Lost australium can be recovered at Mann Co store", mouseX, mouseY);
 		else if(this.shareBtn.isMouseOver())
 			this.drawHoveringText("Allows the owner to collect loot from enemies", mouseX, mouseY);
+		
     }
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
@@ -108,6 +112,29 @@ public class GuiMercenary extends GuiMerchant {
         this.fontRenderer.drawString("Refill", i+7, j+80, 4210752);
         this.fontRenderer.drawString(Integer.toString(((ContainerMercenary)this.inventorySlots).primaryAmmo), i+10, j+113, 4210752);
         this.fontRenderer.drawString(Integer.toString(((ContainerMercenary)this.inventorySlots).secondaryAmmo), i+33, j+113, 4210752);
+        
+        GlStateManager.enableLighting();
+		GlStateManager.enableRescaleNormal();
+		RenderHelper.enableGUIStandardItemLighting();
+		this.itemRender.zLevel = 0;
+		for (int k = 0; k < 3; k++) {
+				ItemStack stack = this.mercenary.loadout.getStackInSlot(k);
+				if (!stack.isEmpty()) {
+					if (k < 3 && !this.inventorySlots.getSlot(k+43).getHasStack()) {
+						this.itemRender.renderItemIntoGUI(stack, this.inventorySlots.getSlot(k+43).xPos + this.guiLeft, this.inventorySlots.getSlot(k+43).yPos + this.guiTop);
+					}
+					else if (k >= 3 && !this.inventorySlots.getSlot(k+36).getHasStack()) {
+						this.itemRender.renderItemIntoGUI(stack, this.inventorySlots.getSlot(k-3).yPos, this.inventorySlots.getSlot(k-3).xPos);
+					}
+				}
+					
+			}
+		RenderHelper.disableStandardItemLighting();
+		GlStateManager.disableLighting();
+		this.mc.getTextureManager().bindTexture(GUI_TEXTURES);
+		GlStateManager.enableBlend();
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.5F);
+		
         /*MerchantRecipeList merchantrecipelist = this.m.getRecipes(this.mc.player);
 
         if (merchantrecipelist != null && !merchantrecipelist.isEmpty())
@@ -132,4 +159,14 @@ public class GuiMercenary extends GuiMerchant {
         }*/
     }
 	
+	protected void renderHoveredToolTip(int p_191948_1_, int p_191948_2_)
+    {
+		super.renderHoveredToolTip(p_191948_1_, p_191948_2_);
+        if (this.mc.player.inventory.getItemStack().isEmpty() && this.getSlotUnderMouse() != null && !this.getSlotUnderMouse().getHasStack())
+        {
+        	int id = this.getSlotUnderMouse().slotNumber;
+        	if (id >= 43 && id < 46)
+        		this.renderToolTip(this.mercenary.loadout.getStackInSlot(id - 43), p_191948_1_, p_191948_2_);
+        }
+    }
 }

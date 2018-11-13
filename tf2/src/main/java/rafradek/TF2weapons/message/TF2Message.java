@@ -11,6 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -18,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.pages.Contract;
@@ -167,27 +170,31 @@ public abstract class TF2Message implements IMessage {
 			this.state = buf.readByte();
 			if (buf.readableBytes() > 0) {
 				this.readData = new ArrayList<Object[]>();
-				while (buf.readableBytes() > 0)
+				while (buf.readableBytes() > 0) {
+					Object[] obj = new Object[9];
 					if (buf.readBoolean()) {
-						Object[] obj = new Object[3];
 						obj[0] = buf.readInt();
 						// obj[1]=buf.readFloat();
 						// obj[2]=buf.readFloat();
 						// obj[3]=buf.readFloat();
 						obj[1] = buf.readBoolean();
-						obj[2] = buf.readFloat();
-						this.readData.add(obj);
+						
+						
 					} else {
-						Object[] obj = new Object[6];
+						obj[1] = buf.readByte();
 						obj[3] = buf.readInt();
 						obj[4] = buf.readInt();
 						obj[5] = buf.readInt();
 						// obj[1]=buf.readFloat();
 						// obj[2]=buf.readFloat();
 						// obj[3]=buf.readFloat();
-						obj[2] = buf.readFloat();
-						this.readData.add(obj);
 					}
+					obj[6] = buf.readByte();
+					obj[7] = buf.readByte();
+					obj[8] = buf.readByte();
+					obj[2] = buf.readFloat();
+					this.readData.add(obj);
+				}
 			}
 		}
 
@@ -212,14 +219,21 @@ public abstract class TF2Message implements IMessage {
 						// }
 						// buf.writeInt(mop.entityHit.getEntityId());
 						buf.writeBoolean(((float[]) mop.hitInfo)[0] == 1);
+						buf.writeByte((byte) ((mop.hitVec.x-mop.entityHit.posX)*16));
+						buf.writeByte((byte) ((mop.hitVec.y-mop.entityHit.posY)*16));
+						buf.writeByte((byte) ((mop.hitVec.z-mop.entityHit.posZ)*16));
 					} else {
 						buf.writeBoolean(false);
+						buf.writeByte(mop.sideHit.getIndex());
 						buf.writeInt(mop.getBlockPos().getX());
 						buf.writeInt(mop.getBlockPos().getY());
 						buf.writeInt(mop.getBlockPos().getZ());
+						buf.writeByte((byte) ((mop.hitVec.x-mop.getBlockPos().getX())*16));
+						buf.writeByte((byte) ((mop.hitVec.y-mop.getBlockPos().getY())*16));
+						buf.writeByte((byte) ((mop.hitVec.z-mop.getBlockPos().getZ())*16));
 					}
 					buf.writeFloat(((float[]) mop.hitInfo)[1]);
-
+					
 				}
 		}
 
@@ -527,7 +541,7 @@ public abstract class TF2Message implements IMessage {
 
 		}
 
-		public WearableChangeMessage(EntityPlayer player, int slot, ItemStack stack) {
+		public WearableChangeMessage(Entity player, int slot, ItemStack stack) {
 			// this.shooter=shooter.getEntityId();
 			this.slot = slot;
 			this.entityID = player.getEntityId();
@@ -660,6 +674,68 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
+	
+	public static class ParticleSpawnMessage extends TF2Message {
+		// public int shooter;
+
+		public float x;
+		public float y;
+		public float z;
+		public float offsetX;
+		public float offsetY;
+		public float offsetZ;
+		public int count;
+		public int[] params;
+		public int id;
+
+		public ParticleSpawnMessage() {
+
+		}
+
+		public ParticleSpawnMessage(int id, double x, double y, double z, double offsetX, double offsetY, double offsetZ, int count, int[] params) {
+			super();
+			this.id = id;
+			this.x = (float) x;
+			this.y = (float) y;
+			this.z = (float) z;
+			this.offsetX = (float) offsetX;
+			this.offsetY = (float) offsetY;
+			this.offsetZ = (float) offsetZ;
+			this.count = count;
+			this.params = params;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.id=buf.readByte();
+			this.x=buf.readFloat();
+			this.y=buf.readFloat();
+			this.z=buf.readFloat();
+			this.offsetX=buf.readFloat();
+			this.offsetY=buf.readFloat();
+			this.offsetZ=buf.readFloat();
+			this.count=buf.readByte();
+			this.params = new int[buf.readableBytes()/4];
+			for (int i = 0; i < this.params.length; i++)
+				this.params[i] = buf.readInt();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeByte(id);
+			buf.writeFloat(x);
+			buf.writeFloat(y);
+			buf.writeFloat(z);
+			buf.writeFloat(offsetX);
+			buf.writeFloat(offsetY);
+			buf.writeFloat(offsetZ);
+			buf.writeByte(count);
+			for (int param : params)
+				buf.writeInt(param);
+		}
+
+	}
+	
 	public static class VelocityAddMessage extends TF2Message {
 		// public int shooter;
 
@@ -727,6 +803,94 @@ public abstract class TF2Message implements IMessage {
 			buf.writeLong(this.time);
 			if (this.entity != 0)
 				buf.writeInt(this.entity);
+		}
+	}
+	
+	public static class NetworkedSoundMessage extends TF2Message {
+		SoundEvent event;
+		int target;
+		Vec3d pos;
+		float volume;
+		float pitch;
+		SoundCategory category;
+		int id;
+		boolean repeat;
+		
+		public NetworkedSoundMessage() {
+
+		}
+
+		private NetworkedSoundMessage(SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+			this.event = event;
+			this.volume = volume;
+			this.pitch = pitch;
+			this.category = category;
+			this.id = id;
+			this.repeat = true;
+		}
+		
+		public NetworkedSoundMessage(Entity entity, SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+			this(event, volume, pitch, category, id, repeat);
+			this.target = entity.getEntityId();
+		}
+
+		public NetworkedSoundMessage(Vec3d pos, SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+			this(event, volume, pitch, category, id, repeat);
+			this.pos = pos;
+		}
+		
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.event = SoundEvent.REGISTRY.getObjectById(buf.readInt());
+			this.volume = buf.readFloat();
+			this.pitch = buf.readFloat();
+			this.category = SoundCategory.values()[buf.readByte()];
+			this.id = buf.readShort();
+			this.repeat = buf.readBoolean();
+			if (buf.readableBytes() > 4)
+				this.pos = new Vec3d(buf.readFloat(), buf.readFloat(), buf.readFloat());
+			else
+				this.target = buf.readInt();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeInt(SoundEvent.REGISTRY.getIDForObject(this.event));
+			buf.writeFloat(this.volume);
+			buf.writeFloat(this.pitch);
+			buf.writeByte(this.category.ordinal());
+			buf.writeShort(this.id);
+			buf.writeBoolean(this.repeat);
+			if (this.pos != null) {
+				buf.writeFloat((float) this.pos.x);
+				buf.writeFloat((float) this.pos.y);
+				buf.writeFloat((float) this.pos.z);
+			}
+			else
+				buf.writeInt(this.target);
+		}
+	}
+	
+	public static class NetworkedSoundStopMessage extends TF2Message {
+		
+		int id;
+		
+		public NetworkedSoundStopMessage() {
+
+		}
+
+		public NetworkedSoundStopMessage(int id) {
+			this.id = id;
+		}
+		
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.id = buf.readShort();
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeShort(this.id);
 		}
 	}
 	

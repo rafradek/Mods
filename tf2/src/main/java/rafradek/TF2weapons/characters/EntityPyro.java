@@ -10,6 +10,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -53,8 +55,9 @@ public class EntityPyro extends EntityTF2Character {
 	
 	protected void addWeapons() {
 		super.addWeapons();
-		if(this.loadout.getStackInSlot(1).getItem() instanceof ItemJetpack) {
-			this.setItemStackToSlot(EntityEquipmentSlot.CHEST, this.loadout.getStackInSlot(1));
+		
+		if (this.isGiant()) {
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1),MapList.nameToAttribute.get("FireRateBonus"),0.42f);
 		}
 	}
 	
@@ -80,7 +83,7 @@ public class EntityPyro extends EntityTF2Character {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
 			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon){
-				if(this.usedSlot==0 && this.getDistanceSqToEntity(this.getAttackTarget())>64){
+				if(this.isRobot() || (this.usedSlot==0 && this.getDistanceSqToEntity(this.getAttackTarget())>64)){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 					//this.ammoLeft++;
@@ -98,9 +101,9 @@ public class EntityPyro extends EntityTF2Character {
 				this.playSound(ItemFromData.getSound(this.getHeldItemMainhand(), PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
 			}
 			
-			ItemStack backpack = this.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+			ItemStack backpack = ItemBackpack.getBackpack(this);
 			if (!this.world.isRemote && backpack.getItem() instanceof ItemJetpack) {
-				if (this.getAttackTarget() != null && this.getDistanceSqToEntity(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
+				if (this.getDistanceSqToEntity(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
 					((ItemJetpack)backpack.getItem()).activateJetpack(backpack, this, true);
 					
 				}
@@ -115,7 +118,7 @@ public class EntityPyro extends EntityTF2Character {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(18.5D);
-		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.25D);
+		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1329D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}

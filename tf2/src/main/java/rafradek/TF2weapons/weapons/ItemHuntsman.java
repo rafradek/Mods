@@ -179,7 +179,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		if (cap.isCharging()) {
 			cap.setCharging(false);
-			cap.fire1Cool = 750;
+			cap.setPrimaryCooldown(750);
 			living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
 			living.playSound(getSound(stack, PropertyType.WIND_DOWN_SOUND), 1f, 1f);
 		}

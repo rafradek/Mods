@@ -174,6 +174,11 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		super.setFire(1);
 	}
 
+	public void travel(float m1, float m2, float m3) {
+		float move = this.getAIMoveSpeed();
+		super.travel(m1 / move, m2, m3 / move);
+	}
+	
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance diff, IEntityLivingData p_110161_1_) {
 		int players = 0;
@@ -279,4 +284,34 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
     {
 		return potioneffectIn.getPotion() == TF2weapons.stun && potioneffectIn.getAmplifier()>=3;
     }
+	
+	@Override
+	public boolean hasHead() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public AxisAlignedBB getHeadBox() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasDamageFalloff() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isBuilding() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public boolean isBackStabbable() {
+		// TODO Auto-generated method stub
+		return true;
+	}
 }

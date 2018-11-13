@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.ContainerMerchant;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -28,6 +29,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character.Order;
 import rafradek.TF2weapons.decoration.ItemWearable;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.weapons.ItemAmmo;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
@@ -49,7 +51,8 @@ public class ContainerMercenary extends ContainerMerchant {
         		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
         		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
         	}
-        	
+			/*if (!worldIn.isRemote)
+				TF2weapons.network.sendTo(new TF2Message.WearableChangeMessage(merc, i + 20, this.mercenary.loadout.getStackInSlot(i)), (EntityPlayerMP) player);*/
         }
 		{
 			int i = 3;
@@ -115,7 +118,7 @@ public class ContainerMercenary extends ContainerMerchant {
 		}
 		for (int i = 0; i < 3; i++) {
 			final int index=i;
-			this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
+			/*this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
 
 				@Override
 				public int getSlotStackLimit() {
@@ -147,6 +150,39 @@ public class ContainerMercenary extends ContainerMerchant {
 				public String getSlotTexture() {
 					return TF2weapons.MOD_ID + ":items/weapon_empty_"+index;
 				}
+			});*/
+			this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
+
+				@Override
+				public int getSlotStackLimit() {
+					return 64;
+				}
+
+				@Override
+			    public boolean canTakeStack(EntityPlayer playerIn)
+			    {
+			        return super.canTakeStack(playerIn);
+			    }
+				
+				@Override
+				public boolean isItemValid(@Nullable ItemStack stack) {
+					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
+						return false;
+					else {
+						String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+						if (!parent.isEmpty())
+							stack = ItemFromData.getNewStack(parent);
+						return ItemFromData.getData(stack).getInt(PropertyType.SLOT)==this.getSlotIndex()
+						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[merc.getClassIndex()]);
+					}
+				}
+
+				/*@Override
+				@Nullable
+				@SideOnly(Side.CLIENT)
+				public String getSlotTexture() {
+					return TF2weapons.MOD_ID + ":items/weapon_empty_"+index;
+				}*/
 			});
 		}
 		
@@ -175,6 +211,29 @@ public class ContainerMercenary extends ContainerMerchant {
 				return TF2weapons.MOD_ID + ":items/refill_empty";
 			}*/
 		});
+		for (int i = 0; i < 3; i++) {
+			final int index=i;
+			this.addSlotToContainer(new SlotItemHandler(merc.loadout, i, -888888, -566788) {
+				
+				@Override
+			    public boolean canTakeStack(EntityPlayer playerIn)
+			    {
+			        return false;
+			    }
+				
+				@Override
+				public boolean isItemValid(@Nullable ItemStack stack) {
+					return false;
+				}
+
+				/*@Override
+				@Nullable
+				@SideOnly(Side.CLIENT)
+				public String getSlotTexture() {
+					return TF2weapons.MOD_ID + ":items/weapon_empty_"+index;
+				}*/
+			});
+		}
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -187,6 +246,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        if(this.primaryAmmo != this.mercenary.getAmmo(0)) {
 	        	this.primaryAmmo = this.mercenary.getAmmo(0);
 	        	//System.out.println("ammo in:");
+	        	
 	        	listener.sendWindowProperty(this, 0, this.primaryAmmo);
 	        }
 	        weapon = this.mercenary.loadout.getStackInSlot(0);

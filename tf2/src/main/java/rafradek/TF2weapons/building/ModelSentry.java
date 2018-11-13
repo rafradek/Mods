@@ -2,6 +2,8 @@ package rafradek.TF2weapons.building;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.entity.Entity;
 
 /**
@@ -31,6 +33,8 @@ public class ModelSentry extends ModelBase {
     public ModelRenderer Line;
     public ModelRenderer Line_1;
     public ModelRenderer LineSquare;
+    public ModelRenderer minihead;
+    public ModelRenderer minilight;
 
     public ModelSentry() {
         this.textureWidth = 64;
@@ -120,6 +124,14 @@ public class ModelSentry extends ModelBase {
         this.backleg2_1.setRotationPoint(-1.6F, 19.2F, -0.1F);
         this.backleg2_1.addBox(0.0F, 0.0F, 0.0F, 1, 1, 4, 0.0F);
         this.setRotateAngle(backleg2_1, -0.4363323129985824F, -0.08726646259971647F, 0.0F);
+        this.minihead = new ModelRenderer(this, 16, 25);
+        this.minihead.mirror = true;
+        this.minihead.setRotationPoint(0.0F, 0.0F, 0.0F);
+        this.minihead.addBox(-1.0F, -6.0F, 3.0F, 3, 4, 3, 0.0F);
+        this.minilight = new ModelRenderer(this, 0, 28);
+        this.minilight.mirror = true;
+        this.minilight.setRotationPoint(0.5F, -7.0F, 4.5F);
+        this.minilight.addBox(-4.0F, 0.0F, 0.0F, 8, 4, 0, 0.0F);
         this.head.addChild(this.Bottem);
         this.head.addChild(this.Line);
         this.head.addChild(this.headChild_2);
@@ -127,11 +139,16 @@ public class ModelSentry extends ModelBase {
         this.head.addChild(this.headChild_1);
         this.head.addChild(this.headChild);
         this.head.addChild(this.LineSquare);
+        this.head.addChild(this.minihead);
+        this.head.addChild(this.minilight);
     }
 
     @Override
     public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5) { 
-        this.legbase_1.render(f5);
+    	
+    	this.minihead.isHidden = this.minilight.isHidden = !((EntitySentry)entity).isMini();
+    	
+    	this.legbase_1.render(f5);
         this.foot4.render(f5);
         this.leg1.render(f5);
         this.leg4.render(f5);
@@ -141,11 +158,23 @@ public class ModelSentry extends ModelBase {
         this.foot2.render(f5);
         this.backleg2.render(f5);
         this.main.render(f5);
-        this.head.render(f5);
         this.legbase.render(f5);
         this.foot1.render(f5);
         this.leg3.render(f5);
         this.backleg2_1.render(f5);
+        GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+				GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
+				GlStateManager.DestFactor.ZERO);
+		if (((EntitySentry)entity).isMini()) {
+			int i = 0xFFffff;
+	        int j = i % 65536;
+	        int k = i / 65536;
+	        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
+		}
+        this.head.render(f5);
+        GlStateManager.disableBlend();
+        
     }
 
     /**
@@ -158,9 +187,9 @@ public class ModelSentry extends ModelBase {
     }
     
     @Override
-	public void setRotationAngles(float p_78087_1_, float p_78087_2_, float p_78087_3_, float p_78087_4_,
-			float p_78087_5_, float p_78087_6_, Entity entityIn) {
-		this.head.rotateAngleY = p_78087_4_ / (180F / (float) Math.PI);
-		this.head.rotateAngleX = p_78087_5_ / (180F / (float) Math.PI);
+	public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
+		this.head.rotateAngleY = netHeadYaw / (180F / (float) Math.PI);
+		this.head.rotateAngleX = headPitch / (180F / (float) Math.PI);
+		this.minilight.rotateAngleY = ageInTicks / 2;
 	}
 }

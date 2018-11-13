@@ -18,13 +18,19 @@ import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.decoration.ItemWearable;
@@ -55,6 +61,16 @@ public class ItemBackpack extends ItemFromData {
 		});
 	}
 
+	@Override
+	public boolean showDurabilityBar(ItemStack stack) {
+		return stack.getTagCompound().getShort("Cooldown") > 0;
+	}
+
+	@Override
+	public double getDurabilityForDisplay(ItemStack stack) {
+		return (double)stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack);
+	}
+	
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
@@ -87,7 +103,15 @@ public class ItemBackpack extends ItemFromData {
     public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
         return EntityEquipmentSlot.CHEST;
     }
+    
+    public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
+		return stack.getTagCompound().getShort("Cooldown") == 0 ? ItemFromData.getData(stack).getInt(PropertyType.WEAR) : 0;
+	}
 	
+    public int getCooldown(ItemStack stack) {
+    	return 1200;
+    }
+
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {
@@ -102,7 +126,9 @@ public class ItemBackpack extends ItemFromData {
 						player.heal(heal/4f);
 				}
 			}
-			
+			if (itemStack.getTagCompound().getShort("Cooldown") > 0) {
+				itemStack.getTagCompound().setShort("Cooldown", (short) (itemStack.getTagCompound().getShort("Cooldown") - 1));
+			}
 		}
 	}
 	
@@ -111,4 +137,28 @@ public class ItemBackpack extends ItemFromData {
         return super.canApplyAtEnchantingTable(stack, enchantment) 
         		|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR || enchantment.type == EnumEnchantmentType.WEARABLE;
     }
+	
+	@Override
+	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
+		if (!world.isRemote)
+			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
+		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+	}
+	
+	public static ItemStack getBackpack(EntityLivingBase living) {
+		if (living.hasCapability(TF2weapons.INVENTORY_CAP, null) && living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2).getItem() instanceof ItemBackpack) {
+			return living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2);
+		}
+		if (living instanceof EntityTF2Character) {
+			ItemStackHandler loadout = ((EntityTF2Character)living).loadout;
+			for (int i = 0; i < loadout.getSlots(); i++) {
+				if (loadout.getStackInSlot(i).getItem() instanceof ItemBackpack)
+					return loadout.getStackInSlot(i);
+			}
+		}
+		if (living.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemBackpack)
+			return living.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+		else
+			return ItemStack.EMPTY;
+	}
 }

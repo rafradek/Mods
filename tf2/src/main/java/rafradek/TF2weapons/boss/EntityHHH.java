@@ -35,6 +35,7 @@ import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.building.EntitySentry;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
@@ -70,6 +71,7 @@ public class EntityHHH extends EntityTF2Boss {
 			}
         	
         }));
+		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntitySentry>(this, EntitySentry.class,2, false,false, null));
 		/*this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false, new Class[0]));
         this.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,2, false,false,new Predicate<EntityLivingBase>(){
 
@@ -88,7 +90,7 @@ public class EntityHHH extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(105);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.32D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(13D);
 
 	}
@@ -125,7 +127,7 @@ public class EntityHHH extends EntityTF2Boss {
 			if(this.begin==0){
 				this.setNoAI(false);
 			}
-			if(this.getAttackTarget()!=null && this.getAttackTarget().getActivePotionEffect(TF2weapons.it)==null)
+			if(this.getAttackTarget()!=null && !(this.getAttackTarget() instanceof EntitySentry) && this.getAttackTarget().getActivePotionEffect(TF2weapons.it)==null)
 				this.setAttackTarget(null);
 			this.scareTick--;
 			if(this.getAttackTarget()==null && this.ticksExisted%5==0){
@@ -134,7 +136,7 @@ public class EntityHHH extends EntityTF2Boss {
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return (input instanceof EntityTF2Character || input instanceof EntityPlayer) && getDistanceSqToEntity(input)<600
+						return (input instanceof EntityTF2Character || input instanceof EntityPlayer || input == getRevengeTarget()) && getDistanceSqToEntity(input)<600
 								&& EntityAITarget.isSuitableTarget(EntityHHH.this, input, false, false);
 					}
 					

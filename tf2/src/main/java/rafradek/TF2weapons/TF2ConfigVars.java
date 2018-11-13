@@ -38,6 +38,7 @@ public class TF2ConfigVars {
 	public static String spawnOres;
 	public static String naturalCheck;
 	public static String biomeCheck;
+	public static int batchDamage;
 	public static float damageMultiplier;
 	public static float healthScale;
 	public static boolean dynamicLights;
@@ -69,6 +70,10 @@ public class TF2ConfigVars {
 	public static boolean fastBuildEngineer;
 	public static boolean longDurationBanner;
 	public static boolean oldDispenser;
+	public static boolean scaleAttributes;
+	public static float worldScale;
+	public static float hatMercenaryMult;
+	
 	
 	public static Map<Class<? extends EntityLiving>, Integer> spawnRate;
 
@@ -99,6 +104,7 @@ public class TF2ConfigVars {
 		fastItemCooldown = conf.getBoolean("Fast item cooldown", "adaption", true, "Sandman balls and cleavers recover faster than normal");
 		freeUseItems = conf.getBoolean("Free use items", "adaption", false, "Throwable and consumable items are free to use");
 		longDurationBanner = conf.getBoolean("Long duration banner", "adaption", true, "Banner buffs build longer and last longer");
+		worldScale = conf.getFloat("World scale", "adaption", 0.9f, 0f, Float.MAX_VALUE, "How many meters long minecraft block is");
 		boolean old = conf.hasKey("gameplay", "Fast metal production");
 		if (old) {
 			conf.moveProperty("gameplay", "TF2 - Minecraft health translation", "adaption");
@@ -138,17 +144,22 @@ public class TF2ConfigVars {
 		}, "Entity IDs that should not be considered hostile");
 		
 		enableUdp = conf.getBoolean("Enable UDP (experimental)", "gameplay", false, "");
+		batchDamage = getIndexSelected(conf.get("gameplay", "Attack invulnerability period", "Ignore", "Ignore, respect, or batch damage dealt during mob invulnerability",
+				new String[] {"Ignore", "Batch", "Respect"}), 0);
 		
 		bossVolume = conf.getFloat("Boss volume (radius)", "sound volume", 4f, 0, 10, "Values above 1 increase sound radius only");
 		mercenaryVolume = conf.getFloat("Mercenary volume (radius)", "sound volume", 0.6f, 0, 10, "Values above 1 increase sound radius only");
 		gunVolume = conf.getFloat("Gun volume (radius)", "sound volume", 2f, 0, 10, "Applies only to players, values above 1 increase sound radius only");
+		
 		enchantedExplosion = conf.getBoolean("Enchanted blast jumping", "gameplay", true, "Strafing, no air resistance and reduced gravity when blast jumping");
 		dropAmmo = conf.getFloat("Ammo drop chance", "gameplay", 0.15f, 0f, 1f, "Chance of dropping ammo from non-TF2 hostile creature");
+		
 		speedMult = conf.getFloat("Mercenary speed multiplier", "mercenary", 0.8f, 0f, 2f, "Speed multiplier of mercenaries. Does not apply to owned mercenaries");
 		armorMult = conf.getFloat("Armored mercenary chance", "mercenary", 0.06f, 0f, 10f, "Base chance of armored mercenaries. Altered by difficulty level");
+		hatMercenaryMult = conf.getFloat("Hatted mercenary chance", "mercenary", 1f, 0f, 10f, "Base chance of hatted mercenaries. Altered by difficulty level");
 		maxMetalEngineer = conf.getInt("Engineer max metal", "mercenary", 500,0, Integer.MAX_VALUE, "Starting metal for engineers");
 		fastBuildEngineer = conf.getBoolean("Engineer fast build", "mercenary", true, "Should engineers build at extra speed");
-		
+		scaleAttributes = conf.getBoolean("Reduce vs player damage", "mercenary", true, "Reduce weapon effectiveness versus players");
 		old = conf.hasKey("gameplay", "Buildings use energy");
 		if (old) {
 			conf.moveProperty("gameplay", "Dispenser repair rate", "building");
@@ -209,4 +220,13 @@ public class TF2ConfigVars {
 			conf.save();
 	}
 
+	public static int getIndexSelected(Property prop, int def) {
+		if (prop.getValidValues() != null) {
+			for (int i = 0; i < prop.getValidValues().length; i++) {
+				if (prop.getString().equalsIgnoreCase(prop.getValidValues()[i]))
+					return i;
+			}
+		}
+		return def;
+	}
 }

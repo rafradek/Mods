@@ -12,16 +12,17 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.building.ItemPDA;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemUsable;
 
-public class AustraliumRecipe implements IRecipe {
+public class AustraliumRecipe implements IRecipe, IRecipeTF2 {
 
 	public static final ItemStack ITEM = ItemFromData.getNewStack("minigun");
 
 	static {
 		ITEM.getTagCompound().setBoolean("Australium", true);
-		ITEM.getTagCompound().setBoolean("Strange", true);
 	}
 
 	@Override
@@ -39,7 +40,8 @@ public class AustraliumRecipe implements IRecipe {
 						return false;
 				} else if (stack2.isEmpty() && (stack.getItem() instanceof ItemTool
 						|| stack.getItem() instanceof ItemSword || stack.getItem() instanceof ItemBow
-						|| stack.getItem() instanceof ItemUsable || stack.getItem() instanceof ItemCloak))
+						|| stack.getItem() instanceof ItemUsable || stack.getItem() instanceof ItemCloak
+						|| stack.getItem() instanceof ItemPDA || stack.getItem() instanceof ItemBackpack))
 					stack2 = stack;
 				else
 					return false;
@@ -112,6 +114,12 @@ public class AustraliumRecipe implements IRecipe {
 	public boolean canFit(int width, int height) {
 		// TODO Auto-generated method stub
 		return width >= 3 && height >=3;
+	}
+
+	@Override
+	public ItemStack getSuggestion(int slot) {
+		// TODO Auto-generated method stub
+		return slot == 4 ? new ItemStack(TF2weapons.itemTF2, 1, 9) : new ItemStack(TF2weapons.itemTF2, 1, 2);
 	}
 
 }

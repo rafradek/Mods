@@ -6,6 +6,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
@@ -75,13 +76,12 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		attackDirect(entityHit,1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false);
+		attackDirect(entityHit,1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false, mop.hitVec);
 	}
 
 	@Override
 	public void spawnParticles(double x, double y, double z) {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	public boolean isPushable() {

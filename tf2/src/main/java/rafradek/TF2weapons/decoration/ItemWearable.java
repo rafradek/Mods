@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
@@ -132,7 +133,7 @@ public class ItemWearable extends ItemFromData {
 	}
 	public void onUpdateWearing(ItemStack stack, World par2World, EntityLivingBase living) {
 		if(!living.world.isRemote && living.deathTime == 18 && TF2Attribute.getModifier("Explode Death", stack, 0, living) != 0){
-			TF2Explosion explosion = new TF2Explosion(living.world, living, living.posX, living.posY + 0.5, living.posZ, 5, null, 0,3);
+			TF2Explosion explosion = new TF2Explosion(living.world, living, living.posX, living.posY + 0.5, living.posZ, 5, null, 0,3, SoundEvents.ENTITY_GENERIC_EXPLODE);
 			// System.out.println("ticks: "+this.ticksExisted);
 			explosion.isFlaming = false;
 			explosion.isSmoking = true;

@@ -75,7 +75,7 @@ public class ItemTarget extends Item {
                         {
                             worldIn.setBlockToAir(blockpos);
                             worldIn.setBlockToAir(blockpos1);
-                            EntityTarget entityarmorstand = new EntityTarget(worldIn, d0 + 0.5D, d1, d2 + 0.5D);
+                            EntityTarget entityarmorstand = new EntityTarget(worldIn, d0 + 0.5D, d1, d2 + 0.5D, player.capabilities.isCreativeMode);
                             float f = (float)MathHelper.floor((MathHelper.wrapDegrees(player.rotationYaw - 180.0F) + 22.5F) / 45.0F) * 45.0F;
                             entityarmorstand.setLocationAndAngles(d0 + 0.5D, d1, d2 + 0.5D, f, 0.0F);
                             this.applyRandomRotations(entityarmorstand, worldIn.rand);

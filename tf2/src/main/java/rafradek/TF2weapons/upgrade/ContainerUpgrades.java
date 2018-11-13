@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.upgrade;
 
+import java.util.ArrayList;
+
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -28,9 +30,10 @@ public class ContainerUpgrades extends Container {
 	public EntityPlayer player;
 	public int currentRecipe = -1;
 	public TileEntityUpgrades station;
-	public boolean[] applicable = new boolean[TileEntityUpgrades.UPGRADES_COUNT];
-	public int[] transactions = new int[TileEntityUpgrades.UPGRADES_COUNT];
-	public int[] transactionsCost = new int[TileEntityUpgrades.UPGRADES_COUNT];
+	public ArrayList<TF2Attribute> applicable;// = new boolean[TileEntityUpgrades.UPGRADES_COUNT];
+	public int[] transactions;// = new int[TileEntityUpgrades.UPGRADES_COUNT];
+	public int[] transactionsCost;// = new int[TileEntityUpgrades.UPGRADES_COUNT];
+	//public ArrayList<Integer> guiShowId = new ArrayList<>();
 
 	public ContainerUpgrades(EntityPlayer player, InventoryPlayer playerInventory, TileEntityUpgrades station,
 			World worldIn, BlockPos posIn) {
@@ -38,13 +41,17 @@ public class ContainerUpgrades extends Container {
 		this.player = player;
 		this.world = worldIn;
 		this.pos = posIn;
+		this.applicable = new ArrayList<>();
+		transactions = new int[0];
+		transactionsCost = new int[0];
 		this.addSlotToContainer(new Slot(upgradedItem, 0, 108, 8) {
 			@Override
 			public void onSlotChanged() {
 				super.onSlotChanged();
-				transactions = new int[TileEntityUpgrades.UPGRADES_COUNT];
-				transactionsCost = new int[TileEntityUpgrades.UPGRADES_COUNT];
 				refreshData();
+				transactions = new int[applicable.size()];
+				transactionsCost = new int[applicable.size()];
+				
 			}
 
 			@Override
@@ -71,10 +78,13 @@ public class ContainerUpgrades extends Container {
 	}
 
 	public void refreshData() {
-
-		for (int i = 0; i < TileEntityUpgrades.UPGRADES_COUNT; i++)
-			this.applicable[i] = !this.upgradedItem.getStackInSlot(0).isEmpty() && station.attributeList[i] != null
-					&& station.attributeList[i].canApply(this.upgradedItem.getStackInSlot(0));
+		this.applicable.clear();
+		for (int i = 0; i < this.station.attributeList.size(); i++) {
+			
+			if (!this.upgradedItem.getStackInSlot(0).isEmpty() && station.attributeList.get(i) != null
+					&& station.attributeList.get(i).canApply(this.upgradedItem.getStackInSlot(0)))
+				this.applicable.add(station.attributeList.get(i));
+		}
 	}
 
 	@Override
@@ -142,10 +152,10 @@ public class ContainerUpgrades extends Container {
 		
 		int expPoints = TF2Util.getExperiencePoints(playerIn);
 		if (id >= 0) {
-			int idEnch = Math.min(TileEntityUpgrades.UPGRADES_COUNT - 1, Math.max(id / 2, 0));
+			int idEnch = Math.min(this.applicable.size() - 1, Math.max(id / 2, 0));
 			boolean adding = id % 2 == 0;
-			TF2Attribute attr = this.station.attributeList[idEnch].getAttributeReplacement(stack);
-			TF2Attribute attrorig = this.station.attributeList[idEnch];
+			TF2Attribute attr = this.applicable.get(idEnch).getAttributeReplacement(stack);
+			TF2Attribute attrorig = this.applicable.get(idEnch);
 			if (attr == null || stack.isEmpty() || !attr.canApply(stack))
 				return false;
 	
@@ -154,8 +164,8 @@ public class ContainerUpgrades extends Container {
 			
 			
 			int currLevel = attr.calculateCurrLevel(stack);
-			if (adding && applicable[idEnch] && currLevel < this.station.attributes.get(attrorig)
-					&& expPoints >= cost) {
+			if (adding && currLevel < this.station.attributes.get(attrorig)
+					&& expPoints >= cost && cost + stacktag.getInteger("TotalSpent") <= TF2Attribute.getMaxExperience(stack, playerIn)) {
 				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
 				String key = String.valueOf(attr.id);
 	
@@ -197,7 +207,7 @@ public class ContainerUpgrades extends Container {
 				stacktag.setInteger("TotalSpent", stacktag.getInteger("TotalSpent") - cost);
 				
 				if (currLevel == attr.numLevels && attr.numLevels > 1)
-					stacktag.setInteger("LastUpgradesCost", (int) (stacktag.getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 2 : 1.5f)));
+					stacktag.setInteger("LastUpgradesCost", (int) (stacktag.getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 3 : 1.5f)));
 				//stacktag.setInteger("TotalCostReal", stacktag.getInteger("TotalCostReal") - this.transactionsCost[idEnch]);
 				TF2Util.setExperiencePoints(playerIn, expPoints + cost);
 				this.transactions[idEnch]=0;
@@ -207,6 +217,7 @@ public class ContainerUpgrades extends Container {
 		else if (id == -1) {
 			 if (stacktag.hasKey("AttributesOrig") && stacktag.getInteger("TotalSpent") > 0) {
 					stacktag.setTag("Attributes", stacktag.getTag("AttributesOrig").copy());
+					stacktag.setInteger("LastUpgradesCost", 0);
 					TF2Util.setExperiencePoints(playerIn, expPoints + stacktag.getInteger("TotalSpent"));
 					stacktag.setInteger("TotalSpent", 0);
 					stacktag.setInteger("TotalCost", 0);

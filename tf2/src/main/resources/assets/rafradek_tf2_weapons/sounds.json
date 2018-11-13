@@ -31,6 +31,14 @@
     	"rafradek_tf2_weapons:misc/crit_hit_mini5"
     ]
   },
+  "weapon.explosion": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/explode1",
+    	"rafradek_tf2_weapons:weapon/explode2",
+    	"rafradek_tf2_weapons:weapon/explode3"
+    ]
+  },
   "weapon.fire.shotgun": {
     "category": "neutral",
     "sounds": [
@@ -705,6 +713,14 @@
     	"rafradek_tf2_weapons:weapon/rocket_directhit_shoot_crit"
     ]
   },
+  "weapon.explosion.directhit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_directhit_explode1",
+    	"rafradek_tf2_weapons:weapon/rocket_directhit_explode2",
+    	"rafradek_tf2_weapons:weapon/rocket_directhit_explode3"
+    ]
+  },
   "weapon.fire.rocketjumper": {
     "category": "neutral",
     "sounds": [
@@ -715,6 +731,12 @@
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/rocket_shot_crit"
+    ]
+  },
+  "weapon.explosion.rocketjumper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_jumper_explode1"
     ]
   },
   "weapon.fire.stickyjumper": {
@@ -825,6 +847,12 @@
     	"rafradek_tf2_weapons:weapon/loose_cannon_ball_impact"
     ]
   },
+  "weapon.explosion.loosecannon": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loose_cannon_explode"
+    ]
+  },
   "weapon.fire.disciplinary": {
     "category": "neutral",
     "sounds": [
@@ -871,6 +899,14 @@
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/airstrike_fire_crit"
+    ]
+  },
+  "weapon.explosion.airstrike": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/airstrike_small_explosion_01",
+    	"rafradek_tf2_weapons:weapon/airstrike_small_explosion_02",
+    	"rafradek_tf2_weapons:weapon/airstrike_small_explosion_03"
     ]
   },
   "weapon.off.deadringer": {
@@ -921,6 +957,127 @@
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/bow_shoot_pull_reverse"
+    ]
+  },
+  "weapon.fire.dragonsfury": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragons_fury_shoot"
+    ]
+  },
+  "weapon.fire.dragonsfury.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragons_fury_shoot_crit"
+    ]
+  },
+  "weapon.hit.dragonsfury": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragons_fury_impact"
+    ]
+  },
+  "weapon.hit.dragonsfury.bonus": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dragons_fury_impact_bonus_damage"
+    ]
+  },
+  "weapon.fire.bison": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bison_main_shot_01",
+    	"rafradek_tf2_weapons:weapon/bison_main_shot_02"
+    ]
+  },
+  "weapon.fire.bison.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bison_main_shot_crit"
+    ]
+  },
+  "weapon.reload.bison": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bison_reload"
+    ]
+  },
+  "weapon.hit.bison": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bison_projectile_impact_flesh"
+    ]
+  },
+  "weapon.fire.shortstop": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/short_stop_shoot"
+    ]
+  },
+  "weapon.fire.shortstop.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/short_stop_shoot_crit"
+    ]
+  },
+  "weapon.reload.shortstop": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bison_reload"
+    ]
+  },
+  "weapon.fire.sydneysleeper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_sydneysleeper_shoot"
+    ]
+  },
+  "weapon.fire.sydneysleeper.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/sniper_sydneysleeper_shoot_crit"
+    ]
+  },
+  "weapon.hit.gunslinger": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/gunslinger_swing"
+    ]
+  },
+  "weapon.hit.gunslinger.special": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/gunslinger_three_hit"
+    ]
+  },
+  "weapon.charge.thermalthruster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_pack_boosters_charge"
+    ]
+  },
+  "weapon.fire.thermalthruster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_pack_boosters_fire"
+    ]
+  },
+  "weapon.shutdown.thermalthruster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_pack_boosters_shutdown"
+    ]
+  },
+  "weapon.loop.thermalthruster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_pack_boosters_loop"
+    ]
+  },
+  "weapon.razorback": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/spy_shield_break"
     ]
   },
   "weapon.hit.cleaver": {

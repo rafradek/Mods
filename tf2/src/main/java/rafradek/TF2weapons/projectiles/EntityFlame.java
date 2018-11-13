@@ -21,6 +21,7 @@ public class EntityFlame extends EntityProjectileBase {
 
 	public EntityFlame(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
 		super(p_i1756_1_, p_i1756_2_, hand);
+		this.addVelocity(p_i1756_2_.motionX, p_i1756_2_.motionY, p_i1756_2_.motionZ);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -43,7 +44,7 @@ public class EntityFlame extends EntityProjectileBase {
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		if (!this.hitEntities.contains(entityHit)) {
+		if (!this.world.isRemote && !this.hitEntities.contains(entityHit)) {
 			this.hitEntities.add(entityHit);
 			int critical = TF2Util.calculateCritPost(entityHit, shootingEntity, this.getCritical(),
 					this.usedWeapon);
@@ -60,10 +61,10 @@ public class EntityFlame extends EntityProjectileBase {
 
 			if (TF2Util.dealDamage(entityHit, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
 					TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this).setFireDamage())
-					&& entityHit.ticksExisted - entityHit.getEntityData().getInteger("LastHitBurn") > 18
-					|| entityHit.getEntityData().getInteger("LastHitBurn") > entityHit.ticksExisted) {
+					&& (entityHit.ticksExisted - entityHit.getEntityData().getInteger("LastHitBurn") > 1
+					|| entityHit.getEntityData().getInteger("LastHitBurn") > entityHit.ticksExisted)) {
 				entityHit.getEntityData().setInteger("LastHitBurn", entityHit.ticksExisted);
-				TF2Util.igniteAndAchievement(entityHit, this.shootingEntity, (int) (6 * TF2Attribute.getModifier("Burn Time", this.usedWeapon, 1, shootingEntity) + 1));
+				TF2Util.igniteAndAchievement(entityHit, this.shootingEntity, 1, TF2Attribute.getModifier("Burn Time", this.usedWeapon, 1, shootingEntity));
 			}
 
 		}

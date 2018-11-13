@@ -1,6 +1,13 @@
 package rafradek.TF2weapons.message;
 
+import java.util.ArrayList;
+
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -21,7 +28,27 @@ public class TF2ProjectileHandler implements IMessageHandler<TF2Message.Predicti
 
 			@Override
 			public void run() {
-				shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList.add(message);
+				//shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList.poll();
+				message.target = new ArrayList<>();
+				if (message.readData != null)
+					for (Object[] obj : message.readData) {
+						RayTraceResult result;
+						
+						if (obj[0] != null) {
+							Entity entity = shooter.world.getEntityByID((int)obj[0]);
+							Vec3d hit = new Vec3d((Byte)obj[6] / 16D + entity.posX, (Byte)obj[7] / 16D + entity.posY, (Byte)obj[8] / 16D + entity.posZ);
+							result = new RayTraceResult(entity, hit);
+							result.hitInfo = new float[] { (Boolean) obj[1] ? 1f : 0f, (Float)obj[2]};
+						}
+						else {
+							BlockPos pos = new BlockPos((Integer)obj[3], (Integer)obj[4], (Integer)obj[5]);
+							Vec3d hit = new Vec3d((Byte)obj[6] / 16D + pos.getX(), (Byte)obj[7] / 16D + pos.getY(), (Byte)obj[8] / 16D + pos.getZ());
+							result = new RayTraceResult(hit, EnumFacing.getFront((Byte)obj[1]), pos);
+							result.hitInfo = new float[] { (Float)obj[2]};
+						}
+						message.target.add(result);
+					}
+				shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList[(message.state == 1 ? 0 : 2) + message.hand.ordinal()] = message;
 				message.time=shooter.world.getTotalWorldTime();
 			}
 

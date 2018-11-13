@@ -24,13 +24,17 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import rafradek.TF2weapons.EnumTF2Particles;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -57,9 +61,10 @@ public class TF2Explosion extends Explosion {
 	private final Vec3d position;
 	private float harvestDamage;
 	private float pushScale;
-
+	private SoundEvent sound;
+	
 	public TF2Explosion(World world, Entity exploder, double x, double y, double z, float size, Entity direct,
-			float harvestDamage,float pushScale) {
+			float harvestDamage,float pushScale, SoundEvent sound) {
 		super(world, exploder, x, y, z, size, false, true);
 		this.explosionRNG = new Random();
 		this.affectedBlockPositions = Lists.newArrayList();
@@ -74,6 +79,7 @@ public class TF2Explosion extends Explosion {
 		this.directHit = direct;
 		this.harvestDamage = harvestDamage;
 		this.pushScale=pushScale;
+		this.sound = sound;
 	}
 
 	@Override
@@ -229,13 +235,14 @@ public class TF2Explosion extends Explosion {
 	 */
 	@Override
 	public void doExplosionB(boolean spawnParticles) {
-		this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ,
-				SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F,
-				(1.0F + (this.world.rand.nextFloat() - this.world.rand.nextFloat()) * 0.2F) * 0.7F);
+		if (sound != null) {
+			this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ,
+					sound, SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F,
+					1.0F);
+		}
 
-		if (this.explosionSize >= 2.0F && this.isSmoking)
-			this.world.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE, this.explosionX, this.explosionY,
-					this.explosionZ, 1.0D, 0.0D, 0.0D, new int[0]);
+		if (this.isSmoking)
+			TF2Util.sendParticle(EnumTF2Particles.EXPLOSION, world, this.explosionX, this.explosionY, this.explosionZ, this.explosionSize, 0, 0, 1);
 		else
 			this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, this.explosionX, this.explosionY,
 					this.explosionZ, 1.0D, 0.0D, 0.0D, new int[0]);

@@ -75,7 +75,7 @@ public class ItemJar extends ItemProjectileWeapon {
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
-			if(!TF2ConfigVars.freeUseItems)
+			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
 			if (living instanceof EntityPlayer)
 				((EntityPlayer) living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? this.getFiringSpeed(stack, living)/50 : getData(stack).getInt(PropertyType.COOLDOWN));

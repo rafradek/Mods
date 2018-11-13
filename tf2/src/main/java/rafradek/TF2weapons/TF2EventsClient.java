@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
@@ -85,6 +86,7 @@ import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.decoration.GuiWearables;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.GuiContracts;
+import rafradek.TF2weapons.weapons.ItemBackpack;
 import rafradek.TF2weapons.weapons.ItemCloak;
 import rafradek.TF2weapons.weapons.ItemJetpack;
 import rafradek.TF2weapons.weapons.ItemMedigun;
@@ -109,6 +111,7 @@ public class TF2EventsClient {
 	public static int ticksPressedReload;
 	private static FloatBuffer brightnessBuffer = GLAllocation.createDirectFloatBuffer(4);
 	private static final DynamicTexture TEXTURE_BRIGHTNESS = new DynamicTexture(16, 16);
+	public static TextureAtlasSprite skinIcon;
 	
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
@@ -127,7 +130,7 @@ public class TF2EventsClient {
 				
 		}
 		
-		
+		skinIcon = event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "misc/skin"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/ammo_belt_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/refill_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_0"));
@@ -143,7 +146,7 @@ public class TF2EventsClient {
 		if (minecraft.currentScreen == null) {
 			ItemStack stack = minecraft.player.getHeldItemMainhand();
 			if (minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
-				ItemStack chest = minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
+				ItemStack chest = ItemBackpack.getBackpack(minecraft.player);
 				if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
 						(ItemToken.allowUse(minecraft.player, "scout") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))
 					&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
@@ -156,7 +159,7 @@ public class TF2EventsClient {
 					
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 				}
-				else if (chest.getItem() instanceof ItemJetpack 
+				else if (chest.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack", chest, 0f, minecraft.player) >= 2f
 						&& ((ItemJetpack)chest.getItem()).canActivate(chest, minecraft.player)) {
 					//((ItemJetpack)chest.getItem()).activateJetpack(chest, minecraft.player, true);
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(30));
@@ -269,13 +272,15 @@ public class TF2EventsClient {
 			if (item != null && item.getItem() instanceof ItemUsable && oldState != (this.getActionType(attackKeyDown, altAttackKeyDown) & 3)
 					&& item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (state & 2)) {
-					cap.stateDo(player, item);
+					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getAltFiringSpeed(item, player) / 2);
+					cap.stateDo(player, item, EnumHand.MAIN_HAND);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 2) > (state & 2)) {
 					((ItemUsable) item.getItem()).endUse(item, player, player.world, oldState, state & 3);
 				}
 				if ((oldState & 1) < (state & 1)) {
-					cap.stateDo(player, item);
+					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getFiringSpeed(item, player) / 2);
+					cap.stateDo(player, item, EnumHand.MAIN_HAND);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 1) > (state & 1)) {
 					((ItemUsable) item.getItem()).endUse(item, player, player.world, oldState, state & 3);
@@ -293,7 +298,7 @@ public class TF2EventsClient {
 		if (event.phase == TickEvent.Phase.END) {
 			
 			if (minecraft.player != null && minecraft.currentScreen != null) {
-				WeaponsCapability.get(minecraft.player).fire1Cool=Math.max(WeaponsCapability.get(minecraft.player).fire1Cool, 250);
+				WeaponsCapability.get(minecraft.player).setPrimaryCooldown(Math.max(WeaponsCapability.get(minecraft.player).getPrimaryCooldown(), 250));
 			}
 			
 			/*
@@ -331,7 +336,15 @@ public class TF2EventsClient {
 	public void entityConstructing(final EntityEvent.EntityConstructing event) {
 
 		if (event.getEntity() instanceof EntityPlayerSP) {
-			//System.out.println("Constructing player");
+			int[][] tex = new int[1][skinIcon.getIconWidth()*skinIcon.getIconHeight()];
+			
+			for (int x = 0; x < skinIcon.getIconWidth(); x++) {
+				for (int y = 0; y < skinIcon.getIconHeight(); y++) {
+					tex[0][x+skinIcon.getIconWidth()*y] = ((EntityLivingBase) event.getEntity()).getRNG().nextInt();
+				}
+			}
+			
+			TextureUtil.uploadTextureMipmap(tex, skinIcon.getIconWidth(), skinIcon.getIconHeight(), skinIcon.getOriginX(), skinIcon.getOriginY(), false, false);
 		}
 	}
 	
@@ -354,7 +367,7 @@ public class TF2EventsClient {
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
 		boolean swap = TF2ConfigVars.swapAttackButton && !(stack.getItem() instanceof ItemMeleeWeapon);
 		boolean allow = true;
-		if (Minecraft.getMinecraft().objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK ) {
+		if (Minecraft.getMinecraft().objectMouseOver != null && Minecraft.getMinecraft().objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK ) {
 			BlockPos pos = Minecraft.getMinecraft().objectMouseOver.getBlockPos();
 			if (ClientProxy.interactingBlocks.contains(Minecraft.getMinecraft().world.getBlockState(pos).getBlock().getClass()))
 				allow = false;
@@ -527,7 +540,7 @@ public class TF2EventsClient {
 		}
 		if (event.getType() == ElementType.HOTBAR) {
 			ItemStack pda = TF2Util.getFirstItem(Minecraft.getMinecraft().player.inventory, stackL -> stackL.getItem() instanceof ItemPDA);
-			if (TF2EventsCommon.sentryView != null && !pda.isEmpty() && pda.hasTagCompound()) {
+			if (TF2EventsCommon.sentryView != null && !pda.isEmpty() && pda.hasTagCompound() && pda.getTagCompound().getBoolean("ShowHud")) {
 				GL11.glDisable(GL11.GL_DEPTH_TEST);
 				GL11.glDepthMask(false);
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -839,6 +852,9 @@ public class TF2EventsClient {
 	public void renderHand(RenderHandEvent event) {
 
 		EntityPlayer player=Minecraft.getMinecraft().player;
+		
+		
+		
 		if (!player.getHeldItemMainhand().isEmpty()){
 			ClientProxy.renderCritGlow=TF2Util.calculateCritPre(player.getHeldItemMainhand(),player)*16+TF2Util.getTeamColorNumber(player);
 		}

@@ -6,9 +6,10 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemCrate;
+import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
 
-public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
 
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -77,6 +78,11 @@ public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistr
 	public boolean canFit(int width, int height) {
 		// TODO Auto-generated method stub
 		return width*height>=2;
+	}
+
+	@Override
+	public ItemStack getSuggestion(int slot) {
+		return slot == 0 ? new ItemStack(TF2weapons.itemTF2, 1, 7) : (slot == 1 ? ItemFromData.getNewStack("crate1") : ItemStack.EMPTY);
 	}
 
 }

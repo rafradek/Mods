@@ -21,6 +21,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -45,7 +46,7 @@ import rafradek.TF2weapons.weapons.WeaponsCapability;
 public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay {
 
 	private static final String[] VIEWS = new String[] {"SentryView", "DispenserView", "TeleporterAView", "TeleporterBView"};
-	private static final String[] GUI_BUILD_NAMES = new String[] {"gui.build.sentry", "gui.build.dispenser", "gui.build.entrance", "gui.build.exit"};
+	private static final String[] GUI_BUILD_NAMES = new String[] {"gui.build.sentry", "gui.build.dispenser", "gui.build.entrance", "gui.build.exit", "gui.build.disposable"};
 	
 	public ItemPDA() {
 		this.setMaxStackSize(1);
@@ -58,7 +59,9 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 
 	@Override
 	public void onSlotSelection(ItemStack stack, EntityPlayer player, int slot) {
-		if (!player.world.isRemote && TF2PlayerCapability.get(player).carrying == null && slot < 4) {
+		if (!player.world.isRemote && TF2PlayerCapability.get(player).carrying == null && slot < 5) {
+			if (slot == 4 && TF2PlayerCapability.get(player).calculateMaxSentries() <= 0)
+				return;
 			if (!PlayerPersistStorage.get(player).hasBuilding(slot)) {
 				int metal = EntityBuilding.getCost(slot, TF2Util.getFirstItem(player.inventory, stackL ->{
 					return TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1;
@@ -134,9 +137,14 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			if (facing == EnumFacing.UP && iblockstate.getBlock() instanceof BlockFence)
 				d0 = 0.5D;
 			
+			boolean disposable = stack.getTagCompound().getByte("Building") == 5;
+			
 			int id = 16 + stack.getTagCompound().getByte("Building") * 2;
 			if (stack.getTagCompound().getByte("Building") == 4)
 				id -= 2;
+			else if (disposable)
+				id = 18;
+			
 			EntityBuilding entity = (EntityBuilding) ItemMonsterPlacerPlus.spawnCreature(playerIn, worldIn, id, pos.getX() + 0.5D, pos.getY() + d0,
 					pos.getZ() + 0.5D, TF2PlayerCapability.get(playerIn).carrying);
 
@@ -145,7 +153,8 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				entity.setOwner(playerIn);
 				if (entity instanceof EntitySentry) {
 					((EntitySentry)entity).attackRateMult = TF2Attribute.getModifier("Sentry Fire Rate", stack, 1, playerIn);
-					if (!TF2Util.getFirstItem(playerIn.inventory, 
+					((EntitySentry)entity).setHeat((int) TF2Attribute.getModifier("Piercing", stack, 0, playerIn));
+					if (disposable || !TF2Util.getFirstItem(playerIn.inventory, 
 							stackL -> stackL.getItem() instanceof ItemWrench && TF2Attribute.getModifier("Weapon Mode", stackL, 0, playerIn) == 2).isEmpty()) {
 						((EntitySentry)entity).setMini(true);
 						if(entity.getLevel() > 1)
@@ -166,9 +175,12 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				entity.renderYawOffset = playerIn.rotationYawHead;
 				entity.rotationYawHead = playerIn.rotationYawHead;
 				entity.fromPDA = true;
+				if (stack.getTagCompound().getByte("Building") == 5 && entity.getDisposableID() == -1)
+					entity.setDisposableID(PlayerPersistStorage.get(playerIn).disposableBuildings.size());
+				
 				if (entity instanceof EntityTeleporter)
 					((EntityTeleporter) entity).setExit(stack.getTagCompound().getByte("Building") == 4);
-				PlayerPersistStorage.get(playerIn).setBuilding(entity);
+				PlayerPersistStorage.get(playerIn).setBuilding(entity,TF2PlayerCapability.get(playerIn).calculateMaxSentries());
 				TF2PlayerCapability.get(playerIn).carrying = null;
 				if (!playerIn.capabilities.isCreativeMode)
 					WeaponsCapability.get(playerIn).consumeMetal(EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1, 
@@ -191,8 +203,17 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 	}
 
 	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
+		if (living.isSneaking()) {
+			living.getHeldItem(hand).getTagCompound().setBoolean("ShowHud", !living.getHeldItem(hand).getTagCompound().getBoolean("ShowHud"));
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+		}
+		return new ActionResult<ItemStack>(EnumActionResult.FAIL, living.getHeldItem(hand));
+	}
+	
+	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution) {
-		if (!stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0) {
+		if (!stack.hasTagCompound() || (stack.getTagCompound().getByte("Building") == 0)) {
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blueprintTexture);
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
@@ -201,21 +222,22 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 			GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
 			boolean hasTag = stack.hasTagCompound();
-			for (int i = 0; i < 4; i++) {
+			int buildCount = TF2Attribute.getModifier("Extra Sentry", stack, 0, player) > 0 ? 5 : 4;
+			for (int i = 0; i < buildCount; i++) {
 				int cost = EntityBuilding.getCost(i, TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench));
-				if (hasTag && stack.getTagCompound().hasKey(VIEWS[i])) {
+				if (hasTag && i < 4 && stack.getTagCompound().hasKey(VIEWS[i])) {
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 64, 64, 64);
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-132 + i * 72, resolution.getScaledHeight()/2+12, 208, 64+i*48, 48, 48);
 				}
 				else if (WeaponsCapability.get(player).getMetal() >= cost){
 					//gui.drawString(gui.getFontRenderer(), gui.getFontRenderer().getStringWidth(Integer.toString(cost));
-					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, i*64, 0, 64, 64);
+					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, i == 4 ? 0 : i*64, 0, 64, 64);
 				}
 				else
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 0, 64, 64);
 				
 			}
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < buildCount; i++) {
 				int cost = EntityBuilding.getCost(i, TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench));
 				gui.drawString(gui.getFontRenderer(), Integer.toString(cost), resolution.getScaledWidth()/2 - 72 - 
 						gui.getFontRenderer().getStringWidth(Integer.toString(cost)) + i * 72, resolution.getScaledHeight()/2 - 8, 0xFFFFFFFF);

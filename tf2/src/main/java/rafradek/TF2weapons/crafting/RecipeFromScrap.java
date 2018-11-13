@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.ItemToken;
 
-public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
 
 	public boolean withToken;
 	
@@ -77,4 +77,13 @@ public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistr
 		return width * height >= 2;
 	}
 
+	@Override
+	public ItemStack getSuggestion(int slot) {
+		switch (slot) {
+		case 0: return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		case 1: return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		case 2: return new ItemStack(TF2weapons.itemToken, 1, 0);
+		default : return ItemStack.EMPTY;
+		}
+	}
 }

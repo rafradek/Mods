@@ -14,6 +14,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -216,5 +217,13 @@ public class EntitySpy extends EntityTF2Character {
 	
 	public int getClassIndex() {
 		return 8;
+	}
+	
+	public boolean canBecomeGiant() {
+		return false;
+	}
+	
+	public boolean isValidTarget(EntityLivingBase living) {
+		return super.isValidTarget(living) && !(living instanceof EntityBuilding && ((EntityBuilding)living).isSapped());
 	}
 }

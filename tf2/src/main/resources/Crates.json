@@ -103,5 +103,35 @@
 			"heater": 6,
 			"allfather": 13
 		}
+	},
+	"crate8": {
+		"Name": "Mann Co. Supply Crate #8",
+		"Class": "crate",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:crate",
+		"Cost": 1,
+		"Content":{
+			"huntsman": 7,
+			"gunsligner": 8,
+			"sydneysleeper": 7,
+			"righterousbison": 8,
+			"shortstop": 6,
+			"billhat": 13
+		}
+	},
+	"crate9": {
+		"Name": "Mann Co. Supply Crate #9",
+		"Class": "crate",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:crate",
+		"Cost": 1,
+		"Content":{
+			"kritzkrieg": 8,
+			"eyelander": 8,
+			"dragonsfury": 6,
+			"loosecannon": 7,
+			"widowmaker": 7,
+			"billhat": 13
+		}
 	}
 }

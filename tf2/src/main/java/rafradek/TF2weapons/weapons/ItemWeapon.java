@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
+import org.lwjgl.opengl.GL11;
+
 import com.google.common.collect.Multimap;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
@@ -14,6 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.IWeaponItem;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2DamageSource;
@@ -21,13 +24,24 @@ import rafradek.TF2weapons.TF2EventsClient;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.WeaponData;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityBuilding;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.characters.IEntityTF2;
 import rafradek.TF2weapons.characters.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -41,6 +55,7 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -75,7 +90,6 @@ public abstract class ItemWeapon extends ItemUsable {
 		super();
 		this.addPropertyOverride(new ResourceLocation("inhand"), new IItemPropertyGetter() {
 			@Override
-			@SideOnly(Side.CLIENT)
 			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
 				if (entityIn != null && inHand)
 					return 1;
@@ -89,6 +103,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		if (par5 && ((EntityLivingBase)par3Entity).getHeldItemMainhand() == par1ItemStack) {
 			WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
+			NBTTagCompound tag = par1ItemStack.getTagCompound();
 			if (TF2ConfigVars.randomCrits && !par2World.isRemote && cap.critTimeCool <= 0) {
 				cap.critTimeCool = 20;
 				if (this.rapidFireCrits(par1ItemStack) && this.hasRandomCrits(par1ItemStack, par3Entity)
@@ -100,6 +115,15 @@ public abstract class ItemWeapon extends ItemUsable {
 			}
 			if (TF2Attribute.getModifier("Kill Count", par1ItemStack, 0, null)!=0){
 				par1ItemStack.getTagCompound().setInteger("Heads", cap.getHeads());
+			}
+			
+			while (tag.getInteger(NBTLiterals.STREAK_KILLS) > 0 && cap.ticksTotal >= tag.getLong(NBTLiterals.STREAK_COOL)) {
+				tag.setInteger(NBTLiterals.STREAK_KILLS, tag.getInteger(NBTLiterals.STREAK_KILLS) - 1);
+				int red = tag.getShort(NBTLiterals.STREAK_REDUCTION) * 2 + 1;
+				tag.setShort(NBTLiterals.STREAK_REDUCTION, red > Short.MAX_VALUE ? Short.MAX_VALUE : (short)red);
+				tag.setLong(NBTLiterals.STREAK_COOL, tag.getLong(NBTLiterals.STREAK_COOL)
+						+ Math.max(20,(1750 - MathHelper.log2(tag.getInteger(NBTLiterals.STREAK_KILLS))*250) / red));
+				par1ItemStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
 			}
 			if (cap.getCritTime() > 0)
 				cap.setCritTime(cap.getCritTime()-1);
@@ -138,6 +162,7 @@ public abstract class ItemWeapon extends ItemUsable {
 						stack);
 			return true;
 		}
+		
 		if (stack.getItemDamage() != stack.getMaxDamage())
 			if (this.hasClip(stack)) {
 				stack.damageItem(1, living);
@@ -262,7 +287,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		if (this.holdingMode(stack, living) > 0 && (newState & 1) == 0 && cap.isCharging()) {
 			// System.out.println("stop charging "+newState);
 			
-			cap.fire1Cool = this.getFiringSpeed(stack, living);
+			WeaponData.getCapability(stack).fire1Cool = this.getFiringSpeed(stack, living);
 
 			if (world.isRemote && ClientProxy.fireSounds.get(living) != null)
 				ClientProxy.fireSounds.get(living).setDone();
@@ -281,7 +306,6 @@ public abstract class ItemWeapon extends ItemUsable {
 	
 	
 	@Override
-	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
 		super.addInformation(stack, world, tooltip, advanced);
@@ -352,7 +376,6 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public boolean isFull3D() {
 		return true;
 	}
@@ -377,16 +400,25 @@ public abstract class ItemWeapon extends ItemUsable {
 		return stack.hasTagCompound() ? this.getWeaponClipSize(stack, null) : 0;
 	}
 
+	public float getDamageForArmor(ItemStack stack, EntityLivingBase living, Entity target) {
+		float damage = ItemFromData.getData(stack).getFloat(PropertyType.DAMAGE) * this.getWeaponPelletCount(stack, living);
+		if (ItemFromData.getData(stack).hasProperty(PropertyType.ARMOR_PEN_SCALE))
+			damage *= ItemFromData.getData(stack).getFloat(PropertyType.ARMOR_PEN_SCALE);
+		return damage;
+	}
+	
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
 		float damage = ItemFromData.getData(stack).getFloat(PropertyType.DAMAGE);
 		if(living == null || living!=target){
 			damage=TF2Attribute.getModifier("Damage", stack,damage, living);
-			if (living != null && (this.isDoubleWielding(living) || living.isHandActive()))
+			if (living != null && (isDoubleWielding(living) || living.isHandActive()))
 				damage *= 0.85f;
-			if (target != null && !target.isBurning())
+			if (target != null && !target.isBurning() && !(target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding()))
 				damage = TF2Attribute.getModifier("Damage Non Burn", stack, damage, living);
 			if (target != null && target.isBurning())
 				damage = TF2Attribute.getModifier("Damage Burning", stack, damage, living);
+			if (target != null && target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding())
+				damage = TF2Attribute.getModifier("Damage Building", stack, damage, living);
 			if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE) != null){
 				//System.out.println("Pre "+damage);
 				damage=(float) calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE),ATTACK_DAMAGE_MODIFIER,damage,1D/9D);
@@ -420,7 +452,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			 * [3]) (target.posY-shooter.targetPrevPos[3])+(target.posZ-shooter.
 			 * targetPrevPos[5])*(target.posZ-shooter.targetPrevPos[5]));
 			 */
-			base += /* (speed+0.045) */((EntityTF2Character) living).getMotionSensitivity() * totalRotation * (this instanceof ItemProjectileWeapon ? 0.2f : 0.01f);
+			base += /* (speed+0.045) */((EntityTF2Character) living).getMotionSensitivity() * totalRotation * 0.001f;
 			// System.out.println(target.motionX+" "+target.motionY+"
 			// "+target.motionZ+"
 			// "+(speed+0.045)*((EntityTF2Character)living).getMotionSensitivity());
@@ -440,7 +472,7 @@ public abstract class ItemWeapon extends ItemUsable {
 						: TF2Attribute.getModifier("Spread", stack,
 								ItemFromData.getData(stack).getFloat(PropertyType.SPREAD), living)
 								/ TF2Attribute.getModifier("Accuracy", stack, 1, living)
-								* (living != null && (this.isDoubleWielding(living) || living.isHandActive()) ? 1.5f
+								* (living != null && (isDoubleWielding(living) || living.isHandActive()) ? 1.5f
 										: 1f)
 								* (TF2Attribute.getModifier("Spread Health", stack, 1f, living) != 1f ?
 									this.getHealthBasedBonus(stack, living, TF2Attribute.getModifier("Spread Health", stack, 1f, living)) : 1f);
@@ -468,7 +500,7 @@ public abstract class ItemWeapon extends ItemUsable {
 	public int getWeaponFirstReloadTime(ItemStack stack, EntityLivingBase living) {
 		return (int) (TF2Attribute.getModifier("Reload Time", stack,
 				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME_FIRST), living)
-				* (living != null && this.isDoubleWielding(living) ? 2f : 1f));
+				/* * (living != null && isDoubleWielding(living) ? 2f : 1f)*/);
 	}
 
 	public boolean hasClip(ItemStack stack) {
@@ -573,8 +605,8 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0)
-			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Time", stack,
-					TF2Attribute.getModifier("Burn Hit", stack, 0, attacker), attacker) + 1);
+			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Hit", stack, 0, attacker)
+					, (int) TF2Attribute.getModifier("Burn Time", stack, 1f, attacker));
 		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
 			boolean enemy = TF2Util.isEnemy(attacker, (EntityLivingBase) target);
 			/*if (attacker instanceof EntityPlayerMP && !target.isEntityAlive() && 
@@ -619,9 +651,11 @@ public abstract class ItemWeapon extends ItemUsable {
 								attacker.playSound(ItemFromData.getSound(stack, PropertyType.CHARGED_SOUND), 1.2f, 1);
 							break;
 						}
-			if (TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker) != 1) {
+			if (TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker) != 1 && !WeaponsCapability.get(attacker).fireCoolReduced) {
 				//System.out.println(this.getFiringSpeed(stack, attacker) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker))));
-				attacker.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool-= this.getFiringSpeed(stack, attacker) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker)));
+				//WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
+				stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool -= this.getFiringSpeed(stack, attacker) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker)));
+				WeaponsCapability.get(attacker).fireCoolReduced = true;
 				if(attacker instanceof EntityPlayerMP)
 					TF2weapons.network.sendTo(new TF2Message.ActionMessage(27,attacker), (EntityPlayerMP) attacker);
 			}
@@ -738,6 +772,10 @@ public abstract class ItemWeapon extends ItemUsable {
 		return living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0 && TF2Attribute.getModifier("Headshot", stack, 0, living) > 0;
 	}
 	
+	public int getHeadshotCrit(EntityLivingBase living, ItemStack stack) {
+		return 2;
+	}
+	
 	public float getAdditionalGravity(EntityLivingBase living, ItemStack stack, double initial) {
 		return TF2Attribute.getModifier("Gravity", stack, (float) initial, living);
 	}
@@ -751,5 +789,48 @@ public abstract class ItemWeapon extends ItemUsable {
 			return 0f;
 		
 		return MathHelper.clamp((float) WeaponsCapability.get(living).chargeTicks / (float) this.holdingMode(stack, living), 0f, 1f);
+	}
+	
+	public void playHitSound(ItemStack stack, EntityLivingBase living, Entity target) {
+		SoundEvent sound;
+		
+		if (getData(stack).hasProperty(PropertyType.SPECIAL_1_SOUND) && WeaponsCapability.get(living).hitNoMiss > 0 
+				&& WeaponsCapability.get(living).hitNoMiss + 1 >= TF2Attribute.getModifier("Hit Crit", stack, 0, living))
+			sound = ItemFromData.getSound(stack, PropertyType.SPECIAL_1_SOUND);
+		else
+			sound = ItemFromData.getSound(stack, PropertyType.HIT_SOUND);
+		TF2Util.playSound(target, sound, ItemFromData.getData(stack).getName().equals("fryingpan") ? 2F : 0.7F, 1F);
+	}
+	
+	@Override
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution) {
+		if (this.hasKillstreak(stack, 1)) {
+				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.healingTexture);
+				
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDepthMask(false);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+				GL11.glDisable(GL11.GL_ALPHA_TEST);
+				GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
+				ClientProxy.setColor(TF2Util.getTeamColor(player), 0.7f, 0, 0.25f, 0.8f);
+				
+				buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				buffer.pos(30, resolution.getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
+				buffer.pos(71, resolution.getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
+				buffer.pos(71, resolution.getScaledHeight() - 46, 0.0D).tex(0.01D, 0.99D).endVertex();
+				buffer.pos(30, resolution.getScaledHeight() - 46, 0.0D).tex(0.0D, 0.99D).endVertex();
+				tessellator.draw();
+				
+				Gui.drawModalRectWithCustomSizedTexture(28, resolution.getScaledHeight() - 18, 83, 68, 45, 40, 128, 128);
+				
+				gui.drawCenteredString(gui.getFontRenderer(), Integer.toString(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)),
+						50, resolution.getScaledHeight() - 44, 16777215);
+				gui.drawCenteredString(gui.getFontRenderer(), "STREAK",
+						50, resolution.getScaledHeight() - 31, 16777215);
+				GL11.glDepthMask(true);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		}
 	}
 }

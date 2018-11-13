@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
@@ -20,6 +21,7 @@ import rafradek.TF2weapons.TF2Achievements;
 import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.building.EntityBuilding;
+import rafradek.TF2weapons.characters.IEntityTF2;
 
 public class ItemKnife extends ItemMeleeWeapon {
 
@@ -51,7 +53,8 @@ public class ItemKnife extends ItemMeleeWeapon {
 		super.handleShoot(living, stack, world, map, critical, flags);
 	}
 	public boolean isBackstab(EntityLivingBase living, Entity target) {
-		if (target != null && target instanceof EntityLivingBase && !(target instanceof EntityBuilding)) {
+		if (!(living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this)) 
+				&& target != null && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).isBackStabbable())) {
 			float ourAngle = 180 + MathHelper.wrapDegrees(living.rotationYawHead);
 			float angle2 = (float) (MathHelper.atan2(living.posX - target.posX, living.posZ - target.posZ) * 180.0D
 					/ Math.PI);
@@ -94,6 +97,9 @@ public class ItemKnife extends ItemMeleeWeapon {
 	}*/
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
+		if(attacker instanceof EntityPlayer && isBackstab(attacker,target) && target.isEntityAlive()) {
+			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/20);
+		}
 		if(attacker instanceof EntityPlayerMP&& isBackstab(attacker,target)&& target instanceof EntityLivingBase 
 				&& !target.isEntityAlive() && TF2Util.isEnemy(attacker, (EntityLivingBase) target)){
 			((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_BACKSTAB);

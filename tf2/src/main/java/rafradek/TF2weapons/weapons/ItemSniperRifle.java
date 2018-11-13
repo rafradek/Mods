@@ -17,6 +17,7 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -25,10 +26,12 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.ClientProxy;
 import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2Attribute;
+import rafradek.TF2weapons.TF2DamageSource;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.characters.EntitySniper;
+import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
 public class ItemSniperRifle extends ItemBulletWeapon {
@@ -38,13 +41,13 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	@Override
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		return super.canAltFire(worldObj, player, item)
-				&& player.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool <= 0;
+				&& player.getCapability(TF2weapons.WEAPONS_CAP, null).getPrimaryCooldown() <= 0;
 	}
 
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
-		if (living instanceof EntityPlayer || stack.getTagCompound().getBoolean("WaitProper")) {
+		if (!(living instanceof EntityTF2Character) || stack.getTagCompound().getBoolean("WaitProper")) {
 			super.use(stack, living, world, hand, message);
 			if(TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 2)
 				this.disableZoom(stack, living);
@@ -55,7 +58,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		} else {
 			stack.getTagCompound().setBoolean("WaitProper", true);
 			this.altUse(stack, living, world);
-			living.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool = 2500;
+			living.getCapability(TF2weapons.WEAPONS_CAP, null).setPrimaryCooldown(2500);
 		}
 		return false;
 	}
@@ -69,7 +72,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 				living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(slowdown);
 		} else
 			this.disableZoom(stack, living);
-		cap.fire1Cool=400;
+		cap.setPrimaryCooldown(400);
 
 	}
 
@@ -83,9 +86,14 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	@Override
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub
-		return living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks > 4 || TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 2;
+		return (living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks > 4 || TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 2) 
+				&& (TF2Attribute.getModifier("No Headshot", stack, 0, living) == 0 || TF2Attribute.getModifier("Jarate Hit", stack, 0, living) != 0);
 	}
 
+	public int getHeadshotCrit(EntityLivingBase living, ItemStack stack) {
+		return TF2Attribute.getModifier("Jarate Hit", stack, 0, living) != 0 ? 1 : 2;
+	}
+	
 	@Override
 	public boolean showTracer(ItemStack stack) {
 		return TF2Attribute.getModifier("Weapon Mode", stack, 0, null) >= 1;
@@ -113,14 +121,18 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	}
 
 	public float getZoomBonus(ItemStack stack, EntityLivingBase living) {
-		return 1 + Math.max(0, (living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks - 26)
-				/ ((getChargeTime(stack, living) - 26) / 2));
+		return 1 + Math.max(0, (living.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks - getChargeStartTime(stack, living))
+				/ ((getChargeTime(stack, living) - getChargeStartTime(stack, living)) / 2));
 	}
 
 	public static float getChargeTime(ItemStack stack, EntityLivingBase living) {
 		return 66 / TF2Attribute.getModifier("Charge", stack, 1, living);
 	}
-
+	
+	public static float getChargeStartTime(ItemStack stack, EntityLivingBase living) {
+		return 26 / (TF2Attribute.getModifier("Charge", stack, 0.5f, living)+0.5f);
+	}
+	
 	@Override
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
 		return 400;
@@ -135,15 +147,15 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		if (cap.reloadCool > 0 && par5 && cap.isCharging())
 			this.disableZoom(par1ItemStack, (EntityLivingBase) par3Entity);
 			
-		if (cap.isCharging() && par5 && !(TF2Attribute.getModifier("Weapon Mode", par1ItemStack, 0, (EntityLivingBase) par3Entity) == 2 && cap.fire1Cool > 0 ))
+		if (cap.isCharging() && par5 && !(TF2Attribute.getModifier("Weapon Mode", par1ItemStack, 0, (EntityLivingBase) par3Entity) == 2 && cap.getPrimaryCooldown() > 0 ))
 			if (cap.chargeTicks < getChargeTime(par1ItemStack, (EntityLivingBase) par3Entity))
 				cap.chargeTicks += 1;
 		// System.out.println("Charging: "+cap.chargeTicks);
 
 		if (par3Entity instanceof EntitySniper && ((EntitySniper) par3Entity).getAttackTarget() != null
 				&& par1ItemStack.getTagCompound().getBoolean("WaitProper"))
-			if (((EntitySniper) par3Entity).getHealth() < 8 && cap.fire1Cool > 250)
-				par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).fire1Cool = 250;
+			if (((EntitySniper) par3Entity).getHealth() < 8 && cap.getPrimaryCooldown() > 250)
+				par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setPrimaryCooldown(250);
 	}
 
 	/*
@@ -177,6 +189,15 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
+		
+		boolean headshot = ((TF2DamageSource)source).hasAttackFlag(TF2DamageSource.HEADSHOT);
+		if (target instanceof EntityLivingBase && TF2Attribute.getModifier("Jarate Hit", stack, 0f, attacker) != 0f && (headshot || WeaponsCapability.get(attacker).chargeTicks > 12)) {
+			int time = (int) (TF2Attribute.getModifier("Jarate Hit", stack, 0f, attacker) * this.getZoomBonus(stack, attacker));
+			if (headshot) {
+				time -= 1;
+			}
+			((EntityLivingBase)target).addPotionEffect(new PotionEffect(TF2weapons.jarate, time * 20));
+		}
 		/*if(attacker instanceof EntityPlayerMP && target instanceof EntityLivingBase && !target.isEntityAlive() && TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
 			if(!attacker.getCapability(TF2weapons.WEAPONS_CAP, null).charging){
 				((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_NOSCOPE);
@@ -209,6 +230,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder renderer, ScaledResolution resolution) {
 		// System.out.println("drawing");
+		
 		WeaponsCapability cap = WeaponsCapability.get(player);
 		if (cap.isCharging()) {
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -249,7 +271,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 			renderer.pos((double) resolution.getScaledWidth() / 2 + 100, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0.508d, 0d).endVertex();
 			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
 			tessellator.draw();
-			if (cap.chargeTicks >= 20) {
+			if (cap.chargeTicks >= ItemSniperRifle.getChargeStartTime(stack, player)) {
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
 						.endVertex();
@@ -271,7 +293,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 					.tex(progress * 0.508d, 0d).endVertex();
 			renderer.pos((double) resolution.getScaledWidth() / 2 + 50, (double) resolution.getScaledHeight() / 2, -90.0D).tex(0d, 0d).endVertex();
 			tessellator.draw();
-			if (progress == 1d) {
+			if (progress >= 1d) {
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 				renderer.pos((double) resolution.getScaledWidth() / 2 + 110, (double) resolution.getScaledHeight() / 2 + 18, -90.0D).tex(0d, 0.57d)
 						.endVertex();
@@ -288,6 +310,7 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 			GL11.glEnable(GL11.GL_ALPHA_TEST);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		}
+		super.drawOverlay(stack, player, tessellator, renderer, resolution);
 	}
 	
 	static {

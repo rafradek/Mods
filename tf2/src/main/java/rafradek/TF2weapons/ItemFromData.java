@@ -1,15 +1,25 @@
 package rafradek.TF2weapons;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -25,26 +35,87 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import rafradek.TF2weapons.ItemCrate.CrateContent;
 import rafradek.TF2weapons.TF2Attribute.State;
 import rafradek.TF2weapons.WeaponData.PropertyType;
 import rafradek.TF2weapons.building.EntityDispenser;
 import rafradek.TF2weapons.characters.EntityTF2Character;
 import rafradek.TF2weapons.weapons.ItemAmmo;
+import rafradek.TF2weapons.weapons.ItemKillstreakKit;
 import rafradek.TF2weapons.weapons.ItemUsable;
 import rafradek.TF2weapons.weapons.ItemWeapon;
 
 public class ItemFromData extends Item implements IItemOverlay{
+	
+	public static class PropertyAttribute extends PropertyType<AttributeProvider> {
+	
+		public PropertyAttribute(int id, String name, Class<AttributeProvider> type) {
+			super(id, name, type);
+		}
 
+		@Override
+		public AttributeProvider deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
+				JsonDeserializationContext context) throws JsonParseException {
+			HashMap<TF2Attribute, Float> attributes = new HashMap<>();
+			for (Entry<String, JsonElement> attribute : json.getAsJsonObject().entrySet()) {
+				String attributeName = attribute.getKey();
+				float attributeValue = attribute.getValue().getAsFloat();
+				Iterator<String> iterator2 = MapList.nameToAttribute.keySet().iterator();
+				// System.out.println("to je"+attributeName+"
+				// "+attributeValue);
+				boolean has = false;
+	
+				while (iterator2.hasNext())
+					if (iterator2.next().equals(attributeName)) {
+						attributes.put(MapList.nameToAttribute.get(attributeName), attributeValue);
+						has = true;
+					}
+				if (has == false)
+					attributes.put(TF2Attribute.attributes[Integer.parseInt(attributeName)],
+							attributeValue);
+			}
+			return new AttributeProvider(attributes);
+		}
+		
+		public void serialize(DataOutput buf, WeaponData data, AttributeProvider value) throws IOException {
+			buf.writeByte(value.attributes.size());
+			for (Entry<TF2Attribute, Float> attr : value.attributes.entrySet()) {
+				buf.writeByte(attr.getKey().id);
+				buf.writeFloat(attr.getValue());
+			}
+		}
+		
+		public AttributeProvider deserialize(DataInput buf, WeaponData data) throws IOException {
+			HashMap<TF2Attribute, Float> map = new HashMap<>();
+			int attributeCount = buf.readByte();
+			for (int i = 0; i < attributeCount; i++) {
+				map.put(TF2Attribute.attributes[buf.readUnsignedByte()], buf.readFloat());
+			}
+			return new AttributeProvider(map);
+		}
+	}
+
+	public static class AttributeProvider {
+		public Map <TF2Attribute, Float> attributes;
+		public AttributeProvider(Map<TF2Attribute, Float> attributes) {
+			this.attributes = attributes;
+		}
+	}
+	
 	public static final WeaponData BLANK_DATA = new WeaponData("toloadfiles");
 	public static final Predicate<WeaponData> VISIBLE_WEAPON = new Predicate<WeaponData>() {
 
@@ -326,6 +397,14 @@ public class ItemFromData extends Item implements IItemOverlay{
 						tooltip.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
 				}
 			}
+			
+			if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
+				TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
+				if (attribute != null && attribute.state != State.HIDDEN )
+					tooltip.add(attribute.getTranslatedString(ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)
+							, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)), true));
+			}
+			
 			if (getData(stack).hasProperty(PropertyType.DESC)) {
 				tooltip.add("");
 				for(String line:getData(stack).getString(PropertyType.DESC).split("\n"))
@@ -337,6 +416,11 @@ public class ItemFromData extends Item implements IItemOverlay{
 			}
 		}
 	}
+	
+	public boolean hasKillstreak(ItemStack stack, int minLevel) {
+		return stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL) >= minLevel;
+	}
+	
 	public int getEntityLifespan(ItemStack itemStack, World world)
     {
         return 12000;
@@ -403,7 +487,8 @@ public class ItemFromData extends Item implements IItemOverlay{
 		if (owner instanceof EntityTF2Character) {
 			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getData(stack).getInt(PropertyType.SLOT)) > 0 ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
 		}
-		
+		else if (!(owner instanceof EntityPlayer))
+			return ItemAmmo.STACK_FILL;
 		int metalammo = (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, owner);
 		if (metalammo != 0) {
 			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).hasMetal(metalammo) ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
@@ -462,8 +547,6 @@ public class ItemFromData extends Item implements IItemOverlay{
 		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
 			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 		}
-		
-		
 
 		int ammoCount = 0;
 
@@ -507,5 +590,9 @@ public class ItemFromData extends Item implements IItemOverlay{
 			amount++;
 		}
 		return amount;
+	}
+	
+	public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
+		return ItemFromData.getData(stack).getInt(PropertyType.WEAR);
 	}
 }

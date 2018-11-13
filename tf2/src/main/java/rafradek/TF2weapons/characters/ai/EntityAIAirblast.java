@@ -12,6 +12,7 @@ import net.minecraft.world.EnumDifficulty;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.weapons.ItemAirblast;
 import rafradek.TF2weapons.weapons.ItemFlameThrower;
 
 public class EntityAIAirblast extends EntityAIBase {
@@ -55,7 +56,7 @@ public class EntityAIAirblast extends EntityAIBase {
 		for (Entity entity : list)
 			// System.out.println(entity+"
 			// "+ItemFlameThrower.isPushable(host,entity));
-			if (ItemFlameThrower.isPushable(host, entity)
+			if (ItemAirblast.isPushable(host, entity)
 					&& (entity instanceof EntityThrowable || entity instanceof IProjectile)) {
 				// System.out.println(entity);
 				// System.out.println("dystans:

@@ -101,20 +101,22 @@ public class EntityAISetup extends EntityAIBase {
 			}
 			if (this.engineer.getNavigator().noPath()) {
 
-				Vec3d Vec3d = RandomPositionGenerator
+				/*Vec3d Vec3d = RandomPositionGenerator
 						.findRandomTarget((this.engineer.sentry != null && !this.engineer.sentry.isDead)
-								? this.engineer.sentry : (EntityCreature) this.engineer, 2, 1);
-				if (Vec3d != null) {
-					AxisAlignedBB box = new AxisAlignedBB(Vec3d.x - 0.5, Vec3d.y, Vec3d.z - 0.5,
-							Vec3d.x + 0.5, Vec3d.y + 1, Vec3d.z + 0.5);
+								? this.engineer.sentry : this.engineer, 2, 1);*/
+				Vec3d vec= RandomPositionGenerator
+						.findRandomTarget(this.engineer, 2, 1);
+				if (vec != null) {
+					AxisAlignedBB box = new AxisAlignedBB(vec.x - 0.5, vec.y, vec.z - 0.5,
+							vec.x + 0.5, vec.y + 1, vec.z + 0.5);
 					List<AxisAlignedBB> list = this.engineer.world.getCollisionBoxes(this.engineer, box);
 					/*
 					 * for(AxisAlignedBB entry:list){ System.out.println(entry);
 					 * }
 					 */
 					if (list.isEmpty() && !this.engineer.world.isMaterialInBB(box, Material.WATER)) {
-						this.engineer.getNavigator().tryMoveToXYZ(Vec3d.x, Vec3d.y, Vec3d.z, 1);
-						this.target = Vec3d;
+						this.engineer.getNavigator().tryMoveToXYZ(vec.x, vec.y, vec.z, 1);
+						this.target = vec;
 					}
 				}
 			}

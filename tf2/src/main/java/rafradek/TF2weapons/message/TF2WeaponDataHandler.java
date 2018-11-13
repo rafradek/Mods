@@ -33,12 +33,14 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 				WeaponData weapon = new WeaponData(input.readUTF());
 				//System.out.println("Weapon: "+weapon.getName());
 				int propertyCount = input.readByte();
+				System.out.println(weapon.getName());
 				for (int i = 0; i < propertyCount; i++) {
 					int propId = input.readByte();
-					PropertyType prop = WeaponData.propertyTypes[propId];
+					PropertyType<?> prop = WeaponData.propertyTypes[propId];
 					//System.out.println(prop.name);
-					prop.deserialize(input, weapon);
-		
+					
+					weapon.properties.put(prop, prop.deserialize(input, weapon));
+					
 					// System.out.println("Property: "+prop.name+"
 					// "+weapon.properties.get(prop).stringValue);
 					/*
@@ -60,15 +62,6 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 					 * stringLength, StandardCharsets.UTF_8),type));
 					 * buf.readerIndex(buf.readerIndex()+stringLength); }
 					 */
-				}
-				int attributeCount = input.readByte();
-				for (int i = 0; i < attributeCount; i++) {
-					if (weapon.getString(PropertyType.CLASS).equals("crate")) {
-						String entry = input.readUTF();
-						weapon.crateContent.put(entry, input.readInt());
-		
-					} else
-						weapon.attributes.put(TF2Attribute.attributes[input.readByte()], input.readFloat());
 				}
 		
 				TF2weapons.loadWeapon(weapon.getName(), weapon);

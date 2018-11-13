@@ -7,6 +7,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.MapList;
+import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Sounds;
 import rafradek.TF2weapons.TF2weapons;
 
@@ -28,15 +30,25 @@ public class EntityHeavy extends EntityTF2Character {
 
 	}
 
+	public float getWidth() {
+		return 0.6f;
+	}
+	
+	public float getHeight() {
+		return 1.99f;
+	}
+	
 	protected void addWeapons() {
 		super.addWeapons();
-		if (!this.noEquipment) {
+		if (!this.noEquipment && !this.isRobot()) {
 			float chance = this.rand.nextFloat();
 			if (chance < 0.2f)
 				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemSandvich));
 			else if(chance < 0.3f)
 				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemChocolate));
 		}
+		if (this.isGiant())
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("DamageBonus"), 1.35f);
 	}
 	@Override
 	protected ResourceLocation getLootTable() {
@@ -89,7 +101,7 @@ public class EntityHeavy extends EntityTF2Character {
 
 	public float getEyeHeight()
     {
-        return 1.78F;
+        return 1.78F * (this.getRobotSize() > 1 ? 1.75f : this.getRobotSize() > 2 ? 2f : 1f);
     }
 	
 	/**

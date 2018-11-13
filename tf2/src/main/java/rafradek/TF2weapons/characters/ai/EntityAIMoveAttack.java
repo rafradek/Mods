@@ -38,7 +38,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	private float attackRange;
 	protected float attackRangeSquared;
 
-	protected boolean dodging;
+	protected boolean inRange;
 	protected boolean dodge;
 	public boolean jump;
 	public float dodgeSpeed = 1f;
@@ -143,12 +143,12 @@ public class EntityAIMoveAttack extends EntityAIBase {
 			this.comeCloser = 0;
 		
 		if ((d0 <= range && this.comeCloser >= 20) || this.entityHost.getWepCapability().isExpJump()) {
-			if (!this.dodging) {
+			if (!this.inRange) {
 				this.entityHost.getNavigator().clearPathEntity();
-				this.dodging = true;
+				this.inRange = true;
 			}
 		} else {
-			this.dodging = false;
+			this.inRange = false;
 			/*
 			 * if(this.entityHost.onGround&&this.entityHost instanceof
 			 * EntitySoldier&&this.entityHost.getHeldItem(EnumHand.MAIN_HAND).
@@ -170,7 +170,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 			this.entityHost.jump = true;
 		else if (this.jump)
 			this.entityHost.jump = false;
-		if (this.dodge && this.entityHost.getNavigator().noPath()) {
+		if (this.dodge && (this.entityHost.getNavigator().noPath() || (this.entityHost.ticksExisted % 20) == 0)) {
 			Vec3d Vec3d = RandomPositionGenerator.findRandomTarget(this.entityHost, 4, 2);
 
 			if (Vec3d != null) {
