@@ -6,7 +6,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2PlayerCapability;
-import rafradek.TF2weapons.weapons.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability;
 
 public class TF2InitClientHandler implements IMessageHandler<TF2Message.InitClientMessage, IMessage> {
 

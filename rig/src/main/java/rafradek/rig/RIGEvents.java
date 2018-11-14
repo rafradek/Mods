@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 
 public class RIGEvents {
 	public static HashMap<Entity, Integer> extraBurn = new HashMap<Entity, Integer>();

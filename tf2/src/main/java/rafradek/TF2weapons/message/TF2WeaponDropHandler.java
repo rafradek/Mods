@@ -5,10 +5,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import rafradek.TF2weapons.ItemFromData;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message.WeaponDroppedMessage;
-import rafradek.TF2weapons.weapons.ItemUsable;
 
 public class TF2WeaponDropHandler implements IMessageHandler<TF2Message.WeaponDroppedMessage, IMessage> {
 

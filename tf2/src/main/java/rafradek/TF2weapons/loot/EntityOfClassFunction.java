@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.functions.LootFunction;
-import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.item.ItemFromData;
 
 public class EntityOfClassFunction extends LootFunction {
 

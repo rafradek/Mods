@@ -8,13 +8,13 @@ import java.util.zip.GZIPInputStream;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import rafradek.TF2weapons.ClientProxy;
-import rafradek.TF2weapons.MapList;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.WeaponData;
-import rafradek.TF2weapons.WeaponData.PropertyType;
+import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.message.TF2Message.WeaponDataMessage;
+import rafradek.TF2weapons.util.WeaponData;
+import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDataMessage, IMessage> {
 

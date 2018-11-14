@@ -6,8 +6,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.message.TF2Message.DisguiseMessage;
-import rafradek.TF2weapons.weapons.ItemDisguiseKit;
 
 public class TF2DisguiseHandler implements IMessageHandler<TF2Message.DisguiseMessage, IMessage> {
 

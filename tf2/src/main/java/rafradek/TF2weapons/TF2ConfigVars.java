@@ -9,14 +9,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.Loader;
-import rafradek.TF2weapons.characters.EntityDemoman;
-import rafradek.TF2weapons.characters.EntityEngineer;
-import rafradek.TF2weapons.characters.EntityHeavy;
-import rafradek.TF2weapons.characters.EntityPyro;
-import rafradek.TF2weapons.characters.EntityScout;
-import rafradek.TF2weapons.characters.EntitySniper;
-import rafradek.TF2weapons.characters.EntitySoldier;
-import rafradek.TF2weapons.characters.EntitySpy;
+import rafradek.TF2weapons.entity.mercenary.EntityDemoman;
+import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
+import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
+import rafradek.TF2weapons.entity.mercenary.EntityPyro;
+import rafradek.TF2weapons.entity.mercenary.EntityScout;
+import rafradek.TF2weapons.entity.mercenary.EntitySniper;
+import rafradek.TF2weapons.entity.mercenary.EntitySoldier;
+import rafradek.TF2weapons.entity.mercenary.EntitySpy;
 
 public class TF2ConfigVars {
 

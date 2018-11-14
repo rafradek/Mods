@@ -6,12 +6,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.weapons.ItemAmmo;
-import rafradek.TF2weapons.weapons.ItemUsable;
-import rafradek.TF2weapons.weapons.ItemWeapon;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.item.ItemAmmo;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemUsable;
+import rafradek.TF2weapons.item.ItemWeapon;
 
 public class TF2UseHandler implements IMessageHandler<TF2Message.UseMessage, IMessage> {
 

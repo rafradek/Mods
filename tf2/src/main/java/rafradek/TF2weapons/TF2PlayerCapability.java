@@ -35,15 +35,20 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.WeaponData.PropertyType;
-import rafradek.TF2weapons.building.ItemPDA;
-import rafradek.TF2weapons.characters.EntityMedic;
-import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.common.TF2Achievements;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.mercenary.EntityMedic;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.ItemAmmo;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.pages.Contract;
 import rafradek.TF2weapons.pages.Contract.Objective;
-import rafradek.TF2weapons.weapons.ItemAmmo;
-import rafradek.TF2weapons.weapons.ItemWrench;
+import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 

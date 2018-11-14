@@ -43,8 +43,8 @@ import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons.NullStorage;
-import rafradek.TF2weapons.decoration.ContainerWearables;
-import rafradek.TF2weapons.decoration.InventoryWearables;
+import rafradek.TF2weapons.inventory.ContainerWearables;
+import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.blocklauncher.BlockEventBus.DestroyBlockEntry;
 
 @Mod(modid = "rafradek_rig", name = "Resource Integration Gear", version = "0.1")

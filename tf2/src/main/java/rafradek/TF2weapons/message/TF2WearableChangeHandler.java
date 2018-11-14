@@ -6,7 +6,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message.WearableChangeMessage;
 
 public class TF2WearableChangeHandler implements IMessageHandler<TF2Message.WearableChangeMessage, IMessage> {

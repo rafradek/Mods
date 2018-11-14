@@ -8,9 +8,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.building.EntityBuilding;
-import rafradek.TF2weapons.building.EntitySentry;
-import rafradek.TF2weapons.building.EntityTeleporter;
+import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.building.EntitySentry;
+import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.message.TF2Message.GuiConfigMessage;
 
 public class TF2GuiConfigHandler implements IMessageHandler<TF2Message.GuiConfigMessage, IMessage> {

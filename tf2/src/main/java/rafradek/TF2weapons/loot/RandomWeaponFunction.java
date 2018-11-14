@@ -13,11 +13,11 @@ import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.RandomValueRange;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.functions.LootFunction;
-import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Attribute;
-import rafradek.TF2weapons.WeaponData;
-import rafradek.TF2weapons.WeaponData.PropertyType;
-import rafradek.TF2weapons.weapons.ItemWeapon;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.WeaponData;
+import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class RandomWeaponFunction extends LootFunction {
 

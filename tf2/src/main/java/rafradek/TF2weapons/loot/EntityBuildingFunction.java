@@ -13,7 +13,7 @@ import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootContext.EntityTarget;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.functions.LootFunction;
-import rafradek.TF2weapons.characters.EntityTF2Character;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 
 public class EntityBuildingFunction extends LootFunction {
 

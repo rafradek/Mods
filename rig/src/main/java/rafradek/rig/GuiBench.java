@@ -19,8 +19,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.TF2Attribute;
 
 public class GuiBench extends GuiContainer {
 	public GuiBench(Container inventorySlotsIn) {

@@ -16,11 +16,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
-import rafradek.TF2weapons.ItemFromData;
-import rafradek.TF2weapons.TF2Achievements;
-import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.weapons.ItemCleaver;
+import rafradek.TF2weapons.common.TF2Achievements;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.item.ItemCleaver;
+import rafradek.TF2weapons.item.ItemFromData;
 
 public class ContainerBench extends Container {
 	/** The crafting matrix inventory (3x3). */

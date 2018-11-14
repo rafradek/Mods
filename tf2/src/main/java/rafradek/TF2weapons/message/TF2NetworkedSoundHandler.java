@@ -8,7 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import rafradek.TF2weapons.NetworkedSound;
+import rafradek.TF2weapons.client.audio.NetworkedSound;
 import rafradek.TF2weapons.message.TF2Message.NetworkedSoundMessage;
 
 public class TF2NetworkedSoundHandler implements IMessageHandler<TF2Message.NetworkedSoundMessage, IMessage> {

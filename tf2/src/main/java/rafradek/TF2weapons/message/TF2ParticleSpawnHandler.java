@@ -8,8 +8,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import rafradek.TF2weapons.ClientProxy;
-import rafradek.TF2weapons.EnumTF2Particles;
+import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.message.TF2Message.ParticleSpawnMessage;
 
 public class TF2ParticleSpawnHandler implements IMessageHandler<ParticleSpawnMessage, IMessage> {
