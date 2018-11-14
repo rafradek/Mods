@@ -163,6 +163,7 @@ tf2boss.death=The %1$s [Level %2$s] has been defeated
 item.disguiseKit.name=Disguise Kit
 item.buildingBox.name=Building Box
 item.buildingBox.sentry.name=Sentry Box
+item.buildingBox.sentrymini.name=Mini Sentry Box
 item.buildingBox.dispenser.name=Dispenser Box
 item.buildingBox.teleporter.name=Teleporter Box
 item.sandvich.name=Sandvich

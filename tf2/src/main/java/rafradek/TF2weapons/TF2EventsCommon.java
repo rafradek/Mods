@@ -1432,7 +1432,7 @@ public class TF2EventsCommon {
 			cap.lastPosY = living.posY;
 			cap.lastPosZ = living.posZ;
 			
-			if(living.world.isRemote)
+			if(!living.world.isRemote)
 				tickTimeLiving[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTickStart;
 		}
 

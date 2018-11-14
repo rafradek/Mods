@@ -59,6 +59,8 @@ public class TF2Attribute {
 	public int cost;
 
 	public int weight;
+	
+	public float austrUpgrade;
 
 	public static final Predicate<ItemStack> ITEM_WEAPON = input -> {
 		
@@ -155,17 +157,18 @@ public class TF2Attribute {
 	}
 	
 	public TF2Attribute(int id, String name, String effect, Type typeOfValue, float defaultValue, State state,
-			Predicate<ItemStack> canApply, float perLevel, int numLevels, int cost, int weight, float perKill) {
+			Predicate<ItemStack> canApply, float perLevel, int numLevels, int cost, int weight, float perKill, float austr) {
 		this(id, name, effect, typeOfValue, defaultValue, state, canApply, perLevel, numLevels, cost, weight);
 		this.perKill = perKill;
+		this.austrUpgrade = austr;
 	}
 	public static void initAttributes() {
-		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_WEAPON, 0.20f, 5, 180,
-				8, 0.04f);
+		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_WEAPON, 0.20f, 5, 160,
+				8, 0.04f, 1f);
 		new TF2Attribute(1, "DamagePenalty", "Damage", Type.PERCENTAGE, 1f, State.NEGATIVE, ITEM_WEAPON, 0.15f, 2, -140,
 				1);
 		new TF2Attribute(2, "ClipSizeBonus", "Clip Size", Type.PERCENTAGE, 1f, State.POSITIVE, WITH_CLIP, 0.5f, 4, 150,
-				6,0.09f);
+				6,0.09f, 1f);
 		new TF2Attribute(3, "ClipSizePenalty", "Clip Size", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_CLIP, 0.25f, 2,
 				-8, 1);
 		new TF2Attribute(4, "MinigunSpinBonus", "Minigun Spinup", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
@@ -173,7 +176,7 @@ public class TF2Attribute {
 		new TF2Attribute(5, "MinigunSpinPenalty", "Minigun Spinup", Type.PERCENTAGE, 1f, State.NEGATIVE, ITEM_MINIGUN,
 				0.1f, 2, -200, 1);
 		new TF2Attribute(6, "FireRateBonus", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
-				NOT_FLAMETHROWER, -0.08f, 5, 80, 8, -0.027f);
+				NOT_FLAMETHROWER, -0.08f, 5, 80, 8, -0.027f, 1.5f);
 		new TF2Attribute(7, "FireRatePenalty", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE,
 				NOT_FLAMETHROWER, 0.06f, 2, -100, 1);
 		new TF2Attribute(8, "SpreadBonus", "Spread", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
@@ -184,34 +187,34 @@ public class TF2Attribute {
 		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, Predicates.and(WITH_CLIP, stack -> {
 			return !ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_FULL_CLIP);
 			}),
-				-0.2f, 3, 100, 5, -0.035f);
+				-0.2f, 3, 100, 5, -0.033f, 0.75f);
 		new TF2Attribute(13, "ReloadRatePenalty", "Reload Time", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_CLIP, 0.2f,
 				3, -200, 1);
 		new TF2Attribute(14, "KnockbackBonus", "Knockback", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(15, "KnockbackPenalty", "Knockback", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(16, "ChargeBonus", "Charge", Type.PERCENTAGE, 1f, State.POSITIVE, CHARGE_RATE, 0.25f, 4,
-				100, 8, 0.055f);
+				100, 8, 0.055f, 1.6f);
 		new TF2Attribute(17, "ChargePenalty", "Charge", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE, ITEM_SNIPER_RIFLE,
 				-0.15f, 2, -140, 1);
 		new TF2Attribute(18, "SpreadAdd", "Spread", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(19, "ProjectileSpeedBonus", "Proj Speed", Type.PERCENTAGE, 1f, State.POSITIVE, ITEM_PROJECTILE,
-				0.25f, 4, 80, 6);
+				0.25f, 4, 80, 6, 0f, 2f);
 		new TF2Attribute(20, "ProjectileSpeedPenalty", "Proj Speed", Type.PERCENTAGE, 1f, State.NEGATIVE,
 				ITEM_PROJECTILE, 0.15f, 2, -150, 1);
 		new TF2Attribute(21, "ExplosionRadiusBonus", "Explosion Radius", Type.PERCENTAGE, 1f, State.POSITIVE, EXPLOSIVE,
-				0.2f, 4, 80, 2);
+				0.2f, 4, 80, 2, 0, 1.5f);
 		new TF2Attribute(22, "ExplosionRadiusPenalty", "Explosion Radius", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(23, "DestroyOnImpact", "Coll Remove", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(24, "AmmoEfficiencyBonus", "Ammo Eff", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, WITH_AMMO,
-				-0.2f, 3, 120, 6, -0.024f);
+				-0.2f, 3, 120, 6, -0.024f, 0.75f);
 		new TF2Attribute(25, "AmmoEfficiencyPenalty", "Ammo Eff", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_AMMO, 0.15f,
 				2, -150, 2);
 		new TF2Attribute(26, "Penetration", "Penetration", Type.ADDITIVE, 0, State.POSITIVE, ITEM_BULLET, 1, 1, 200, 1);
-		new TF2Attribute(27, "HealRateBonus", "Heal", Type.PERCENTAGE, 1f, State.POSITIVE, MEDIGUN, 0.25f, 4, 100, 8);
+		new TF2Attribute(27, "HealRateBonus", "Heal", Type.PERCENTAGE, 1f, State.POSITIVE, MEDIGUN, 0.25f, 4, 100, 8, 0f, 1f);
 		new TF2Attribute(28, "HealRatePenalty", "Heal", Type.PERCENTAGE, 1f, State.NEGATIVE, MEDIGUN, -0.15f, 2, -150,
 				1);
 		new TF2Attribute(29, "OverHealBonus", "Overheal", Type.PERCENTAGE, 1f, State.POSITIVE, MEDIGUN, 0.25f, 4, 100,
-				4);
+				4, 0, 1f);
 		new TF2Attribute(30, "OverHealPenalty", "Overheal", Type.PERCENTAGE, 1f, State.NEGATIVE, MEDIGUN, -0.15f, 2,
 				-150, 1);
 		new TF2Attribute(31, "BurnTimeBonus", "Burn Time", Type.PERCENTAGE, 1f, State.POSITIVE, IGNITE, 0.5f, 4, 140,
@@ -221,7 +224,7 @@ public class TF2Attribute {
 		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE, ITEM_WEAPON, 2.0f, 4, 80,
 				2);
 		new TF2Attribute(34, "AccuracyBonus", "Accuracy", Type.PERCENTAGE, 1f, State.POSITIVE, WITH_SPREAD, 0.25f, 3,
-				160, 4, 0.05f);
+				160, 4, 0.05f, 1f);
 		new TF2Attribute(35, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1f, State.POSITIVE, Predicates.<ItemStack>alwaysFalse(), 0.25f,
 				4, 80, 2);
 		new TF2Attribute(36, "FlameRangeBonus", "Flame Range", Type.PERCENTAGE, 1f, State.POSITIVE, FLAMETHROWER, 0.25f,
@@ -229,7 +232,7 @@ public class TF2Attribute {
 		new TF2Attribute(37, "CritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(38, "BurnOnHit", "Burn Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(39, "DestroyBlock", "Destroy Block", Type.ADDITIVE, 0, State.POSITIVE,
-				Predicates.or(ITEM_BULLET, EXPLOSIVE), 1f, 2, 200, 1);
+				Predicates.or(ITEM_BULLET, EXPLOSIVE), 1f, 2, 200, 1, 0, 0.75f);
 		new TF2Attribute(40, "NoRandomCrit", "Random Crit", Type.ADDITIVE, 0, State.NEGATIVE,
 				Predicates.<ItemStack>alwaysFalse(), 1f, 2, 180, 1);
 		new TF2Attribute(41, "CritRocket", "Crit Rocket", Type.ADDITIVE, 0, State.POSITIVE);
@@ -249,7 +252,7 @@ public class TF2Attribute {
 		new TF2Attribute(55, "RechargeBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0.75f, 3, 80, 1);
 		new TF2Attribute(56, "UberRateBonus", "Uber Rate", Type.PERCENTAGE, 1f, State.POSITIVE, MEDIGUN, 0.25f, 4, 120,
-				1);
+				1, 0, 1f);
 		new TF2Attribute(57, "UberRatePenalty", "Uber Rate", Type.PERCENTAGE, 1f, State.NEGATIVE, MEDIGUN, -0.15f, 2,
 				-150, 1);
 		new TF2Attribute(58, "RangeIncrease", "Range", Type.PERCENTAGE, 1f, State.NEUTRAL);
@@ -282,7 +285,7 @@ public class TF2Attribute {
 		new TF2Attribute(85, "MetalAsAmmo", "Metal Ammo", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(86, "MetalOnHit", "Metal Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(87, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1, State.POSITIVE,
-				DURATION, 0.25f, 3, 120, 4);
+				DURATION, 0.25f, 3, 120, 4, 0, 1f);
 		new TF2Attribute(88, "CloakRegenBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE,
 				Predicates.<ItemStack>alwaysFalse(), 0.5f, 2, 240, 1);
 		new TF2Attribute(89, "CloakDrainActivate", "Cloak Drain", Type.PERCENTAGE, 1, State.NEGATIVE);
@@ -320,18 +323,18 @@ public class TF2Attribute {
 		new TF2Attribute(116, "HolsterTimePenalty", "Holster Time", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(117, "Unblockable", "Unblockable", Type.ADDITIVE, 1f, State.POSITIVE);
 		new TF2Attribute(118, "SelfPushForceBonus", "Self Push Force", Type.PERCENTAGE, 1f, State.POSITIVE,
-				Predicates.or(JUMPER, JETPACK), 0.20f, 5, 160, 4);
+				Predicates.or(JUMPER, JETPACK), 0.20f, 5, 160, 4, 0, 1.25f);
 		new TF2Attribute(119, "Jetpack", "Jetpack", Type.ADDITIVE, 0f, State.POSITIVE,
 				JETPACK, 1f, 2, 250, 7);
 		new TF2Attribute(120, "SentryBonus", "Sentry Bonus", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(121, "BuildingHealthBonus", "Building Health", Type.PERCENTAGE, 1f, State.POSITIVE,
-				PDA, 0.6f, 5, 240, 6);
+				PDA, 0.6f, 5, 240, 6, 0, 0.8f);
 		new TF2Attribute(122, "SentryFireRateBonus", "Sentry Fire Rate", Type.PERCENTAGE, 1f, State.POSITIVE,
-				PDA, -0.1f, 3, 160, 6);
+				PDA, -0.1f, 3, 160, 6, 0, 1f);
 		new TF2Attribute(123, "DispenserRangeBonus", "Dispenser Range", Type.PERCENTAGE, 1f, State.POSITIVE,
 				PDA, 1, 4, 120, 4);
 		new TF2Attribute(124, "ExtraSentryBonus", "Extra Sentry", Type.ADDITIVE, 0f, State.POSITIVE,
-				PDA, 1, 3, 200, 3);
+				PDA, 1, 3, 200, 3, 0, 1f);
 		new TF2Attribute(125, "OnyxProjectile", "Onyx Projectile", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(126, "AirblastRatePenalty", "Airblast Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(127, "NoHeadshot", "No Headshot", Type.ADDITIVE, 0, State.NEGATIVE);
@@ -509,6 +512,6 @@ public class TF2Attribute {
 		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Strange")) {
 			strangeLevel = stack.getTagCompound().getInteger("StrangeLevel");
 		}
-		return base + strangeLevel * strangeLevel * 25;
+		return base + strangeLevel * strangeLevel * 40;
 	}
 }

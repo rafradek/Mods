@@ -7,4 +7,5 @@ public class NBTLiterals {
 	public static final String STREAK_LEVEL = "StrLev";
 	public static final String STREAK_LAST = "StrLst";
 	public static final String STREAK_ATTRIB = "StrAtt";
+	public static final String AUSTR_UPGRADED = "AusUpg";
 }

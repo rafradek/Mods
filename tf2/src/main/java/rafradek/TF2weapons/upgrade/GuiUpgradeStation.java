@@ -18,6 +18,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Attribute.Type;
 import rafradek.TF2weapons.TF2Util;
@@ -153,23 +154,32 @@ public class GuiUpgradeStation extends GuiContainer {
 					continue;
 				}
 				
-	
 				int xOffset = 101 * (i % 2);
 				int yOffset = (i / 2) * 30;
 				int currLevel = attr.calculateCurrLevel(stack);
-				for (int j = 0; j < this.station.attributes.get(attrorig); j++)
+				
+				int austrUpgrade = stack.getTagCompound().hasKey(NBTLiterals.AUSTR_UPGRADED) ? stack.getTagCompound().getShort(NBTLiterals.AUSTR_UPGRADED) : -1;
+				boolean austr = currLevel == attr.numLevels && attr.austrUpgrade != 0f && stack.getTagCompound().getBoolean("Australium") && austrUpgrade != attr.id;
+				boolean hasAustr = austrUpgrade == attr.id;
+				
+				for (int j = 0; j < this.station.attributes.get(attrorig); j++) {
 					// System.out.println("render: "+currLevel+"
 					// "+this.inventorySlots.inventorySlots.get(0).getStack());
-					this.drawTexturedModalRect(9 + xOffset + j * 9, 50 + yOffset, currLevel > j ? 240 : 248, 24, 8, 8);
+					this.drawTexturedModalRect(9 + xOffset + j * 9, 50 + yOffset, currLevel > j ? 240 : 248, !hasAustr ? 24 : 32, 8, 8);
+
+				}
+				int cost = austr ? 0 : attr.getUpgradeCost(stack);
+				
 				if(currLevel < this.station.attributes.get(attrorig))
-					this.fontRenderer.drawString(String.valueOf(attr.getUpgradeCost(stack)), 56 + xOffset, 50 + yOffset,
+					this.fontRenderer.drawString(String.valueOf(cost), 56 + xOffset, 50 + yOffset,
 							16777215);
-				this.fontRenderer.drawSplitString(attr.getTranslatedString((attr.typeOfValue == Type.ADDITIVE ? 0 : 1) + attr.getPerLevel(stack), false), 9 + xOffset,
-						32 + yOffset, 98, 16777215);
+				this.fontRenderer.drawSplitString(attr.getTranslatedString((attr.typeOfValue == Type.ADDITIVE ? 0 : 1) + attr.getPerLevel(stack) * (austr ? attr.austrUpgrade : 1f), false)
+						, 9 + xOffset, 32 + yOffset, 98, 16777215);
 				this.buttons[i * 2].visible = true;
 				this.buttons[i * 2 + 1].visible = true;
-				if (!attr.canApply(stack) || currLevel >= this.station.attributes.get(attrorig)
-						|| attr.getUpgradeCost(stack) > expPoints || expPoints + stack.getTagCompound().getInteger("TotalSpent") > TF2Attribute.getMaxExperience(stack, mc.player)) {
+				
+				if (!attr.canApply(stack) || (currLevel >= this.station.attributes.get(attrorig) && !austr)
+						|| cost > expPoints || cost + stack.getTagCompound().getInteger("TotalSpent") > TF2Attribute.getMaxExperience(stack, mc.player)) {
 					// System.out.println("DrawingRect");
 					this.buttons[i * 2].enabled = false;
 					this.buttons[i * 2 + 1].enabled = currLevel>0;
@@ -193,19 +203,6 @@ public class GuiUpgradeStation extends GuiContainer {
 					128, 15, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 36, this.ySize - 96 + 3,
 				4210752);
-		/*
-		 * for(int i=0;i<12;i++){ if(this.buttonsItem[i].stackToDraw !=null &&
-		 * this.buttonsItem[i].isMouseOver()){
-		 * ((GuiTF2Crafting)mc.currentScreen).drawHoveringText(this.buttonsItem[
-		 * i].stackToDraw.getTooltip(mc.player, false), mouseX-this.guiLeft,
-		 * mouseY-this.guiTop); } }
-		 */
-		/*
-		 * for(int i=0;i<4;i++){
-		 * this.fontRendererObj.drawString(I18n.format(TF2CraftingManager.
-		 * INSTANCE.getRecipeList().get(i).getRecipeOutput().getDisplayName(),
-		 * new Object[0]), 10, 17+18*i, 16777215); }
-		 */
 	}
 
 	/**
@@ -227,69 +224,5 @@ public class GuiUpgradeStation extends GuiContainer {
 
 		this.drawTexturedModalRect(x, y + (int) ((k - y - 17) * this.scroll), 232, 0, 12, 15);
 
-		/*
-		 * GlStateManager.enableLighting();
-		 * GlStateManager.enableRescaleNormal();
-		 * RenderHelper.enableGUIStandardItemLighting();
-		 * this.itemRender.zLevel=0; for(x=0;x<3;x++){ for(y=0;y<3;y++){
-		 * ItemStack stack=this.itemsToRender[x+y*3]; if(stack!=null){
-		 * this.itemRender.renderItemIntoGUI(stack, this.guiLeft+86+18*x,
-		 * this.guiTop+23+18*y); } } }
-		 * RenderHelper.disableStandardItemLighting();
-		 * GlStateManager.disableLighting();
-		 * this.mc.getTextureManager().bindTexture(UPGRADES_GUI_TEXTURES);
-		 * GlStateManager.enableBlend(); GlStateManager.color(1.0F, 1.0F, 1.0F,
-		 * 0.5F);
-		 */
-		/*
-		 * this.zLevel=120; this.drawTexturedModalRect(85+this.guiLeft,
-		 * 22+this.guiTop, 85, 22, 54,54); this.zLevel=0;
-		 */
-		/*
-		 * int currentRecipe=((ContainerTF2Workbench)this.inventorySlots).
-		 * currentRecipe;
-		 * if(currentRecipe>=0&&currentRecipe<TF2CraftingManager.INSTANCE.
-		 * getRecipeList().size()){ IRecipe
-		 * recipe=TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe)
-		 * ;
-		 * 
-		 * if(recipe instanceof ShapelessOreRecipe){ List<Object> input=;
-		 * for(int i=0;i<((ShapelessOreRecipe)recipe).getInput().size();i++){
-		 * this.itemRender.renderItemIntoGUI(((ShapelessOreRecipe)recipe).
-		 * getInput().get(i), , y); } }
-		 * 
-		 * }
-		 */
 	}
-	/*
-	 * protected void renderItemModelIntoGUI(ItemStack stack, int x, int y,
-	 * IBakedModel bakedmodel) { GlStateManager.pushMatrix();
-	 * this.mc.getTextureManager().bindTexture(TextureMap.
-	 * LOCATION_BLOCKS_TEXTURE);
-	 * this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE
-	 * ).setBlurMipmap(false, false); GlStateManager.enableRescaleNormal();
-	 * GlStateManager.enableAlpha(); GlStateManager.alphaFunc(516, 0.1F);
-	 * GlStateManager.enableBlend();
-	 * GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA,
-	 * GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA); this.setupGuiTransform(x,
-	 * y, bakedmodel.isGui3d()); bakedmodel =
-	 * net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(
-	 * bakedmodel, ItemCameraTransforms.TransformType.GUI, false);
-	 * GlStateManager.color(0.4F, 0.4F, 0.4F); this.itemRender.renderItem(stack,
-	 * bakedmodel); GlStateManager.disableAlpha();
-	 * GlStateManager.disableRescaleNormal(); GlStateManager.disableLighting();
-	 * GlStateManager.popMatrix();
-	 * this.mc.getTextureManager().bindTexture(TextureMap.
-	 * LOCATION_BLOCKS_TEXTURE);
-	 * this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE
-	 * ).restoreLastBlurMipmap(); } private void setupGuiTransform(int
-	 * xPosition, int yPosition, boolean isGui3d) {
-	 * GlStateManager.translate((float)xPosition, (float)yPosition, 100.0F +
-	 * this.zLevel); GlStateManager.translate(8.0F, 8.0F, 0.0F);
-	 * GlStateManager.scale(1.0F, -1.0F, 1.0F); GlStateManager.scale(16.0F,
-	 * 16.0F, 16.0F);
-	 * 
-	 * if (isGui3d) { GlStateManager.enableLighting(); } else {
-	 * GlStateManager.disableLighting(); } }
-	 */
 }

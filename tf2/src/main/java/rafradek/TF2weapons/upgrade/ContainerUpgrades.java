@@ -15,6 +15,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.ItemFromData;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2Attribute;
 import rafradek.TF2weapons.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
@@ -160,10 +161,12 @@ public class ContainerUpgrades extends Container {
 				return false;
 	
 			int cost = attr.getUpgradeCost(stack);
-	
-			
 			
 			int currLevel = attr.calculateCurrLevel(stack);
+			
+			int austrUpgrade = stacktag.hasKey(NBTLiterals.AUSTR_UPGRADED) ? stacktag.getShort(NBTLiterals.AUSTR_UPGRADED) : -1;
+			boolean austrAdd = currLevel == attr.numLevels && attr.austrUpgrade != 0f && stacktag.getBoolean("Australium") && austrUpgrade != attr.id;
+			
 			if (adding && currLevel < this.station.attributes.get(attrorig)
 					&& expPoints >= cost && cost + stacktag.getInteger("TotalSpent") <= TF2Attribute.getMaxExperience(stack, playerIn)) {
 				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
@@ -191,7 +194,25 @@ public class ContainerUpgrades extends Container {
 				/*playerIn.addStat(TF2Achievements.WEAPON_UPGRADE);
 				if (attr.numLevels > 1 && attr.calculateCurrLevel(stack) == attr.numLevels)
 					playerIn.addStat(TF2Achievements.FULLY_UPGRADED);*/
-			} else if (!adding && this.transactions[idEnch] > 0) {
+			}
+			else if (adding && austrAdd) {
+				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
+				String key = String.valueOf(attr.id);
+	
+				if (!stacktag.hasKey("AttributesOrig")) {
+					stacktag.setTag("AttributesOrig", stacktag.getCompoundTag("Attributes").copy());
+				}
+				
+				tag.setFloat(key, tag.getFloat(key) + attr.getPerLevel(stack) * attr.austrUpgrade);
+				
+				//this.transactions[idEnch]++;
+				
+				if (austrUpgrade != -1)
+					tag.setFloat(String.valueOf(austrUpgrade), tag.getFloat(String.valueOf(austrUpgrade)) -
+							TF2Attribute.attributes[austrUpgrade].getPerLevel(stack) * TF2Attribute.attributes[austrUpgrade].austrUpgrade);
+				stacktag.setShort(NBTLiterals.AUSTR_UPGRADED, (short) attr.id);
+			}
+			else if (!adding && this.transactions[idEnch] > 0) {
 				cost = this.transactionsCost[idEnch];
 				int count = this.transactions[idEnch];
 				NBTTagCompound tag = stacktag.getCompoundTag("Attributes");
@@ -199,6 +220,12 @@ public class ContainerUpgrades extends Container {
 	
 				if (!tag.hasKey(key))
 					return false;
+				
+				if (attr.id == austrUpgrade) {
+					tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * attr.austrUpgrade);
+					stacktag.removeTag(NBTLiterals.AUSTR_UPGRADED);
+				}
+				
 				tag.setFloat(key, tag.getFloat(key) - attr.getPerLevel(stack) * count);
 				if(tag.getFloat(key) == attr.defaultValue)
 					tag.removeTag(key);
@@ -206,12 +233,14 @@ public class ContainerUpgrades extends Container {
 				stacktag.setInteger("TotalCost", stacktag.getInteger("TotalCost") - attr.cost * count);
 				stacktag.setInteger("TotalSpent", stacktag.getInteger("TotalSpent") - cost);
 				
-				if (currLevel == attr.numLevels && attr.numLevels > 1)
+				if (currLevel >= attr.numLevels && attr.numLevels > 1)
 					stacktag.setInteger("LastUpgradesCost", (int) (stacktag.getInteger("LastUpgradesCost") - attr.cost * (attr.numLevels > 2 ? 3 : 1.5f)));
 				//stacktag.setInteger("TotalCostReal", stacktag.getInteger("TotalCostReal") - this.transactionsCost[idEnch]);
 				TF2Util.setExperiencePoints(playerIn, expPoints + cost);
 				this.transactions[idEnch]=0;
 				this.transactionsCost[idEnch]=0;
+				
+				
 			}
 		}
 		else if (id == -1) {
@@ -225,6 +254,7 @@ public class ContainerUpgrades extends Container {
 						this.transactions[i] = 0;
 						this.transactionsCost[i] = 0;
 					}
+					stacktag.removeTag(NBTLiterals.AUSTR_UPGRADED);
 				}
 		}
 		return true;

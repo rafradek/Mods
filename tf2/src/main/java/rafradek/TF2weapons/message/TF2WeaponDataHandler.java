@@ -31,37 +31,11 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 			
 			while(input.available()>0){
 				WeaponData weapon = new WeaponData(input.readUTF());
-				//System.out.println("Weapon: "+weapon.getName());
 				int propertyCount = input.readByte();
-				System.out.println(weapon.getName());
 				for (int i = 0; i < propertyCount; i++) {
 					int propId = input.readByte();
 					PropertyType<?> prop = WeaponData.propertyTypes[propId];
-					//System.out.println(prop.name);
-					
 					weapon.properties.put(prop, prop.deserialize(input, weapon));
-					
-					// System.out.println("Property: "+prop.name+"
-					// "+weapon.properties.get(prop).stringValue);
-					/*
-					 * stringLength=buf.readByte(); String
-					 * propName=buf.toString(buf.readerIndex(),stringLength,
-					 * StandardCharsets.UTF_8);
-					 * buf.readerIndex(buf.readerIndex()+stringLength);
-					 * Property.Type type=Property.Type.values()[buf.readByte()];
-					 * int listLength=buf.readByte();
-					 * 
-					 * if(listLength>0){ String[] values=new String[listLength];
-					 * for(int i=0;i<listLength;i++){ stringLength=buf.readByte();
-					 * values[i]=buf.toString(buf.readerIndex(),stringLength,
-					 * StandardCharsets.UTF_8);
-					 * buf.readerIndex(buf.readerIndex()+stringLength); }
-					 * weapon.put(propName, new Property(propName,values,type)); }
-					 * else{ stringLength=buf.readByte(); weapon.put(propName, new
-					 * Property(propName,buf.toString(buf.readerIndex(),
-					 * stringLength, StandardCharsets.UTF_8),type));
-					 * buf.readerIndex(buf.readerIndex()+stringLength); }
-					 */
 				}
 		
 				TF2weapons.loadWeapon(weapon.getName(), weapon);

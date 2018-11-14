@@ -60,10 +60,12 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 	
 	@Override
 	@SuppressWarnings("deprecation")
-	public String getItemStackDisplayName(ItemStack p_77653_1_) {
+	public String getItemStackDisplayName(ItemStack stack) {
 		// (I18n.translateToLocal(this.getUnlocalizedName()+".name")).trim();
-		int i = p_77653_1_.getItemDamage() / 2;
+		int i = stack.getItemDamage() / 2;
 		String s1 = "sentry";
+		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Mini"))
+			s1 += "mini";
 		switch (i) {
 		case 10:
 			s1 = "dispenser";

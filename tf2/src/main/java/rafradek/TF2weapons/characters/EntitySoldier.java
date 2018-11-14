@@ -239,13 +239,6 @@ public class EntitySoldier extends EntityTF2Character {
 		
 		public void updateTask() {
 			activateBackpack();
-			System.out.println("Activating");
 		}
 	}
-	/*
-	 * @Override public float getAttributeModifier(String attribute) {
-	 * if(attribute.equals("Minigun Spinup")){ return
-	 * super.getAttributeModifier(attribute)*1.5f; } return
-	 * super.getAttributeModifier(attribute); }
-	 */
 }
