@@ -3,6 +3,14 @@
 	"textures": {
 		"PistoletDetresse": "rafradek_tf2_weapons:items/flare_gun"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/flare_gun_blu"
+		}
+	],
 	"elements": [
 		{
 			"from": [ 0.65, 10.44, 6.4 ],

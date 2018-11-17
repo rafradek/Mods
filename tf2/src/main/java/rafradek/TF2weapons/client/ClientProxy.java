@@ -75,6 +75,10 @@ import rafradek.TF2weapons.client.audio.OnFireSound;
 import rafradek.TF2weapons.client.audio.ReloadSound;
 import rafradek.TF2weapons.client.audio.WeaponLoopSound;
 import rafradek.TF2weapons.client.audio.WeaponSound;
+import rafradek.TF2weapons.client.gui.GuiConfirm;
+import rafradek.TF2weapons.client.gui.GuiDisguiseKit;
+import rafradek.TF2weapons.client.gui.inventory.GuiSentry;
+import rafradek.TF2weapons.client.gui.inventory.GuiTeleporter;
 import rafradek.TF2weapons.client.model.ModelRocket;
 import rafradek.TF2weapons.client.particle.EntityBulletTracer;
 import rafradek.TF2weapons.client.particle.EntityMuzzleFlash;
@@ -125,10 +129,6 @@ import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityRocketEffect;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
-import rafradek.TF2weapons.gui.GuiConfirm;
-import rafradek.TF2weapons.gui.GuiDisguiseKit;
-import rafradek.TF2weapons.gui.inventory.GuiSentry;
-import rafradek.TF2weapons.gui.inventory.GuiTeleporter;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemKillstreakKit;
@@ -254,7 +254,7 @@ public class ClientProxy extends CommonProxy {
 		}, items.toArray(new Item[items.size()]));
 
 		for (RenderPlayer render : Minecraft.getMinecraft().getRenderManager().getSkinMap().values()) {
-			render.addLayer(new LayerWearables(render, render.getMainModel()));
+			render.addLayer(new LayerWearables(render));
 		}
 		reloadSounds = new HashMap<EntityLivingBase, ReloadSound>();
 		soundsToStart = new ConcurrentHashMap<EntityLivingBase, ItemStack>();

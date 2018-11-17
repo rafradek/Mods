@@ -39,15 +39,16 @@ import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.message.TF2Message;
-import rafradek.TF2weapons.pages.Contract;
-import rafradek.TF2weapons.pages.Contract.Objective;
+import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
@@ -136,7 +137,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					BlockPos pos = it.next();
 					ArrayList<EntityTF2Character> list = new ArrayList<>();
 					this.owner.world.getChunkFromBlockCoords(pos).getEntitiesOfTypeWithinAABB(EntityTF2Character.class, new AxisAlignedBB(pos), list, test->{
-						return owner.getUniqueID().equals(test.getOwnerId());
+						return test.getOrder() == Order.FOLLOW && owner.getUniqueID().equals(test.getOwnerId());
 					});
 					boolean success = false;
 					for (EntityTF2Character living : list) {

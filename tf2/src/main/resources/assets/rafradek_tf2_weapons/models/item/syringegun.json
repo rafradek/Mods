@@ -5,6 +5,14 @@
 		"transparent": "rafradek_tf2_weapons:items/transparent",
 		"particle": "rafradek_tf2_weapons:items/syringegun0"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/syringegun_blu"
+		}
+	],
 	"elements": [
 		{
 			"from": [ 7.0, 7.9, 13.5 ],

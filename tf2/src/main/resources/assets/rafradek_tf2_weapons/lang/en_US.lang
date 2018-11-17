@@ -109,7 +109,8 @@ weaponAttribute.AirborneBonus=Increased attack speed while airborne
 weaponAttribute.MaxHealthOnKill=Gives extra health for each kill
 weaponAttribute.SpeedOnKill=Gives extra speed for each kill
 weaponAttribute.Unblockable=Not blocked by shield
-weaponAttribute.Jetpack=Jetpack specialist
+weaponAttribute.Jetpack=Re-launch while in-flight
+weaponAttribute.JetpackNoItem=Press space midair to activate
 weaponAttribute.SentryBonus=+%1$s more sentries from crafting
 weaponAttribute.BuildingHealthBonus=+%1$s building health bonus
 weaponAttribute.SentryFireRateBonus=+%1$s sentry fire rate bonus
@@ -125,7 +126,7 @@ weaponAttribute.ChargesBonus=+%1$s charges bonus
 weaponAttribute.DamageBuildingPenalty=%1$s damage vs buildings
 weaponAttribute.HitCrit=Hit an enemy %1$s times to score a critical hit
 weaponAttribute.PiercingShots=Bullets deal more damage and pierce enemies
-
+weaponAttribute.FireRateHitBonus=On hit: +%1$s faster reload
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

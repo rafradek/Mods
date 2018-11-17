@@ -3,6 +3,14 @@
 	"textures": {
 		"MediGun": "rafradek_tf2_weapons:items/medigun"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/medigun_blu"
+		}
+	],
 	"elements": [
 		{
 			"from": [ 6.68, 6.29, 6.64 ],

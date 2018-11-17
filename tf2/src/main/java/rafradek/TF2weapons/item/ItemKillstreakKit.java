@@ -83,6 +83,15 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 		return attrib.perKill > 0 ? base : base*0.9f;
 	}
 	
+	public static int getCooldown(int level) {
+		switch (level) {
+		case 1: return 1600;
+		case 2: return 1800;
+		case 3: return 2000;
+		default: return 1500;
+		}
+	}
+	
 	public static float getKillstreakBonus(TF2Attribute attrib, int level, int kills) {
 		float levelDrain = 1f;
 		for (int i = 0; i < kills/5; i++)

@@ -3,6 +3,14 @@
 	"textures": {
 		"texture": "rafradek_tf2_weapons:items/crossbow"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/crossbow_blu"
+		}
+	],
 	"elements": [
 		{
 			"__comment": "big",

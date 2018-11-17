@@ -122,6 +122,14 @@ import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.block.BlockProp;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.client.gui.inventory.GuiAmmoFurnace;
+import rafradek.TF2weapons.client.gui.inventory.GuiDispenser;
+import rafradek.TF2weapons.client.gui.inventory.GuiMercenary;
+import rafradek.TF2weapons.client.gui.inventory.GuiSentry;
+import rafradek.TF2weapons.client.gui.inventory.GuiTF2Crafting;
+import rafradek.TF2weapons.client.gui.inventory.GuiTeleporter;
+import rafradek.TF2weapons.client.gui.inventory.GuiUpgradeStation;
+import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
 import rafradek.TF2weapons.command.CommandClientDebug;
 import rafradek.TF2weapons.command.CommandForceClass;
 import rafradek.TF2weapons.command.CommandGenerateReferences;
@@ -170,14 +178,6 @@ import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
-import rafradek.TF2weapons.gui.inventory.GuiAmmoFurnace;
-import rafradek.TF2weapons.gui.inventory.GuiDispenser;
-import rafradek.TF2weapons.gui.inventory.GuiMercenary;
-import rafradek.TF2weapons.gui.inventory.GuiSentry;
-import rafradek.TF2weapons.gui.inventory.GuiTF2Crafting;
-import rafradek.TF2weapons.gui.inventory.GuiTeleporter;
-import rafradek.TF2weapons.gui.inventory.GuiUpgradeStation;
-import rafradek.TF2weapons.gui.inventory.GuiWearables;
 import rafradek.TF2weapons.inventory.ContainerAmmoFurnace;
 import rafradek.TF2weapons.inventory.ContainerDispenser;
 import rafradek.TF2weapons.inventory.ContainerEnergy;
@@ -247,7 +247,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.4", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.5", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -382,7 +382,7 @@ public class TF2weapons {
 	
 	public static boolean squakeLoaded;
 	
-	@SidedProxy(clientSide = "rafradek.TF2weapons.ClientProxy", serverSide = "rafradek.TF2weapons.CommonProxy")
+	@SidedProxy(clientSide = "rafradek.TF2weapons.client.ClientProxy", serverSide = "rafradek.TF2weapons.common.CommonProxy")
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {

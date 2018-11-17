@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.annotation.Nullable;
+
 import java.util.Random;
 
 import com.google.common.base.Predicate;
@@ -29,6 +32,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemStack;
@@ -59,6 +63,7 @@ import rafradek.TF2weapons.common.TF2Attribute.State;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemCrate.CrateContent;
+import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.util.WeaponData.WeaponDataCapability;
@@ -132,11 +137,25 @@ public class ItemFromData extends Item implements IItemOverlay{
 		}
 
 	};
+	
 	public ItemFromData() {
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
 		this.setUnlocalizedName("tf2usable");
 		this.setMaxStackSize(1);
 		this.setNoRepair();
+		this.addPropertyOverride(new ResourceLocation("team"), new IItemPropertyGetter() {
+			@Override
+			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
+				if (entityIn != null) {
+					if (TF2Util.getTeamColorNumber(entityIn) == 12)
+						return 0;
+					else if (TF2Util.getTeamColorNumber(entityIn) == 9)
+						return 1f;
+					return 0.5f;
+				}
+				return 0;
+			}
+		});
 		// TODO Auto-generated constructor stub
 	}
 
@@ -403,8 +422,9 @@ public class ItemFromData extends Item implements IItemOverlay{
 			}
 			
 			if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
+				tooltip.add("Killstreak Active");
 				TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
-				if (attribute != null && attribute.state != State.HIDDEN )
+				if (attribute != null && attribute.state != State.HIDDEN)
 					tooltip.add(attribute.getTranslatedString(ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)
 							, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)), true));
 			}

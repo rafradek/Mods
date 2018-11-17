@@ -1,0 +1,6 @@
+{
+	"parent": "rafradek_tf2_weapons:item/flamethrower",
+	"textures": {
+		"texture0": "rafradek_tf2_weapons:items/flamethrower0_blu"
+	}
+}

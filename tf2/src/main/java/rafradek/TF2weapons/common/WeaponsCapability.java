@@ -404,15 +404,21 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		}
 		if (this.reloadCool > 0)
 			this.reloadCool -= 50;
-		
 		boolean hadItem = false;
 		boolean continueReload = false;
 		for (EnumHand hand: EnumHand.values()) {
 			ItemStack stack = owner.getHeldItem(hand);
+			
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && (hand == EnumHand.MAIN_HAND || (hand == EnumHand.OFF_HAND && !hadItem 
 					&& ((ItemUsable)stack.getItem()).getDoubleWieldBonus(lastWeapon, owner) != 1) || ItemUsable.isDoubleWielding(owner))) {
+				
 				hadItem = true;
 				ItemUsable item = (ItemUsable) stack.getItem();
+				if (this.fireCoolReduced && this.owner.world.isRemote) {
+					this.setPrimaryCooldown(hand, this.getPrimaryCooldown(hand)-(int)(item.getFiringSpeed(stack, this.owner) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, this.owner)))));
+					this.fireCoolReduced = false;
+				}
+				
 				if (!(this.owner instanceof EntityPlayer) || (this.owner.world.isRemote && this.owner != ClientProxy.getLocalPlayer()))
 					item.onUpdate(stack, owner.world, owner, 0, true);
 				WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);

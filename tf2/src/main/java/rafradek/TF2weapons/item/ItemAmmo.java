@@ -9,6 +9,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -67,7 +68,7 @@ public class ItemAmmo extends Item {
 
 	@Override
 	public int getItemStackLimit(ItemStack stack) {
-		return AMMO_MAX_STACK[stack.getMetadata()];
+		return AMMO_MAX_STACK[MathHelper.clamp(stack.getMetadata(),0,AMMO_MAX_STACK.length)];
 	}
 
 	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {

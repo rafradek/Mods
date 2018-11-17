@@ -121,7 +121,8 @@ public abstract class ItemWeapon extends ItemUsable {
 				int red = tag.getShort(NBTLiterals.STREAK_REDUCTION) * 2 + 1;
 				tag.setShort(NBTLiterals.STREAK_REDUCTION, red > Short.MAX_VALUE ? Short.MAX_VALUE : (short)red);
 				tag.setLong(NBTLiterals.STREAK_COOL, tag.getLong(NBTLiterals.STREAK_COOL)
-						+ Math.max(20,(1750 - MathHelper.log2(tag.getInteger(NBTLiterals.STREAK_KILLS))*250) / red));
+						+ Math.max(20,(ItemKillstreakKit.getCooldown(tag.getByte(NBTLiterals.STREAK_LEVEL))-250
+								- MathHelper.log2(tag.getInteger(NBTLiterals.STREAK_KILLS))*250) / red));
 				par1ItemStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
 			}
 			if (cap.getCritTime() > 0)
@@ -758,6 +759,10 @@ public abstract class ItemWeapon extends ItemUsable {
     {
 		return false;
     }
+	
+	public boolean hasEffect(ItemStack stack) {
+		return super.hasEffect(stack) || (this.hasKillstreak(stack, 2) && stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) > 0);
+	}
 	
 	public void setDamage(ItemStack stack, int damage)
     {

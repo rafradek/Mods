@@ -55,10 +55,10 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.message.TF2Message;
-import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntitySentry extends EntityBuilding {

@@ -67,6 +67,7 @@ import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemJetpack;
+import rafradek.TF2weapons.item.ItemKillstreakKit;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
 import rafradek.TF2weapons.item.ItemMinigun;
@@ -81,14 +82,14 @@ import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.message.udp.TF2UdpServer;
-import rafradek.TF2weapons.pages.Contract;
-import rafradek.TF2weapons.pages.Contract.Objective;
 import rafradek.TF2weapons.potion.PotionTF2;
 import rafradek.TF2weapons.potion.PotionTF2Item;
+import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
+import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
@@ -1133,12 +1134,10 @@ public class TF2EventsCommon {
 		if(living.hasCapability(TF2weapons.PLAYER_CAP, null))
 			living.getCapability(TF2weapons.PLAYER_CAP, null).tick();
 		if (living.isEntityAlive() && (living.hasCapability(TF2weapons.WEAPONS_CAP, null))) {
-
+			
 			long nanoTickStart=System.nanoTime();
 			final WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 			cap.tick();
-			
-			
 
 			if (cap.isExpJump()) {
 				if (living.onGround) {
@@ -1217,7 +1216,10 @@ public class TF2EventsCommon {
 				//living.motionX += living.motionX -livin
 				//living.motionZ = living.motionZ * 1.035;
 			}
-			
+			else if (cap.oldFactor != 0) {
+				living.jumpMovementFactor = cap.oldFactor;
+				cap.oldFactor = 0;
+			}
 			if(cap.isExpJump() || living.getActivePotionEffect(TF2weapons.charging) != null) {
 				living.getEntityBoundingBox();
 				Vec3d vec = new Vec3d(living.motionX, living.motionY, living.motionZ);
@@ -1804,7 +1806,8 @@ public class TF2EventsCommon {
 				if (stack.hasTagCompound() && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB) && TF2Util.isEnemy(living, event.getEntityLiving())) {
 					stack.getTagCompound().setInteger(NBTLiterals.STREAK_KILLS, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) + 1);
 					stack.getTagCompound().setLong(NBTLiterals.STREAK_COOL, WeaponsCapability.get(living).ticksTotal
-							+ Math.max(100,2000 - MathHelper.log2(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS))*250));
+							+ Math.max(100,ItemKillstreakKit.getCooldown(stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)) 
+									- MathHelper.log2(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS))*250));
 					//stack.getTagCompound().setLong(NBTLiterals.STREAK_LAST, WeaponsCapability.get(living).ticksTotal);
 					stack.getTagCompound().setShort(NBTLiterals.STREAK_REDUCTION, (short)1);
 					stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;

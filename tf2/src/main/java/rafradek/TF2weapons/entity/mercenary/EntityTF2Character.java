@@ -1496,9 +1496,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				this.robotSizeEnsured = this.getRobotSize();
 				float scale = 1f;
 				if (this.getRobotSize() == 2)
-					scale = 1.75f;
+					scale = 1.65f;
 				else if (this.getRobotSize() > 2)
-					scale = 2f;
+					scale = 1.88f;
 				this.setSize(Math.min(0.98f,this.getWidth() * scale), this.getHeight() * scale);
 			}
 		}

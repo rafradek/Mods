@@ -24,8 +24,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
-import rafradek.TF2weapons.pages.Contract;
-import rafradek.TF2weapons.pages.Contract.Objective;
+import rafradek.TF2weapons.util.Contract;
+import rafradek.TF2weapons.util.Contract.Objective;
 
 public abstract class TF2Message implements IMessage {
 

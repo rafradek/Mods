@@ -29,7 +29,7 @@ public class ItemJetpack extends ItemBackpack {
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
-		return ( stack.getTagCompound().getShort("Charge"))/this.getCooldown(stack, null);
+		return (double)( stack.getTagCompound().getShort("Charge"))/this.getCooldown(stack, null);
 	}
 	
 	@Override

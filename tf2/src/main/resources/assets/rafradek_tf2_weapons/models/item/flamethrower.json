@@ -5,6 +5,14 @@
 		"transparent": "rafradek_tf2_weapons:items/transparent",
 		"particle": "rafradek_tf2_weapons:items/flamethrower0"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/flamethrower_blu"
+		}
+	],
 	"display": {
 		"gui": {
             "rotation": [ 30, 225, 0 ],

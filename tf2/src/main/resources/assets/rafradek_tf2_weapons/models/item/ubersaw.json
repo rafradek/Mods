@@ -3,6 +3,14 @@
 	"textures": {
 		"0": "rafradek_tf2_weapons:items/ubersaw"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/ubersaw_blu"
+		}
+	],
 	"elements": [ 	 
 		{
 			"from": [ 8.5, 9.7, 7.5 ],

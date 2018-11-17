@@ -3,6 +3,7 @@ package rafradek.TF2weapons.entity.mercenary;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -111,10 +112,15 @@ public class EntityDemoman extends EntityTF2Character {
 		super.onLivingUpdate();
 		this.chargeCool--;
 		if(!this.world.isRemote){
-			if(!this.getWepCapability().activeBomb.isEmpty()){
+			if(!this.getWepCapability().activeBomb.isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemStickyLauncher){
 				EntityStickybomb bomb=this.getWepCapability().activeBomb.get(this.rand.nextInt(this.getWepCapability().activeBomb.size()));
-				if(this.getAttackTarget() != null && this.getAttackTarget().getDistanceSqToEntity(bomb)<7&&this.getEntitySenses().canSee(this.getAttackTarget())&&this.getAttackTarget().canEntityBeSeen(bomb))
-					((ItemWeapon)this.loadout.getStackInSlot(1).getItem()).altFireTick(this.loadout.getStackInSlot(1), this, world);
+				for(EntityLivingBase target: this.world.getEntitiesWithinAABB(EntityLivingBase.class, bomb.getEntityBoundingBox().grow(5))) {
+					if (this.isValidTarget(target) && target.getDistanceSqToEntity(bomb)<7 && this.getEntitySenses().canSee(target) &&
+							target.canEntityBeSeen(bomb)) {
+						((ItemWeapon)this.loadout.getStackInSlot(1).getItem()).altFireTick(this.loadout.getStackInSlot(1), this, world);
+						break;
+					}
+				}
 			}
 			boolean chargetick = this.ticksExisted%4==0;
 			if(chargetick && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){

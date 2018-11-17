@@ -70,7 +70,7 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 				this.data= toCopy.serializeNBT();
 			}
 			//this.first = true;
-			this.ticksLeft = toCopy instanceof EntityPlayer ? -1 : 5200;
+			this.ticksLeft = toCopy instanceof EntityPlayer || !toCopy.isNonBoss() ? -1 : 1200;
 			this.useHand = toCopy.hasCapability(TF2weapons.WEAPONS_CAP, null) && ((WeaponsCapability.get(toCopy).state & 3) != 0 || WeaponsCapability.get(toCopy).isCharging());
 		}
 		else
@@ -144,8 +144,8 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 			return stat != this;
 		}).isEmpty())
 			this.setDead();*/
-		if (!this.world.isRemote && this.ticksLeft > 0) {
-			if(this.ticksLeft-- == 0)
+		if (!this.world.isRemote && this.ticksLeft >= 0) {
+			if(--this.ticksLeft <= 0)
 				this.setDead();
 		}
 		this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);

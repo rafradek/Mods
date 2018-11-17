@@ -327,7 +327,7 @@ public class TF2Attribute {
 		new TF2Attribute(118, "SelfPushForceBonus", "Self Push Force", Type.PERCENTAGE, 1f, State.POSITIVE,
 				Predicates.or(JUMPER, JETPACK), 0.20f, 5, 160, 4, 0, 1.25f);
 		new TF2Attribute(119, "Jetpack", "Jetpack", Type.ADDITIVE, 0f, State.POSITIVE,
-				JETPACK, 1f, 2, 250, 7);
+				JETPACK, 1f, 1, 250, 4);
 		new TF2Attribute(120, "SentryBonus", "Sentry Bonus", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(121, "BuildingHealthBonus", "Building Health", Type.PERCENTAGE, 1f, State.POSITIVE,
 				PDA, 0.6f, 5, 240, 6, 0, 0.8f);
@@ -344,11 +344,13 @@ public class TF2Attribute {
 		new TF2Attribute(129, "NoBackstab", "No Backstab", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(130, "AfterburnReductionBonus", "Afterburn Reduction", Type.INVERTED_PERCENTAGE, 0, State.POSITIVE);
 		new TF2Attribute(131, "ChargesBonus", "Charges", Type.ADDITIVE, 0f, State.POSITIVE,
-				JETPACK, 1f, 3, 200, 7);
+				JETPACK, 1f, 3, 200, 6);
 		new TF2Attribute(132, "DamageBuildingPenalty", "Damage Building", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(133, "HitCrit", "Hit Crit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(134, "PiercingShots", "Piercing", Type.ADDITIVE, 0, State.POSITIVE,
 				PDA, 1, 2, 180, 3);
+		new TF2Attribute(135, "JetpackNoItem", "Jetpack Item", Type.ADDITIVE, 0f, State.POSITIVE,
+				JETPACK, 1f, 1, 320, 3);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 

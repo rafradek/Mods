@@ -3,6 +3,14 @@
 	"textures": {
 		"team_captain": "rafradek_tf2_weapons:items/team_captain"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/team_captain_blu"
+		}
+	],
 	"elements": [
 		{
 			"__comment": "Cube1",
@@ -164,7 +172,7 @@
 			"scale":  [ 0.6, 0.6, 0.6 ]
 		},
 		"head": {
-			"translation":  [ 0, -1.7, 0.35 ],
+			"translation":  [ 0, -2.7, 0.35 ],
 			"scale":  [ 1.12, 1.12, 1 ]
 		},
 		"ground": {

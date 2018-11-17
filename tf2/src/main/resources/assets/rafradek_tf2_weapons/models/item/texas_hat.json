@@ -79,8 +79,8 @@
 			"scale":  [ 0.6, 0.6, 0.6 ]
 		},
 		"head": {
-			"translation":  [ 0, 7.6043, 0 ],
-			"scale":  [ 1.2, 1.2, 1.2 ]
+			"translation":  [ 0, 4.6, 0 ],
+			"scale":  [ 1.42, 1.2, 1.42 ]
 		},
 		"ground": {
 			"translation":  [ 0, 1, 0 ],

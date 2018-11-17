@@ -80,14 +80,14 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.gui.GuiContracts;
+import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.mercenary.EntitySpy;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
-import rafradek.TF2weapons.gui.GuiContracts;
-import rafradek.TF2weapons.gui.inventory.GuiWearables;
 import rafradek.TF2weapons.item.IItemOverlay;
 import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
@@ -167,7 +167,7 @@ public class TF2EventsClient {
 					
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 				}
-				else if (chest.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack", chest, 0f, minecraft.player) >= 2f
+				else if (chest.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", chest, 0f, minecraft.player) != 0f
 						&& ((ItemJetpack)chest.getItem()).canActivate(chest, minecraft.player)) {
 					//((ItemJetpack)chest.getItem()).activateJetpack(chest, minecraft.player, true);
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(30));

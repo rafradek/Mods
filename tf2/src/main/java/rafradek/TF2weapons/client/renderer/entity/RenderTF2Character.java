@@ -11,7 +11,9 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
+import net.minecraft.client.renderer.entity.layers.LayerCustomHead;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
+import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
@@ -93,7 +95,8 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		this.modelMain=(ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
 		this.addLayer(new LayerBipedArmor(this));
-		this.addLayer(new LayerWearables(this, (ModelBiped) this.getMainModel()));
+		this.addLayer(new LayerWearables(this));
+		this.layerRenderers.removeIf(layer -> (LayerRenderer<?>)layer instanceof LayerCustomHead);
 	}
 
 	@Override

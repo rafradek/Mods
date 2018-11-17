@@ -54,7 +54,7 @@ import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWrench;
-import rafradek.TF2weapons.pages.Contract;
+import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -215,7 +215,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					} 
 					else if (message.value == 30) {
 						ItemStack stack = ItemBackpack.getBackpack(player);
-						if (stack.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack", stack, 0f, player) >= 2f && ((ItemJetpack)stack.getItem()).canActivate(stack, player) ) {
+						if (stack.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", stack, 0f, player) != 0 && ((ItemJetpack)stack.getItem()).canActivate(stack, player) ) {
 							((ItemJetpack)stack.getItem()).activateJetpack(stack, player, true);
 						}
 					} 
@@ -404,7 +404,8 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							ItemStack stack = player.getHeldItemMainhand();
 							if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 								//System.out.println("dd");
-								WeaponData.getCapability(stack).fire1Cool-=((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, player)));
+								WeaponsCapability.get(player).fireCoolReduced = true;
+								//WeaponData.getCapability(stack).fire1Cool-=;
 							}
 						}
 					}

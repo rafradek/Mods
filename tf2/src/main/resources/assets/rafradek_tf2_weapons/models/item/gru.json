@@ -3,6 +3,14 @@
     "textures": {
         "layer0": "rafradek_tf2_weapons:items/gru"
     },
+    "overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/gru_blu"
+		}
+	],
     "display": {
         "thirdperson_righthand": {
             "rotation": [ 0, -90, 55 ],

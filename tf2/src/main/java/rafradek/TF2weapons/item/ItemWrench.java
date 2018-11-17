@@ -152,7 +152,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 
 	@Override
 	public boolean catchSlotHotkey(ItemStack stack, EntityPlayer player) {
-		return ItemToken.allowUse(player, "engineer") && player.getItemInUseCount()<770;
+		return ItemToken.allowUse(player, "engineer") && !player.getActiveItemStack().isEmpty() &&player.getItemInUseCount()<770;
 	}
 
 	@Override

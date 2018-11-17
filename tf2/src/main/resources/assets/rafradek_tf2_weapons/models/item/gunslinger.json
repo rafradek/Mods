@@ -3,6 +3,14 @@
     "textures": {
         "0": "rafradek_tf2_weapons:items/gunslinger"
     },
+    "overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/gunslinger_blu"
+		}
+	],
     "elements": [
         {
             "name": "Cube",

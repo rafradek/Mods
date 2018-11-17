@@ -1,0 +1,6 @@
+{
+	"parent": "rafradek_tf2_weapons:item/crossbow",
+	"textures": {
+		"texture": "rafradek_tf2_weapons:items/crossbow_blu"
+	}
+}

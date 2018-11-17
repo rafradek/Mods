@@ -1,0 +1,6 @@
+{
+	"parent": "rafradek_tf2_weapons:item/flare_gun",
+	"textures": {
+		"PistoletDetresse": "rafradek_tf2_weapons:items/flare_gun_blu"
+	}
+}

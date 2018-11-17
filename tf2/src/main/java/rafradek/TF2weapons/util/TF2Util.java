@@ -90,6 +90,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
 import rafradek.TF2weapons.entity.boss.EntityMonoculus;
@@ -115,7 +116,8 @@ public class TF2Util {
 	
 	public static final Block[] NATURAL_BLOCKS = new Block[] {Blocks.STONE};
 	public static final Predicate<Entity> TARGETABLE = target -> {
-		return target.canBeCollidedWith() && (!(target instanceof EntityLivingBase) || (target instanceof EntityLivingBase && ((EntityLivingBase) target).deathTime <= 0));
+		return target.canBeCollidedWith() && (!(target instanceof EntityLivingBase) || (target instanceof EntityLivingBase && ((EntityLivingBase) target).deathTime <= 0)) 
+				&& !(target instanceof EntityStatue);
 	};
 	
 	public static int[] colorCode = new int[32];
