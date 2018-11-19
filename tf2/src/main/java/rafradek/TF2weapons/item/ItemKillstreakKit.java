@@ -100,7 +100,7 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 	}
 	
 	public boolean isApplicable(ItemStack stack, ItemStack weapon) {
-		return stack.hasTagCompound() && stack.getTagCompound().hasKey("Weapon") ? super.isApplicable(stack, weapon) : stack.getItem() instanceof ItemWeapon;
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("Weapon") ? super.isApplicable(stack, weapon) : weapon.getItem() instanceof ItemWeapon;
 	}
 	
 	public void apply(ItemStack stack, ItemStack weapon) {

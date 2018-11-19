@@ -31,7 +31,7 @@
             "entries": [
             	{
                     "type": "empty",
-                    "weight": 24
+                    "weight": 25
                 },
                 {
                     "type": "item",
@@ -77,6 +77,16 @@
                             "data": 7
                         }
                     ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:event_maker",
+                    "weight": 2
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:strangifier",
+                    "weight": 2
                 },
                 {
                     "type": "item",

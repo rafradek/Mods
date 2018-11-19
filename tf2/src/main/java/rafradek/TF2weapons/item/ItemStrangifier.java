@@ -30,8 +30,8 @@ public class ItemStrangifier extends ItemApplicableEffect {
 	}
 	
 	public boolean isApplicable(ItemStack stack, ItemStack weapon) {
-		return stack.hasTagCompound() && stack.getTagCompound().hasKey("Weapon") ? super.isApplicable(stack, weapon) : stack.getItem() instanceof ItemUsable || stack.getItem() instanceof ItemCloak
-				|| stack.getItem() instanceof ItemPDA || stack.getItem() instanceof ItemBackpack;
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("Weapon") ? super.isApplicable(stack, weapon) : weapon.getItem() instanceof ItemUsable || weapon.getItem() instanceof ItemCloak
+				|| weapon.getItem() instanceof ItemPDA || weapon.getItem() instanceof ItemBackpack;
 	}
 	
 	public void apply(ItemStack stack, ItemStack weapon) {

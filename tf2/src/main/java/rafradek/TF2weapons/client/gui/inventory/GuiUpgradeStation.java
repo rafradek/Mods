@@ -23,6 +23,7 @@ import rafradek.TF2weapons.inventory.ContainerUpgrades;
 import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.gui.GuiTooltip;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.TF2Attribute.Type;
 
@@ -68,6 +69,7 @@ public class GuiUpgradeStation extends GuiContainer {
 				this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4 + 1,
 						this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-"));
 			}
+		this.buttonList.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 19, 150, 12, "Austrialium and strange weapons have higher upgrade limit", this));
 		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
 						this.guiTop + 121, 100, 20, "Refund Upgrades"));
 		setButtons();

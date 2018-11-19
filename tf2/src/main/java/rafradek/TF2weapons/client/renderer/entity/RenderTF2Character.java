@@ -22,6 +22,7 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.client.model.ModelHeavy;
 import rafradek.TF2weapons.client.model.ModelTF2Character;
+import rafradek.TF2weapons.client.renderer.LayerArmorTint;
 import rafradek.TF2weapons.client.renderer.LayerWearables;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
@@ -94,7 +95,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		super(renderManager, new ModelTF2Character(), 0.5F);
 		this.modelMain=(ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
-		this.addLayer(new LayerBipedArmor(this));
+		this.addLayer(new LayerArmorTint(this));
 		this.addLayer(new LayerWearables(this));
 		this.layerRenderers.removeIf(layer -> (LayerRenderer<?>)layer instanceof LayerCustomHead);
 	}

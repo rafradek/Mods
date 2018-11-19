@@ -43,6 +43,8 @@ public class TF2Attribute {
 
 	public static TF2Attribute[] attributes = new TF2Attribute[256];
 
+	public static List<TF2Attribute> listUpgrades;
+	
 	public int id;
 	public String name;
 	public Type typeOfValue;
@@ -331,7 +333,7 @@ public class TF2Attribute {
 		new TF2Attribute(120, "SentryBonus", "Sentry Bonus", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(121, "BuildingHealthBonus", "Building Health", Type.PERCENTAGE, 1f, State.POSITIVE,
 				PDA, 0.6f, 5, 240, 6, 0, 0.8f);
-		new TF2Attribute(122, "SentryFireRateBonus", "Sentry Fire Rate", Type.PERCENTAGE, 1f, State.POSITIVE,
+		new TF2Attribute(122, "SentryFireRateBonus", "Sentry Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
 				PDA, -0.1f, 3, 160, 6, 0, 1f);
 		new TF2Attribute(123, "DispenserRangeBonus", "Dispenser Range", Type.PERCENTAGE, 1f, State.POSITIVE,
 				PDA, 1, 4, 120, 4);
@@ -399,6 +401,8 @@ public class TF2Attribute {
 	}
 
 	public static List<TF2Attribute> getAllPassibleAttributesForUpgradeStation() {
+		if (listUpgrades != null)
+			return listUpgrades;
 		List<TF2Attribute> list = new ArrayList<>();
 		for (TF2Attribute attr : attributes)
 			if (attr != null && attr.canApply != Predicates.<ItemStack>alwaysFalse() && (attr.state != State.NEGATIVE))

@@ -1972,7 +1972,7 @@
 		"Slot": 0,
 		"Mobs": "pyro",
 		"Projectile": "fireball",
-		"Render": "rafradek_tf2_weapons:flamethrower",
+		"Render": "rafradek_tf2_weapons:dragon_fury",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.dragonsfury",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.dragonsfury",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.dragonsfury",

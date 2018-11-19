@@ -218,17 +218,15 @@ public class ClientProxy extends CommonProxy {
 				return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
 			}, TF2weapons.itemPlacer);
 		List<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
-		Iterator<Item> itemIterator = items.iterator();
-		while (itemIterator.hasNext()) {
-			Item item = itemIterator.next();
-			if (!(item instanceof ItemUsable || item instanceof ItemTool || item instanceof ItemSword
-					|| item instanceof ItemBow))
-				itemIterator.remove();
-		}
+		items.removeIf( item -> !(item instanceof ItemFromData || item instanceof ItemTool || item instanceof ItemSword
+				|| item instanceof ItemBow));
+
 		Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new IItemColor() {
 
 			@Override
 			public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+				if (ItemFromData.getData(stack).hasProperty(PropertyType.COLOR))
+					return ItemFromData.getData(stack).getInt(PropertyType.COLOR);
 				if (renderCritGlow > 15){
 					int color=TF2Util.colorCode[renderCritGlow % 16];
 					if(renderCritGlow < 32)
@@ -436,6 +434,8 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":mantreads", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemScoutBoots, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":scout_shoes", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemEventMaker, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":tour_ticket", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoMedigun, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_medigun", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 0,

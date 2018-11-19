@@ -164,6 +164,7 @@ public class WeaponData implements ICapabilityProvider {
 		public static final PropertyType<String> SPECIAL_2_SOUND = new PropertyType<>(80, "Special 2 sound", String.class);
 		public static final PropertyType<ItemFromData.AttributeProvider> ATTRIBUTES = new ItemFromData.PropertyAttribute(81, "Attributes", ItemFromData.AttributeProvider.class);
 		public static final PropertyType<ItemCrate.CrateContent> CONTENT = new ItemCrate.PropertyContent(82, "Content", ItemCrate.CrateContent.class);
+		public static final PropertyType<Integer> COLOR = new PropertyType<>(83, "Color", Integer.class);
 		public Class<T> type;
 		public int id;
 		public String name;

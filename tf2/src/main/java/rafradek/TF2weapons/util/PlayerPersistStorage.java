@@ -2,14 +2,18 @@ package rafradek.TF2weapons.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.Tuple;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -29,6 +33,7 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 	@SuppressWarnings("unchecked")
 	public Tuple<UUID, NBTTagCompound>[] buildings = new Tuple[4];
 	public ArrayList<UUID> disposableBuildings = new ArrayList<UUID>(5);
+	public NonNullList<ItemStack> itemsToGive = NonNullList.create();
 	public boolean save = false;
 	public PlayerPersistStorage(UUID uuid) {
 		this.uuid = uuid;
@@ -81,6 +86,7 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 			tag.setUniqueId("SentryAdd"+i+"UUID", disposableBuildings.get(i));
 			//tag.setTag("SentryAdd"+i, disposableBuildings.get(i).getSecond());
 		}
+		ItemStackHelper.saveAllItems(tag, itemsToGive);
 		return tag;
 	}
 
@@ -125,6 +131,8 @@ public class PlayerPersistStorage implements INBTSerializable<NBTTagCompound> {
 		for (int i = 0; i < count; i++) {
 			this.disposableBuildings.add(nbt.getUniqueId("SentryAdd"+i+"UUID"));
 		}
+		
+		ItemStackHelper.loadAllItems(nbt, this.itemsToGive);
 	}
 
 	public void setSave() {

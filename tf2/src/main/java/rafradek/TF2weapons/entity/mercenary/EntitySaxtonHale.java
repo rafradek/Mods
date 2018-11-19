@@ -120,6 +120,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			this.addTradeOffer(item, cost);
 		}
 		
+		this.addTradeOffer(new ItemStack(TF2weapons.itemEventMaker), 18);
 		/*ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
 		list.removeIf(attr -> attr == null || attr.perKill == 0);
 		for (int i = 0; i < 3; i++) {

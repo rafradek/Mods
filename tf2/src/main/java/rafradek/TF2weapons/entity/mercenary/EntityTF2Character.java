@@ -18,6 +18,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.IMerchant;
@@ -401,14 +402,15 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.dataManager.set(ROBOT, (byte) robot);
 		if (robot > 0) {
 			this.unlimitedAmmo = true;
+			TF2Util.addModifierSafe(this, SharedMonsterAttributes.FOLLOW_RANGE, new AttributeModifier(FOLLOW_MULT_UUID, "GiantRange", 0.4, 2), true);
 			if (robot > 1) {
 				this.tasks.removeTask(avoidSentry);
-				TF2Util.addModifierSafe(this, SharedMonsterAttributes.MAX_HEALTH, new AttributeModifier(HEALTH_MULT_UUID, "GiantHealth", this.robotStrength*4, 1), true);
+				TF2Util.addModifierSafe(this, SharedMonsterAttributes.MAX_HEALTH, new AttributeModifier(HEALTH_MULT_UUID, "GiantHealth", (1+this.robotStrength)*2.5, 1), true);
 				TF2Util.addModifierSafe(this, SharedMonsterAttributes.KNOCKBACK_RESISTANCE, new AttributeModifier(KNOCKBACK_MULT_UUID, "GiantKnockback", 0.6, 0), true);
-				TF2Util.addModifierSafe(this, SharedMonsterAttributes.FOLLOW_RANGE, new AttributeModifier(FOLLOW_MULT_UUID, "GiantRange", 0.4, 2), true);
+				TF2Util.addModifierSafe(this, SharedMonsterAttributes.FOLLOW_RANGE, new AttributeModifier(FOLLOW_MULT_UUID, "GiantRange", 0.8, 2), true);
 				this.setHealth(this.getMaxHealth());
 				if (!(this instanceof EntityScout || this instanceof EntityMedic))
-					TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, new AttributeModifier(SPEED_GIANT_MULT_UUID, "GiantSpeed", -0.5, 2), true);
+					TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, new AttributeModifier(SPEED_GIANT_MULT_UUID, "GiantSpeed", -0.43, 2), true);
 			}
 		}
 	}
@@ -516,6 +518,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		// if (this.hasHome()) {
 
 		if (!this.world.isRemote) {
+			if (this.isRobot() && this.getAttackTarget() == null)
+				this.idleTime +=1;
 			if (this.getOrder() == Order.HOLD && !this.hasHome())
 				this.setHomePosAndDistance(this.getPos(), 12);
 			else if (this.getOrder() == Order.FOLLOW && this.hasHome())
@@ -623,9 +627,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 			if (this.bannerTeam != -1) {
 				data.team = this.bannerTeam;
-			} 
-			else if (TF2EventsCommon.isSpawnEvent(world)) {
-				data.team = 2;
 			}
 			else {
 				List<EntityTF2Character> list = this.world.getEntitiesWithinAABB(EntityTF2Character.class, this.getEntityBoundingBox().grow(40, 4.0D, 40), null);
@@ -654,15 +655,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		}
 		if (data.team == 2) {
 			this.setRobot(1);
-			List<EntityPlayerMP> list = this.world.getPlayers(EntityPlayerMP.class, player -> player.getDistanceSqToEntity(this) < 16000);
-			for (EntityPlayerMP player : list) {
-				float killed = player.getStatFile().readStat(TF2weapons.robotsKilled);
-				this.robotStrength += 1f + Math.min(1f, killed / 100f);
-				
-			}
-			this.robotStrength *= 3f / (list.size() + 2);
-			if (data.isGiant || (data.natural && this.canBecomeGiant() && data.allowGiant && this.rand.nextFloat() < 0.025 * this.robotStrength)) {
-				this.spawnMedic = data.natural && this.rand.nextFloat() < 0.15 * this.robotStrength + 0.15;
+			if (data.isGiant /*|| (data.natural && this.canBecomeGiant() && data.allowGiant)*/) {
+				//this.spawnMedic = data.natural && this.rand.nextFloat() < 0.15 * this.robotStrength + 0.15;
 				this.setRobot(2);
 			}
 		}
@@ -911,7 +905,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		}
 
 		boolean naturalGround = TF2Util.isNaturalBlock(world, this.getPosition().down(), world.getBlockState(this.getPosition().down()));
-		boolean validLight = this.isValidLightLevel(naturalGround, TF2EventsCommon.isSpawnEvent(world));
+		boolean validLight = this.isValidLightLevel(naturalGround, this.isRobot());
 		
 		if (!validLight)
 			return false;
@@ -1149,7 +1143,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	protected boolean canDespawn() {
-		return this.natural && this.getOwnerId() == null && !TF2EventsCommon.isSpawnEvent(world);
+		return this.natural && this.getOwnerId() == null;
 	}
 
 	/*
@@ -1614,6 +1608,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		return TF2Util.lerp(min, max, 1 - (1f / (1 << (diff - 1))));
 	}
 
+	public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount)
+    {
+		return forSpawnCount && this.isRobot() ? false : super.isCreatureType(type, forSpawnCount);
+    }
+	
 	@SuppressWarnings("unchecked")
     @Override
     @Nullable

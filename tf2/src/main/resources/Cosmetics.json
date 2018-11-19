@@ -64,6 +64,16 @@
 		"Attributes":{
 			"ExplodeDeath": 1
 		}
+	},
+	"head_prize": {
+		"Name": "Head Prize",
+		"Class": "cosmetic",
+		"Mobs": "pyro,scout,demoman",
+		"Slot": 9,
+		"Render": "rafradek_tf2_weapons:head_prize",
+		"Color": 13004885,
+		"Cost": 72,
+		"Wear flags": 3,
+		"Description": "UwU"
 	}
-	
 }

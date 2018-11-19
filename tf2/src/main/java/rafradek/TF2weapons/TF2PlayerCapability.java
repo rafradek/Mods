@@ -28,7 +28,10 @@ import net.minecraft.util.MovementInput;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -157,8 +160,16 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				}
 			
 			int contractDay;
-			if (this.robotsKilledInvasion > 0 && !TF2EventsCommon.isSpawnEvent(this.owner.world)) {
-				this.giveRobotAwards();
+			if (!PlayerPersistStorage.get(this.owner).itemsToGive.isEmpty()) {
+				ITextComponent text = new TextComponentString("You were awarded:");
+				text.getStyle().setColor(TextFormatting.GOLD);
+				this.owner.sendMessage(text);
+				for (ItemStack stack : PlayerPersistStorage.get(this.owner).itemsToGive) {
+					ItemHandlerHelper.giveItemToPlayer(owner, stack);
+					this.owner.sendMessage(new TextComponentString(stack.getDisplayName()));
+				}
+				PlayerPersistStorage.get(this.owner).itemsToGive.clear();
+				
 			}
 			if(!TF2ConfigVars.disableContracts && this.contracts.size()<2 && (contractDay=((EntityPlayerMP) this.owner).getStatFile().readStat(TF2Achievements.CONTRACT_DAY)) != 0  
 					&&this.owner.world.getWorldTime()%24000 > 1000 && this.owner.world.getWorldTime()/24000>=contractDay) {
@@ -190,57 +201,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 	}
 
-	public void giveRobotAwards() {
-		float chance = ((EntityPlayerMP)this.owner).getStatFile().readStat(TF2weapons.robotsKilled);
-		chance = (1f + Math.min(2f, chance / 130f)) * Math.min(40f,(float)Math.pow(this.robotsKilledInvasion, 0.75)) * (owner.getRNG().nextFloat() + 1f);
-		while (chance >= 4f) {
-			int itemtype = owner.getRNG().nextInt(2);
-			float cost = 0f;
-			ItemStack item = ItemStack.EMPTY;
-			if (itemtype == 0 && chance >= 4.5f) {
-				boolean australium = chance > 18 && owner.getRNG().nextInt(6) == 0;
-				float chl = chance;
-				item = ItemFromData.getRandomWeapon(owner.getRNG(), Predicates.and(data -> {
-					return chl > (australium ? 2f : 0.5f) * data.getInt(PropertyType.COST) ;
-				},ItemFromData.VISIBLE_WEAPON));
-				if (!item.isEmpty()) {
-					cost = 0.5f * ItemFromData.getData(item).getInt(PropertyType.COST);
-					if (australium) {
-						cost *= 4f;
-						item.getTagCompound().setBoolean("Australium", true);
-						item.getTagCompound().setBoolean("Strange", true);
-					}
-					float upgradecost = (chance-cost) * owner.getRNG().nextFloat() * 0.5f;
-					TF2Attribute.upgradeItemStack(item, (int)upgradecost * 20, owner.getRNG());
-					cost += upgradecost;
-				}
-			}
-			if (cost == 0 && itemtype == 1 && chance >= 3) {
-				ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
-				list.removeIf(attr -> attr == null || attr.perKill == 0);			
-				int level = 0;
-				cost = 3f;
-				float rand = owner.getRNG().nextFloat();
-				if (rand < 0.1f && chance >= 27f) {
-					level = 2;
-					cost = 27f;
-				}
-				else if (rand < 0.35f && chance >= 9f) {
-					level = 1;
-					cost = 9f;
-				}
-				item = new ItemStack(TF2weapons.itemKillstreakFabricator, 1, list.get(owner.getRNG().nextInt(list.size())).id + (level << 9));
-			}
-			if (!item.isEmpty()) {
-				chance -= cost;
-				ItemHandlerHelper.giveItemToPlayer(owner, item);
-			}
-			else
-				break;
-		}
-		((EntityPlayerMP)this.owner).sendMessage(new TextComponentString("You were awarded"));
-		this.robotsKilledInvasion = 0;
-	}
+	
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
@@ -338,8 +299,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.nextBossTicks = nbt.getInteger("NextBossTick");
 		this.dodgedDmg=nbt.getFloat("DodgedDmg");
 		NBTTagList list=(NBTTagList) nbt.getTag("Contracts");
+		this.contracts.clear();
 		if(list != null)
-		for(int i=0;i<list.tagCount();i++) {
+		for(int i=0;i<list.tagCount() && i < 16;i++) {
 			NBTTagCompound com=list.getCompoundTagAt(i);
 			byte[] objsb=com.getByteArray("Objectives");
 			Objective[] objs=new Objective[objsb.length];

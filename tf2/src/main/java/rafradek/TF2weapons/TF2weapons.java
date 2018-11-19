@@ -194,6 +194,7 @@ import rafradek.TF2weapons.item.ItemArmorTF2;
 import rafradek.TF2weapons.item.ItemBuildingBox;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
+import rafradek.TF2weapons.item.ItemEventMaker;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFoodThrowable;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -247,7 +248,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.5", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.6", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -353,6 +354,7 @@ public class TF2weapons {
 	public static Item itemGunboats;
 	public static Item itemStrangifier;
 	public static Item itemKillstreakFabricator;
+	public static Item itemEventMaker;
 	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
@@ -583,6 +585,7 @@ public class TF2weapons {
 		ForgeRegistries.ITEMS.register(itemStrangifier = new ItemStrangifier().setRegistryName(TF2weapons.MOD_ID + ":strangifier")
 				.setUnlocalizedName("strangifier").setCreativeTab(TF2weapons.tabutilitytf2));
 		ForgeRegistries.ITEMS.register(itemKillstreakFabricator = new ItemKillstreakFabricator().setRegistryName(TF2weapons.MOD_ID + ":killstreakfabricator"));
+		ForgeRegistries.ITEMS.register(itemEventMaker = new ItemEventMaker().setCreativeTab(tabutilitytf2).setUnlocalizedName("eventmaker").setRegistryName(TF2weapons.MOD_ID + ":eventmaker"));
 		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
 		while (iterator.hasNext()) {
 			String name = iterator.next();

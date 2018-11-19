@@ -149,7 +149,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 				if (entityIn != null) {
 					if (TF2Util.getTeamColorNumber(entityIn) == 12)
 						return 0;
-					else if (TF2Util.getTeamColorNumber(entityIn) == 9)
+					else if (TF2Util.getTeamColorNumber(entityIn) == 9 || TF2Util.getTeamColorNumber(entityIn) == 11)
 						return 1f;
 					return 0.5f;
 				}
@@ -490,8 +490,9 @@ public class ItemFromData extends Item implements IItemOverlay{
 				else {
 					if (stackAmmo.getItem() instanceof ItemArrow)
 						stack.getTagCompound().setTag("LastLoaded", stackAmmo.serializeNBT());
+					int ammo = amount;
 					amount -= stackAmmo.getCount();
-					stackAmmo.shrink(amount);
+					stackAmmo.shrink(ammo);
 					
 				}
 				

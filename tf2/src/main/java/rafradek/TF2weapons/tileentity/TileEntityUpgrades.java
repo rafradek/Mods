@@ -19,6 +19,7 @@ public class TileEntityUpgrades extends TileEntity {
 	public static final int UPGRADES_COUNT = 10;
 	public HashMap<TF2Attribute, Integer> attributes = new HashMap<>();
 	public List<TF2Attribute> attributeList = new ArrayList<TF2Attribute>();
+	private int maxSize;
 
 	public TileEntityUpgrades() {
 		super();
@@ -46,6 +47,7 @@ public class TileEntityUpgrades extends TileEntity {
 					break;
 				}
 			}
+		this.maxSize = size;
 		// this.world.markAndNotifyBlock(pos,
 		// this.world.getChunkFromBlockCoords(getPos()),
 		// this.world.getBlockState(getPos()),
@@ -58,7 +60,7 @@ public class TileEntityUpgrades extends TileEntity {
 		super.readFromNBT(compound);
 		this.attributeList.clear();
 		this.attributes.clear();
-		if (compound.hasKey("Attributes")) {
+		if (compound.hasKey("Attributes") && compound.getShort("MaxS") == (int)(TF2Attribute.getAllPassibleAttributesForUpgradeStation().size()*0.67f)) {
 			NBTTagCompound attrs = compound.getCompoundTag("Attributes");
 			NBTTagList attrList = (NBTTagList) compound.getTag("AttributesList");
 			for (String key : attrs.getKeySet())
@@ -66,6 +68,7 @@ public class TileEntityUpgrades extends TileEntity {
 			for (int i = 0; i < attrList.tagCount(); i++)
 				this.attributeList.add(TF2Attribute.attributes[attrList.getIntAt(i)]);
 		}
+		
 	}
 
 	@Override
@@ -73,6 +76,7 @@ public class TileEntityUpgrades extends TileEntity {
 		super.writeToNBT(compound);
 		NBTTagCompound attrs = new NBTTagCompound();
 		NBTTagList attrList = new NBTTagList();
+		compound.setShort("MaxS", (short) this.maxSize);
 		compound.setTag("Attributes", attrs);
 		compound.setTag("AttributesList", attrList);
 		for (TF2Attribute attr : this.attributeList)

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
@@ -344,9 +345,12 @@ public class TF2EventsCommon {
 			}
 			int dayTime=(int) (worldTime % 24000);
 			if (dayTime == 1 && !TF2ConfigVars.disableInvasion){
-				
-				if (events!=null){//(TF2WorldStorage) event.world.getPerWorldStorage().getOrLoadData(TF2WorldStorage.class, TF2weapons.MOD_ID);
-					if (events.eventFlag == 1) {
+				if (events!=null && new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
+						.nextInt(20) == 0){
+					for (EntityPlayer player : event.world.playerEntities) {
+						events.startInvasion(player);
+					}
+					/*if (events.eventFlag == 1) {
 						for (EntityPlayer player : event.world.playerEntities) {
 							player.sendMessage(new TextComponentString("The event has just ended"));
 						}
@@ -358,8 +362,15 @@ public class TF2EventsCommon {
 							player.sendMessage(new TextComponentString("Robots invade the area!"));
 						}
 						events.eventFlag=1;
-					}
+					}*/
 				}
+			}
+			Iterator<Entry<UUID, InvasionEvent>> ite = events.invasions.entrySet().iterator();
+			while (ite.hasNext()) {
+				Entry<UUID, InvasionEvent> entry = ite.next();
+				entry.getValue().onUpdate();
+				if (entry.getValue().finished)
+					ite.remove();
 			}
 			if (!TF2ConfigVars.disableBossSpawn && dayTime >= 14000 && dayTime <= 21000 && dayTime % 1000 == 0 && event.world.getCurrentMoonPhaseFactor() == 1
 					&& worldTime > 24000) {
@@ -1613,7 +1624,7 @@ public class TF2EventsCommon {
 	}
 	@SubscribeEvent
 	public void attachCapabilityWorld(AttachCapabilitiesEvent<World> event) {
-		event.addCapability(new ResourceLocation(TF2weapons.MOD_ID, "tf2worldcapability"), new TF2WorldStorage());
+		event.addCapability(new ResourceLocation(TF2weapons.MOD_ID, "tf2worldcapability"), new TF2WorldStorage(event.getObject()));
 	}
 	
 	@SubscribeEvent
@@ -2241,11 +2252,12 @@ public class TF2EventsCommon {
 
 		public int eventFlag;
 
+		public World world;
 		public HashMap<Entity, InboundDamage> damage= new HashMap<>();
 		public ArrayList<BlockPos> banners=new ArrayList<>();
 		public HashMap<String,MerchantRecipeList> lostItems=new HashMap<>();
 		private HashMap<UUID, PlayerPersistStorage> playerStorage = new HashMap<>();
-		public Set<InvasionEvent> invasions = new HashSet<>();
+		public Map<UUID,InvasionEvent> invasions = new HashMap<>();
 		public ArrayList<DestroyBlockEntry> destroyProgress = new ArrayList<>();
 		
 		/*@Override
@@ -2260,6 +2272,9 @@ public class TF2EventsCommon {
 			System.out.println("SAVE world nbt");
 			return compound;
 		}*/
+		public TF2WorldStorage(World world) {
+			this.world = world;
+		}
 		@Override
 		public NBTTagCompound serializeNBT() {
 			NBTTagCompound nbt=new NBTTagCompound();
@@ -2290,6 +2305,12 @@ public class TF2EventsCommon {
 				if (entry.getValue().save)
 					tagPlSt.setTag(entry.getKey().toString(), entry.getValue().serializeNBT());
 			}
+			
+			NBTTagCompound invTag = new NBTTagCompound();
+			for (Entry<UUID,InvasionEvent> entry : invasions.entrySet()) {
+				invTag.setTag(entry.getKey().toString(), entry.getValue().serializeNBT());
+			}
+			nbt.setTag("Invasions", invTag);
 			/*for(UUID id:lostMercPos.keySet()){
 				NBTTagList list = new NBTTagList();
 				for(BlockPos pos:lostMercPos.get(id)) {
@@ -2349,7 +2370,10 @@ public class TF2EventsCommon {
 				NBTTagList coords=(NBTTagList) bannersS.get(i);
 				banners.add(new BlockPos(coords.getIntAt(0),coords.getIntAt(1),coords.getIntAt(2)));
 			}
-			
+			NBTTagCompound invTag = nbt.getCompoundTag("Invasions");
+			for(String key : invTag.getKeySet()) {
+				invasions.put(UUID.fromString(key),new InvasionEvent(world, invTag.getCompoundTag(key)));
+			}
 		}
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
@@ -2374,6 +2398,18 @@ public class TF2EventsCommon {
 			return this.playerStorage.get(player);
 		}
 		
+		public boolean startInvasion(EntityPlayer player) {
+			if (this.invasions.containsKey(player.getUniqueID()))
+				return false;
+			for (Entry<UUID, InvasionEvent> entry : invasions.entrySet()) {
+				if (entry.getValue().isInRange(player.getPosition()))
+					return false;
+			}
+			
+			InvasionEvent event = new InvasionEvent(world, player.getPosition());
+			this.invasions.put(player.getUniqueID(), event);
+			return true;
+		}
 	}
 	public static class TF2ContainerListener implements IContainerListener{
 

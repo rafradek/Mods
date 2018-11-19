@@ -180,7 +180,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 					((EntityTeleporter) entity).setExit(stack.getTagCompound().getByte("Building") == 4);
 				PlayerPersistStorage.get(playerIn).setBuilding(entity,TF2PlayerCapability.get(playerIn).calculateMaxSentries());
 				TF2PlayerCapability.get(playerIn).carrying = null;
-				if (!playerIn.capabilities.isCreativeMode)
+				if (!playerIn.capabilities.isCreativeMode && TF2PlayerCapability.get(playerIn).carrying == null)
 					WeaponsCapability.get(playerIn).consumeMetal(EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1, 
 							TF2Util.getFirstItem(playerIn.inventory, stackL -> stackL.getItem() instanceof ItemWrench)),false);
 			}
