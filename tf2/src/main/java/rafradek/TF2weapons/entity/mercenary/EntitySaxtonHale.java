@@ -418,9 +418,9 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 				&& player.getHeldItemMainhand().getItem() instanceof ItemMonsterPlacerPlus)
 				&& this.getAttackTarget() == null && this.isEntityAlive() && !this.isTrading() && !this.isChild()
 				&& !player.isSneaking()) {
-			if (this.world.isRemote && player.getTeam() == null && !player.isCreative())
+			if (this.world.isRemote && player.getTeam() == null && !player.capabilities.isCreativeMode)
 				ClientProxy.displayScreenJoinTeam();
-			else if (!this.world.isRemote && (player.getTeam() != null || player.isCreative())
+			else if (!this.world.isRemote && (player.getTeam() != null || player.capabilities.isCreativeMode)
 					&& (this.tradeOffers == null || !this.tradeOffers.isEmpty())) {
 				this.setCustomer(player);
 				player.displayVillagerTradeGui(this);

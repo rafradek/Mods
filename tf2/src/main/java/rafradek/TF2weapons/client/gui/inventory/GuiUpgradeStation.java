@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.client.gui.inventory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.input.Mouse;
@@ -37,6 +38,7 @@ public class GuiUpgradeStation extends GuiContainer {
 			"textures/gui/container/upgrades.png");
 
 	// public ItemStack[] itemsToRender;
+	public ArrayList<GuiTooltip> tooltip = new ArrayList<>();
 	public GuiButton[] buttons = new GuiButton[12];
 	public GuiButton refund;
 	public int firstIndex;
@@ -62,6 +64,7 @@ public class GuiUpgradeStation extends GuiContainer {
 	@Override
 	public void initGui() {
 		super.initGui();
+		this.tooltip.clear();
 		for (int x = 0; x < 2; x++)
 			for (int y = 0; y < 3; y++) {
 				this.buttonList.add(buttons[x * 2 + y * 4] = new GuiButton(x * 2 + y * 4, this.guiLeft + 81 + x * 101,
@@ -69,7 +72,7 @@ public class GuiUpgradeStation extends GuiContainer {
 				this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4 + 1,
 						this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-"));
 			}
-		this.buttonList.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 19, 150, 12, "Austrialium and strange weapons have higher upgrade limit", this));
+		this.tooltip.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 15, 100, 12, "Austrialium and strange weapons have higher upgrade limit", this));
 		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
 						this.guiTop + 121, 100, 20, "Refund Upgrades"));
 		setButtons();
@@ -121,6 +124,9 @@ public class GuiUpgradeStation extends GuiContainer {
 				&& this.inventorySlots.inventorySlots.get(0).getStack().getTagCompound().getInteger("TotalSpent") > 0;
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		this.renderHoveredToolTip(mouseX, mouseY);
+		for (GuiTooltip tooltip : this.tooltip) {
+			tooltip.drawButton(mc, mouseX, mouseY, partialTicks);
+		}
 		for (int m = 0; m < 6; m++) {
 			
 		}
@@ -227,6 +233,5 @@ public class GuiUpgradeStation extends GuiContainer {
 		int k = y + 96;
 
 		this.drawTexturedModalRect(x, y + (int) ((k - y - 17) * this.scroll), 232, 0, 12, 15);
-
 	}
 }

@@ -1289,6 +1289,13 @@ public class TF2Util {
 			e.printStackTrace();
 		}
 	}
+	
+	public static EntityLivingBase getOwnerIfOwnable(EntityLivingBase living) {
+		if (living instanceof IEntityOwnable && ((IEntityOwnable)living).getOwner() != null)
+			return (EntityLivingBase) ((IEntityOwnable)living).getOwner();
+		else
+			return living;
+	}
 	static {
 		for (int i = 0; i < 512; i++) {
 			ASIN_VALUES[i] = (float) Math.asin(i/511D);

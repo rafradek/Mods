@@ -36,6 +36,7 @@ public class TileEntityUpgrades extends TileEntity {
 	public void generateUpgrades(Random rand) {
 		// System.out.println("Max Size: "+MapList.nameToAttribute.size());
 		List<TF2Attribute> passAttributes = TF2Attribute.getAllPassibleAttributesForUpgradeStation();
+		this.maxSize = passAttributes.size();
 		int size = (int) (passAttributes.size()*0.67f);
 		for (int i = 0; i < size; i++)
 			while (true) {
@@ -47,7 +48,6 @@ public class TileEntityUpgrades extends TileEntity {
 					break;
 				}
 			}
-		this.maxSize = size;
 		// this.world.markAndNotifyBlock(pos,
 		// this.world.getChunkFromBlockCoords(getPos()),
 		// this.world.getBlockState(getPos()),
@@ -60,7 +60,8 @@ public class TileEntityUpgrades extends TileEntity {
 		super.readFromNBT(compound);
 		this.attributeList.clear();
 		this.attributes.clear();
-		if (compound.hasKey("Attributes") && compound.getShort("MaxS") == (int)(TF2Attribute.getAllPassibleAttributesForUpgradeStation().size()*0.67f)) {
+		this.maxSize = compound.getShort("MaxS");
+		if (compound.hasKey("Attributes") && maxSize == TF2Attribute.getAllPassibleAttributesForUpgradeStation().size()) {
 			NBTTagCompound attrs = compound.getCompoundTag("Attributes");
 			NBTTagList attrList = (NBTTagList) compound.getTag("AttributesList");
 			for (String key : attrs.getKeySet())

@@ -167,7 +167,7 @@ public class TF2EventsClient {
 					
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 				}
-				else if (chest.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", chest, 0f, minecraft.player) != 0f
+				else if (!minecraft.player.capabilities.isCreativeMode && chest.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", chest, 0f, minecraft.player) != 0f
 						&& ((ItemJetpack)chest.getItem()).canActivate(chest, minecraft.player)) {
 					//((ItemJetpack)chest.getItem()).activateJetpack(chest, minecraft.player, true);
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(30));
@@ -452,7 +452,7 @@ public class TF2EventsClient {
 		// PacketOpenNormalInventory(event.getGui().mc.player));
 		if (event.getGui() instanceof GuiMerchant && event.getButton().id == 7578) {
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(29));
-			Minecraft.getMinecraft().displayGuiScreen(null);
+			Minecraft.getMinecraft().player.closeScreen();
 		}
 		else if (event.getGui() instanceof GuiMerchant && event.getButton().id == 7579) {
 			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(18));

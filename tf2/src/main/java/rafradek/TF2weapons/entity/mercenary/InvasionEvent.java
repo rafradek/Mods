@@ -50,6 +50,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.TF2weapons;
 
@@ -93,7 +94,6 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.target = targetPos;
 		List<EntityPlayerMP> players = this.world.getPlayers(EntityPlayerMP.class, player -> this.isInRange(player.getPosition()));
 		for (EntityPlayerMP player: players) {
-			player.setPosition(0, 0, 0);
 			float killed = player.getStatFile().readStat(TF2weapons.robotsKilled);
 			this.difficulty += 1f + Math.min(3f, killed / 250f);
 			this.onPlayerEnter(player);
@@ -146,8 +146,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		while (it.hasNext()) {
 			EntityTF2Character ent = it.next();
 			if (ent.isDead) {
-				if (ent.getLastDamageSource() != null && ent.getLastDamageSource().getTrueSource() instanceof EntityPlayer)
-					this.onKill(ent.getLastDamageSource().getTrueSource(), ent.getLastDamageSource(), ent);
+				if (ent.getAttackingEntity() != null && TF2Util.getOwnerIfOwnable(ent.getAttackingEntity()) instanceof EntityPlayer)
+					this.onKill(TF2Util.getOwnerIfOwnable(ent.getAttackingEntity()), ent.getLastDamageSource(), ent);
 				it.remove();
 			}
 		}
@@ -295,11 +295,12 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.wave++;
 		this.pauseTicks = 300;
 		this.robotsWave = (int) (15f * this.getWaveDifficulty());
+		if (wave != 1)
+			giveRobotAwards();
 		this.robotKilledWave = 0;
 		this.endTime = this.world.getTotalWorldTime() + (this.wave+1) * 12000;
 		this.bossInfo.setName(new TextComponentString("Robot Invasion - Wave "+wave+"/"+waves));
-		if (wave != 1)
-			giveRobotAwards();
+		
 	}
 	
 	public void onKill(Entity player, DamageSource source, EntityTF2Character robot) {
@@ -346,7 +347,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		
 		List<ItemStack> items = new ArrayList<>();
 		float chance = this.difficulty;
-		chance = Math.min(50f,(float)Math.pow(this.robotKilledWave, 0.75)) * (this.world.rand.nextFloat() + 1f);
+		chance = Math.min(40f,(float)Math.pow(this.robotKilledWave, 0.7)) * (this.world.rand.nextFloat()*0.75f + 1f);
 		if (this.wave == this.waves)
 			chance *=2;
 		
