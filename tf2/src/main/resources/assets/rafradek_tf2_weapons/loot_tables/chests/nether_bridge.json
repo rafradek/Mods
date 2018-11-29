@@ -6,7 +6,18 @@
             "entries": [
             	{
                     "type": "empty",
-                    "weight": 50
+                    "weight": 51
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:eventmaker",
+                    "weight": 2,
+                    "functions": [
+                    	{
+                            "function": "set_data",
+                            "data": 2
+                        }
+                    ]
                 },
                 {
                     "type": "item",

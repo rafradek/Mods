@@ -80,8 +80,14 @@
                 },
                 {
                     "type": "item",
-                    "name": "rafradek_tf2_weapons:event_maker",
-                    "weight": 3
+                    "name": "rafradek_tf2_weapons:eventmaker",
+                    "weight": 2,
+                    "functions": [
+                    	{
+                            "function": "set_data",
+                            "data": 1
+                        }
+                    ]
                 },
                 {
                     "type": "item",

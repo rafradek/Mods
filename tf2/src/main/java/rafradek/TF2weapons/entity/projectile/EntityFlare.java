@@ -49,6 +49,10 @@ public class EntityFlare extends EntityProjectileSimple {
 		return true;
 	}
 
+	public float getExplosionSize() {
+		return 2.1f;
+	}
+	
 	@Optional.Method(modid = "dynamiclights")
 	@Override
 	public int getLightLevel() {

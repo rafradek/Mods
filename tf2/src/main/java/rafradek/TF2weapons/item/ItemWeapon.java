@@ -162,12 +162,10 @@ public abstract class ItemWeapon extends ItemUsable {
 						stack);
 			return true;
 		}
-		
+		cap.autoFire = TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0;
 		if (stack.getItemDamage() != stack.getMaxDamage())
-			if (this.hasClip(stack)) {
-				stack.damageItem(1, living);
-				
-					
+			if (this.hasClip(stack) && (TF2ConfigVars.mustReload || !(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode))) {
+				stack.setItemDamage(stack.getItemDamage()+1);
 			}
 		if (living instanceof EntityPlayer && hand == EnumHand.MAIN_HAND)
 			((EntityPlayer) living).resetCooldown();
@@ -274,7 +272,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		 */
 		return super.canFire(world, living, stack) && !(this.holdingMode(stack, living) > 0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging())
 				&& ( this.isAmmoSufficient(stack, living, false)
-						|| (living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode));
+						);
 	}
 
 	@Override
@@ -466,16 +464,16 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 
 	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
-		return living != null && ItemFromData.getData(stack).getBoolean(PropertyType.SPREAD_RECOVERY)
-				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0
-						? 0
-						: TF2Attribute.getModifier("Spread", stack,
-								ItemFromData.getData(stack).getFloat(PropertyType.SPREAD), living)
-								/ TF2Attribute.getModifier("Accuracy", stack, 1, living)
-								* (living != null && (isDoubleWielding(living) || living.isHandActive()) ? 1.5f
-										: 1f)
-								* (TF2Attribute.getModifier("Spread Health", stack, 1f, living) != 1f ?
-									this.getHealthBasedBonus(stack, living, TF2Attribute.getModifier("Spread Health", stack, 1f, living)) : 1f);
+		if ( living != null && ItemFromData.getData(stack).getBoolean(PropertyType.SPREAD_RECOVERY)
+				&& living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0)
+			return 0;
+		float value = TF2Attribute.getModifier("Spread", stack,
+				ItemFromData.getData(stack).getFloat(PropertyType.SPREAD), living) / TF2Attribute.getModifier("Accuracy", stack, 1, living);
+		if (living != null && (isDoubleWielding(living) || living.isHandActive()))
+			value *= 1.5f;
+		if (TF2Attribute.getModifier("Spread Health", stack, 1f, living) != 1f)
+			value *= this.getHealthBasedBonus(stack, living, TF2Attribute.getModifier("Spread Health", stack, 1f, living));
+		return value;
 	}
 
 	public int getWeaponPelletCount(ItemStack stack, EntityLivingBase living) {
@@ -552,17 +550,19 @@ public abstract class ItemWeapon extends ItemUsable {
 
 	@Override
 	public void draw(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
-		cap.reloadCool = 0;
 		cap.setCritTime(0);
-		cap.state = cap.state & 7;
+		cap.stopReload();
 		//if (!world.isRemote && living instanceof EntityPlayerMP)
 			//TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,ItemAmmo.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
-
+		if (TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
+			stack.setItemDamage(stack.getMaxDamage());
+		}
 		super.draw(cap, stack, living, world);
 	}
 	
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
-		super.holster(cap, stack, living, world);
+		
+		
 		cap.focusShotRemaining=0;
 		cap.focusShotTicks=0;
 		cap.setCharging(false);
@@ -575,6 +575,12 @@ public abstract class ItemWeapon extends ItemUsable {
         }
 		if(removeHealth != 0)
 			living.setHealth((living.getMaxHealth()/(removeHealth+living.getMaxHealth())*living.getHealth()));
+		
+		super.holster(cap, stack, living, world);
+	}
+	
+	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0 && stack.getItemDamage() < stack.getMaxDamage();
 	}
 	
 	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
@@ -604,7 +610,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		return true;
 	}
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
-		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0)
+		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0 && target != attacker)
 			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Hit", stack, 0, attacker)
 					, (int) TF2Attribute.getModifier("Burn Time", stack, 1f, attacker));
 		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
@@ -752,7 +758,8 @@ public abstract class ItemWeapon extends ItemUsable {
 		
 		//System.out.println((living.world.isRemote && living != ClientProxy.getLocalPlayer())+" "+ ((!this.hasClip(stack) || all) && !ItemAmmo.searchForAmmo(living, stack).isEmpty()) +" "+ (this.hasClip(stack) && stack.getItemDamage() < stack.getMaxDamage()));
 		return (living.world.isRemote && living != ClientProxy.getLocalPlayer()) || (((!this.hasClip(stack) || all) && !this.searchForAmmo(living, stack).isEmpty())
-				|| (this.hasClip(stack) && stack.getItemDamage() < stack.getMaxDamage()));
+				|| (this.hasClip(stack) && (stack.getItemDamage() < stack.getMaxDamage() 
+						|| (!TF2ConfigVars.mustReload && (living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode)))));
 	}
 	
 	public boolean isItemStackDamageable()

@@ -203,6 +203,7 @@ import rafradek.TF2weapons.item.ItemKillstreakFabricator;
 import rafradek.TF2weapons.item.ItemKillstreakKit;
 import rafradek.TF2weapons.item.ItemMonsterPlacerPlus;
 import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemStatue;
 import rafradek.TF2weapons.item.ItemStrangifier;
 import rafradek.TF2weapons.item.ItemTF2;
@@ -248,7 +249,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.7", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.8", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -355,6 +356,7 @@ public class TF2weapons {
 	public static Item itemStrangifier;
 	public static Item itemKillstreakFabricator;
 	public static Item itemEventMaker;
+	public static Item itemRobotPart;
 	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
@@ -388,7 +390,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 35;
+		return 37;
 	}
 
 	@Mod.EventHandler
@@ -579,6 +581,7 @@ public class TF2weapons {
 		// GameRegistry.register(itemAustraliumIngot=new
 		// Item().setUnlocalizedName("ingotAustralium").setCreativeTab(tabtf2).setRegistryName(TF2weapons.MOD_ID+":ingotAustralium"));
 		ForgeRegistries.ITEMS.register(itemTF2 = new ItemTF2().setRegistryName(TF2weapons.MOD_ID + ":itemTF2"));
+		ForgeRegistries.ITEMS.register(itemRobotPart = new ItemRobotPart().setRegistryName(TF2weapons.MOD_ID + ":robotPart"));
 		//ForgeRegistries.ITEMS.register(itemPDA = new ItemPDA().setRegistryName(TF2weapons.MOD_ID + ":pda").setUnlocalizedName("pda").setCreativeTab(tabutilitytf2));
 		ForgeRegistries.ITEMS.register(itemTarget = new ItemTarget().setRegistryName(TF2weapons.MOD_ID + ":target").setUnlocalizedName("attackTarget"));
 		ForgeRegistries.ITEMS.register(itemKillstreak = new ItemKillstreakKit().setRegistryName(TF2weapons.MOD_ID + ":killstreakkit"));
@@ -667,6 +670,7 @@ public class TF2weapons {
 		ForgeRegistries.POTIONS.register(noKnockback = new PotionTF2(true, 0, 0, 0).setPotionName("effect.noKnockback").setRegistryName(TF2weapons.MOD_ID + ":noKnockbackEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "0d09b7c3-ac5e-4f56-9b65-fe2d09b99dc3", 10, 0));
 		// conf.save();
+		ItemKillstreakFabricator.initKillstreaks();
 		WeaponData.PropertyType.init();
 		if(!TF2ConfigVars.disableGeneration){
 			MapGenStructureIO.registerStructureComponent(MannCoBuilding.class, "ViMC");

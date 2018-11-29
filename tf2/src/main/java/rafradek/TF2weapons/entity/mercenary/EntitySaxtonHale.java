@@ -39,6 +39,7 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
@@ -62,6 +63,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	public boolean superJump;
 	public int jumpCooldown;
 	public boolean endangered;
+	public int lastWeekCheck;
 
 	private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE,
 			BossInfo.Overlay.PROGRESS));
@@ -90,9 +92,15 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	@Override
 	public MerchantRecipeList getRecipes(EntityPlayer player) {
 		// TODO Auto-generated method stub
-		if (this.tradeOffers == null)
+		if (this.tradeOffers == null || this.world.getTotalWorldTime() / 96000L != this.lastWeekCheck)
 			makeOffers();
-		return tradeOffers;
+		MerchantRecipeList list = new MerchantRecipeList();
+		list.addAll(this.tradeOffers);
+		for (int i = 0; i <= TF2PlayerCapability.get(player).maxInvasionBeaten; i++) {
+			if (!(i == 4 && ((EntityPlayerMP) player).getStatFile().readStat(TF2weapons.robotsKilled) < 2000) && i != InvasionEvent.DIFFICULTY.length)
+				this.addTradeOffer(new ItemStack(TF2weapons.itemEventMaker, 1, i), 27+i*9, list, i+1);
+		}
+		return list;
 	}
 
 	@Override
@@ -101,6 +109,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	}
 
 	public void makeOffers() {
+		this.lastWeekCheck = (int) (this.world.getTotalWorldTime() / 96000L);
 		this.tradeOffers = new MerchantRecipeList();
 		this.tradeOffers.add(new MerchantRecipe(new ItemStack(TF2weapons.itemTF2, 5, 2), ItemStack.EMPTY,
 				new ItemStack(TF2weapons.itemTF2, 1, 7), 0, 100));
@@ -120,7 +129,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			this.addTradeOffer(item, cost);
 		}
 		
-		this.addTradeOffer(new ItemStack(TF2weapons.itemEventMaker), 18);
+		
 		/*ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
 		list.removeIf(attr -> attr == null || attr.perKill == 0);
 		for (int i = 0; i < 3; i++) {
@@ -142,6 +151,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
 		this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
 				nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
+	}
+	
+	private void addTradeOffer(ItemStack toBuy, int cost, MerchantRecipeList list, int index) {
+		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
+		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
+		list.add(index, new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
+						nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
 	}
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
@@ -397,6 +413,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			this.tradeOffers.readRecipiesFromTags(par1NBTTagCompound.getCompoundTag("Offers"));
 		}
 		this.endangered = par1NBTTagCompound.getBoolean("Endangered");
+		this.lastWeekCheck = par1NBTTagCompound.getInteger("LastWeek");
 	}
 
 	@Override
@@ -405,6 +422,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			par1NBTTagCompound.setTag("Offers", this.tradeOffers.getRecipiesAsTags());
 		par1NBTTagCompound.setBoolean("Hostile", hostile);
 		par1NBTTagCompound.setBoolean("Endangered", this.endangered);
+		par1NBTTagCompound.setInteger("LastWeek", (short) this.lastWeekCheck);
 	}
 
 	@Override

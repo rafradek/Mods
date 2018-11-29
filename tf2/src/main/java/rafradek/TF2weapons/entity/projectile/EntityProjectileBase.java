@@ -308,9 +308,11 @@ public abstract class EntityProjectileBase extends Entity
 		}
 
 		if (this.shootingEntity != null) {
+			
 			boolean flag = this.shootingEntity.hasCapability(TF2weapons.WEAPONS_CAP, null);
-			if (flag)
+			if (flag) {
 				WeaponsCapability.get(this.shootingEntity).lastHitCharge = this.chargeLevel;
+			}
 			boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
 			for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
 					this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
@@ -331,6 +333,13 @@ public abstract class EntityProjectileBase extends Entity
 				}
 					
 				else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
+					if (TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
+						TF2Attribute.setAttribute(usedWeapon, TF2Attribute.attributes[0], 0);
+						this.explode(target.hitVec.x + target.sideHit.getFrontOffsetX() * 0.05, 
+								target.hitVec.y+ target.sideHit.getFrontOffsetY() * 0.05,
+								target.hitVec.z+ target.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
+						return;
+					}
 					int attr = this.world.isRemote ? 0
 							: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
 					if (attr == 0 && !ForgeEventFactory.onProjectileImpact(this, target)) {
@@ -342,9 +351,15 @@ public abstract class EntityProjectileBase extends Entity
 					else
 						this.setDead();
 				}
+				
 			}
-			if (flag)
+			if (flag) {
 				WeaponsCapability.get(this.shootingEntity).lastHitCharge = 0;
+				if (!this.isDead && (WeaponsCapability.get(this.shootingEntity).state & 2) == 2 && TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
+					this.explode(this.posX + this.motionX * 0.5, this.posY + this.motionY * 0.5, this.posZ + this.motionZ * 0.5, null, 1);
+					return;
+				}
+			}
 			
 		}
 		float f2;

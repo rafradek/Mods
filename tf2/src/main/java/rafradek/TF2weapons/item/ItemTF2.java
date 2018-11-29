@@ -15,7 +15,7 @@ import rafradek.TF2weapons.TF2weapons;
 public class ItemTF2 extends Item {
 
 	public static final String[] NAMES = new String[] { "ingotCopper", "ingotLead", "ingotAustralium", "scrapMetal",
-			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat", "logicBoard", "strangifier", "robotPart1", "robotPart2", "robotPart3"};
+			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat", "logicBoard", "strangifier"};
 
 	public ItemTF2() {
 		this.setHasSubtypes(true);
@@ -25,7 +25,7 @@ public class ItemTF2 extends Item {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item." + NAMES[stack.getMetadata()];
+		return "item." + NAMES[stack.getMetadata()%NAMES.length];
 	}
 
 	@Override
@@ -41,8 +41,6 @@ public class ItemTF2 extends Item {
 		for (int i = 0; i < 8; i++)
 			par3List.add(new ItemStack(this, 1, i));
 		par3List.add(new ItemStack(this, 1, 11));
-		for (int i = 13; i < 16; i++)
-			par3List.add(new ItemStack(this, 1, i));
 	}
 	
 	@Override

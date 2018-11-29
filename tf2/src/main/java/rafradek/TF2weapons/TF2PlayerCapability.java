@@ -99,6 +99,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	
 	public NBTTagCompound carrying;
 	public int carryingType;
+	public int maxInvasionBeaten;
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
 	
@@ -288,6 +289,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			tag.setByte("CarryingType", (byte) this.carryingType);
 		}
 		tag.setFloat("RobotsKilled", (short) this.robotsKilledInvasion);
+		tag.setByte("MaxInvasionBeaten", (byte) this.maxInvasionBeaten);
 		return tag;
 	}
 
@@ -319,6 +321,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.carrying = (NBTTagCompound) nbt.getTag("Carrying");
 		this.carryingType = nbt.getByte("CarryingType");
 		this.robotsKilledInvasion = nbt.getFloat("RobotsKilled");
+		this.maxInvasionBeaten = nbt.getByte("MaxInvasionBeaten");
 	}
 
 	public static TF2PlayerCapability get(EntityPlayer player) {

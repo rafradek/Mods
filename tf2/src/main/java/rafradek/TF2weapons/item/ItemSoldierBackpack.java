@@ -73,7 +73,7 @@ public class ItemSoldierBackpack extends ItemBackpack {
 							}
 
 						}))
-					living.addPotionEffect(new PotionEffect(this.getBuff(itemStack), 25));
+					TF2Util.addAndSendEffect(living,new PotionEffect(this.getBuff(itemStack), 25));
 
 			}
 			if (player instanceof EntityPlayer && ((EntityPlayer) player).isCreative())

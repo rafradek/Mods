@@ -116,6 +116,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
 import rafradek.TF2weapons.entity.projectile.EntityBall;
 import rafradek.TF2weapons.entity.projectile.EntityCritEffect;
 import rafradek.TF2weapons.entity.projectile.EntityFlameEffect;
@@ -131,7 +132,9 @@ import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemKillstreakFabricator;
 import rafradek.TF2weapons.item.ItemKillstreakKit;
+import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
@@ -415,6 +418,28 @@ public class ClientProxy extends CommonProxy {
 						}
 					}
 				});
+		final ModelResourceLocation killstreakFab = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator",
+				"inventory");
+		final ModelResourceLocation killstreakFabSpec = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator_spec",
+				"inventory");
+		final ModelResourceLocation killstreakFabPro = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator_pro",
+				"inventory");
+		ModelBakery.registerItemVariants(TF2weapons.itemKillstreakFabricator, killstreakFab, killstreakFabSpec, killstreakFabPro);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemKillstreakFabricator,
+				new ItemMeshDefinition() {
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						switch (((ItemKillstreakFabricator)stack.getItem()).getLevel(stack)) {
+						case 1: return killstreakFab;
+						case 2: return killstreakFabSpec;
+						case 3: return killstreakFabPro;
+						default: return killstreakFab;
+						}
+					}
+				});
+		for (int i = 0; i < ItemRobotPart.LEVEL.length; i++)
+			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemRobotPart, i,
+					new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_"+i, "inventory"));
 		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoFire, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_fire", "inventory"));
@@ -434,10 +459,12 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":mantreads", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemScoutBoots, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":scout_shoes", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemEventMaker, 0,
-				new ModelResourceLocation(TF2weapons.MOD_ID + ":tour_ticket", "inventory"));
+		for (int i = 0; i < InvasionEvent.DIFFICULTY.length; i++)
+			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemEventMaker, i,
+					new ModelResourceLocation(TF2weapons.MOD_ID + ":tour_ticket", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoMedigun, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_medigun", "inventory"));
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":copper_ingot", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 1,

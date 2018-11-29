@@ -88,6 +88,7 @@ import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.mercenary.EntitySpy;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.IItemOverlay;
 import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
@@ -103,15 +104,16 @@ import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.lightsource.MuzzleFlashLightSource;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class TF2EventsClient {
-	private boolean alreadypressed;
-	private boolean alreadypressedalt;
-	private boolean alreadypressedreload;
+	private static boolean alreadypressed;
+	private static boolean alreadypressedalt;
+	private static boolean alreadypressedreload;
 	public static boolean moveEntities;
 	public static float tickTime = 0;
 	public static ArrayList<MuzzleFlashLightSource> muzzleFlashes = new ArrayList<>();
@@ -178,14 +180,7 @@ public class TF2EventsClient {
 			}
 			
 			if (stack.getItem() instanceof IItemSlotNumber && ((IItemSlotNumber) stack.getItem()).catchSlotHotkey(stack, minecraft.player)) {
-				int sel=-1;
-				for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
-					if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
-						sel=i;
-						minecraft.gameSettings.keyBindsHotbar[i].isPressed();
-						break;
-					}
-				}
+				int sel=this.getPressedHotbarKey(minecraft.gameSettings.keyBindsHotbar);
 				//KeyBinding.setKeyBindState(Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey(), false);
 				if (sel != -1) {
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+100));
@@ -193,18 +188,13 @@ public class TF2EventsClient {
 				}
 			}
 			else if(ClientProxy.reload.isKeyDown()) {
-				int sel=-1;
-				for(int i=0;i<minecraft.gameSettings.keyBindsHotbar.length;i++) {
-					if(minecraft.gameSettings.keyBindsHotbar[i].isKeyDown()) {
-						sel=i;
-						minecraft.gameSettings.keyBindsHotbar[i].isPressed();
-						break;
-					}
-				}
+				int sel=this.getPressedHotbarKey(minecraft.gameSettings.keyBindsHotbar);
 				//KeyBinding.setKeyBindState(Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey(), false);
 				if (sel != -1)
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(sel+110));
 			}
+			else if (stack.getItem() instanceof ItemUsable && ((ItemUsable)stack.getItem()).stopSlotSwitch(stack, minecraft.player))
+				this.getPressedHotbarKey(minecraft.gameSettings.keyBindsHotbar);
 			
 			/*if (minecraft.currentScreen == null && minecraft.gameSettings.keyBindPickBlock.isKeyDown() && minecraft.player.getHeldItemMainhand().getItem() instanceof ItemWeapon 
 					&& TF2Attribute.getModifier("Knockback Rage", minecraft.player.getHeldItemMainhand(), 0, null) != 0) {
@@ -218,6 +208,17 @@ public class TF2EventsClient {
 
 	}
 	
+	public int getPressedHotbarKey(KeyBinding[] keys) {
+		int sel=-1;
+		for(int i=0;i<keys.length;i++) {
+			if(keys[i].isKeyDown()) {
+				sel=i;
+				keys[i].isPressed();
+				break;
+			}
+		}
+		return sel;
+	}
 	@SubscribeEvent
 	public void mousePress(MouseEvent event) {
 		if (event.getButton() != -1) {
@@ -227,6 +228,15 @@ public class TF2EventsClient {
 					KeyBinding.setKeyBindState(event.getButton() - 100, event.isButtonstate());
 					keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());
 				}
+		}
+		if (event.getDwheel() != 0) {
+			Minecraft minecraft = Minecraft.getMinecraft();
+			if (minecraft.currentScreen == null && minecraft.player != null) {
+				ItemStack stack = minecraft.player.getHeldItemMainhand();
+				if (stack.getItem() instanceof ItemUsable && ((ItemUsable)stack.getItem()).stopSlotSwitch(stack, minecraft.player))
+					minecraft.player.inventory.changeCurrentItem(-event.getDwheel());
+			}
+			
 		}
 	}
 
@@ -241,60 +251,68 @@ public class TF2EventsClient {
 	}
 	
 	public void keyPressUpdate(boolean attackKeyDown, boolean altAttackKeyDown) {
+		keyPressUpdate(attackKeyDown, altAttackKeyDown, false);
+	}
+	
+	public static void keyPressUpdate() {
+		keyPressUpdate(Minecraft.getMinecraft().gameSettings.keyBindAttack.isKeyDown(), Minecraft.getMinecraft().gameSettings.keyBindUseItem.isKeyDown(), true);
+	}
+	public static void keyPressUpdate(boolean attackKeyDown, boolean altAttackKeyDown, boolean force) {
 		Minecraft minecraft = Minecraft.getMinecraft();
 
-		boolean changed = false;
+		boolean changed = force;
 		ItemStack item = minecraft.player.getHeldItemMainhand();
 		//System.out.println("Gui: "+(minecraft.currentScreen!=null));
-		if (attackKeyDown && !this.alreadypressed) {
+		if (attackKeyDown && !alreadypressed) {
 			changed = true;
-			this.alreadypressed = true;
+			alreadypressed = true;
 		}
-		if (!attackKeyDown && this.alreadypressed) {
+		if (!attackKeyDown && alreadypressed) {
 			changed = true;
-			this.alreadypressed = false;
+			alreadypressed = false;
 		}
-		if (altAttackKeyDown && !this.alreadypressedalt) {
+		if (altAttackKeyDown && !alreadypressedalt) {
 			changed = true;
-			this.alreadypressedalt = true;
+			alreadypressedalt = true;
 		}
-		if (!altAttackKeyDown && this.alreadypressedalt) {
+		if (!altAttackKeyDown && alreadypressedalt) {
 			changed = true;
-			this.alreadypressedalt = false;
+			alreadypressedalt = false;
 		}
-		if (ClientProxy.reload.isKeyDown() && !this.alreadypressedreload) {
+		if (ClientProxy.reload.isKeyDown() && !alreadypressedreload) {
 			changed = true;
-			this.alreadypressedreload = true;
+			alreadypressedreload = true;
 		}
-		if (!ClientProxy.reload.isKeyDown() && this.alreadypressedreload) {
+		if (!ClientProxy.reload.isKeyDown() && alreadypressedreload) {
 			changed = true;
-			this.alreadypressedreload = false;
+			alreadypressedreload = false;
 		}
 		if (changed && minecraft.currentScreen == null) {
 			EntityLivingBase player = minecraft.player;
 			WeaponsCapability cap = minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null);
 			int oldState = cap.state & 3;
 			int plus = cap.state & 8;
-			int state = this.getActionType(attackKeyDown, altAttackKeyDown) + plus;
+			int state = getActionType(attackKeyDown, altAttackKeyDown) + plus;
 			cap.state = state;
-			if (item != null && item.getItem() instanceof ItemUsable && oldState != (this.getActionType(attackKeyDown, altAttackKeyDown) & 3)
+			int stateOverride = ((ItemUsable) item.getItem()).getStateOverride(item, player, state);
+			if (item != null && item.getItem() instanceof ItemUsable && oldState != (getActionType(attackKeyDown, altAttackKeyDown) & 3)
 					&& item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (state & 2)) {
 					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getAltFiringSpeed(item, player) / 2);
-					cap.stateDo(player, item, EnumHand.MAIN_HAND);
+					cap.stateDo(player, item, EnumHand.MAIN_HAND, stateOverride);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 2) > (state & 2)) {
 					((ItemUsable) item.getItem()).endUse(item, player, player.world, oldState, state & 3);
 				}
 				if ((oldState & 1) < (state & 1)) {
 					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getFiringSpeed(item, player) / 2);
-					cap.stateDo(player, item, EnumHand.MAIN_HAND);
+					cap.stateDo(player, item, EnumHand.MAIN_HAND, stateOverride);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 1) > (state & 1)) {
 					((ItemUsable) item.getItem()).endUse(item, player, player.world, oldState, state & 3);
 				}
 			}
-			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(this.getActionType(attackKeyDown, altAttackKeyDown)));
+			TF2weapons.network.sendToServer(new TF2Message.ActionMessage(getActionType(attackKeyDown, altAttackKeyDown)));
 		}
 	}
 
@@ -370,7 +388,7 @@ public class TF2EventsClient {
 		
 		
 	}
-	public int getActionType(boolean attackKeyDown, boolean altAttackKeyDown) {
+	public static int getActionType(boolean attackKeyDown, boolean altAttackKeyDown) {
 		int value = 0;
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
 		boolean swap = TF2ConfigVars.swapAttackButton && !(stack.getItem() instanceof ItemMeleeWeapon);
@@ -390,7 +408,7 @@ public class TF2EventsClient {
 		if (ClientProxy.reload.isKeyDown()) {
 			value += 4;
 		}
-		return ((ItemUsable)stack.getItem()).getStateOverride(stack, Minecraft.getMinecraft().player, value);
+		return value;
 	}
 
 	@SubscribeEvent
@@ -431,7 +449,8 @@ public class TF2EventsClient {
 			
 			if (event.getGui() instanceof GuiIngameMenu)
 				event.getButtonList().add(new GuiButton(125362351,event.getGui().width / 2 - 40, event.getGui().height - 40, 80, 20, "Contracts"));
-			Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).state &= 8;
+			ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
+			
 		}
 	}
 
@@ -1044,6 +1063,20 @@ public class TF2EventsClient {
 			ClientProxy.renderCritGlow=0;
 		}
 		
+		if (event.getEntity().hasCapability(TF2weapons.INVENTORY_CAP, null)) {
+			InventoryWearables cap = event.getEntity().getCapability(TF2weapons.INVENTORY_CAP, null);
+			for (int i = 0; i < cap.getSizeInventory(); i++) {
+				ItemStack hat = cap.getStackInSlot(i);
+				if (hat.getItem() instanceof ItemFromData && (((ItemFromData)hat.getItem()).getVisibilityFlags(hat, event.getEntity()) & 1) == 1) {
+					cap.origHead = event.getEntity().getItemStackFromSlot(EntityEquipmentSlot.HEAD);
+					if (event.getEntity() instanceof EntityPlayer)
+						((EntityPlayer)event.getEntity()).inventory.armorInventory.set(3, ItemStack.EMPTY);
+					else
+						event.getEntity().setItemStackToSlot(EntityEquipmentSlot.HEAD, ItemStack.EMPTY);
+					break;
+				}
+			}
+		}
 		int visTick = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks;
 
 		if (visTick > 0) {
@@ -1206,6 +1239,18 @@ public class TF2EventsClient {
 		}
 		if (!(event.getEntity() instanceof EntityPlayer || event.getEntity() instanceof EntityTF2Character))
 			return;
+		
+		if (event.getEntity().hasCapability(TF2weapons.INVENTORY_CAP, null)) {
+			InventoryWearables cap = event.getEntity().getCapability(TF2weapons.INVENTORY_CAP, null);
+			if (!cap.origHead.isEmpty()) {
+				if (event.getEntity() instanceof EntityPlayer)
+					((EntityPlayer)event.getEntity()).inventory.armorInventory.set(3, cap.origHead);
+				else
+					event.getEntity().setItemStackToSlot(EntityEquipmentSlot.HEAD, cap.origHead);
+				cap.origHead = ItemStack.EMPTY;
+			}
+		}
+		
 		ClientProxy.renderCritGlow=0;
 		if (event.getEntity().getActivePotionEffect(TF2weapons.uber)!=null) {
 			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);

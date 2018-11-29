@@ -348,7 +348,7 @@ public class TF2EventsCommon {
 				if (events!=null && new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
 						.nextInt(20) == 0){
 					for (EntityPlayer player : event.world.playerEntities) {
-						events.startInvasion(player);
+						events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2));
 					}
 					/*if (events.eventFlag == 1) {
 						for (EntityPlayer player : event.world.playerEntities) {
@@ -2398,15 +2398,14 @@ public class TF2EventsCommon {
 			return this.playerStorage.get(player);
 		}
 		
-		public boolean startInvasion(EntityPlayer player) {
-			if (this.invasions.containsKey(player.getUniqueID()))
-				return false;
+		public boolean startInvasion(EntityPlayer player, int difficulty) {
 			for (Entry<UUID, InvasionEvent> entry : invasions.entrySet()) {
-				if (entry.getValue().isInRange(player.getPosition()))
-					return false;
+				if (entry.getKey().equals(player.getUniqueID()) || entry.getValue().isInRange(player.getPosition()))
+					entry.getValue().finish();
+					//return false;
 			}
 			
-			InvasionEvent event = new InvasionEvent(world, player.getPosition());
+			InvasionEvent event = new InvasionEvent(world, player.getPosition(), difficulty);
 			this.invasions.put(player.getUniqueID(), event);
 			return true;
 		}

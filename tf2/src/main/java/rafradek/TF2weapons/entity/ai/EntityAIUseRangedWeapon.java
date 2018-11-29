@@ -10,6 +10,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldServer;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
@@ -97,7 +98,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	}
 
 	private int getPosUpdateTime() {
-		return Math.round(this.entityHost.scaleWithDifficulty(18, 1));
+		return Math.round(this.entityHost.scaleWithDifficulty(18, 1)*TF2ConfigVars.accurracyMult);
 	}
 	/**
 	 * Resets the task
@@ -161,7 +162,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 
 			
 			int ticksToReach = MathHelper.ceil(dist / this.projSpeed);
-
+			float overshoot = entityHost.scaleWithDifficulty(0.6f, 0f) * TF2ConfigVars.accurracyMult;
+			ticksToReach = Math.round(ticksToReach * (this.entityHost.getRNG().nextFloat()*overshoot*2+1-overshoot));
 			lookX += this.velTarget.x * ticksToReach * 1;
 			lookZ += this.velTarget.z * ticksToReach * 1;
 			lookY = this.posTarget.y + this.attackTarget.height / 2 + this.velTarget.y * moveTicks;

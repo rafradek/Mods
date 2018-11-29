@@ -12,6 +12,7 @@ import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.message.TF2Message;
@@ -35,6 +36,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public abstract class ItemUsable extends ItemFromData {
@@ -99,8 +101,13 @@ public abstract class ItemUsable extends ItemFromData {
 		
 		if (stackcap.fire1Cool > 0)
 			stackcap.fire1Cool -= 50;
+		else
+			stackcap.fire1Cool = 0;
+		
 		if (stackcap.fire2Cool > 0)
 			stackcap.fire2Cool -= 50;
+		else
+			stackcap.fire2Cool = 0;
 		
 		if (stackcap.active == 0 && (par5 || stack == living.getHeldItemOffhand())) {
 			stackcap.active = 1;
@@ -137,7 +144,6 @@ public abstract class ItemUsable extends ItemFromData {
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.chargeTicks = 0;
 		cap.setCharging(false);
-
 	}
 	public static double calculateModifiers(IAttributeInstance attribute, UUID except,double initial,double additionToMult){
 		double initialO=initial;
@@ -256,7 +262,8 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public float getHealthBasedBonus(ItemStack item, EntityLivingBase living, float maxbonus) {
 		if(living != null && living.getHealth()<living.getMaxHealth()*0.8f) {
-			float multiplier=1f -((living.getHealth()/(living.getMaxHealth()*0.8f)));
+			float multiplier=MathHelper.clamp(TF2Util.position(0.1f, 0.8f, living.getHealth()/living.getMaxHealth()),0f,1f);
+			
 			return TF2Util.lerp(1, maxbonus, multiplier);
 		}
 		return 1f;
@@ -281,16 +288,20 @@ public abstract class ItemUsable extends ItemFromData {
 	public int getStateOverride(ItemStack stack, EntityLivingBase living, int original) {
 		if(TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
 			//System.out.println("Act pre: "+original);
-			original = original | 4;
-			if((original & 1) == 0)
-				original = original | 1;
-			else if(WeaponsCapability.get(living).getPrimaryCooldown() == 0)
-				original = original & 6;
+			boolean fire = ((original & 1) == 0 ) || WeaponsCapability.get(living).autoFire;
+			if (fire) {
+				return 1;
+			}
+			else {
+				return 4;
+			}
 			//System.out.println("Act post: "+original);
 		}
 		return original;
 	}
 	
-	
+	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
+		return false;
+	}
 
 }

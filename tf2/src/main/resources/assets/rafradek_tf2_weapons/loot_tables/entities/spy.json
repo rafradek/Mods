@@ -22,7 +22,7 @@
                 {
                     "type": "item",
                     "name": "rafradek_tf2_weapons:itemTF2",
-                    "weight": 2,
+                    "weight": 12,
                     "functions": [
                         {
                             "function": "set_data",
@@ -33,11 +33,22 @@
                 {
                     "type": "item",
                     "name": "rafradek_tf2_weapons:crate",
-                    "weight": 1,
+                    "weight": 6,
                     "functions": [
                         {
                             "function": "set_weapon_class",
                             "weaponClass": "crate"
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "rafradek_tf2_weapons:strangifier",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "set_nbt",
+                            "tag": "{class:spy}"
                         }
                     ]
                 }

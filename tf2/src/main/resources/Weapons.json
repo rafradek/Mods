@@ -1934,18 +1934,22 @@
 		"Class": "bullet",
 		"Based on": "shotgun",
 		"Projectile": "onyx",
-		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.onyxblaster",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.onyxblaster",
 		"Mobs": "",
+		"Spread": 0.095,
 		"Firing speed": 800,
-		"Damage": 0.54,
+		"Damage": 0.66,
+		"Max damage": 1.2,
+		"Min damage": 0.75,
 		"Drop chance": 0.0,
 		"Roll hidden": 1,
 		"Cost": 45,
 		"Projectile speed": 2.6,
 		"Hidden": true,
-		"Roll hidden": 1,
 		"Reloads clip": false,
 		"Stock": false,
+		"Armor penetration scale": 1.25,
 		"Attributes": 
 		{
 			"OnyxProjectile": 6
@@ -1956,6 +1960,7 @@
 		"Name": "Sydney Sleeper",
 		"Class": "sniperrifle",
 		"Based on": "sniperrifle",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sydneysleeper",
 		"Cost": 45,
 		"Stock": false,
 		"Attributes": 
@@ -2092,7 +2097,7 @@
 		"Projectile speed": 1.3,
 		"Damage": 1.7,
 		"Max damage": 1.2,
-		"Min damage": 0.5,
+		"Min damage": 0.8,
 		"Random crits": true,
 		"Rapidfire crits": true,
 		"Damage falloff": 9.75,
@@ -2114,6 +2119,41 @@
 		"Attributes": 
 		{
 			"Gravity": -0.0381
+		}
+	},
+	"panicattack":
+	{
+		"Name": "Panic Attack",
+		"Class": "bullet",
+		"Based on": "shotgun",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.panicattack",
+		"Cost": 18,
+		"Stock": false,
+		"Attributes": 
+		{
+			"AutoFireClip": 1,
+			"ReloadRateBonus": 0.5,
+			"FireRateBonus": 0.7,
+			"FireRateHealthBonus": 0.5,
+			"SpreadHealthPenalty": 2.25,
+			"DeployTimeBonus": 0.5,
+			"ClipSizePenalty": 0.67
+		}
+	},
+	"detonator":
+	{
+		"Name": "Detonator",
+		"Class": "projectile",
+		"Based on": "flaregun",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.detonator",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.detonator",
+		"Attributes": 
+		{
+			"MiniCritBurning": 2,
+			"BurnOnHit": 6,
+			"SelfDamageIncreased": 1.25,
+			"DamagePenalty": 0.75,
+			"DetonateFlare": 1
 		}
 	}
 }

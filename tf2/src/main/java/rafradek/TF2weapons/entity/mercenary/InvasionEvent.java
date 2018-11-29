@@ -48,6 +48,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.util.TF2Util;
@@ -59,12 +60,14 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 	protected final BossInfoServer bossInfo = (new BossInfoServer(new TextComponentString("Robot Invasion - Wave 1"), BossInfo.Color.BLUE,
 			BossInfo.Overlay.PROGRESS));
 	
+	public static final float[] DIFFICULTY = {1f, 1.5f, 2f, 2.75f,4f};
+	
 	public static Multimap<Squad.Type, Squad> squads;
 	public World world;
 	public BlockPos target;
 	public long startTime;
 	public float difficulty;
-	public float diffAverage;
+	public int diffTour;
 	public int wave;
 	public int progress;
 	public List<UUID> playersTotal = new ArrayList<>();
@@ -88,19 +91,19 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.deserializeNBT(tag);
 	}
 	
-	public InvasionEvent(World world, BlockPos targetPos) {
+	public InvasionEvent(World world, BlockPos targetPos, int diff) {
 		this.world = world;
 		this.startTime = world.getTotalWorldTime();
 		this.target = targetPos;
 		List<EntityPlayerMP> players = this.world.getPlayers(EntityPlayerMP.class, player -> this.isInRange(player.getPosition()));
 		for (EntityPlayerMP player: players) {
 			float killed = player.getStatFile().readStat(TF2weapons.robotsKilled);
-			this.difficulty += 1f + Math.min(3f, killed / 250f);
+			this.difficulty += 1f + Math.min(0.75f, killed / (400f*diff));
 			this.onPlayerEnter(player);
 			player.sendMessage(new TextComponentString("Robots invade the area!"));
 		}
-		this.diffAverage /= players.size();
-		this.difficulty *= 3f / (players.size() + 2);
+		this.diffTour = diff;
+		this.difficulty *= DIFFICULTY[diff] * (3f / (players.size() + 2));
 		this.waves = 4 + world.rand.nextInt(3);
 		this.calculateWave();
 	}
@@ -122,7 +125,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		return this.difficulty * (1f+(this.wave-1)/3f);
 	}
 	public int getMaxActiveRobots() {
-		return (int) (this.getWaveDifficulty() * 8);
+		return (int) (this.getWaveDifficulty() * 7);
 	}
 	public void onUpdate() {
 		//this.playersArea.removeIf(player -> !isInRange(player.getPosition()));
@@ -254,7 +257,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
                                         net.minecraftforge.fml.common.eventhandler.Event.Result canSpawn = net.minecraftforge.event.ForgeEventFactory.canEntitySpawn(entityliving, world, f, i3, f1, false);
                                         if (canSpawn == net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW || (canSpawn == net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT && (entityliving.getCanSpawnHere() && entityliving.isNotColliding())))
                                         {
-                                        	livingdata.isGiant = world.rand.nextFloat() < 0.025 * this.getWaveDifficulty();
+                                        	livingdata.isGiant = entityliving.canBecomeGiant() && world.rand.nextFloat() < 0.025 * this.getWaveDifficulty();
                                         	entityliving.robotStrength = this.difficulty;
                                         	
                                             if (!net.minecraftforge.event.ForgeEventFactory.doSpecialSpawn(entityliving, world, f, i3, f1))
@@ -325,6 +328,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 	}
 	
 	public void finish() {
+		if (this.finished)
+			return;
 		this.finished = true;
 		
 		giveRobotAwards();
@@ -332,12 +337,12 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		for (EntityPlayer player :this.playersArea) {
 			if (player instanceof EntityPlayerMP)
 				this.onPlayerLeave((EntityPlayerMP) player);
+			if (this.wave == this.waves)
+				TF2PlayerCapability.get(player).maxInvasionBeaten=(int) Math.max(TF2PlayerCapability.get(player).maxInvasionBeaten, this.diffTour+1);
 		}
 		
 		for (EntityTF2Character ent : this.entityList)
 			ent.attackEntityFrom(DamageSource.OUT_OF_WORLD, 9999f);
-		
-		
 	}
 	
 	public void giveRobotAwards() {
@@ -347,7 +352,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		
 		List<ItemStack> items = new ArrayList<>();
 		float chance = this.difficulty;
-		chance = Math.min(40f,(float)Math.pow(this.robotKilledWave, 0.7)) * (this.world.rand.nextFloat()*0.75f + 1f);
+		chance = Math.min(40f,(float)Math.pow(this.robotKilledWave, 0.7)) * (this.world.rand.nextFloat()*0.7f + 0.9f);
 		if (this.wave == this.waves)
 			chance *=2;
 		
@@ -423,6 +428,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		for (UUID uuid : this.playersTotal) {
 			list.appendTag(NBTUtil.createUUIDTag(uuid));
 		}
+		tag.setByte("difftour", (byte) this.diffTour);
 		tag.setTag("players", list);
 		tag.setByte("waves", (byte) this.waves);
 		return tag;
@@ -442,7 +448,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.robotKilledWave = nbt.getShort("rktotal");
 		this.robotsWave = nbt.getShort("rwave");
 		this.robotKilledEnv = nbt.getShort("rkenv");
-		
+		this.diffTour = nbt.getByte("difftour");
 		this.bossInfo.setPercent(1f - (float)this.robotKilledWave / this.robotsWave);
 		NBTTagList list = nbt.getTagList("players", 11);
 		for (int i = 0; i < list.tagCount(); i++) {

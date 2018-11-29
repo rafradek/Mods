@@ -105,6 +105,7 @@ import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
+import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
@@ -296,7 +297,9 @@ public class TF2Util {
 			if(mindist != 0f && target.getDistanceSqToEntity(shooter) >= mindist)
 				initial = 1;
 		}
-		if (initial < 2 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) != 0))
+		if (initial == 0 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) == 2))
+			initial = 1;
+		else if (initial < 2 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) == 1))
 			initial = 2;
 		
 		if (initial < 2 && (!stack.isEmpty() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.stun) != null))
@@ -374,7 +377,11 @@ public class TF2Util {
 	public static float lerp(float v0, float v1, float t) {
 		return (1 - t) * v0 + t * v1;
 	}
-
+	
+	public static float position(float v0, float v1, float lerp) {
+		return  (lerp - v1) *  (1f/(v0-v1)) ;
+	}
+	
 	public static boolean isOnSameTeam(Entity entity1, Entity entity2) {
 		return (TF2Util.getTeam(entity1) == TF2Util.getTeam(entity2) && TF2Util.getTeam(entity1) != null)
 				|| (entity1 instanceof IEntityOwnable && ((IEntityOwnable) entity1).getOwner() == entity2) 
@@ -1290,6 +1297,13 @@ public class TF2Util {
 		}
 	}
 	
+	public static boolean isWeaponOfClass(ItemStack stack, int slot, String name) {
+		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+		if (!parent.isEmpty())
+			stack = ItemFromData.getNewStack(parent);
+		return (slot == -1 || ItemFromData.getData(stack).getInt(PropertyType.SLOT)==slot )
+		&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(name);
+	}
 	public static EntityLivingBase getOwnerIfOwnable(EntityLivingBase living) {
 		if (living instanceof IEntityOwnable && ((IEntityOwnable)living).getOwner() != null)
 			return (EntityLivingBase) ((IEntityOwnable)living).getOwner();

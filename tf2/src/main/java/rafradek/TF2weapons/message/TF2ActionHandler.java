@@ -472,14 +472,14 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 			int oldState = cap.state & 3;
 			//System.out.println("Action: "+message.value);
 			cap.state = message.value + (cap.state & 8);
-
+			int stateOverride = ((ItemUsable) stack.getItem()).getStateOverride(stack, player, cap.state);
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && oldState != (message.value & 3)
 					&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (message.value & 2)) {
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
 					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getAltFiringSpeed(stack, player) / 2);
-					cap.stateDo(player, stack, EnumHand.MAIN_HAND);
+					cap.stateDo(player, stack, EnumHand.MAIN_HAND, stateOverride);
 					
 				} else if ((oldState & 2) > (message.value & 2))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
@@ -487,7 +487,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) / 2);
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
-					cap.stateDo(player, stack, EnumHand.MAIN_HAND);
+					cap.stateDo(player, stack, EnumHand.MAIN_HAND, stateOverride);
 				} else if ((oldState & 1) > (message.value & 1))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
 			}

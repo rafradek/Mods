@@ -5,10 +5,12 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityOnyx extends EntityProjectileBase {
 

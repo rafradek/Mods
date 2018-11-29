@@ -22,6 +22,7 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 	public EntityLivingBase owner;
 	public static final int USED_SLOTS = 5;
 	private final NonNullList<ItemStack> inventoryContentsOld;
+	public ItemStack origHead = ItemStack.EMPTY;
 	public InventoryWearables(EntityLivingBase ply) {
 		super("Wearables", false, 13);
 		this.inventoryContentsOld = NonNullList.withSize(13, ItemStack.EMPTY);

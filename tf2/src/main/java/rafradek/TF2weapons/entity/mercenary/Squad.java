@@ -14,6 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
@@ -25,6 +26,7 @@ public class Squad {
 	public int minCount;
 	public String name;
 	public ArrayList<Unit> units = new ArrayList<>();
+	public int cost;
 	public enum Type {
 		NORMAL,
 		GIANT,
@@ -51,8 +53,9 @@ public class Squad {
 				for (JsonElement squadEl : entry.getValue().getAsJsonArray()) {
 					Squad squad = new Squad(type);
 					JsonObject squadObj = squadEl.getAsJsonObject();
-					squad.name = squadObj.get("Name").getAsString();
-					squad.minCount = squadObj.get("Min count").getAsInt();
+					squad.name = JsonUtils.getString(squadObj, "Name", "");
+					squad.minCount = JsonUtils.getInt(squadObj, "Min count", 1);
+					squad.cost = JsonUtils.getInt(squadObj, "Cost", 1);
 					for (JsonElement unitEl : squadObj.getAsJsonArray("Unit")) {
 						JsonObject unitObj = unitEl.getAsJsonObject();
 						Unit unit = new Unit();
@@ -85,7 +88,7 @@ public class Squad {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Skipped reading squad data from file: " + file.getName());
+			TF2weapons.LOGGER.error("Skipped reading squad data from file: %0", file.getName());
 			e.printStackTrace();
 		}
 		return map;

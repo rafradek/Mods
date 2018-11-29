@@ -36,6 +36,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemMinigun;
@@ -112,6 +113,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
+	public ArrayList<EntityProjectileBase> projectileDetonate= new ArrayList<>();
 	public float oldFactor;
 	public int expJumpGround;
 	public double lastPosX;
@@ -121,6 +123,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public long ticksTotal;
 	public boolean fireCoolReduced;
+	public boolean autoFire;
 	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
@@ -406,6 +409,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			this.reloadCool -= 50;
 		boolean hadItem = false;
 		boolean continueReload = false;
+		
 		for (EnumHand hand: EnumHand.values()) {
 			ItemStack stack = owner.getHeldItem(hand);
 			
@@ -414,10 +418,15 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				
 				hadItem = true;
 				ItemUsable item = (ItemUsable) stack.getItem();
+				
+				int state = item.getStateOverride(stack, owner, this.state);
 				if (this.fireCoolReduced && this.owner.world.isRemote) {
 					this.setPrimaryCooldown(hand, this.getPrimaryCooldown(hand)-(int)(item.getFiringSpeed(stack, this.owner) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, this.owner)))));
 					this.fireCoolReduced = false;
 				}
+				
+				if (stack.getItemDamage() == stack.getMaxDamage())
+					this.autoFire = false;
 				
 				if (!(this.owner instanceof EntityPlayer) || (this.owner.world.isRemote && this.owner != ClientProxy.getLocalPlayer()))
 					item.onUpdate(stack, owner.world, owner, 0, true);
@@ -437,10 +446,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 						stackcap.active = 2;
 						item.draw(this, stack, owner, owner.world);
 		
-						if ((this.state & 3) > 0) {
-							this.state = this.state & 7;
-							if ((this.state & 3) > 0)
-								item.startUse(stack, owner, owner.world, 0, this.state & 3);
+						if ((state & 3) > 0) {
+							state = state & 7;
+							if ((state & 3) > 0)
+								item.startUse(stack, owner, owner.world, 0, state & 3);
 						}
 					}
 				}
@@ -458,17 +467,17 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					}
 				}
 				
-				this.stateDo(owner, stack, hand);
+				this.stateDo(owner, stack, hand, state);
 	
 				if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.knockbackActive && this.getKnockbackRage() >= 1f) {
 					this.knockbackActive = true;
 				}
-				
+				boolean emptyMag = stack.getItemDamage() == stack.getMaxDamage() && TF2Attribute.getModifier("Auto Fire", stack, 0, owner) == 0;
 				if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
 						&& stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)
 						&& (!item.searchForAmmo(owner, stack).isEmpty()
 								|| owner.world.isRemote)) {
-					if (((state & 4) != 0 || stack.getItemDamage() == stack.getMaxDamage() || continueReload) && this.reloadingHand == null
+					if (((state & 4) != 0 || emptyMag || continueReload) && this.reloadingHand == null
 							&& stack.getItemDamage() != 0 && this.reloadCool <= 0
 							&& (this.getPrimaryCooldown() <= 0 || ((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack))
 							&& owner.getActivePotionEffect(TF2weapons.stun) == null) {
@@ -517,9 +526,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 							this.reloadCool += ((ItemWeapon) stack.getItem()).getWeaponReloadTime(stack, owner);
 	
 							if (stack.getItemDamage() == 0) {
-								this.reloadingHand = null;
+								this.stopReload();
 								continueReload =true;
-								this.reloadCool = 0;
 							}
 						}
 				} else if (this.reloadingHand == hand)
@@ -559,24 +567,24 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	}
 
-	public boolean shouldShoot(EntityLivingBase player, int state, EnumHand hand) {
+	public boolean shouldShoot(EntityLivingBase player, int state, EnumHand hand, int actualState) {
 		return (!(!player.world.isRemote
 				&& player instanceof EntityPlayer
 				&& this.predictionList[hand.ordinal() + (state == 1 ? 0 : 2)] == null))
-				&& !((player.world.isRemote || !(player instanceof EntityPlayer)) && (this.state & state) != state);
+				&& !((player.world.isRemote || !(player instanceof EntityPlayer)) && (actualState & state) != state);
 	}
 
-	public void stateDo(EntityLivingBase player, ItemStack stack, EnumHand hand) {
+	public void stateDo(EntityLivingBase player, ItemStack stack, EnumHand hand, int state) {
 		if (!TF2Util.canInteract(player))
 			return;
 		
 		ItemUsable item = (ItemUsable) stack.getItem();
 		WeaponData.WeaponDataCapability stackcap = WeaponData.getCapability(stack);
 
-		if ((this.state & 1) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
+		if ((state & 1) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 
 			item.fireTick(stack, player, player.world);
-		while (stackcap.fire1Cool <= 0 && shouldShoot(player, 1, hand)) {
+		while (stackcap.fire1Cool <= 0 && shouldShoot(player, 1, hand, state)) {
 
 		
 			TF2Message.PredictionMessage message = null;
@@ -587,11 +595,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 			if (message == null) {
 				boolean canFire = item.canFire(player.world, player, stack);
-				/*if (ItemUsable.isDoubleWielding(player) && ((ItemUsable) player.getHeldItemOffhand().getItem()).canFire(
-						player.world, player, player.getHeldItemOffhand()) && (this.lastFire > 0 || !canFire))
-					this.mainHand = !this.mainHand;
-				else*/
-					//this.mainHand = true;
 				if ( !canFire)
 					break;
 			} else {
@@ -607,7 +610,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 			if (this.isDisguised() && !(item instanceof ItemSapper))
 				TF2EventsCommon.disguise(player, false);
-
+			
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
 			float oldPitch = player.rotationPitch, oldYaw = player.rotationYawHead;
 
@@ -623,16 +626,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			player.removePotionEffect(TF2weapons.charging);
 
 			if (player.world.isRemote && player == ClientProxy.getLocalPlayer()) {
-				// System.out.println("Shoot Res: "+message.target);
 				TF2weapons.network.sendToServer(message);
-				/*TF2UdpClient client = TF2UdpClient.instance;
-				PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
-				buffer.writeShort(player.getCapability(TF2weapons.PLAYER_CAP, null).udpServerId);
-				buffer.writeShort(0);
-				buffer.writeByte(0);
-				buffer.writeLong(System.currentTimeMillis());
-				TF2weapons.network.sendToServer(new TF2Message.AttackSyncMessage(System.currentTimeMillis()));
-				client.channel.writeAndFlush(new DatagramPacket(buffer, client.address));*/
 			}
 
 			player.posX = oldX;
@@ -641,25 +635,17 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			player.rotationYawHead = oldYaw;
 			player.rotationPitch = oldPitch;
 
-			/*
-			 * if(!player.world.isRemote && player instanceof EntityPlayer){
-			 * this.predictionList.remove(0);
-			 * System.out.println(this.predictionList.size()); }
-			 */
-
 			this.lastFire = 1250;
 			this.fireCoolReduced = false;
 			if (stack.getItem() instanceof ItemWeapon) {
-				this.reloadCool = 0;
-				this.reloadingHand = null;
+				this.stopReload();
 			}
 			
 		}
-		if ((this.state & 2) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
+		if ((state & 2) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 			((ItemUsable) stack.getItem()).altFireTick(stack, player, player.world);
-		while (stackcap.fire2Cool <= 0 && shouldShoot(player, 2, hand)) {
+		while (stackcap.fire2Cool <= 0 && shouldShoot(player, 2, hand, state)) {
 
-			// System.out.println("PLAJERRRR: "+player);
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer) {
 				message = this.predictionList[hand.ordinal() + 2];
@@ -686,12 +672,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (player.world.isRemote && player == ClientProxy.getLocalPlayer())
 				TF2weapons.network.sendToServer(new TF2Message.PredictionMessage(player.posX, player.posY, player.posZ,
 						player.rotationPitch, player.rotationYawHead, 2, EnumHand.MAIN_HAND));
-
-			/*
-			 * if(!player.world.isRemote && player instanceof EntityPlayer){
-			 * this.predictionList.remove(0);
-			 * System.out.println(this.predictionList.size()); }
-			 */
+			
 			player.posX = oldX;
 			player.posY = oldY;
 			player.posZ = oldZ;
@@ -701,8 +682,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (!player.world.isRemote)
 				ItemUsable.sps++;
 			if (stack.getItem() instanceof ItemWeapon) {
-				this.reloadCool = 0;
-				this.reloadingHand = null;
+				this.stopReload();
 			}
 		}
 
@@ -826,5 +806,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void setSecondaryCooldown(EnumHand hand, int fire1Cool) {
 		if (this.owner.getHeldItem(hand).hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
 			this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool = fire1Cool;
+	}
+	
+	public void stopReload() {
+		this.reloadCool = 0;
+		this.reloadingHand = null;
 	}
 }

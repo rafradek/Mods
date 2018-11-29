@@ -171,11 +171,7 @@ public class ContainerMercenary extends ContainerMerchant {
 					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
 						return false;
 					else {
-						String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
-						if (!parent.isEmpty())
-							stack = ItemFromData.getNewStack(parent);
-						return ItemFromData.getData(stack).getInt(PropertyType.SLOT)==this.getSlotIndex()
-						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[merc.getClassIndex()]);
+						return TF2Util.isWeaponOfClass(stack, this.getSlotIndex(), ItemToken.CLASS_NAMES[merc.getClassIndex()]);
 					}
 				}
 

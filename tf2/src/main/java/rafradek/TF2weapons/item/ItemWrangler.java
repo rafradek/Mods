@@ -73,5 +73,6 @@ public class ItemWrangler extends ItemUsable {
 		if (weaponsCapability.controlledSentry != null)
 			weaponsCapability.controlledSentry.setControlled(false);
 		weaponsCapability.controlledSentry = null;
+		super.holster(weaponsCapability, stack, living, world);
 	}
 }

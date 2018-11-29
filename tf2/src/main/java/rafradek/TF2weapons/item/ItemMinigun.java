@@ -216,8 +216,8 @@ public class ItemMinigun extends ItemBulletWeapon {
 
 	@Override
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
-		super.holster(cap, stack, living, world);
 		living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
+		super.holster(cap, stack, living, world);
 	}
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);

@@ -1080,6 +1080,60 @@
     	"rafradek_tf2_weapons:weapon/spy_shield_break"
     ]
   },
+  "weapon.fire.panicattack": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tf2_backshot_shotty"
+    ]
+  },
+  "weapon.fire.panicattack.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/tf2_backshot_shotty_crit"
+    ]
+  },
+  "weapon.fire.detonator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flare_detonator_launch"
+    ]
+  },
+  "weapon.fire.detonator.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flare_detonator_launch"
+    ]
+  },
+  "weapon.hit.detonator.world": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flare_detonator_explode_world"
+    ]
+  },
+  "weapon.explosion.detonator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/flare_detonator_explode"
+    ]
+  },
+  "weapon.fire.onyxblaster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/item_36"
+    ]
+  },
+  "weapon.fire.onyxblaster.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/item_36"
+    ]
+  },
+  "weapon.explosion.onyxblaster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/item_14"
+    ]
+  },
   "weapon.hit.cleaver": {
     "category": "neutral",
     "sounds": [

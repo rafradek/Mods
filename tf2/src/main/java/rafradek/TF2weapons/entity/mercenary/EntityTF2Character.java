@@ -1232,6 +1232,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			if (i == 0 && this.tradeLevel == 2) {
 				((ItemWearable) item.getItem()).applyRandomEffect(item, rand);
 				cost *= 6 + this.rand.nextInt(6);
+				buyItem = false;
 			}
 			ItemStack metal = new ItemStack(TF2weapons.itemTF2, cost / 18, 5);
 			ItemStack metal2 = new ItemStack(TF2weapons.itemTF2, this.rand.nextInt(3), 4);
@@ -1253,19 +1254,23 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			
 			ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
 			list.removeIf(attr -> attr == null || attr.perKill == 0);
-			int killstreakCount = this.rand.nextInt(2 * this.tradeLevel + 1);
+			int killstreakCount = this.rand.nextInt(3 * this.tradeLevel);
 			for (int i = 0; i < killstreakCount; i++) {
 				int level = 0;
+				int cost = 18;
 				float rand = this.rand.nextFloat();
-				if (this.tradeLevel == 2 && rand < 0.05f)
+				if (this.tradeLevel == 2 && rand < 0.05f) {
 					level = 2;
+					cost = 72;
+				}
 				else if (rand < 0.2f * this.tradeLevel)
 					level = 1;
+					cost = 39;
 				item = new ItemStack(TF2weapons.itemKillstreak, 1, list.get(this.rand.nextInt(list.size())).id + (level << 9));
 				if (i == 0 && (this.tradeLevel > 1 )) {
 					
 				}
-				int cost = level * 24;
+				
 				this.addTradeOffer(item, cost, this.rand.nextBoolean());
 			}
 		}

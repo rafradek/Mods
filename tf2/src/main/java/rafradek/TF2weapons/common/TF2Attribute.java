@@ -305,7 +305,7 @@ public class TF2Attribute {
 				ITEM_BULLET, 1, 2, 180, 1);
 		new TF2Attribute(99, "KnockbackRage", "Knockback Rage", Type.ADDITIVE, 0, State.POSITIVE,
 				ITEM_MINIGUN, 1, 3, 120, 1);
-		new TF2Attribute(100, "DeployTimeBonus", "Deploy Time", Type.PERCENTAGE, 0, State.POSITIVE);
+		new TF2Attribute(100, "DeployTimeBonus", "Deploy Time", Type.INVERTED_PERCENTAGE, 0, State.POSITIVE);
 		new TF2Attribute(101, "FireRateHealthBonus", "Fire Rate Health", Type.PERCENTAGE, 0, State.POSITIVE);
 		new TF2Attribute(102, "SpreadHealthPenalty", "Spread Health", Type.PERCENTAGE, 0, State.NEGATIVE);
 		new TF2Attribute(103, "AutoFireClip", "Auto Fire", Type.ADDITIVE, 0, State.NEGATIVE);
@@ -353,6 +353,9 @@ public class TF2Attribute {
 				PDA, 1, 2, 180, 3);
 		new TF2Attribute(135, "JetpackNoItem", "Jetpack Item", Type.ADDITIVE, 0f, State.POSITIVE,
 				JETPACK, 1f, 1, 320, 3);
+		new TF2Attribute(136, "SelfDamageIncreased", "Self Damage", Type.PERCENTAGE, 1, State.NEGATIVE);
+		new TF2Attribute(137, "MiniCritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(138, "DetonateFlare", "Detonate", Type.ADDITIVE, 0, State.POSITIVE);
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
