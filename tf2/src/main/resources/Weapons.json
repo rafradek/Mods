@@ -1734,7 +1734,7 @@
 		"Name": "Air Strike",
 		"Class": "projectile",
 		"Based on": "rocketlauncher",
-		"Render": "rafradek_tf2_weapons:rocketlauncher",
+		"Render": "rafradek_tf2_weapons:air_strike",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.airstrike",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.airstrike",
 		"Cost": 30,

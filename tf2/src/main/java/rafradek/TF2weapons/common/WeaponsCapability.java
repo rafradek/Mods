@@ -113,7 +113,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public EntityLivingBase entityDisguise;
 	
 	public ArrayList<EntityStickybomb> activeBomb= new ArrayList<>();
-	public ArrayList<EntityProjectileBase> projectileDetonate= new ArrayList<>();
 	public float oldFactor;
 	public int expJumpGround;
 	public double lastPosX;

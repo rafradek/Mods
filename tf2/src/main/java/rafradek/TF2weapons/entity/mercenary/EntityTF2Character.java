@@ -603,7 +603,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	protected void onItemUseFinish() {
 		if (!this.activeItemStack.isEmpty() && this.isHandActive() && this.activeItemStack.getItemUseAction() == EnumAction.EAT) {
-			this.heal(((ItemFood) this.refill.getStackInSlot(0).getItem()).getHealAmount(activeItemStack));
+			this.heal(((ItemFood) this.activeItemStack.getItem()).getHealAmount(activeItemStack));
 		}
 		super.onItemUseFinish();
 		this.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
@@ -1337,8 +1337,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (!noAmmoSwitch)
 			this.preferredSlot = slot;
 
-		if (slot != this.usedSlot && stack.getItem() instanceof ItemUsable && !((ItemUsable) stack.getItem()).isAmmoSufficient(stack, this, true))
-			return;
 
 		if (this.getHeldItemMainhand().getItem() instanceof ItemUsable && slot != this.usedSlot)
 			((ItemUsable) this.getHeldItemMainhand().getItem()).holster(getWepCapability(), stack, this, world);
@@ -1577,7 +1575,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public boolean refill(int slot) {
-		if (!this.refill.getStackInSlot(0).isEmpty() && !(this.refill.getStackInSlot(0).getItem() instanceof ItemAmmo)) {
+		if (!this.refill.getStackInSlot(0).isEmpty() && TF2Util.isOre("ingotLead", this.refill.getStackInSlot(0))) {
 			this.refill.extractItem(0, 1, false);
 			this.ammoCount[slot] = (int) (this.getMaxAmmo(slot) * 0.4f);
 			return true;
