@@ -33,9 +33,9 @@ import rafradek.TF2weapons.entity.projectile.EntityFlame;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemBulletWeapon extends ItemWeapon {
 

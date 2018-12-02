@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemAmmoPackage extends Item{
 

@@ -13,8 +13,8 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemJetpack extends ItemBackpack {
 

@@ -3,8 +3,13 @@
 	{
 		"Name": "Shotgun",
 		"Class": "bullet",
-		"Slot": 1,
-		"Mobs": "soldier,heavy,pyro",
+		"Slot": 
+		{
+			"soldier": 1,
+			"heavy": 1,
+			"pyro": 1,
+			"engineer": 0
+		},
 		"Render": "rafradek_tf2_weapons:shotgun",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shotgun",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.shotgun",
@@ -33,22 +38,14 @@
 		"Cost": 12
 	},
 
-	"shotgunengineer": 
-	{
-		"Name": "Shotgun",
-		"Class": "bullet",
-		"Based on": "shotgun",
-		"Slot": 0,
-		"Mobs": "engineer",
-		"Hidden": true
-	},
-
 	"scattergun": 
 	{
 		"Name": "Scattergun",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "scout",
+		"Slot": 
+		{
+			"scout": 0
+		},
 		"Render": "rafradek_tf2_weapons:scattergun",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.scattergun",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.scattergun",
@@ -81,8 +78,10 @@
 	{
 		"Name": "Revolver",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "spy",
+		"Slot": 
+		{
+			"spy": 0
+		},
 		"Render": "rafradek_tf2_weapons:revolver",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.revolver",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.revolver",
@@ -115,8 +114,10 @@
 	{
 		"Name": "Minigun",
 		"Class": "minigun",
-		"Slot": 0,
-		"Mobs": "heavy",
+		"Slot": 
+		{
+			"heavy": 0
+		},
 		"Render": "rafradek_tf2_weapons:minigun",
 		"Fire loop sound": "rafradek_tf2_weapons:weapon.fire.minigun",
 		"Spin sound": "rafradek_tf2_weapons:weapon.spin.minigun",
@@ -151,7 +152,10 @@
 	{
 		"Name": "Pistol",
 		"Class": "bullet",
-		"Slot": 1,
+		"Slot": 
+		{
+			"scout": 1
+		},
 		"Mobs": "engineer,scout",
 		"Render": "rafradek_tf2_weapons:pistol",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.pistol",
@@ -185,8 +189,10 @@
 	{
 		"Name": "SMG",
 		"Class": "bullet",
-		"Slot": 1,
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 1
+		},
 		"Render": "rafradek_tf2_weapons:smg",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.smg",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.smg",
@@ -219,7 +225,10 @@
 	{
 		"Name": "Sniper Rifle",
 		"Class": "sniperrifle",
-		"Slot": 0,
+		"Slot": 
+		{
+			"sniper": 0
+		},
 		"Mobs": "sniperrifle",
 		"Render": "rafradek_tf2_weapons:sniperrifle",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sniper",
@@ -253,8 +262,10 @@
 	{
 		"Name": "Rocket Launcher",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 0
+		},
 		"Projectile": "rocket",
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.rocketlauncher",
@@ -289,8 +300,10 @@
 	{
 		"Name": "Flame Thrower",
 		"Class": "flamethrower",
-		"Slot": 0,
-		"Mobs": "pyro",
+		"Slot": 
+		{
+			"pyro": 0
+		},
 		"Projectile": "fire",
 		"Render": "rafradek_tf2_weapons:flamethrower",
 		"Fire start sound": "rafradek_tf2_weapons:weapon.start.flamethrower",
@@ -328,8 +341,10 @@
 	{
 		"Name": "Grenade Launcher",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "demoman",
+		"Slot": 
+		{
+			"demoman": 0
+		},
 		"Projectile": "grenade",
 		"Render": "rafradek_tf2_weapons:grenadelauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.grenadelauncher",
@@ -364,8 +379,10 @@
 	{
 		"Name": "Stickybomb Launcher",
 		"Class": "stickybomb",
-		"Slot": 1,
-		"Mobs": "demoman",
+		"Slot": 
+		{
+			"demoman": 1
+		},
 		"Render": "rafradek_tf2_weapons:stickybomblauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.stickylauncher",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.stickylauncher",
@@ -401,8 +418,10 @@
 	{
 		"Name": "Syringe Gun",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "medic",
+		"Slot": 
+		{
+			"medic": 0
+		},
 		"Projectile": "syringe",
 		"Render": "rafradek_tf2_weapons:syringegun",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.syringegun",
@@ -437,8 +456,10 @@
 	{
 		"Name": "Medigun",
 		"Class": "medigun",
-		"Slot": 1,
-		"Mobs": "medic",
+		"Slot": 
+		{
+			"medic": 1
+		},
 		"Render": "rafradek_tf2_weapons:medigun",
 		"Heal start sound": "rafradek_tf2_weapons:weapon.heal.medigun",
 		"No target sound": "rafradek_tf2_weapons:weapon.notarget.medigun",
@@ -462,8 +483,10 @@
 	{
 		"Name": "Butterfly Knife",
 		"Class": "knife",
-		"Slot": 2,
-		"Mobs": "spy",
+		"Slot": 
+		{
+			"spy": 2
+		},
 		"Render": "rafradek_tf2_weapons:knife",
 		"Render backstab": "rafradek_tf2_weapons:knifebackstab",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.knife",
@@ -493,8 +516,10 @@
 	{
 		"Name": "Sentry Bullet",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 0
+		},
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Firing speed": 500,
 		"Pellets": 1,
@@ -513,8 +538,10 @@
 	{
 		"Name": "Sentry Bullet 2",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 0
+		},
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Firing speed": 250,
 		"Pellets": 1,
@@ -533,8 +560,10 @@
 	{
 		"Name": "Sentry Bullet",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 0
+		},
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		
 		"Firing speed": 500,
@@ -554,9 +583,11 @@
 	{
 		"Name": "Sentry Rocket",
 		"Class": "projectile",
-		"Slot": 0,
 		"Projectile": "rocket",
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 0
+		},
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 3000,
@@ -577,8 +608,10 @@
 	{
 		"Name": "Invisiblity Watch",
 		"Class": "cloak",
-		"Slot": 3,
-		"Mobs": "spy",
+		"Slot": 
+		{
+			"spy": 3
+		},
 		"Render": "rafradek_tf2_weapons:watch",
 		"Cloak sound": "rafradek_tf2_weapons:weapon.on.cloak",
 		"Decloak sound": "rafradek_tf2_weapons:weapon.off.cloak",
@@ -591,8 +624,10 @@
 	{
 		"Name": "Wrench",
 		"Class": "wrench",
-		"Slot": 2,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 2
+		},
 		"Render": "rafradek_tf2_weapons:wrench",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.wrench",
 		"Build hit success sound": "rafradek_tf2_weapons:weapon.hit.wrench.success",
@@ -623,7 +658,10 @@
 	{
 		"Name": "Bonk! Atomic Punch",
 		"Class": "bonk",
-		"Slot": 1,
+		"Slot": 
+		{
+			"scout": 1
+		},
 		"Effect type": "rafradek_tf2_weapons:bonkEff",
 		"Render": "rafradek_tf2_weapons:bonk",
 		"Duration": 160,
@@ -637,7 +675,10 @@
 	{
 		"Name": "Crit-A-Cola",
 		"Class": "bonk",
-		"Slot": 1,
+		"Slot": 
+		{
+			"scout": 1
+		},
 		"Effect type": "rafradek_tf2_weapons:critEff",
 		"Render": "rafradek_tf2_weapons:critacola",
 		"Duration": 300,
@@ -651,8 +692,10 @@
 	{
 		"Name": "Buff Banner",
 		"Class": "backpack",
-		"Slot": 1,
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 1
+		},
 		"Effect type": "rafradek_tf2_weapons:bannerEff",
 		"Render": "rafradek_tf2_weapons:buffbanner",
 		"Horn red sound": "rafradek_tf2_weapons:weapon.horn.banner.red",
@@ -671,8 +714,10 @@
 	{
 		"Name": "Battalion's Backup",
 		"Class": "backpack",
-		"Slot": 1,
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 1
+		},
 		"Effect type": "rafradek_tf2_weapons:backupEff",
 		"Render": "rafradek_tf2_weapons:backup",
 		"Horn red sound": "rafradek_tf2_weapons:weapon.horn.backup.red",
@@ -696,8 +741,10 @@
 	{
 		"Name": "Concheror",
 		"Class": "backpack",
-		"Slot": 1,
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 1
+		},
 		"Effect type": "rafradek_tf2_weapons:conchEff",
 		"Render": "rafradek_tf2_weapons:conch",
 		"Horn red sound": "rafradek_tf2_weapons:weapon.horn.conch",
@@ -720,8 +767,10 @@
 	{
 		"Name": "Sapper",
 		"Class": "sapper",
-		"Slot": 1,
-		"Mobs": "spy",
+		"Slot": 
+		{
+			"spy": 1
+		},
 		"Render": "rafradek_tf2_weapons:sapper",
 		"Firing speed": 100,
 		"Pellets": 1,
@@ -751,8 +800,10 @@
 	{
 		"Name": "Flare Gun",
 		"Class": "projectile",
-		"Slot": 1,
-		"Mobs": "pyro",
+		"Slot": 
+		{
+			"pyro": 1
+		},
 		"Projectile": "flare",
 		"Render": "rafradek_tf2_weapons:flare_gun",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.flaregun",
@@ -791,7 +842,6 @@
 	{
 		"Name": "Frying Pan",
 		"Class": "melee",
-		"Slot": 2,
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.kukri",
 		"Render": "rafradek_tf2_weapons:frying_pan",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.fryingpan",
@@ -820,7 +870,10 @@
 		"Name": "Bottle",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "demoman",
+		"Slot": 
+		{
+			"demoman": 2
+		},
 		"Render": "rafradek_tf2_weapons:bottle",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.bottle",
 		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.bottle.world",
@@ -834,7 +887,10 @@
 		"Name": "Market Gardener",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 2
+		},
 		"Render": "rafradek_tf2_weapons:market_gardener",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shovel",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.bottle",
@@ -854,7 +910,10 @@
 		"Name": "Axtinguisher",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "pyro",
+		"Slot": 
+		{
+			"pyro": 2
+		},
 		"Render": "rafradek_tf2_weapons:axtinguisher",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.axe",
 		"Drop chance": 0.11,
@@ -872,7 +931,10 @@
 		"Name": "Übersaw",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "medic",
+		"Slot": 
+		{
+			"medic": 2
+		},
 		"Render": "rafradek_tf2_weapons:ubersaw",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.ubersaw",
 		"Drop chance": 0.11,
@@ -889,7 +951,10 @@
 		"Name": "Bushwacka",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 2
+		},
 		"Render": "rafradek_tf2_weapons:bushwacka",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.kukri",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.axe",
@@ -908,7 +973,10 @@
 		"Name": "Killing Glove of Boxing",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "heavy",
+		"Slot": 
+		{
+			"heavy": 2
+		},
 		"Render": "rafradek_tf2_weapons:kgb",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.gloves",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gloves",
@@ -929,7 +997,10 @@
 		"Name": "Glove of running urgently",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "heavy",
+		"Slot": 
+		{
+			"heavy": 2
+		},
 		"Render": "rafradek_tf2_weapons:gru",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.gloves",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gloves",
@@ -951,7 +1022,10 @@
 		"Name": "Sandman",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "scout",
+		"Slot": 
+		{
+			"scout": 2
+		},
 		"Render": "rafradek_tf2_weapons:sandman",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.baseball",
 		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.baseball.world",
@@ -970,8 +1044,10 @@
 	{
 		"Name": "Jarate",
 		"Class": "jar",
-		"Slot": 1,
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 1
+		},
 		"Projectile": "jar",
 		"Render": "rafradek_tf2_weapons:jarate",
 		"Firing speed": 1250,
@@ -1041,8 +1117,10 @@
 	{
 		"Name": "Wrangler",
 		"Class": "wrangler",
-		"Mobs": "engineer",
-		"Slot": 1,
+		"Slot": 
+		{
+			"engineer": 1
+		},
 		"Render": "rafradek_tf2_weapons:wrangler",
 		"Drop chance": 0.07,
 		"Firing speed": 0,
@@ -1086,8 +1164,10 @@
 		"Name": "Chargin' Targe",
 		"Class": "shield",
 		"Render": "rafradek_tf2_weapons:chargin_targe",
-		"Mobs": "demoman",
-		"Slot": 1,
+		"Slot": 
+		{
+			"demoman": 1
+		},
 		"Description": "Right click to activate the charge",
 		"Cost": 18,
 		"Drop chance": 0.15,
@@ -1368,8 +1448,10 @@
 	{
 		"Name": "Rescue Ranger",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 0
+		},
 		"Projectile": "repairclaw",
 		"Render": "rafradek_tf2_weapons:rescue_ranger",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.rescueranger",
@@ -1448,8 +1530,10 @@
 	{
 		"Name": "Crusader's Crossbow",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "medic",
+		"Slot": 
+		{
+			"medic": 0
+		},
 		"Projectile": "syringe",
 		"Render": "rafradek_tf2_weapons:crossbow",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.crossbow",
@@ -1510,7 +1594,7 @@
 		"Class": "projectile",
 		"Based on": "grenadelauncher",
 		"Mobs": "demoman",
-		"Render": "rafradek_tf2_weapons:grenadelauncher",
+		"Render": "rafradek_tf2_weapons:loose_cannon",
 		"Charge sound": "rafradek_tf2_weapons:weapon.charge.stickylauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.loosecannon",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.loosecannon",
@@ -1592,8 +1676,10 @@
 	{
 		"Name": "Flying Guillotine",
 		"Class": "cleaver",
-		"Slot": 1,
-		"Mobs": "scout",
+		"Slot": 
+		{
+			"scout": 1
+		},
 		"Projectile": "cleaver",
 		"Render": "rafradek_tf2_weapons:flying_guillotine",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.cleaver",
@@ -1774,8 +1860,10 @@
 		"Name": "B.A.S.E Jumper",
 		"Class": "parachute",
 		"Render": "rafradek_tf2_weapons:base_jumper",
-		"Mobs": "solder",
-		"Slot": 2,
+		"Slot": 
+		{
+			"soldier": 1
+		},
 		"Drop chance": 0.07,
 		"Cost": 15,
 		"Armor": 4,
@@ -1787,8 +1875,10 @@
 	{
 		"Name": "Huntsman",
 		"Class": "huntsman",
-		"Slot": 0,
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 0
+		},
 		"Projectile": "arrow",
 		"Render": "rafradek_tf2_weapons:huntsman",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.huntsman",
@@ -1824,8 +1914,10 @@
 	{
 		"Name": "Thermal Thruster",
 		"Class": "jetpack",
-		"Slot": 1,
-		"Mobs": "pyro",
+		"Slot": 
+		{
+			"pyro": 1
+		},
 		"Render": "rafradek_tf2_weapons:thermal_thruster",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.thermalthruster",
 		"Charge sound": "rafradek_tf2_weapons:weapon.charge.thermalthruster",
@@ -1848,6 +1940,7 @@
 		"Render": "rafradek_tf2_weapons:jetpack_trigger",
 		"Firing speed": 900,
 		"Description": "To use with the Thermal Thruster equipped",
+		"Roll hidden": 1,
 		"Attributes": 
 		{
 			"HolsterTimePenalty": 1.75
@@ -1879,8 +1972,10 @@
 		"Name": "PDA",
 		"Class": "pda",
 		"Render": "rafradek_tf2_weapons:pda",
-		"Slot": 3,
-		"Mobs": "engineer",
+		"Slot": 
+		{
+			"engineer": 3
+		},
 		"Cost": 48,
 		"Stock": true,
 		"Description": "Right click while sneaking to disable HUD"
@@ -1889,8 +1984,10 @@
 	{
 		"Name": "Righterous Bison",
 		"Class": "projectile",
-		"Slot": 1,
-		"Mobs": "soldier",
+		"Slot": 
+		{
+			"soldier": 1
+		},
 		"Projectile": "energy",
 		"Render": "rafradek_tf2_weapons:rescue_ranger",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.bison",
@@ -1960,6 +2057,7 @@
 		"Name": "Sydney Sleeper",
 		"Class": "sniperrifle",
 		"Based on": "sniperrifle",
+		"Render": "rafradek_tf2_weapons:sydney_sleeper",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sydneysleeper",
 		"Cost": 45,
 		"Stock": false,
@@ -1974,8 +2072,10 @@
 	{
 		"Name": "Dragon's Furry",
 		"Class": "airblast",
-		"Slot": 0,
-		"Mobs": "pyro",
+		"Slot": 
+		{
+			"pyro": 0
+		},
 		"Projectile": "fireball",
 		"Render": "rafradek_tf2_weapons:dragon_fury",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.dragonsfury",
@@ -2019,8 +2119,10 @@
 	{
 		"Name": "Razorback",
 		"Class": "backpackgeneric",
-		"Slot": 1,
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 1
+		},
 		"Render": "rafradek_tf2_weapons:razorback",
 		"Drop chance": 0.07,
 		"Cost": 18,
@@ -2035,8 +2137,10 @@
 	{
 		"Name": "Darwin's Danger Shield'",
 		"Class": "backpackgeneric",
-		"Slot": 1,
-		"Mobs": "sniper",
+		"Slot": 
+		{
+			"sniper": 1
+		},
 		"Render": "rafradek_tf2_weapons:danger_shield",
 		"Drop chance": 0.07,
 		"Cost": 18,
@@ -2052,8 +2156,10 @@
 	{
 		"Name": "Shortstop",
 		"Class": "bullet",
-		"Slot": 0,
-		"Mobs": "scout",
+		"Slot": 
+		{
+			"scout": 0
+		},
 		"Render": "rafradek_tf2_weapons:pistol",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shortstop",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.shortstop",
@@ -2085,8 +2191,10 @@
 	{
 		"Name": "Super Nailgun",
 		"Class": "projectile",
-		"Slot": 0,
-		"Mobs": "medic",
+		"Slot": 
+		{
+			"medic": 0
+		},
 		"Projectile": "syringe",
 		"Render": "rafradek_tf2_weapons:syringegun",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.syringegun",

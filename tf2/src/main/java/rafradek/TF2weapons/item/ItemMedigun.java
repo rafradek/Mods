@@ -39,7 +39,7 @@ import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.Contract.Objective;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class ItemMedigun extends ItemUsable {
 

@@ -33,8 +33,8 @@ import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.item.ItemCrate.CrateContent;
 import rafradek.TF2weapons.item.ItemFromData.AttributeProvider;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemCrate extends ItemFromData {
 	

@@ -20,8 +20,12 @@
 	"billhat": {
 		"Name": "Bill's Hat",
 		"Class": "cosmetic",
-		"Mobs": "scout,pyro,sniper",
-		"Slot": 9,
+		"Slot": 
+		{
+			"scout":9,
+			"pyro":9,
+			"sniper":9
+		},
 		"Render": "rafradek_tf2_weapons:bill_hat",
 		"Cost": 54,
 		"Wear flags": 1
@@ -29,8 +33,12 @@
 	"teamcaptain": {
 		"Name": "Team Captain",
 		"Class": "cosmetic",
-		"Mobs": "soldier,heavy,medic",
-		"Slot": 9,
+		"Slot": 
+		{
+			"soldier":9,
+			"heavy":9,
+			"medic":9
+		},
 		"Render": "rafradek_tf2_weapons:team_captain",
 		"Cost": 54,
 		"Wear flags": 1
@@ -38,8 +46,10 @@
 	"texashat": {
 		"Name": "Texas Ten Gallon",
 		"Class": "cosmetic",
-		"Mobs": "engineer",
-		"Slot": 9,
+		"Slot": 
+		{
+			"engineer":9
+		},
 		"Render": "rafradek_tf2_weapons:texas_hat",
 		"Cost": 54,
 		"Wear flags": 1
@@ -47,8 +57,12 @@
 	"allfather": {
 		"Name": "All-Father",
 		"Class": "cosmetic",
-		"Slot": 9,
-		"Mobs": "heavy,spy,demoman",
+		"Slot": 
+		{
+			"heavy": 9,
+			"spy": 9,
+			"demoman": 9
+		},
 		"Render": "rafradek_tf2_weapons:all_father",
 		"Cost": 54,
 		"Wear flags": 1
@@ -56,7 +70,6 @@
 	"bombinomicon": {
 		"Name": "Bombinomicon",
 		"Class": "cosmetic",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:bombinomicon",
 		"Cost": 30,
 		"Wear flags": 2,
@@ -68,8 +81,12 @@
 	"head_prize": {
 		"Name": "Head Prize",
 		"Class": "cosmetic",
-		"Mobs": "pyro,scout,demoman",
-		"Slot": 9,
+		"Slot": 
+		{
+			"pyro": 9,
+			"scout": 9,
+			"medic": 9
+		},
 		"Render": "rafradek_tf2_weapons:head_prize",
 		"Color": 13004885,
 		"Cost": 72,

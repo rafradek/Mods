@@ -30,9 +30,9 @@ import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.mercenary.EntitySniper;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemSniperRifle extends ItemBulletWeapon {
 	public static UUID slowdownUUID = UUID.fromString("12843092-A5D6-BBCD-3D4F-A3DD4D8C65A9");

@@ -138,9 +138,9 @@ import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ClientProxy extends CommonProxy {
 	

@@ -63,9 +63,9 @@ import rafradek.TF2weapons.common.TF2Attribute.State;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemCrate.CrateContent;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.util.WeaponData.WeaponDataCapability;
 
 public class ItemFromData extends Item implements IItemOverlay{
@@ -273,6 +273,8 @@ public class ItemFromData extends Item implements IItemOverlay{
 					&& (showHidden || entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 0)
 					&& entry.getValue().getString(PropertyType.CLASS).equals(clazz))
 				weapons.add(entry.getValue());
+		if (weapons.isEmpty())
+			return ItemStack.EMPTY;
 		return getNewStack(weapons.get(random.nextInt(weapons.size())));
 	}
 
@@ -284,8 +286,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 			public boolean apply(WeaponData input) {
 				// TODO Auto-generated method stub
 				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
-						&& input.getInt(PropertyType.SLOT) == slot
-						&& input.getString(PropertyType.MOB_TYPE).contains(mob);
+						&& ItemFromData.isItemOfClassSlot(input, slot, mob);
 			}
 
 		};
@@ -338,8 +339,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 			public boolean apply(WeaponData input) {
 				// TODO Auto-generated method stub
 				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
-						&& input.getInt(PropertyType.SLOT) == slot
-						&& input.getString(PropertyType.MOB_TYPE).contains(mob);
+						&& ItemFromData.isItemOfClassSlot(input, slot, mob);
 			}
 
 		}, count);
@@ -381,6 +381,21 @@ public class ItemFromData extends Item implements IItemOverlay{
 		return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(getData(stack).getString(name)));
 	}
 
+	public static int getSlotForClass(WeaponData data, String name) {
+		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name) ? data.get(PropertyType.SLOT).get(name) : -1;
+	}
+	
+	public static int getSlotForClass(WeaponData data, EntityTF2Character name) {
+		return getSlotForClass(data, ItemToken.CLASS_NAMES[name.getClassIndex()]);
+	}
+	
+	public static boolean isItemOfClassSlot(WeaponData data, int slot, String name) {
+		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name) && data.get(PropertyType.SLOT).get(name)==slot;
+	}
+	
+	public static boolean isItemOfClass(WeaponData data, String name) {
+		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name);
+	}
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
@@ -510,7 +525,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 			return ItemAmmo.STACK_FILL;
 		
 		if (owner instanceof EntityTF2Character) {
-			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getData(stack).getInt(PropertyType.SLOT)) > 0 ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
+			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getSlotForClass(ItemFromData.getData(stack), (EntityTF2Character)owner)) > 0 ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
 		}
 		else if (!(owner instanceof EntityPlayer))
 			return ItemAmmo.STACK_FILL;
@@ -620,4 +635,6 @@ public class ItemFromData extends Item implements IItemOverlay{
 	public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
 		return ItemFromData.getData(stack).getInt(PropertyType.WEAR);
 	}
+
+	
 }

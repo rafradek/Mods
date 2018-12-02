@@ -115,9 +115,9 @@ import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityTF2Character extends EntityCreature implements IMob, IMerchant, IEntityTF2, IEntityOwnable {
 
@@ -266,7 +266,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.loadout.setStackInSlot(1, ItemFromData.getRandomWeaponOfSlotMob(className, 1, this.rand, false, true, this.noEquipment));
 		this.loadout.setStackInSlot(2, ItemFromData.getRandomWeaponOfSlotMob(className, 2, this.rand, false, true, this.noEquipment));
 		if (!this.noEquipment && !this.isRobot()) {
-			if (this.rand.nextInt((int) ((14 - this.world.getDifficulty().getDifficultyId() * 3) / TF2ConfigVars.hatMercenaryMult)) == 0) {
+			if (this.rand.nextInt(Math.min(1,(int) ((14 - this.world.getDifficulty().getDifficultyId() * 3) / TF2ConfigVars.hatMercenaryMult))) == 0) {
 				this.tradeLevel = 1;
 				this.difficulty = 1;
 				this.experienceValue *= 2;
@@ -464,6 +464,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				return this.scaleWithDifficulty(1.9f, 1f);
 			} else if (attribute.equals("Damage") && this.getHeldItemMainhand().getItem() instanceof ItemMeleeWeapon)
 				return 1.25f;
+		if (attribute.equals("Auto Fire"))
+			return 0f;
 		return 1f;
 	}
 
@@ -909,9 +911,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		
 		if (!validLight)
 			return false;
-		int time = (int) Math.min((this.world.getWorldInfo().getWorldTime() / 24000), 4);
 		
-		return (time == 4 || this.rand.nextInt(4) < time) && this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
+		return this.world.getDifficulty() != EnumDifficulty.PEACEFUL && super.getCanSpawnHere();
 	}
 
 	public boolean detectBanner() {
@@ -1308,7 +1309,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public void useRecipe(MerchantRecipe recipe) {
 		recipe.incrementToolUses();
 		if (recipe.getItemToBuy().getItem() instanceof ItemWeapon) {
-			this.loadout.setStackInSlot(ItemFromData.getData(recipe.getItemToBuy()).getInt(PropertyType.SLOT), recipe.getItemToBuy());
+			this.loadout.setStackInSlot(ItemFromData.getSlotForClass(ItemFromData.getData(recipe.getItemToBuy()), this), recipe.getItemToBuy());
 			this.switchSlot(0);
 		}
 

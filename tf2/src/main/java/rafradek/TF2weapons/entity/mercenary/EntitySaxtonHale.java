@@ -50,9 +50,9 @@ import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemKnife;
 import rafradek.TF2weapons.item.ItemMonsterPlacerPlus;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant {
 

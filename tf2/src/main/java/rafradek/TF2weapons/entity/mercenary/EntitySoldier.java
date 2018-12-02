@@ -21,8 +21,8 @@ import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntitySoldier extends EntityTF2Character {
 

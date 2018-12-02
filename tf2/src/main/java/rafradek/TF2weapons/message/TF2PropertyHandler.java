@@ -13,8 +13,8 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.message.TF2Message.PropertyMessage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2PropertyHandler implements IMessageHandler<TF2Message.PropertyMessage, IMessage> {
 

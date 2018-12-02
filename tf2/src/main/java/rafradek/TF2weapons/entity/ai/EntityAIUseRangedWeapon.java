@@ -225,7 +225,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		
 		if ((!reloading) && fire && d0 <= (this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared)
-				&& (((ItemUsable)item.getItem()).isAmmoSufficient(item, entityHost, true) || weapon.getAmmoType(item) == 0)) {
+				&& (((ItemUsable)item.getItem()).isAmmoSufficient(item, entityHost, true)) && (((ItemUsable)item.getItem()).shouldEntityFire(item, entityHost, attackTarget))) {
 			this.reloading = false;
 			if (!pressed) {
 				pressed = true;

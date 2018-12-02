@@ -87,11 +87,11 @@ import rafradek.TF2weapons.potion.PotionTF2;
 import rafradek.TF2weapons.potion.PotionTF2Item;
 import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.util.Contract.Objective;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
@@ -160,6 +160,7 @@ import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.GameRules.ValueType;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.storage.loot.LootEntry;
@@ -343,28 +344,6 @@ public class TF2EventsCommon {
 					}
 				}
 			}
-			int dayTime=(int) (worldTime % 24000);
-			if (dayTime == 1 && !TF2ConfigVars.disableInvasion){
-				if (events!=null && new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
-						.nextInt(20) == 0){
-					for (EntityPlayer player : event.world.playerEntities) {
-						events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2));
-					}
-					/*if (events.eventFlag == 1) {
-						for (EntityPlayer player : event.world.playerEntities) {
-							player.sendMessage(new TextComponentString("The event has just ended"));
-						}
-						events.eventFlag=0;
-					} else if (new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
-							.nextInt(20) == 0) {
-						for (EntityPlayer player : event.world.playerEntities) {
-							TF2PlayerCapability.get(player).robotsKilledInvasion+=1;
-							player.sendMessage(new TextComponentString("Robots invade the area!"));
-						}
-						events.eventFlag=1;
-					}*/
-				}
-			}
 			Iterator<Entry<UUID, InvasionEvent>> ite = events.invasions.entrySet().iterator();
 			while (ite.hasNext()) {
 				Entry<UUID, InvasionEvent> entry = ite.next();
@@ -372,33 +351,44 @@ public class TF2EventsCommon {
 				if (entry.getValue().finished)
 					ite.remove();
 			}
-			if (!TF2ConfigVars.disableBossSpawn && dayTime >= 14000 && dayTime <= 21000 && dayTime % 1000 == 0 && event.world.getCurrentMoonPhaseFactor() == 1
-					&& worldTime > 24000) {
-				for (EntityPlayer player : event.world.playerEntities)
-					if (player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks <= worldTime
-							&& event.world.getEntitiesWithinAABB(EntityTF2Boss.class, player.getEntityBoundingBox().grow(200, 200, 200)).isEmpty()) {
-						player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks = (int) (worldTime + Math.min(40000,TF2ConfigVars.bossReappear)
-						+ player.getRNG().nextInt(TF2ConfigVars.bossReappear-40000));
-						EntityTF2Boss boss;
-						switch(player.getRNG().nextInt(3)){
-						case 0: boss= new EntityMonoculus(event.world);break;
-						case 1: boss= new EntityHHH(event.world);break;
-						default: boss= new EntityMerasmus(event.world);break;
-						}
-						
-						BlockPos spawnPos = null;
-						int i = 0;
-						do {
-							i++;
-							spawnPos = event.world.getTopSolidOrLiquidBlock(player.getPosition().add(player.getRNG().nextInt(48) - 24, 0, player.getRNG().nextInt(48) - 24));
-							boss.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-						} while (i < 6 && !event.world.getCollisionBoxes(null, boss.getEntityBoundingBox()).isEmpty());
-
-						if(spawnPos!=null){
-							boss.onInitialSpawn(event.world.getDifficultyForLocation(spawnPos), null);
-							event.world.spawnEntity(boss);
+			if (event.world.provider.getDimensionType() == DimensionType.OVERWORLD) {
+				int dayTime=(int) (worldTime % 24000);
+				if (dayTime == 1 && !TF2ConfigVars.disableInvasion){
+					if (events!=null && new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
+							.nextInt(20) == 0){
+						for (EntityPlayer player : event.world.playerEntities) {
+							events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2));
 						}
 					}
+				}
+				if (!TF2ConfigVars.disableBossSpawn && dayTime >= 14000 && dayTime <= 21000 && dayTime % 1000 == 0 && event.world.getCurrentMoonPhaseFactor() == 1
+						&& worldTime > 24000) {
+					for (EntityPlayer player : event.world.playerEntities)
+						if (player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks <= worldTime
+								&& event.world.getEntitiesWithinAABB(EntityTF2Boss.class, player.getEntityBoundingBox().grow(200, 200, 200)).isEmpty()) {
+							player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks = (int) (worldTime + Math.min(40000,TF2ConfigVars.bossReappear)
+							+ player.getRNG().nextInt(TF2ConfigVars.bossReappear-40000));
+							EntityTF2Boss boss;
+							switch(player.getRNG().nextInt(3)){
+							case 0: boss= new EntityMonoculus(event.world);break;
+							case 1: boss= new EntityHHH(event.world);break;
+							default: boss= new EntityMerasmus(event.world);break;
+							}
+							
+							BlockPos spawnPos = null;
+							int i = 0;
+							do {
+								i++;
+								spawnPos = event.world.getTopSolidOrLiquidBlock(player.getPosition().add(player.getRNG().nextInt(48) - 24, 0, player.getRNG().nextInt(48) - 24));
+								boss.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+							} while (i < 6 && !event.world.getCollisionBoxes(null, boss.getEntityBoundingBox()).isEmpty());
+	
+							if(spawnPos!=null){
+								boss.onInitialSpawn(event.world.getDifficultyForLocation(spawnPos), null);
+								event.world.spawnEntity(boss);
+							}
+						}
+				}
 			}
 			tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTickStart;
 		}
@@ -1932,64 +1922,11 @@ public class TF2EventsCommon {
 		/*if (!(stack.getItem() instanceof ItemCrate) && stack.hasTagCompound() && stack.getTagCompound().getBoolean("DropFrom")) {
 			event.getEntityPlayer().addStat(TF2Achievements.SPOILS_WAR);
 		}*/
-		if (stack.getItem() instanceof ItemFireAmmo && stack.getCount() == 1) {
-			stack = TF2Util.mergeStackByDamage(event.getEntityPlayer().getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
-			if (!event.getEntityPlayer().getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty())
-			stack = TF2Util.mergeStackByDamage(event.getEntityPlayer().getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
-			if (stack.isEmpty()) {
-				event.setResult(Result.ALLOW);
-				return;
-			}
-			/*final int ammoType = ((ItemFireAmmo) stack.getItem()).getTypeInt(stack);
-			ItemStack existingAmmo = TF2Util.getFirstItem(event.getEntityPlayer().inventory, stackL -> stackL.getItem() instanceof ItemFireAmmo 
-					&& stackL.getItemDamage() != 0 && ((ItemAmmo) stackL.getItem()).getTypeInt(stackL) == ammoType);
-			if (!existingAmmo.isEmpty()) {
-				int existingAmmoDamage = existingAmmo.getItemDamage();
-				existingAmmo.setItemDamage(Math.max(0, existingAmmoDamage - ((ItemFireAmmo) stack.getItem()).getAmount(stack)));
-				stack.setItemDamage(Math.max(0, existingAmmoDamage - ));
-			}*/
-		}
-		if (stack.getItem() instanceof ItemAmmo && event.getEntityLiving().hasCapability(TF2weapons.INVENTORY_CAP, null) ) {
-			
-			if (!event.getEntityLiving().getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()) {
-				IItemHandler inv = event.getEntityLiving().getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-						.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-				ItemStack orig=stack.copy();
-				orig.setCount(0);
-				stack=ItemHandlerHelper.insertItemStacked(inv, stack, false);
-				if(stack.isEmpty()){
-					event.getItem().setItem(orig);
-				}
-				ItemStack weapon = event.getEntityPlayer().getHeldItemMainhand();
-				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
-					TF2weapons.network.sendTo(new TF2Message.UseMessage(weapon.getItemDamage(), false,
-							((ItemUsable) weapon.getItem()).getAmmoAmount(event.getEntityPlayer(), weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) event.getEntityPlayer());
-				/*for (int i = 0; i < inv.getSlots(); i++) {
-					ItemStack inSlot = inv.getStackInSlot(i);
-					if (inSlot == null) {fg
-						inv.insertItem(i, stack.copy(),false);v
-						stack.setCount( 0;
-					} else if (stack.isItemEqual(inSlot) && ItemStack.areItemStackTagsEqual(stack, inSlot)) {
-						int size = stack.getCount() + inSlot.getCount();
-
-						if (size > stack.getMaxStackSize()) {
-							stack.setCount( size - inSlot.getMaxStackSize();
-							inSlot.setCount( stack.getMaxStackSize();
-						} else {
-							inSlot.setCount( size;
-							stack.setCount( 0;
-						}
-					}
-					if (stack.getCount() <= 0) {
-						break;
-					}
-				}*/
-			}
-			if (stack.isEmpty()) {
-				event.setResult(Result.ALLOW);
-				return;
-			}
+		stack = TF2Util.pickAmmo(stack, event.getEntityPlayer(), false);
+		if (stack.isEmpty()) {
+			event.getItem().setItem(stack.splitStack(0));
+			event.setResult(Result.ALLOW);
+			return;
 		}
 		event.setResult(Result.DEFAULT);
 	}
@@ -2136,7 +2073,7 @@ public class TF2EventsCommon {
 					ResourceLocation soundLocation = new ResourceLocation(weapon.getString((PropertyType<String>) propType));
 					if (!"".equals(soundLocation.getResourcePath())) {
 						TF2Sounds.register(soundLocation);
-						if (propType==WeaponData.PropertyType.FIRE_SOUND || propType==WeaponData.PropertyType.FIRE_LOOP_SOUND || propType==WeaponData.PropertyType.CHARGED_FIRE_SOUND)
+						if (propType==PropertyType.FIRE_SOUND || propType==PropertyType.FIRE_LOOP_SOUND || propType==PropertyType.CHARGED_FIRE_SOUND)
 							TF2Sounds.register(new ResourceLocation(weapon.getString((PropertyType<String>) propType) + ".crit"));
 					}
 				}

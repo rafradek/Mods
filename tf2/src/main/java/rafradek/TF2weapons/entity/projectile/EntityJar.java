@@ -11,8 +11,8 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityJar extends EntityProjectileBase {
 

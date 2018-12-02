@@ -27,7 +27,6 @@ import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityMedic extends EntityTF2Character {
 

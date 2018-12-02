@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemWeapon;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class EntityAISwitchWeapons extends EntityAIBase {
 

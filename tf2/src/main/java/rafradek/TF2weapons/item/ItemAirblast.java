@@ -31,8 +31,8 @@ import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemAirblast extends ItemProjectileWeapon {
 

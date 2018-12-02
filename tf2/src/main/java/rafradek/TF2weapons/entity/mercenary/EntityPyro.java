@@ -21,8 +21,8 @@ import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityPyro extends EntityTF2Character {
 

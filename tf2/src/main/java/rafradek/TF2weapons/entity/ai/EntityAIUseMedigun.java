@@ -7,8 +7,8 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 

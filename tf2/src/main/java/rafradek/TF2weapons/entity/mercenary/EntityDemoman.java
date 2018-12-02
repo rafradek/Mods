@@ -24,8 +24,8 @@ import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemStickyLauncher;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class EntityDemoman extends EntityTF2Character {
 
@@ -58,7 +58,7 @@ public class EntityDemoman extends EntityTF2Character {
 				@Override
 				public boolean apply(WeaponData input) {
 					// TODO Auto-generated method stub
-					return !input.getBoolean(PropertyType.STOCK) && input.getInt(PropertyType.SLOT)==2 && input.getString(PropertyType.MOB_TYPE).contains("demoman");
+					return !input.getBoolean(PropertyType.STOCK) && ItemFromData.isItemOfClassSlot(input, 2, "demoman");
 				}
 				
 			}));

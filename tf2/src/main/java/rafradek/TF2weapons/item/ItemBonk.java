@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class ItemBonk extends ItemFromData {
 	public ItemBonk() {

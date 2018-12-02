@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ISpecialArmor;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemParachute extends ItemBackpack implements ISpecialArmor {
 

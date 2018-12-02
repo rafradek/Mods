@@ -50,13 +50,14 @@ import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.item.ItemWrangler;
 import rafradek.TF2weapons.item.ItemWrench;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
 
 public class MapList {
 
 	//public static Map<Class<? extends EntityTF2Character>, Integer> classNumbers;
 	public static Map<String, Item> weaponClasses;
-	public static Map<String, WeaponData.PropertyType<?>> propertyTypes;
+	public static Map<String, PropertyType<?>> propertyTypes;
 	public static Map<String, Class<? extends EntityProjectileBase>> projectileClasses;
 	public static Map<String, WeaponData> nameToData;
 	public static Map<String, TF2Attribute> nameToAttribute;
@@ -70,7 +71,7 @@ public class MapList {
 		weaponClasses = new HashMap<String, Item>();
 		projectileClasses = new HashMap<String, Class<? extends EntityProjectileBase>>();
 		nameToData = new HashMap<String, WeaponData>();
-		propertyTypes = new HashMap<String, WeaponData.PropertyType<?>>();
+		propertyTypes = new HashMap<String, PropertyType<?>>();
 		nameToAttribute = new HashMap<String, TF2Attribute>();
 		buildInAttributes = new HashMap<String, NBTTagCompound>();
 		specialWeapons = new HashMap<String, ItemUsable>();

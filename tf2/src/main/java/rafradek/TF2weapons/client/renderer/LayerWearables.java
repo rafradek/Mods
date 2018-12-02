@@ -21,7 +21,7 @@ import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.ItemAmmoBelt;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemWearable;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 @SideOnly(Side.CLIENT)
 public class LayerWearables implements LayerRenderer<EntityLivingBase> {

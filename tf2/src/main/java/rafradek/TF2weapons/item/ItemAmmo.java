@@ -20,7 +20,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class ItemAmmo extends Item {
 

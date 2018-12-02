@@ -34,8 +34,8 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.building.EntityTeleporter.TeleporterData;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 

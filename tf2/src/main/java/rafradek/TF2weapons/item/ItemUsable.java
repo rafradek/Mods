@@ -17,9 +17,9 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -304,4 +304,11 @@ public abstract class ItemUsable extends ItemFromData {
 		return false;
 	}
 
+	public boolean shouldEntityFire(ItemStack stack, EntityLivingBase living, EntityLivingBase target) {
+		/*if(TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
+			return stack.getItemDamage() > 0 && (stack.getItemDamage() == stack.getMaxDamage() || WeaponsCapability.get(living).reloadingHand != null);
+		}*/
+		
+		return true;
+	}
 }

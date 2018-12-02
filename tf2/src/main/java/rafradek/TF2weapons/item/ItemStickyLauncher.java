@@ -16,8 +16,8 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ItemStickyLauncher extends ItemProjectileWeapon {
 

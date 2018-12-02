@@ -12,8 +12,8 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class SlotCraftingTF2 extends SlotCrafting {
 

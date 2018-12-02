@@ -60,6 +60,7 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -73,9 +74,11 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.oredict.OreDictionary;
@@ -100,6 +103,7 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
+import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -109,7 +113,6 @@ import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2Util {
 
@@ -1301,14 +1304,53 @@ public class TF2Util {
 		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
 		if (!parent.isEmpty())
 			stack = ItemFromData.getNewStack(parent);
-		return (slot == -1 || ItemFromData.getData(stack).getInt(PropertyType.SLOT)==slot )
-		&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(name);
+		return ItemFromData.isItemOfClassSlot(ItemFromData.getData(stack), slot, name);
 	}
+	
 	public static EntityLivingBase getOwnerIfOwnable(EntityLivingBase living) {
 		if (living instanceof IEntityOwnable && ((IEntityOwnable)living).getOwner() != null)
 			return (EntityLivingBase) ((IEntityOwnable)living).getOwner();
 		else
 			return living;
+	}
+	
+	public static ItemStack pickAmmo(ItemStack stack, EntityPlayer player, boolean addNormalInventory) {
+		if (stack.getItem() instanceof ItemFireAmmo && stack.getCount() == 1) {
+			stack = TF2Util.mergeStackByDamage(player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
+			if (!player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty())
+			stack = TF2Util.mergeStackByDamage(player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
+					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
+			if (stack.isEmpty()) {
+				return stack;
+			}
+		}
+		if (stack.getItem() instanceof ItemAmmo && player.hasCapability(TF2weapons.INVENTORY_CAP, null) || addNormalInventory) {
+			
+			if (!player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()) {
+				IItemHandler inv = player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
+						.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				stack=ItemHandlerHelper.insertItemStacked(inv, stack, false);
+				/*if(stack.isEmpty()){
+					event.getItem().setItem(orig);
+				}*/
+				ItemStack weapon = player.getHeldItemMainhand();
+				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(weapon.getItemDamage(), false,
+							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
+			}
+			if (!stack.isEmpty() && addNormalInventory) {
+				IItemHandler inv = player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+				stack=ItemHandlerHelper.insertItemStacked(inv, stack, false);
+				ItemStack weapon = player.getHeldItemMainhand();
+				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(weapon.getItemDamage(), false,
+							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
+			}
+			if (stack.isEmpty()) {
+				return stack;
+			}
+		}
+		return stack;
 	}
 	static {
 		for (int i = 0; i < 512; i++) {

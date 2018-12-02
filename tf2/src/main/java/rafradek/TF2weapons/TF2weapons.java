@@ -244,12 +244,12 @@ import rafradek.TF2weapons.potion.PotionTF2;
 import rafradek.TF2weapons.potion.PotionTF2Item;
 import rafradek.TF2weapons.tileentity.TileEntityAmmoFurnace;
 import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.8", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.9", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -390,7 +390,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 37;
+		return 38;
 	}
 
 	@Mod.EventHandler
@@ -671,7 +671,7 @@ public class TF2weapons {
 				.registerPotionAttributeModifier(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "0d09b7c3-ac5e-4f56-9b65-fe2d09b99dc3", 10, 0));
 		// conf.save();
 		ItemKillstreakFabricator.initKillstreaks();
-		WeaponData.PropertyType.init();
+		PropertyType.init();
 		if(!TF2ConfigVars.disableGeneration){
 			MapGenStructureIO.registerStructureComponent(MannCoBuilding.class, "ViMC");
 			VillagerRegistry.instance().registerVillageCreationHandler(new MannCoBuilding.CreationHandler());

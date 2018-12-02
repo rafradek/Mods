@@ -14,8 +14,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class CommandGenerateReferences extends CommandBase {
 
@@ -56,7 +56,7 @@ public class CommandGenerateReferences extends CommandBase {
 			writer=new BufferedWriter(new FileWriter(new File(dir,"properties.txt")));
 			writer.write("ID - Name - Type");
 			writer.newLine();
-			for(WeaponData.PropertyType prop:WeaponData.propertyTypes) {
+			for(PropertyType prop:WeaponData.propertyTypes) {
 				if(prop != null) {
 					writer.write(prop.id+"	"+prop.name+"	"+prop.type.toString());
 					writer.newLine();

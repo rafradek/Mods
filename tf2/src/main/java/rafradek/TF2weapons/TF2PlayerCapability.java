@@ -50,9 +50,9 @@ import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.Contract.Objective;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 

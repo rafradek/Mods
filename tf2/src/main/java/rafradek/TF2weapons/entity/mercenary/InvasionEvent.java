@@ -51,8 +51,8 @@ import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 import rafradek.TF2weapons.TF2weapons;
 
 public class InvasionEvent implements INBTSerializable<NBTTagCompound> {

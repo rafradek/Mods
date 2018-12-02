@@ -34,7 +34,6 @@ import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class ContainerMercenary extends ContainerMerchant {
 	

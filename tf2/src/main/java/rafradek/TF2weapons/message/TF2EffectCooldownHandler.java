@@ -15,7 +15,6 @@ import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.message.TF2Message.CapabilityMessage;
 import rafradek.TF2weapons.message.TF2Message.EffectCooldownMessage;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
 
 public class TF2EffectCooldownHandler implements IMessageHandler<TF2Message.EffectCooldownMessage, IMessage> {
 

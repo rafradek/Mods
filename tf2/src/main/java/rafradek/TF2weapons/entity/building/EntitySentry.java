@@ -59,7 +59,7 @@ import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.Contract.Objective;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class EntitySentry extends EntityBuilding {
 

@@ -2,8 +2,12 @@ package rafradek.TF2weapons.item;
 
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraftforge.items.CapabilityItemHandler;
+import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemFireAmmo extends ItemAmmo {
 
@@ -49,6 +53,8 @@ public class ItemFireAmmo extends ItemAmmo {
 			if (stack.getCount() > 1) {
 				ItemStack remain = stack.splitStack(1);
 				remain.damageItem(amount, living);
+				if (living instanceof EntityPlayer)
+					remain = TF2Util.pickAmmo(remain, (EntityPlayer) living, true);
 				if (!remain.isEmpty())
 				living.entityDropItem(remain,0).setPickupDelay(0);
 			}

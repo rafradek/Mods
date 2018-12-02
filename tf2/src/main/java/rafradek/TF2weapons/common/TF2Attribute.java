@@ -37,7 +37,7 @@ import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWrench;
-import rafradek.TF2weapons.util.WeaponData.PropertyType;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class TF2Attribute {
 
