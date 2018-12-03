@@ -2,7 +2,6 @@
 	"monoculus": {
 		"Name": "MONOCULUS!",
 		"Class": "cosmetic",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:monoculus_head",
 		"Cost": 30,
 		"Wear flags": 1,
@@ -11,7 +10,6 @@
 	"merasmushat": {
 		"Name": "Skull Island Topper",
 		"Class": "cosmetic",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:merasmus_hat",
 		"Cost": 30,
 		"Wear flags": 1,

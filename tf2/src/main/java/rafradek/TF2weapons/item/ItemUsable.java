@@ -55,12 +55,6 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public CreativeTabs getCreativeTab() {
-		return TF2weapons.tabweapontf2;
-	}
-
-	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);

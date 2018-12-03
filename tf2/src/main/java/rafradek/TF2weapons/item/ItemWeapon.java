@@ -87,6 +87,7 @@ public abstract class ItemWeapon extends ItemUsable {
 
 	public ItemWeapon() {
 		super();
+		this.setCreativeTab(TF2weapons.tabweapontf2);
 		this.addPropertyOverride(new ResourceLocation("inhand"), new IItemPropertyGetter() {
 			@Override
 			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {

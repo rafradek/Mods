@@ -180,7 +180,12 @@ public class WeaponData implements ICapabilityProvider {
 	public void addProperty(String name, JsonElement element, JsonDeserializationContext context) {
 
 		PropertyType<?> propType = MapList.propertyTypes.get(name);
-		this.properties.put(propType, propType.deserialize(element, propType.type, context));
+		try {
+			this.properties.put(propType, propType.deserialize(element, propType.type, context));
+		}
+		catch (Exception e) {
+			TF2weapons.LOGGER.error("Error reading property {} for {}, value is {}", name, this.get(PropertyType.NAME), element.toString());
+		}
 		//this.properties.put(type, type.fromString(string));
 	}
 
@@ -201,7 +206,6 @@ public class WeaponData implements ICapabilityProvider {
 			for (Entry<String, JsonElement> entry : tree.getAsJsonObject().entrySet()) {
 				WeaponData data = GSON.fromJson(entry.getValue(), WeaponData.class);
 				data.name = entry.getKey();
-				
 				list.add(data);
 			}
 		} catch (Exception e) {

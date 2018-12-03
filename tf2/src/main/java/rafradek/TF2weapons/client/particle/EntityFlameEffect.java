@@ -1,4 +1,4 @@
-package rafradek.TF2weapons.entity.projectile;
+package rafradek.TF2weapons.client.particle;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;

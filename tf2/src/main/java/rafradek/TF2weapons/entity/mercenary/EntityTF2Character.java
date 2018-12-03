@@ -1540,7 +1540,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public int getAmmo(int slot) {
-		if (slot == 1000)
+		if (slot == 1000 || slot == -1)
 			slot = 0;
 		if (this.unlimitedAmmo)
 			return this.getMaxAmmo(slot);

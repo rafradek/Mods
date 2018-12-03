@@ -1,28 +1,31 @@
-package rafradek.TF2weapons.entity.projectile;
+package rafradek.TF2weapons.client.particle;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.client.TF2EventsClient;
 
-public class EntityCritEffect extends Particle {
+public class EntityBisonEffect extends Particle {
 
-	public EntityCritEffect(World worldIn, double p_i46352_2_, double p_i46352_4_, double p_i46352_6_, int color) {
+	public EntityBisonEffect(World worldIn, double p_i46352_2_, double p_i46352_4_, double p_i46352_6_, int color) {
 		super(worldIn, p_i46352_2_, p_i46352_4_, p_i46352_6_);
-		this.setParticleTextureIndex(65);
-		this.setPosition(this.posX + this.rand.nextFloat() * 0.15f - 0.075f,
-				this.posY + this.rand.nextFloat() * 0.15f - 0.075f, this.posZ + this.rand.nextFloat() * 0.15f - 0.075f);
-		this.particleScale *= this.rand.nextFloat() * 0.5F + 0.5F;
+		this.setParticleTexture(TF2EventsClient.bisonIcon);
+		this.setPosition(this.posX,
+				this.posY, this.posZ);
+		this.particleScale *= this.rand.nextFloat() * 0.1F + 0.3F;
 		this.setRBGColorF((color >> 16) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
-		this.motionY += 0.03;
 		//this.particleAlpha = Math.min(1 / this.particleScale * 3, 1);
-		this.particleMaxAge = 20;
+		this.particleMaxAge = 15;
 	}
 
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-		this.particleScale -=0.05F;
+		if (this.particleAge < 5)
+			this.particleScale += 0.2F;
+		else
+			this.particleScale -=0.12F;
 	}
 
 	@Override
@@ -34,4 +37,9 @@ public class EntityCritEffect extends Particle {
 	public float getBrightness(float p_70013_1_) {
 		return 1.0F;
 	}
+	
+	public int getFXLayer()
+    {
+        return 1;
+    }
 }

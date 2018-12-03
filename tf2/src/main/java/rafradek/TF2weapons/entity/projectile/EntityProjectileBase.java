@@ -405,10 +405,10 @@ public abstract class EntityProjectileBase extends Entity
 		}
 		if (this.world.isRemote)
 			for (int j = 0; j < this.getSpeed(); ++j) {
-				double pX = this.posX - this.motionX * j / 4.0D - this.motionX;
+				double pX = this.posX - this.motionX * j / this.getSpeed() - this.motionX;
 				double pY = this.posY + (this.useCollisionBox() ? this.height / 2 : 0) - this.motionY * j / 4.0D
 						- this.motionY;
-				double pZ = this.posZ - this.motionZ * j / 4.0D - this.motionZ;
+				double pZ = this.posZ - this.motionZ * j / this.getSpeed() - this.motionZ;
 				if (this.getCritical() == 2)
 					ClientProxy.spawnCritParticle(this.world, pX, pY, pZ,
 							TF2Util.getTeamColor(this.shootingEntity));

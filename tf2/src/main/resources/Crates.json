@@ -2,7 +2,6 @@
 	"crate1": {
 		"Name": "Mann Co. Supply Crate #1",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -17,7 +16,6 @@
 	"crate2": {
 		"Name": "Mann Co. Supply Crate #2",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -32,7 +30,6 @@
 	"crate3": {
 		"Name": "Mann Co. Supply Crate #3",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -47,7 +44,6 @@
 	"crate4": {
 		"Name": "Mann Co. Supply Crate #4",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -62,7 +58,6 @@
 	"crate5": {
 		"Name": "Mann Co. Supply Crate #5",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -77,7 +72,6 @@
 	"crate6": {
 		"Name": "Mann Co. Supply Crate #6",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -92,7 +86,6 @@
 	"crate7": {
 		"Name": "Mann Co. Supply Crate #7",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -107,7 +100,6 @@
 	"crate8": {
 		"Name": "Mann Co. Supply Crate #8",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{
@@ -122,7 +114,6 @@
 	"crate9": {
 		"Name": "Mann Co. Supply Crate #9",
 		"Class": "crate",
-		"Slot": 9,
 		"Render": "rafradek_tf2_weapons:crate",
 		"Cost": 1,
 		"Content":{

@@ -80,7 +80,10 @@ import rafradek.TF2weapons.client.gui.GuiDisguiseKit;
 import rafradek.TF2weapons.client.gui.inventory.GuiSentry;
 import rafradek.TF2weapons.client.gui.inventory.GuiTeleporter;
 import rafradek.TF2weapons.client.model.ModelRocket;
+import rafradek.TF2weapons.client.particle.EntityBisonEffect;
 import rafradek.TF2weapons.client.particle.EntityBulletTracer;
+import rafradek.TF2weapons.client.particle.EntityCritEffect;
+import rafradek.TF2weapons.client.particle.EntityFlameEffect;
 import rafradek.TF2weapons.client.particle.EntityMuzzleFlash;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.client.particle.ParticleBulletHole;
@@ -118,13 +121,12 @@ import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
 import rafradek.TF2weapons.entity.projectile.EntityBall;
-import rafradek.TF2weapons.entity.projectile.EntityCritEffect;
-import rafradek.TF2weapons.entity.projectile.EntityFlameEffect;
 import rafradek.TF2weapons.entity.projectile.EntityFlare;
 import rafradek.TF2weapons.entity.projectile.EntityFuryFireball;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileEnergy;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityRocketEffect;
@@ -447,6 +449,10 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":pistol_mag", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoSMG, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":smg_mag", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoSyringe, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_syringe", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoMinigun, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_minigun", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemStrangifier, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":strangifier", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemChocolate, 0,
@@ -459,6 +465,8 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":mantreads", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemScoutBoots, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":scout_shoes", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemGunboats, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":gunboats", "inventory"));
 		for (int i = 0; i < InvasionEvent.DIFFICULTY.length; i++)
 			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemEventMaker, i,
 					new ModelResourceLocation(TF2weapons.MOD_ID + ":tour_ticket", "inventory"));
@@ -487,6 +495,8 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_weapon", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 10,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_hat", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 11,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":logic_board", "inventory"));
 		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_scout", "inventory"));
@@ -560,7 +570,7 @@ public class ClientProxy extends CommonProxy {
 				return new RenderProjectileSimple(manager);
 			}
 		});
-
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityBall.class, new IRenderFactory<EntityBall>() {
 			@Override
 			public Render<EntityBall> createRenderFor(RenderManager manager) {
@@ -691,6 +701,12 @@ public class ClientProxy extends CommonProxy {
 		Particle entity = new EntityCritEffect(world, pX, pY, pZ, teamForDisplay);
 		spawnParticle(world, entity);
 	}
+	
+	public static void spawnBisonParticle(World world, double pX, double pY, double pZ, int teamForDisplay) {
+		Particle entity = new EntityBisonEffect(world, pX, pY, pZ, teamForDisplay);
+		spawnParticle(world, entity);
+	}
+	
 	public static void spawnBulletHoleParticle(World world, RayTraceResult origin) {
 		Particle entity = new ParticleBulletHole(world, origin);
 		spawnParticle(world, entity);

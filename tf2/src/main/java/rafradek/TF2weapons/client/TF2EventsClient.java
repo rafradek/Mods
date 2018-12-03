@@ -122,6 +122,7 @@ public class TF2EventsClient {
 	private static FloatBuffer brightnessBuffer = GLAllocation.createDirectFloatBuffer(4);
 	private static final DynamicTexture TEXTURE_BRIGHTNESS = new DynamicTexture(16, 16);
 	public static TextureAtlasSprite skinIcon;
+	public static TextureAtlasSprite bisonIcon;
 	
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
@@ -139,6 +140,7 @@ public class TF2EventsClient {
 				}
 				
 		}
+		bisonIcon = event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/bison"));
 		
 		skinIcon = event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "misc/skin"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/ammo_belt_empty"));

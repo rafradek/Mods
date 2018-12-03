@@ -20,6 +20,7 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 
 	public EntityProjectileEnergy(World world, EntityLivingBase living, EnumHand hand) {
 		super(world, living, hand);
+		this.setType(4);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -55,7 +56,7 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 	
 	@Override
 	public void spawnParticles(double x, double y, double z) {
-		ClientProxy.spawnCritParticle(world, x, y, z, TF2Util.getTeamColor(this.shootingEntity));
+		ClientProxy.spawnBisonParticle(world, x, y, z, TF2Util.getTeamColor(this.shootingEntity));
 	}
 	
 	@Override

@@ -45,6 +45,8 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 
 	@Override
 	public void doRender(EntityProjectileSimple entity, double x, double y, double z, float yaw, float partialTick) {
+		if (entity.getType() == 4)
+			return;
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) x, (float) y, (float) z);
 		GlStateManager.color(0.7F, 0.7F, 0.7F, 1F);

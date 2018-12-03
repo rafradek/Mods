@@ -1,6 +1,6 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "rafradek_tf2_weapons:items/ammo_minigun"
+        "layer0": "rafradek_tf2_weapons:items/ammo_minigun_box"
     }
 }

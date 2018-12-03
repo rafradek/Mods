@@ -472,9 +472,9 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 			int oldState = cap.state & 3;
 			//System.out.println("Action: "+message.value);
 			cap.state = message.value + (cap.state & 8);
-			int stateOverride = ((ItemUsable) stack.getItem()).getStateOverride(stack, player, cap.state);
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && oldState != (message.value & 3)
 					&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
+				int stateOverride = ((ItemUsable) stack.getItem()).getStateOverride(stack, player, cap.state);
 				if ((oldState & 2) < (message.value & 2)) {
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);

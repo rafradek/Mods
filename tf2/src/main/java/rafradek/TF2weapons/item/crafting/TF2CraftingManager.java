@@ -53,7 +53,7 @@ public class TF2CraftingManager {
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[8] = new ShapelessOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 20, 8),
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[11] = new ShapelessOreRecipe(
-				null, new ItemStack(TF2weapons.itemAmmo, 12, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
+				null, new ItemStack(TF2weapons.itemAmmo, 15, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 10, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 14),

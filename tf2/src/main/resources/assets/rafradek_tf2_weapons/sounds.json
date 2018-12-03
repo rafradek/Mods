@@ -730,7 +730,7 @@
   "weapon.fire.rocketjumper.crit": {
     "category": "neutral",
     "sounds": [
-    	"rafradek_tf2_weapons:weapon/rocket_shot_crit"
+    	"rafradek_tf2_weapons:weapon/rocket_jumper_shoot"
     ]
   },
   "weapon.explosion.rocketjumper": {
@@ -748,7 +748,7 @@
   "weapon.fire.stickyjumper.crit": {
     "category": "neutral",
     "sounds": [
-    	"rafradek_tf2_weapons:weapon/rocket_shot_crit"
+    	"rafradek_tf2_weapons:weapon/sticky_jumper_shoot"
     ]
   },
    "weapon.fire.tomislav": {
@@ -1023,7 +1023,7 @@
   "weapon.reload.shortstop": {
     "category": "neutral",
     "sounds": [
-    	"rafradek_tf2_weapons:weapon/bison_reload"
+    	"rafradek_tf2_weapons:weapon/short_stop_reload"
     ]
   },
   "weapon.fire.sydneysleeper": {
@@ -1620,7 +1620,7 @@
   "mob.merasmus.start": {
     "category": "hostile",
     "sounds": [
-    	"rafradek_tf2_weapons:misc/halloween_boss_summoned"
+    	"rafradek_tf2_weapons:misc/halloween_boss_summoned_fx"
     ]
   },
   "mob.merasmus.starttalk": {

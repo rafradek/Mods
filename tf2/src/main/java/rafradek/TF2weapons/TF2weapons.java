@@ -249,7 +249,7 @@ import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.4.9", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.5.0", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -390,7 +390,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 38;
+		return 39;
 	}
 
 	@Mod.EventHandler
@@ -431,28 +431,6 @@ public class TF2weapons {
 		neutralPattern=EnumHelper.addEnum(BannerPattern.class, "NEUTRAL_PATTERN", new Class<?>[]{String.class,String.class}, "neutral_base","nb");
 		fastSpawn=EnumHelper.addEnum(BannerPattern.class, "FAST_SPAWN", new Class<?>[]{String.class,String.class}, "fast_spawn","fs");
 		
-		LOGGER.info("Initializing attributes");
-		MapList.initMaps();
-		TF2Attribute.initAttributes();
-		
-		/*File refFile=new File(event.getModConfigurationDirectory(), "TF2References");
-		if(!refFile.exists())
-			refFile.mkdirs();
-		try {
-			BufferedWriter attributes=new BufferedWriter(new FileWriter(new File(refFile,"attributes.txt")));
-			attributes.write("ID - Name - Effect - State - Type - Default\n");
-			for(int i=0;i<TF2Attribute.attributes.length;i++){
-				TF2Attribute attr=TF2Attribute.attributes[i];
-				if(attr != null){
-					attributes.write(attr.id+" - "+attr.name+" - "+attr.effect+" - "+attr.state.toString()+" - "+attr.typeOfValue.toString()+" - "+attr.defaultValue+"\n");
-				}
-			}
-			attributes.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		LOGGER.info("Registering");
 		tabweapontf2 = new CreativeTabs("tf2weapons") {
 			@Override
 			public ItemStack getTabIconItem() {
@@ -514,6 +492,30 @@ public class TF2weapons {
 				return new ItemStack(Item.getItemFromBlock(blockCabinet));
 			}
 		};
+		
+		LOGGER.info("Initializing attributes");
+		MapList.initMaps();
+		TF2Attribute.initAttributes();
+		
+		/*File refFile=new File(event.getModConfigurationDirectory(), "TF2References");
+		if(!refFile.exists())
+			refFile.mkdirs();
+		try {
+			BufferedWriter attributes=new BufferedWriter(new FileWriter(new File(refFile,"attributes.txt")));
+			attributes.write("ID - Name - Effect - State - Type - Default\n");
+			for(int i=0;i<TF2Attribute.attributes.length;i++){
+				TF2Attribute attr=TF2Attribute.attributes[i];
+				if(attr != null){
+					attributes.write(attr.id+" - "+attr.name+" - "+attr.effect+" - "+attr.state.toString()+" - "+attr.typeOfValue.toString()+" - "+attr.defaultValue+"\n");
+				}
+			}
+			attributes.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		LOGGER.info("Registering");
+		
 		// EntityRegistry.registerModEntity(EntityBullet.class, "bullet", 1,
 		// this, 256, 100, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"heavy"),EntityHeavy.class, "heavy", 2, this, 80, 3, true);

@@ -160,12 +160,6 @@ public class ItemFromData extends Item implements IItemOverlay{
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public CreativeTabs getCreativeTab() {
-		return TF2weapons.tabutilitytf2;
-	}
-
-	@Override
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		if (getData(stack) == BLANK_DATA && par3Entity instanceof EntityPlayer) {
 			((EntityPlayer) par3Entity).inventory.setInventorySlotContents(par4, ItemStack.EMPTY);

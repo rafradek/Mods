@@ -5,11 +5,12 @@
 			"Name": "Scout",
 			"Min count": 6,
 			"Cost": 1,
-			"Unit": 
-			{
-				"Class": "scout",
-				"Weapon": "pistol"
-			}
+			"Unit":[ 
+				{
+					"Class": "scout",
+					"Weapon": "pistol"
+				}
+			]
 		}
 	]
 }

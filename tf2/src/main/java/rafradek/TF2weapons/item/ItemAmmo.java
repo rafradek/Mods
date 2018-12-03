@@ -62,7 +62,7 @@ public class ItemAmmo extends Item {
 		if(!this.isInCreativeTab(par2CreativeTabs))
 			return;
 		for (int i = 1; i < AMMO_TYPES.length-1; i++)
-			if (i != 10 && i != 12)
+			if (i != 10 && i != 12 && i != 2 && i != 3 && i != 5 && i != 9)
 				par3List.add(new ItemStack(this, 1, i));
 	}
 

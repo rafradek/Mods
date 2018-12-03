@@ -154,9 +154,9 @@
 		"Class": "bullet",
 		"Slot": 
 		{
-			"scout": 1
+			"scout": 1,
+			"engineer": 1
 		},
-		"Mobs": "engineer,scout",
 		"Render": "rafradek_tf2_weapons:pistol",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.pistol",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.pistol",
@@ -229,7 +229,6 @@
 		{
 			"sniper": 0
 		},
-		"Mobs": "sniperrifle",
 		"Render": "rafradek_tf2_weapons:sniperrifle",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sniper",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.sniper",
@@ -1088,6 +1087,9 @@
 		"Name": "Sandman Ball",
 		"Class": "projectile",
 		"Projectile": "ball",
+		"Slot":{
+			"scout": 2
+		},
 		"Render": "rafradek_tf2_weapons:sandman",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.ball",
 		"Firing speed": 8000,
@@ -1110,6 +1112,7 @@
 		"Knockback": 3,
 		"Ammo type": 14,
 		"Spread recovery": false,
+		"Roll hidden": 1,
 		"Hidden": true
 	},
 
@@ -1202,7 +1205,10 @@
 		"Name": "Eyelander",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "demoman",
+		"Slot": 
+		{
+			"demoman": 2
+		},
 		"Render": "rafradek_tf2_weapons:eyelander",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sword",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.sword",
@@ -1327,12 +1333,14 @@
 	{
 		"Name": "Rocket Jumper",
 		"Class": "projectile",
+		"Slot": {
+		
+		},
 		"Based on": "rocketlauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.rocketjumper",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.rocketjumper",
 		"Render": "rafradek_tf2_weapons:rocketjumper",
 		"Stock": false,
-		"Mobs": "",
 		"Cost": 18,
 		"Attributes": 
 		{
@@ -1347,12 +1355,14 @@
 	{
 		"Name": "Sticky Jumper",
 		"Class": "stickybomb",
+		"Slot": {
+		
+		},
 		"Based on": "stickybomblauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.stickyjumper",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.rocketjumper",
 		"Render": "rafradek_tf2_weapons:stickyjumper",
 		"Stock": false,
-		"Mobs": "",
 		"Cost": 18,
 		"Attributes": 
 		{
@@ -1573,7 +1583,9 @@
 		"Name": "Disciplinary Action",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "soldier",
+		"Slot": {
+			"soldier": 2
+		},
 		"Render": "rafradek_tf2_weapons:disciplinary_action",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.disciplinary",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.disciplinary",
@@ -1593,7 +1605,6 @@
 		"Name": "Loose Cannon",
 		"Class": "projectile",
 		"Based on": "grenadelauncher",
-		"Mobs": "demoman",
 		"Render": "rafradek_tf2_weapons:loose_cannon",
 		"Charge sound": "rafradek_tf2_weapons:weapon.charge.stickylauncher",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.loosecannon",
@@ -1839,7 +1850,9 @@
 		"Name": "Fist of Steel",
 		"Class": "melee",
 		"Based on": "fryingpan",
-		"Mobs": "heavy",
+		"Slot": {
+			"heavy": 2
+		},
 		"Render": "rafradek_tf2_weapons:fists_of_steel",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.gloves",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gloves",
@@ -1989,7 +2002,7 @@
 			"soldier": 1
 		},
 		"Projectile": "energy",
-		"Render": "rafradek_tf2_weapons:rescue_ranger",
+		"Render": "rafradek_tf2_weapons:righterous_bison",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.bison",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.bison",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.bison",
@@ -2031,9 +2044,9 @@
 		"Class": "bullet",
 		"Based on": "shotgun",
 		"Projectile": "onyx",
+		"Render": "rafradek_tf2_weapons:onyx_blaster",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.onyxblaster",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.onyxblaster",
-		"Mobs": "",
 		"Spread": 0.095,
 		"Firing speed": 800,
 		"Damage": 0.66,
@@ -2070,7 +2083,7 @@
 	},
 	"dragonsfury": 
 	{
-		"Name": "Dragon's Furry",
+		"Name": "Dragon's Fury",
 		"Class": "airblast",
 		"Slot": 
 		{
@@ -2160,7 +2173,7 @@
 		{
 			"scout": 0
 		},
-		"Render": "rafradek_tf2_weapons:pistol",
+		"Render": "rafradek_tf2_weapons:shortstop",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shortstop",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.shortstop",
 		"Firing speed": 360,
@@ -2234,6 +2247,7 @@
 		"Name": "Panic Attack",
 		"Class": "bullet",
 		"Based on": "shotgun",
+		"Render": "rafradek_tf2_weapons:panic_attack",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.panicattack",
 		"Cost": 18,
 		"Stock": false,
@@ -2253,6 +2267,7 @@
 		"Name": "Detonator",
 		"Class": "projectile",
 		"Based on": "flaregun",
+		"Render": "rafradek_tf2_weapons:detonator",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.detonator",
 		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.detonator",
 		"Attributes": 
