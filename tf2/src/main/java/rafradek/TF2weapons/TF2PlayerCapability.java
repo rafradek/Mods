@@ -40,6 +40,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.boss.EntityTF2Boss;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
@@ -100,6 +101,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public NBTTagCompound carrying;
 	public int carryingType;
 	public int maxInvasionBeaten;
+	
+	public long bossSpawnTicks;
+	public EntityTF2Boss bossToSpawn;
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
 	
@@ -159,6 +163,22 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				for(int i=0;i<this.contracts.size();i++) {
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, this.contracts.get(i)),(EntityPlayerMP) this.owner);
 				}
+			
+			if (this.bossSpawnTicks != 0 && this.bossToSpawn != null && this.bossSpawnTicks < this.owner.world.getWorldTime()) {
+				BlockPos spawnPos = null;
+				int i = 0;
+				do {
+					i++;
+					spawnPos = this.owner.world.getTopSolidOrLiquidBlock(this.owner.getPosition().add(this.owner.getRNG().nextInt(48) - 24, 0, this.owner.getRNG().nextInt(48) - 24));
+					this.bossToSpawn.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+				} while (i < 2 && !this.owner.world.getCollisionBoxes(null, this.bossToSpawn.getEntityBoundingBox()).isEmpty());
+				if (spawnPos != null) {
+					this.bossToSpawn.onInitialSpawn(this.owner.world.getDifficultyForLocation(this.bossToSpawn.getPosition()), null);
+					this.owner.world.spawnEntity(this.bossToSpawn);
+					this.bossToSpawn = null;
+					this.bossSpawnTicks = 0;
+				}
+			}
 			
 			int contractDay;
 			if (!PlayerPersistStorage.get(this.owner).itemsToGive.isEmpty()) {
@@ -222,7 +242,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		for(Contract contract:this.contracts) {
 			if(contract.active)
 			for(Objective objective2:contract.objectives) {
-				if(objective2==objective && (contract.className.equals("kill") || ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(contract.className))) {
+				if(objective2==objective && (contract.className.equals("kill") || ItemFromData.getData(stack).get(PropertyType.SLOT).containsKey(contract.className))) {
 					int oldProgress=contract.progress;
 					contract.progress+=objective.getPoints();
 					
@@ -290,6 +310,12 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 		tag.setFloat("RobotsKilled", (short) this.robotsKilledInvasion);
 		tag.setByte("MaxInvasionBeaten", (byte) this.maxInvasionBeaten);
+		tag.setLong("BossSpawnTime", this.bossSpawnTicks);
+		if (this.bossToSpawn != null) {
+			NBTTagCompound bosstag = new NBTTagCompound();
+			this.bossToSpawn.writeToNBTOptional(bosstag);
+			tag.setTag("BossSpawn", bosstag);
+		}
 		return tag;
 	}
 
@@ -322,6 +348,8 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.carryingType = nbt.getByte("CarryingType");
 		this.robotsKilledInvasion = nbt.getFloat("RobotsKilled");
 		this.maxInvasionBeaten = nbt.getByte("MaxInvasionBeaten");
+		this.bossSpawnTicks = nbt.getLong("BossSpawnTime");
+		this.bossToSpawn = (EntityTF2Boss) EntityList.createEntityFromNBT(nbt.getCompoundTag("BossSpawn"), this.owner.world);
 	}
 
 	public static TF2PlayerCapability get(EntityPlayer player) {

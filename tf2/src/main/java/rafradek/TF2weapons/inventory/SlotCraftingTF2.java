@@ -33,7 +33,7 @@ public class SlotCraftingTF2 extends SlotCrafting {
 			if (stack.hasTagCompound()) {
 				String className = ItemToken.CLASS_NAMES[stack.getTagCompound().getByte("Token")];
 				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), Predicates.<WeaponData>and(ItemFromData.VISIBLE_WEAPON, test -> {
-					return test.getString(PropertyType.MOB_TYPE).contains(className);
+					return test.get(PropertyType.SLOT).containsKey(className);
 				}));
 			}
 			else

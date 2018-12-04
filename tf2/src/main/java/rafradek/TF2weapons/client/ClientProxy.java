@@ -321,9 +321,9 @@ public class ClientProxy extends CommonProxy {
 		// TODO Auto-generated method stub
 		MinecraftForge.EVENT_BUS.register(new TF2EventsClient());
 		OBJLoader.INSTANCE.addDomain(TF2weapons.MOD_ID.toLowerCase());
+		
 		for (int i = 1; i < ItemAmmo.AMMO_TYPES.length; i++){
-			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoPackage, i,
-					new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box", "inventory"));
+			
 			if (i != 10 && i != 12)
 				ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmo, i,
 						new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_" + ItemAmmo.AMMO_TYPES[i], "inventory"));
@@ -386,7 +386,8 @@ public class ClientProxy extends CommonProxy {
 				"inventory");
 		final ModelResourceLocation killstreakPro = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit_professional",
 				"inventory");
-
+		final ModelResourceLocation ammoBox = new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box", "inventory");
+		
 		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
 				teleporterRed, teleporterBlu);
 		ModelLoader.setCustomMeshDefinition(TF2weapons.itemBuildingBox,
@@ -420,6 +421,10 @@ public class ClientProxy extends CommonProxy {
 						}
 					}
 				});
+		
+		ModelBakery.registerItemVariants(TF2weapons.itemAmmoPackage, ammoBox);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemAmmoPackage, stack -> ammoBox);
+		
 		final ModelResourceLocation killstreakFab = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator",
 				"inventory");
 		final ModelResourceLocation killstreakFabSpec = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator_spec",

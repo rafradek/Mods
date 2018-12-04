@@ -2053,7 +2053,7 @@
 		"Max damage": 1.2,
 		"Min damage": 0.75,
 		"Drop chance": 0.0,
-		"Roll hidden": 1,
+		"Roll hidden": 2,
 		"Cost": 45,
 		"Projectile speed": 2.6,
 		"Hidden": true,
@@ -2234,7 +2234,7 @@
 		"Efficient range": 16,
 		"Drop chance": 0,
 		"Stock": false,
-		"Roll hidden": 1,
+		"Roll hidden": 2,
 		"Hidden": true,
 		"Cost": 45,
 		"Attributes": 

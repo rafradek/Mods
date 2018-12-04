@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.item;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 import net.minecraftforge.fml.relauncher.Side;
@@ -173,11 +174,11 @@ public abstract class ItemUsable extends ItemFromData {
 				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1) && this.getFiringSpeed(stack, living) != Integer.MAX_VALUE;
 	}
 
-	public String getUsableClasses(ItemStack stack) {
-		if (getData(stack).getString(PropertyType.MOB_TYPE).isEmpty() && getData(stack).hasProperty(PropertyType.BASED_ON)) {
+	public Set<String> getUsableClasses(ItemStack stack) {
+		if (getData(stack).get(PropertyType.SLOT).isEmpty() && getData(stack).hasProperty(PropertyType.BASED_ON)) {
 			stack = getNewStack(getData(stack).getString(PropertyType.BASED_ON));
 		}
-		return getData(stack).getString(PropertyType.MOB_TYPE);
+		return getData(stack).get(PropertyType.SLOT).keySet();
 	}
 	
 	public abstract boolean fireTick(ItemStack stack, EntityLivingBase living, World world);

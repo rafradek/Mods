@@ -408,7 +408,7 @@ public class TF2EventsClient {
 		if ((swap && attackKeyDown) || (!swap && altAttackKeyDown && allow)) {
 			value += 2;
 		}
-		if (ClientProxy.reload.isKeyDown()) {
+		if (ClientProxy.reload.isKeyDown() || TF2ConfigVars.autoReload) {
 			value += 4;
 		}
 		return value;

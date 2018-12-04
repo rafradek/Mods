@@ -361,35 +361,26 @@ public class TF2EventsCommon {
 						}
 					}
 				}
-				if (!TF2ConfigVars.disableBossSpawn && dayTime >= 14000 && dayTime <= 21000 && dayTime % 1000 == 0 && event.world.getCurrentMoonPhaseFactor() == 1
+				if (!TF2ConfigVars.disableBossSpawn && dayTime >= 13000 && dayTime <= 20000 && dayTime % 1000 == 0 && event.world.getCurrentMoonPhaseFactor() == 1
 						&& worldTime > 24000) {
 					for (EntityPlayer player : event.world.playerEntities)
 						if (player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks <= worldTime
 								&& event.world.getEntitiesWithinAABB(EntityTF2Boss.class, player.getEntityBoundingBox().grow(200, 200, 200)).isEmpty()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks = (int) (worldTime + Math.min(40000,TF2ConfigVars.bossReappear)
-							+ player.getRNG().nextInt(TF2ConfigVars.bossReappear-40000));
+							+ player.getRNG().nextInt(Math.max(1, TF2ConfigVars.bossReappear-40000)));
 							EntityTF2Boss boss;
 							switch(player.getRNG().nextInt(3)){
 							case 0: boss= new EntityMonoculus(event.world);break;
 							case 1: boss= new EntityHHH(event.world);break;
 							default: boss= new EntityMerasmus(event.world);break;
 							}
-							
-							BlockPos spawnPos = null;
-							int i = 0;
-							do {
-								i++;
-								spawnPos = event.world.getTopSolidOrLiquidBlock(player.getPosition().add(player.getRNG().nextInt(48) - 24, 0, player.getRNG().nextInt(48) - 24));
-								boss.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-							} while (i < 6 && !event.world.getCollisionBoxes(null, boss.getEntityBoundingBox()).isEmpty());
-	
-							if(spawnPos!=null){
-								boss.onInitialSpawn(event.world.getDifficultyForLocation(spawnPos), null);
-								event.world.spawnEntity(boss);
-							}
+								player.sendMessage(new TextComponentString(boss.getName()+" is heading your way!"));
+								TF2PlayerCapability.get(player).bossSpawnTicks = worldTime + 1200;
+								TF2PlayerCapability.get(player).bossToSpawn = boss;
 						}
 				}
 			}
+			
 			tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTickStart;
 		}
 	}
@@ -2218,8 +2209,6 @@ public class TF2EventsCommon {
 			nbt.setInteger("Event", eventFlag);
 			NBTTagCompound items=new NBTTagCompound();
 			nbt.setTag("Items", items);
-			/*NBTTagCompound mercslost=new NBTTagCompound();
-			nbt.setTag("MercsLost", mercslost);*/
 			NBTTagList bannersS = new NBTTagList();
 			for(BlockPos pos:banners){
 				
@@ -2248,32 +2237,6 @@ public class TF2EventsCommon {
 				invTag.setTag(entry.getKey().toString(), entry.getValue().serializeNBT());
 			}
 			nbt.setTag("Invasions", invTag);
-			/*for(UUID id:lostMercPos.keySet()){
-				NBTTagList list = new NBTTagList();
-				for(BlockPos pos:lostMercPos.get(id)) {
-					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
-				}
-				mercslost.setTag(id.toString(), list);
-				
-			}
-			
-			for(UUID id:medicMercPos.keySet()){
-				NBTTagList list = new NBTTagList();
-				for(BlockPos pos:lostMercPos.get(id)) {
-					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
-				}
-				mercslost.setTag(id.toString(), list);
-				
-			}
-			
-			for(UUID id:restMercPos.keySet()){
-				NBTTagList list = new NBTTagList();
-				for(BlockPos pos:lostMercPos.get(id)) {
-					list.appendTag(new NBTTagIntArray(new int[] {pos.getX(), pos.getY(), pos.getZ()}));
-				}
-				mercslost.setTag(id.toString(), list);
-				
-			}*/
 			return nbt;
 		}
 		@Override

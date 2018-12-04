@@ -32,7 +32,7 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 			ItemStack stack = inv.getStackInSlot(x);
 			if (!stack.isEmpty())
 				if (stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6 
-				&& (token == -1 || ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[token]))) {
+				&& (token == -1 || ItemFromData.getData(stack).get(PropertyType.SLOT).containsKey(ItemToken.CLASS_NAMES[token]))) {
 					stacks.add(stack);
 				}
 				else

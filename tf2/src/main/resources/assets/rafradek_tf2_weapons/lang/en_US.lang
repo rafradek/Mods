@@ -134,6 +134,7 @@ weaponAttribute.AutoFireClip=Hold fire to load shells
 weaponAttribute.FireRateHealthBonus=Fire rate increases as health decreases
 weaponAttribute.SpreadHealthPenalty=Weapon spread increases as health decreases
 weaponAttribute.DeployTimeBonus=This weapon deploys %1$s faster
+weaponAttribute.Gravity=Projectiles are not affected by gravity
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

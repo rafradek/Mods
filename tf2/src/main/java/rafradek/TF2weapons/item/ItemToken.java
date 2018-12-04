@@ -1,6 +1,9 @@
 package rafradek.TF2weapons.item;
 
+import java.util.Set;
 import java.util.UUID;
+
+import com.google.common.collect.Sets;
 
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -66,10 +69,14 @@ public class ItemToken extends Item {
 	}
 	
 	public static boolean allowUse(EntityLivingBase living, String clazz) {
+		return allowUse(living, Sets.newHashSet(clazz));
+	}
+	
+	public static boolean allowUse(EntityLivingBase living, Set<String> clazz) {
 		return !(living instanceof EntityPlayer) || allowUse(WeaponsCapability.get(living).getUsedToken(), clazz);
 	}
 	
-	public static boolean allowUse(int livingclass, String clazz) {
+	public static boolean allowUse(int livingclass, Set<String> clazz) {
 		return clazz.isEmpty() || !(livingclass >= 0 && livingclass < CLASS_NAMES.length
 				&& !clazz.contains(CLASS_NAMES[livingclass]));
 	}
