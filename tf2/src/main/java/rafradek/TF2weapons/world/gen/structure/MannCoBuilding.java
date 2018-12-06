@@ -1,17 +1,33 @@
 package rafradek.TF2weapons.world.gen.structure;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockNewLog;
+import net.minecraft.block.BlockOldLog;
+import net.minecraft.block.BlockPlanks;
+import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.structure.ComponentScatteredFeaturePieces;
+import net.minecraft.world.gen.structure.MapGenStructure;
+import net.minecraft.world.gen.structure.MapGenVillage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
+import net.minecraft.world.gen.structure.StructureStart;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
 import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
@@ -22,24 +38,25 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
 import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
 
-public class MannCoBuilding extends Village {
+public class MannCoBuilding extends StructureComponent {
 
 	private boolean haleSpawned;
-
+	protected int averageGroundLvl = -1;
+	
 	public MannCoBuilding() {
 
 	}
 
-	public MannCoBuilding(Start startPiece, int p5, Random random, StructureBoundingBox structureboundingbox,
+	public MannCoBuilding( int p5, Random random, StructureBoundingBox structureboundingbox,
 			EnumFacing facing) {
-		super(startPiece, p5);
+		super(p5);
 		this.setCoordBaseMode(facing);
 		this.boundingBox = structureboundingbox;
 	}
 
 	@Override
 	protected void writeStructureToNBT(NBTTagCompound tagCompound) {
-		super.writeStructureToNBT(tagCompound);
+		tagCompound.setInteger("HPos", this.averageGroundLvl);
 		tagCompound.setBoolean("HS", this.haleSpawned);
 
 	}
@@ -48,7 +65,7 @@ public class MannCoBuilding extends Village {
 	 * (abstract) Helper method to read subclass data from NBT
 	 */
 	protected void readStructureFromNBT(NBTTagCompound tagCompound, TemplateManager p_143011_2_) {
-		super.readStructureFromNBT(tagCompound, p_143011_2_);
+		this.averageGroundLvl = tagCompound.getInteger("HPos");
 		this.haleSpawned = tagCompound.getBoolean("HS");
 	}
 
@@ -111,72 +128,6 @@ public class MannCoBuilding extends Village {
 				1, 6, structureBoundingBoxIn);
 		this.setBlockState(worldIn, upgradeStationHolder.withProperty(BlockUpgradeStation.FACING, EnumFacing.WEST), 12,
 				1, 6, structureBoundingBoxIn);
-
-		/*
-		 * this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 4, 0, 9, 4,
-		 * 6, iblockstate, iblockstate, false); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 0, 5, 0, 9, 5, 6,
-		 * Blocks.STONE_SLAB.getDefaultState(),
-		 * Blocks.STONE_SLAB.getDefaultState(), false);
-		 * this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 5, 1, 8, 5,
-		 * 5, Blocks.AIR.getDefaultState(), Blocks.AIR.getDefaultState(),
-		 * false); this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 1, 0,
-		 * 2, 3, 0, iblockstate3, iblockstate3, false);
-		 * this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 0, 4,
-		 * 0, iblockstate5, iblockstate5, false); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 3, 1, 0, 3, 4, 0, iblockstate5, iblockstate5,
-		 * false); this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 6,
-		 * 0, 4, 6, iblockstate5, iblockstate5, false);
-		 * this.setBlockState(worldIn, iblockstate3, 3, 3, 1,
-		 * structureBoundingBoxIn); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 3, 1, 2, 3, 3, 2, iblockstate3, iblockstate3,
-		 * false); this.fillWithBlocks(worldIn, structureBoundingBoxIn, 4, 1, 3,
-		 * 5, 3, 3, iblockstate3, iblockstate3, false);
-		 * this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 1, 0, 3,
-		 * 5, iblockstate3, iblockstate3, false); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 1, 1, 6, 5, 3, 6, iblockstate3, iblockstate3,
-		 * false); this.fillWithBlocks(worldIn, structureBoundingBoxIn, 5, 1, 0,
-		 * 5, 3, 0, iblockstate6, iblockstate6, false);
-		 * this.fillWithBlocks(worldIn, structureBoundingBoxIn, 9, 1, 0, 9, 3,
-		 * 0, iblockstate6, iblockstate6, false); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 6, 1, 4, 9, 4, 6, iblockstate, iblockstate,
-		 * false); this.setBlockState(worldIn,
-		 * Blocks.IRON_BARS.getDefaultState(), 9, 2, 5, structureBoundingBoxIn);
-		 * this.setBlockState(worldIn, Blocks.IRON_BARS.getDefaultState(), 9, 2,
-		 * 4, structureBoundingBoxIn); this.fillWithBlocks(worldIn,
-		 * structureBoundingBoxIn, 7, 2, 4, 8, 2, 5,
-		 * Blocks.AIR.getDefaultState(), Blocks.AIR.getDefaultState(), false);
-		 * this.setBlockState(worldIn, iblockstate, 6, 1, 3,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.FURNACE.getDefaultState(), 6, 2, 3, structureBoundingBoxIn);
-		 * this.setBlockState(worldIn, Blocks.FURNACE.getDefaultState(), 6, 3,
-		 * 3, structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.DOUBLE_STONE_SLAB.getDefaultState(), 8, 1, 1,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.GLASS_PANE.getDefaultState(), 0, 2, 2,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.GLASS_PANE.getDefaultState(), 0, 2, 4,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.GLASS_PANE.getDefaultState(), 2, 2, 6,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.GLASS_PANE.getDefaultState(), 4, 2, 6,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn, iblockstate6, 2,
-		 * 1, 4, structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * Blocks.WOODEN_PRESSURE_PLATE.getDefaultState(), 2, 2, 4,
-		 * structureBoundingBoxIn); this.setBlockState(worldIn, iblockstate3, 1,
-		 * 1, 5, structureBoundingBoxIn); this.setBlockState(worldIn,
-		 * iblockstate1, 2, 1, 5, structureBoundingBoxIn);
-		 * this.setBlockState(worldIn, iblockstate2, 1, 1, 4,
-		 * structureBoundingBoxIn);
-		 */
-
-		/*
-		 * if (!this.hasMadeChest && structureBoundingBoxIn.isVecInside(new
-		 * BlockPos(this.getXWithOffset(5, 5), this.getYWithOffset(1),
-		 * this.getZWithOffset(5, 5)))) { this.hasMadeChest = true;
-		 * this.generateChest(worldIn, structureBoundingBoxIn, randomIn, 5, 1,
-		 * 5, LootTableList.CHESTS_VILLAGE_BLACKSMITH); }
-		 */
 		for (int k = 0; k < 10; ++k)
 			for (int j = 0; j < 13; ++j) {
 				this.clearCurrentPositionBlocksUpwards(worldIn, j, 17, k, structureBoundingBoxIn);
@@ -194,32 +145,150 @@ public class MannCoBuilding extends Village {
 		return true;
 	}
 
-	@Override
-	protected int chooseProfession(int villagersSpawnedIn, int currentVillagerProfession) {
-		return 3;
-	}
 
-	public static class CreationHandler implements IVillageCreationHandler {
-		@Override
-		public PieceWeight getVillagePieceWeight(Random random, int i) {
-			return new StructureVillagePieces.PieceWeight(MannCoBuilding.class, 15, 1);
-		}
+	protected IBlockState getBiomeSpecificBlockState(IBlockState blockstateIn)
+    {
 
-		@Override
-		public Class<?> getComponentClass() {
-			// TODO Auto-generated method stub
-			return MannCoBuilding.class;
-		}
+        return blockstateIn;
+    }
+	
+	protected int getAverageGroundLevel(World worldIn, StructureBoundingBox structurebb)
+    {
+        int i = 0;
+        int j = 0;
+        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
 
-		@Override
-		public Village buildComponent(PieceWeight villagePiece, Start startPiece, List<StructureComponent> pieces,
-				Random random, int p1, int p2, int p3, EnumFacing facing, int p5) {
-			StructureBoundingBox structureboundingbox = StructureBoundingBox.getComponentToAddBoundingBox(p1, p2, p3, 0,
+        for (int k = this.boundingBox.minZ; k <= this.boundingBox.maxZ; ++k)
+        {
+            for (int l = this.boundingBox.minX; l <= this.boundingBox.maxX; ++l)
+            {
+                blockpos$mutableblockpos.setPos(l, 64, k);
+
+                if (structurebb.isVecInside(blockpos$mutableblockpos))
+                {
+                    i += Math.max(worldIn.getTopSolidOrLiquidBlock(blockpos$mutableblockpos).getY(), worldIn.provider.getAverageGroundLevel() - 1);
+                    ++j;
+                }
+            }
+        }
+
+        if (j == 0)
+        {
+            return -1;
+        }
+        else
+        {
+            return i / j;
+        }
+    }
+	
+	public static class Start extends StructureStart
+    {
+        public Start()
+        {
+        }
+
+        public Start(World worldIn, Random random, int chunkX, int chunkZ)
+        {
+            this(worldIn, random, chunkX, chunkZ, worldIn.getBiome(new BlockPos(chunkX * 16 + 8, 0, chunkZ * 16 + 8)));
+        }
+
+        public Start(World worldIn, Random random, int chunkX, int chunkZ, Biome biomeIn)
+        {
+            super(chunkX, chunkZ);
+            EnumFacing facing = EnumFacing.Plane.HORIZONTAL.random(random);
+            StructureBoundingBox structureboundingbox = StructureBoundingBox.getComponentToAddBoundingBox(chunkX*16, 64, chunkZ*16, 0,
 					0, 0, 14, 16, 11, facing);
-			return canVillageGoDeeper(structureboundingbox)
-					&& StructureComponent.findIntersecting(pieces, structureboundingbox) == null
-							? new MannCoBuilding(startPiece, p5, random, structureboundingbox, facing) : null;
-		}
+            this.components.add(new MannCoBuilding(0, random, structureboundingbox, facing));
+            /*if (biomeIn != Biomes.JUNGLE && biomeIn != Biomes.JUNGLE_HILLS)
+            {
+                if (biomeIn == Biomes.SWAMPLAND)
+                {
+                    ComponentScatteredFeaturePieces.SwampHut componentscatteredfeaturepieces$swamphut = new ComponentScatteredFeaturePieces.SwampHut(random, chunkX * 16, chunkZ * 16);
+                    this.components.add(componentscatteredfeaturepieces$swamphut);
+                }
+                else if (biomeIn != Biomes.DESERT && biomeIn != Biomes.DESERT_HILLS)
+                {
+                    if (biomeIn == Biomes.ICE_PLAINS || biomeIn == Biomes.COLD_TAIGA)
+                    {
+                        ComponentScatteredFeaturePieces.Igloo componentscatteredfeaturepieces$igloo = new ComponentScatteredFeaturePieces.Igloo(random, chunkX * 16, chunkZ * 16);
+                        this.components.add(componentscatteredfeaturepieces$igloo);
+                    }
+                }
+                else
+                {
+                    ComponentScatteredFeaturePieces.DesertPyramid componentscatteredfeaturepieces$desertpyramid = new ComponentScatteredFeaturePieces.DesertPyramid(random, chunkX * 16, chunkZ * 16);
+                    this.components.add(componentscatteredfeaturepieces$desertpyramid);
+                }
+            }
+            else
+            {
+                ComponentScatteredFeaturePieces.JunglePyramid componentscatteredfeaturepieces$junglepyramid = new ComponentScatteredFeaturePieces.JunglePyramid(random, chunkX * 16, chunkZ * 16);
+                this.components.add(componentscatteredfeaturepieces$junglepyramid);
+            }*/
 
+            this.updateBoundingBox();
+        }
+    }
+	public static class MapGen extends MapGenStructure
+	{
+	    private int distance;
+
+	    public MapGen()
+	    {
+	        this.distance = 32;
+	    }
+
+	    public String getStructureName()
+	    {
+	        return "MannCoBuild";
+	    }
+
+	    protected boolean canSpawnStructureAtCoords(int chunkX, int chunkZ)
+	    {
+	        int i = chunkX;
+	        int j = chunkZ;
+
+	        if (chunkX < 0)
+	        {
+	            chunkX -= this.distance - 1;
+	        }
+
+	        if (chunkZ < 0)
+	        {
+	            chunkZ -= this.distance - 1;
+	        }
+
+	        int k = chunkX / this.distance;
+	        int l = chunkZ / this.distance;
+	        Random random = this.world.setRandomSeed(k, l, 5325624);
+	        k = k * this.distance;
+	        l = l * this.distance;
+	        k = k + random.nextInt(this.distance - 8);
+	        l = l + random.nextInt(this.distance - 8);
+
+	        if (i == k && j == l)
+	        {
+	            boolean flag = this.world.getBiomeProvider().areBiomesViable(i * 16 + 8, j * 16 + 8, 0, MapGenVillage.VILLAGE_SPAWN_BIOMES);
+
+	            if (flag)
+	            {
+	                return true;
+	            }
+	        }
+
+	        return false;
+	    }
+
+	    public BlockPos getNearestStructurePos(World worldIn, BlockPos pos, boolean findUnexplored)
+	    {
+	        this.world = worldIn;
+	        return findNearestStructurePosBySpacing(worldIn, this, pos, this.distance, 8, 10387312, false, 100, findUnexplored);
+	    }
+
+	    protected StructureStart getStructureStart(int chunkX, int chunkZ)
+	    {
+	        return new Start(this.world, this.rand, chunkX, chunkZ);
+	    }
 	}
 }

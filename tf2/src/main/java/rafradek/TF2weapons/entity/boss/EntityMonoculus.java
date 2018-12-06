@@ -6,6 +6,7 @@ import com.google.common.base.Predicate;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -26,6 +27,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.TF2Attribute;
@@ -97,10 +99,10 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.toAngry=0;
 		if (angry)
 			TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[19],
-					3 * (0.85f + this.level * 0.15f));
+					3 * (0.75f + this.level * 0.25f));
 		else
 			TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[19],
-					1 * (0.85f + this.level * 0.15f));
+					1 * (0.75f + this.level * 0.25f));
 
 		this.getDataManager().set(ANGRY, angry);
 	}
@@ -118,7 +120,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 			}
 			else{
 				this.toAngry+=amount;
-				if(this.toAngry>=55*(1+level*0.08f)){
+				if(this.toAngry>=40*(1+level*0.08f)){
 					this.setAngry(120);
 				}
 			}
@@ -254,6 +256,14 @@ public class EntityMonoculus extends EntityTF2Boss {
 			if (this.ticksExisted%20==0 && !this.isAngry() &&this.rand.nextInt(20)==0)
 				this.setAngry(100);
 				
+			if (this.ticksExisted%5==0) {
+				if (this.getAttackTarget() != null && !this.getEntitySenses().canSee(this.getAttackTarget())) {
+					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39],
+							this.isAngry() ? 0.8f : 0.45f);
+				}
+				else
+					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39], 0f);
+			}
 			this.toAngry=Math.max(0, this.toAngry-0.4f);
 			if (this.isAngry() && --this.angryTicks <= 0)
 				this.setAngry(0);
@@ -281,14 +291,20 @@ public class EntityMonoculus extends EntityTF2Boss {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(175);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(80.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(160);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.11D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(7D);
 
 	}
 
+	@Override
+	public IEntityLivingData onInitialSpawn(DifficultyInstance diff, IEntityLivingData p_110161_1_) {
+		p_110161_1_=super.onInitialSpawn(diff, p_110161_1_);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(0.95+this.level*0.05));
+		return p_110161_1_;
+	}
 	public void dropFewItems(boolean hit,int looting){
 		if(this.rand.nextBoolean())
 			this.entityDropItem(ItemFromData.getNewStack("bombinomicon"), 0);
@@ -320,7 +336,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		 */
 		@Override
 		public boolean shouldExecute() {
-			return this.parentEntity.begin <= 0 && this.parentEntity.getAttackTarget() != null;
+			return this.parentEntity.begin <= 0 && (this.parentEntity.getAttackTarget() != null || this.parentEntity.envDamage > 0);
 		}
 
 		/**
@@ -344,36 +360,18 @@ public class EntityMonoculus extends EntityTF2Boss {
 		@Override
 		public void updateTask() {
 			EntityLivingBase entitylivingbase = this.parentEntity.getAttackTarget();
+			if (entitylivingbase == null)
+				entitylivingbase = this.parentEntity;
 			double d0 = 64.0D;
 
-			if (entitylivingbase.getDistanceSqToEntity(this.parentEntity) < 4096.0D
-					&& this.parentEntity.canEntityBeSeen(entitylivingbase)) {
+			if (entitylivingbase.getDistanceSqToEntity(this.parentEntity) < 4096.0D) {
 				World world = this.parentEntity.world;
 				this.attackTimer--;
 
 				if (this.attackTimer <= 0) {
+					if (parentEntity.envDamage > 0)
+						parentEntity.envDamage -= 5;
 					double d1 = 4.0D;
-					/*
-					 * double d2 = entitylivingbase.posX -
-					 * (this.parentEntity.posX + vec3d.x * 4.0D); double d3
-					 * = entitylivingbase.getEntityBoundingBox().minY +
-					 * (double)(entitylivingbase.height / 2.0F) - (0.5D +
-					 * this.parentEntity.posY +
-					 * (double)(this.parentEntity.height / 2.0F)); double d4 =
-					 * entitylivingbase.posZ - (this.parentEntity.posZ +
-					 * vec3d.z * 4.0D); world.playEvent((EntityPlayer)null,
-					 * 1016, new BlockPos(this.parentEntity), 0);
-					 * EntityLargeFireball entitylargefireball = new
-					 * EntityLargeFireball(world, this.parentEntity, d2, d3,
-					 * d4); entitylargefireball.explosionPower = 3;
-					 * entitylargefireball.posX = this.parentEntity.posX +
-					 * vec3d.x * 4.0D; entitylargefireball.posY =
-					 * this.parentEntity.posY +
-					 * (double)(this.parentEntity.height / 2.0F) + 0.5D;
-					 * entitylargefireball.posZ = this.parentEntity.posZ +
-					 * vec3d.z * 4.0D;
-					 * world.spawnEntity(entitylargefireball);
-					 */
 					if(this.parentEntity.isAngry())
 						this.parentEntity.playSound(TF2Sounds.MOB_MONOCULUS_SHOOT_MAD, 3f, 1);
 					else
@@ -383,10 +381,10 @@ public class EntityMonoculus extends EntityTF2Boss {
 							this.parentEntity.getHeldItemMainhand(), this.parentEntity, world, 2, EnumHand.MAIN_HAND);
 					if (this.triple > 0) {
 						triple--;
-						this.attackTimer = Math.max(4, 6 - this.parentEntity.level / 5);
+						this.attackTimer = Math.max(4, 6 - this.parentEntity.level / 3);
 						
 					} else {
-						this.attackTimer = Math.max(11, 29 - this.parentEntity.level);
+						this.attackTimer = Math.max(11, 30 - this.parentEntity.level * 2);
 						if (this.parentEntity.isAngry())
 							triple = 2;
 					}
@@ -452,6 +450,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	static class AIRandomFly extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
 
+		private boolean movingToHome;
 		public AIRandomFly(EntityMonoculus ghast) {
 			this.parentEntity = ghast;
 			this.setMutexBits(1);
@@ -466,7 +465,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				return false;
 			EntityMoveHelper entitymovehelper = this.parentEntity.getMoveHelper();
 
-			if (!entitymovehelper.isUpdating() || !this.parentEntity.isWithinHomeDistanceCurrentPosition())
+			if (!entitymovehelper.isUpdating() || (!this.parentEntity.isWithinHomeDistanceCurrentPosition() && !movingToHome))
 				return true;
 			else {
 				double d0 = entitymovehelper.getX() - this.parentEntity.posX;
@@ -495,9 +494,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 			BlockPos pos = this.parentEntity.world.getTopSolidOrLiquidBlock(this.parentEntity.getPosition());
 			double d1 = Math.min(pos.getY() + 16, this.parentEntity.posY + (random.nextFloat() * 2.0F - 1.0F) * 16.0F);
 			double d2 = this.parentEntity.posZ + (random.nextFloat() * 2.0F - 1.0F) * 16.0F;
-			if(this.parentEntity.isWithinHomeDistanceCurrentPosition()
-					|| this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition()))
-				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1.0D);
+			EntityLivingBase target = this.parentEntity.getAttackTarget();
+			this.movingToHome = this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition());
+			boolean flyToPlayer = target != null && target.getDistanceSqToEntity(this.parentEntity) > 680;
+			if((!flyToPlayer || target.getDistanceSq(d0, d1, d2) < target.getDistanceSqToEntity(this.parentEntity))
+					&& (flyToPlayer || (this.parentEntity.isWithinHomeDistanceCurrentPosition()
+					|| movingToHome)))
+				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1d);
 		}
 	}
 
@@ -512,6 +515,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 		@Override
 		public void onUpdateMoveHelper() {
+			double speed = this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue();
 			if (this.action == EntityMoveHelper.Action.MOVE_TO) {
 				double d0 = this.posX - this.parentEntity.posX;
 				double d1 = this.posY - this.parentEntity.posY;
@@ -523,9 +527,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 					d3 = MathHelper.sqrt(d3);
 
 					if (this.isNotColliding(this.posX, this.posY, this.posZ, d3)) {
-						this.parentEntity.motionX += d0 / d3 * 0.1D;
-						this.parentEntity.motionY += d1 / d3 * 0.1D;
-						this.parentEntity.motionZ += d2 / d3 * 0.1D;
+						this.parentEntity.motionX += d0 / d3 * speed;
+						this.parentEntity.motionY += d1 / d3 * speed;
+						this.parentEntity.motionZ += d2 / d3 * speed;
 					} else
 						this.action = EntityMoveHelper.Action.WAIT;
 				}

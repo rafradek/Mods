@@ -9,6 +9,7 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
@@ -30,11 +31,11 @@ public class ItemEventMaker extends Item {
 		ItemStack stack = living.getHeldItem(hand);
 		if (!world.isRemote) {
 			if (TF2Util.getTeam(living) == null) {
-				living.sendMessage(new TextComponentString("You must be assigned to a team"));
+				living.sendMessage(new TextComponentTranslation("item.eventmaker.noteam"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);
 			}
 			if (!world.getCapability(TF2weapons.WORLD_CAP, null).startInvasion(living, stack.getMetadata() % InvasionEvent.DIFFICULTY.length)) {
-				living.sendMessage(new TextComponentString("There is a mission in progress"));
+				living.sendMessage(new TextComponentTranslation("item.eventmaker.fail"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);
 			}
 			else {

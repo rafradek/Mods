@@ -44,6 +44,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -170,10 +171,11 @@ public class ItemFromData extends Item implements IItemOverlay{
 
 	public static WeaponData getData(ItemStack stack) {
 		WeaponData value = BLANK_DATA;
-		if(!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+		if(stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
 			value=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst;
-			if (value == BLANK_DATA && stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Type")))
+			if (value == BLANK_DATA && stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Type"))) {
 				value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst = MapList.nameToData.get(stack.getTagCompound().getString("Type"));
+			}
 		}
 		return value;	
 	}
@@ -359,7 +361,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 	public String getItemStackDisplayName(ItemStack stack) {
 		if (ItemFromData.getData(stack) == BLANK_DATA)
 			return "Weapon";
-		String name = ItemFromData.getData(stack).getString(PropertyType.NAME);
+		String name = getTranslatedName(stack);
 		if (stack.getTagCompound().getBoolean("Strange"))
 			name = TextFormatting.GOLD
 					+ TF2EventsCommon.STRANGE_TITLES[stack.getTagCompound().getInteger("StrangeLevel")] + " "
@@ -513,7 +515,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
 			return ItemAmmo.STACK_FILL;
 
-		int type = ((ItemUsable) stack.getItem()).getAmmoType(stack);
+		int type = ((ItemFromData) stack.getItem()).getAmmoType(stack);
 
 		if (type == 0 || (type == 14 && TF2ConfigVars.freeUseItems))
 			return ItemAmmo.STACK_FILL;
@@ -630,5 +632,9 @@ public class ItemFromData extends Item implements IItemOverlay{
 		return ItemFromData.getData(stack).getInt(PropertyType.WEAR);
 	}
 
-	
+	public String getTranslatedName(ItemStack stack) {
+		WeaponData data = getData(stack);
+		String key = "weapon."+data.getName();
+		return I18n.canTranslate(key) ? I18n.translateToLocal(key) : getData(stack).hasProperty(PropertyType.NAME) ? getData(stack).getString(PropertyType.NAME) : getData(stack).getName();
+	}
 }

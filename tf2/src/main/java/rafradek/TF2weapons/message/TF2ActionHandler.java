@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
@@ -175,7 +176,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							@Override
 							public ITextComponent getDisplayName() {
 								// TODO Auto-generated method stub
-								return new TextComponentString("Recover lost items");
+								return new TextComponentTranslation("gui.recoveritems");
 							}
 
 							@Override

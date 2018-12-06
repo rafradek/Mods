@@ -1,8 +1,11 @@
 package rafradek.TF2weapons.item;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
+import com.google.common.collect.Sets;
 
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -175,7 +178,7 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public Set<String> getUsableClasses(ItemStack stack) {
-		if (getData(stack).get(PropertyType.SLOT).isEmpty() && getData(stack).hasProperty(PropertyType.BASED_ON)) {
+		if ((getData(stack).get(PropertyType.SLOT).isEmpty()) && getData(stack).hasProperty(PropertyType.BASED_ON)) {
 			stack = getNewStack(getData(stack).getString(PropertyType.BASED_ON));
 		}
 		return getData(stack).get(PropertyType.SLOT).keySet();

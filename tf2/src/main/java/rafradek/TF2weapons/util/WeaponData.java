@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,27 +43,18 @@ import rafradek.TF2weapons.item.ItemKillstreakKit;
 public class WeaponData implements ICapabilityProvider {
 
 	private static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(WeaponData.class, new WeaponData.Serializer()).create();
-
-	
+	private static String nameItemLoaded;
 	public static PropertyType<?>[] propertyTypes = new PropertyType[256];
 	public static Map<String, JsonDeserializer<ICapabilityProvider>> propertyDeserializers;
-	
 	public static class Serializer implements JsonDeserializer<WeaponData> {
 
 		@Override
 		public WeaponData deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
 				JsonDeserializationContext context) throws JsonParseException {
 			WeaponData data = new WeaponData();
-			//Map<ResourceLocation, ICapabilityProvider> providers = new HashMap<>();
 			
 			for (Entry<String, JsonElement> property : json.getAsJsonObject().entrySet())
-				/*if (propertyDeserializers.containsKey(property.getKey()))
-					providers.put(new ResourceLocation(property.getKey()), propertyDeserializers.get(property.getKey()).deserialize(property.getValue(), typeOfT, context));
-				else
-					data.addProperty(property.getKey(), property.getValue().getAsString());*/
 				data.addProperty(property.getKey(), property.getValue(), context);
-			
-			//data.addCapabilities(providers);
 			return data;
 		}
 
@@ -128,7 +120,9 @@ public class WeaponData implements ICapabilityProvider {
 	@SuppressWarnings("unchecked")
 	public <A> A get(PropertyType<A> propType) {
 		A property = (A) (this.properties.get(propType));
-		return property;
+		if (property != null)
+			return property;
+		return (A) propType.getDefaultValue();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -142,41 +136,7 @@ public class WeaponData implements ICapabilityProvider {
 	public boolean hasProperty(PropertyType<?> property) {
 		return this.properties.containsKey(property);
 	}
-	/*
-	 * public static class PropertyDouble implements Property<Double>{ private
-	 * double value; PropertyDouble(double value){ this.value=value; }
-	 * 
-	 * @Override public Double getValue() { // TODO Auto-generated method stub
-	 * return value; }
-	 * 
-	 * @Override public void fromString(String string) { // TODO Auto-generated
-	 * method stub value } }
-	 * 
-	 * public static class PropertyInt implements Property<Integer>{ private int
-	 * value;
-	 * 
-	 * PropertyInt(int value){ this.value=value; }
-	 * 
-	 * @Override public Integer getValue() { // TODO Auto-generated method stub
-	 * return value; } }
-	 * 
-	 * public static class PropertyString implements Property<String>{ private
-	 * String value;
-	 * 
-	 * PropertyString(String value){ this.value=value; }
-	 * 
-	 * @Override public String getValue() { // TODO Auto-generated method stub
-	 * return value; } }
-	 * 
-	 * public static class PropertyBoolean implements Property{ private Boolean
-	 * value;
-	 * 
-	 * PropertyBoolean(Boolean value){ this.value=value; }
-	 * 
-	 * @Override public Boolean getValue() { // TODO Auto-generated method stub
-	 * return value; } }
-	 */
-
+	
 	public void addProperty(String name, JsonElement element, JsonDeserializationContext context) {
 
 		PropertyType<?> propType = MapList.propertyTypes.get(name);
@@ -184,9 +144,8 @@ public class WeaponData implements ICapabilityProvider {
 			this.properties.put(propType, propType.deserialize(element, propType.type, context));
 		}
 		catch (Exception e) {
-			TF2weapons.LOGGER.error("Error reading property {} for {}, value is {}", name, this.get(PropertyType.NAME), element.toString());
+			TF2weapons.LOGGER.error("Error reading property {} for {}, value is {}", name, nameItemLoaded, element.toString());
 		}
-		//this.properties.put(type, type.fromString(string));
 	}
 
 	public String getName() {
@@ -199,11 +158,11 @@ public class WeaponData implements ICapabilityProvider {
 	
 	public static ArrayList<WeaponData> parseFile(File file) {
 		ArrayList<WeaponData> list = new ArrayList<>();
-		
 		try {
 			String s = Files.toString(file, Charsets.UTF_8);
 			JsonObject tree = new JsonParser().parse(s).getAsJsonObject();
 			for (Entry<String, JsonElement> entry : tree.getAsJsonObject().entrySet()) {
+				nameItemLoaded = entry.getKey();
 				WeaponData data = GSON.fromJson(entry.getValue(), WeaponData.class);
 				data.name = entry.getKey();
 				list.add(data);
@@ -224,31 +183,6 @@ public class WeaponData implements ICapabilityProvider {
 		public int usedClass = -1;
 		public int fire1Cool = 0;
 		public int fire2Cool = 0;
-		
-		/*public static WeaponData get(ItemStack stack) {
-			WeaponData value=ItemFromData.BLANK_DATA;
-			if(!stack.isEmpty() && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
-				value=stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst;
-				if (value == ItemFromData.BLANK_DATA && stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Type")))
-					value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst = MapList.nameToData.get(stack.getTagCompound().getString("Type"));
-			}
-			return value;
-		}*/
-		/*@Override
-		public NBTTagByte serializeNBT() {
-			// TODO Auto-generated method stub
-			if(inst!=ItemFromData.BLANK_DATA)
-				return new NBTTagString(inst.getName());
-			return new NBTTagString("toloadfiles");
-		}
-
-		@Override
-		public void deserializeNBT(NBTTagByte nbt) {
-			if(nbt != null && !nbt.getString().equals("toloadfiles"))
-				inst=MapList.nameToData.get(nbt.getString());
-			if(inst==null)
-				inst=ItemFromData.BLANK_DATA;
-		}*/
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {

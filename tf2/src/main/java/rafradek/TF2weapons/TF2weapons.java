@@ -249,7 +249,7 @@ import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.5.0", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = "rafradek_tf2_weapons", name = "TF2 Stuff", version = "1.5.4", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -390,7 +390,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 39;
+		return 40;
 	}
 
 	@Mod.EventHandler
@@ -676,7 +676,8 @@ public class TF2weapons {
 		PropertyType.init();
 		if(!TF2ConfigVars.disableGeneration){
 			MapGenStructureIO.registerStructureComponent(MannCoBuilding.class, "ViMC");
-			VillagerRegistry.instance().registerVillageCreationHandler(new MannCoBuilding.CreationHandler());
+			MapGenStructureIO.registerStructure(MannCoBuilding.Start.class, "MCBuild");
+			//GameRegistry.registerWorldGenerator(generator, modGenerationWeight);
 		}
 		LOGGER.info("Parsing weapon files");
 		loadWeapons();

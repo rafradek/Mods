@@ -266,7 +266,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.loadout.setStackInSlot(1, ItemFromData.getRandomWeaponOfSlotMob(className, 1, this.rand, false, true, this.noEquipment));
 		this.loadout.setStackInSlot(2, ItemFromData.getRandomWeaponOfSlotMob(className, 2, this.rand, false, true, this.noEquipment));
 		if (!this.noEquipment && !this.isRobot()) {
-			if (this.rand.nextInt(Math.min(1,(int) ((14 - this.world.getDifficulty().getDifficultyId() * 3) / TF2ConfigVars.hatMercenaryMult))) == 0) {
+			if (this.rand.nextInt(Math.max(1,(int) ((14 - this.world.getDifficulty().getDifficultyId() * 3) / TF2ConfigVars.hatMercenaryMult))) == 0) {
 				this.tradeLevel = 1;
 				this.difficulty = 1;
 				this.experienceValue *= 2;

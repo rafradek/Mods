@@ -36,9 +36,11 @@ public class ItemJetpack extends ItemBackpack {
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		super.onArmorTickAny(world, player, itemStack);
 		if (!world.isRemote) {
-			if (itemStack.getTagCompound().getShort("Charge") > 0) {
-				itemStack.getTagCompound().setShort("Charge", (short) (itemStack.getTagCompound().getInteger("Charge") - 1));
-				if (itemStack.getTagCompound().getShort("Charge") == 0) {
+			if (player.ticksExisted % 4 == 0 && itemStack.getTagCompound().getShort("Charge") > 0 && this.getAmmoAmount(player, itemStack) >= this.getActualAmmoUse(itemStack, player, 1)) {
+				itemStack.getTagCompound().setShort("Charge", (short) (itemStack.getTagCompound().getInteger("Charge") - 4));
+				if (player.ticksExisted % (4 * Math.round(this.getCooldown(itemStack, player)/75f)) == 0)
+					this.consumeAmmoGlobal(player, itemStack, this.getActualAmmoUse(itemStack, player, 1));
+				if (itemStack.getTagCompound().getShort("Charge") <= 0) {
 					itemStack.getTagCompound().setShort("Charges", (short) (itemStack.getTagCompound().getShort("Charges") + 1));
 				}
 			}
@@ -83,8 +85,7 @@ public class ItemJetpack extends ItemBackpack {
 	public boolean canActivate(ItemStack stack, EntityLivingBase player) {
 		return ItemToken.allowUse(player, "pyro")
 				&& (!stack.getTagCompound().getBoolean("Active") || TF2Attribute.getModifier("Jetpack", stack, 0f, player) > 0f) 
-				&& stack.getTagCompound().getByte("Load") <= 0 && stack.getTagCompound().getByte("Charges") > 0 
-				&& (player.world.isRemote || this.getAmmoAmount(player, stack) > this.getActualAmmoUse(stack, player, 20));
+				&& stack.getTagCompound().getByte("Load") <= 0 && stack.getTagCompound().getByte("Charges") > 0 ;
 	}
 	
 	public int getMaxCharges(ItemStack stack, EntityLivingBase player) {
@@ -97,7 +98,6 @@ public class ItemJetpack extends ItemBackpack {
 		player.fallDistance = 0;
 		if (!player.world.isRemote) {
 			TF2Util.playSound(player, getSound(stack, PropertyType.CHARGE_SOUND), 1f, 1f);
-			this.consumeAmmoGlobal(player, stack, this.getActualAmmoUse(stack, player, 20));
 			WeaponsCapability.get(player).setExpJump(true);
 			stack.getTagCompound().setByte("Load", (byte) 12);
 			if (player instanceof EntityPlayerMP)

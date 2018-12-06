@@ -15,13 +15,16 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITarget;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundEvent;
@@ -37,6 +40,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityHHH extends EntityTF2Boss {
@@ -47,6 +51,8 @@ public class EntityHHH extends EntityTF2Boss {
 	private int teleportTime;
 	private int toTeleportTime;
 	public int begin=30;
+	private float damageTakenNoPath;
+	private int aboveGroundTicks;
 
 	public EntityHHH(World worldIn) {
 		super(worldIn);
@@ -94,10 +100,11 @@ public class EntityHHH extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(13D);
 
 	}
+	
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance diff, IEntityLivingData p_110161_1_) {
 		p_110161_1_=super.onInitialSpawn(diff, p_110161_1_);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(0.975+this.level*0.025));
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(0.88+this.level*0.12));
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue()*(0.9+this.level*0.1));
 		return p_110161_1_;
 	}
@@ -170,12 +177,29 @@ public class EntityHHH extends EntityTF2Boss {
 					this.scareTick=200;
 				}
 			}
-			if(--this.teleportTime<=0&&this.getAttackTarget()!=null&&(this.getNavigator().noPath()||this.getDistanceSqToEntity(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<0.75)){
-				this.toTeleportTime=20;
-				this.teleportTime=250;
-				this.setNoAI(true);
-				this.setSneaking(true);
+			/*if (this.getAttackTarget() != null) {
+				if (this.getNavigator().getPathToEntityLiving(this.getAttackTarget()) != null)
+					System.out.println("has way:"+this.getNavigator().getPathToEntityLiving(this.getAttackTarget()).getFinalPathPoint().y);
+				
+				
+			}*/
+			if (this.toTeleportTime <= 0 && this.getAttackTarget() != null && this.ticksExisted % 5 == 0) {
+				Path path = this.getNavigator().getPathToEntityLiving(this.getAttackTarget());
+				boolean shouldTeleport;
+				if (path == null)
+					shouldTeleport = this.getDistanceSqToEntity(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<1;
+				else
+					shouldTeleport = Math.abs(path.getFinalPathPoint().y - this.getAttackTarget().posY) > 1.5 && this.getAttackTarget().onGround;
+				if (shouldTeleport) {
+					this.toTeleportTime=40;
+					this.teleportTime=250;
+					this.setNoAI(true);
+					this.setSneaking(true);
+				}
 			}
+			/*if(--this.teleportTime<=0&&this.getAttackTarget()!=null&&(this.getNavigator().noPath()||this.getDistanceSqToEntity(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<0.75)){
+				
+			}*/
 			if(this.toTeleportTime>0){
 				if(this.world instanceof WorldServer){
 					WorldServer world=(WorldServer)this.world;
@@ -185,12 +209,17 @@ public class EntityHHH extends EntityTF2Boss {
 				if(--this.toTeleportTime==0){
 					this.setSneaking(false);
 					this.setNoAI(false);
-					if(this.getAttackTarget()!=null&&this.attemptTeleport(this.getAttackTarget().posX, this.getAttackTarget().posY, this.getAttackTarget().posZ)){
+					Vec3d pos = null;
+					if (this.getAttackTarget()!=null) 
+						pos = new Vec3d(this.getAttackTarget().posX, this.getAttackTarget().posY, this.getAttackTarget().posZ);
+					/*else
+						pos = RandomPositionGenerator.findRandomTarget(this, 16, 6);*/
+					if(pos != null && this.attemptTeleportForce(pos.x, pos.y, pos.z)){
 						this.addPotionEffect(new PotionEffect(TF2weapons.stun, 30, 3));
 						for (int i = 0; i < 40; i++) {
-							Vec3d pos = TF2Util.radiusRandom2D(2.7f, this.rand);
-							this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
-									pos.y + this.posZ, 0, 0, 0, new int[0]);
+							Vec3d partpos = TF2Util.radiusRandom2D(2.7f, this.rand);
+							this.world.spawnParticle(EnumParticleTypes.PORTAL, partpos.x + this.posX, this.posY - 0.5,
+									partpos.y + this.posZ, 0, 0, 0, new int[0]);
 						}
 					}
 				}
@@ -202,7 +231,8 @@ public class EntityHHH extends EntityTF2Boss {
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return getDistanceSqToEntity(input)<4&&!TF2Util.isOnSameTeam(EntityHHH.this, input) && TF2Util.lookingAt(EntityHHH.this, 30, input.posX, input.posY+input.getEyeHeight(), input.posZ);
+						return getDistanceSqToEntity(input)<4&&!TF2Util.isOnSameTeam(EntityHHH.this, input) && 
+								(TF2Util.lookingAt(EntityHHH.this, 30, input.posX, input.posY+input.getEyeHeight(), input.posZ) || input.getCollisionBoundingBox() != null);
 					}
 					
 				});
@@ -217,6 +247,26 @@ public class EntityHHH extends EntityTF2Boss {
 		}
 		
 	}
+	@Override
+	public boolean attackEntityFrom(DamageSource source, float amount) {
+		
+
+		if (super.attackEntityFrom(source, amount)) {
+			if (this.getAttackTarget() == null || this.getNavigator().noPath()) {
+				this.damageTakenNoPath += amount;
+				if (this.damageTakenNoPath >= 20) {
+					this.damageTakenNoPath = 0;
+					this.toTeleportTime=40;
+					this.teleportTime=250;
+					this.setNoAI(true);
+					this.setSneaking(true);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	public boolean attackEntityAsMob(Entity entityIn)
     {
 		if(super.attackEntityAsMob(entityIn)){
@@ -310,10 +360,12 @@ public class EntityHHH extends EntityTF2Boss {
 		nbt.setShort("Begin", (short)this.begin);
 		nbt.setShort("Scare", (short)this.scareTick);
 		nbt.setShort("Teleport", (short)this.teleportTime);
+		nbt.setFloat("NoPathDamange", this.damageTakenNoPath);
 	}
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
 		super.readEntityFromNBT(nbt);
+		this.damageTakenNoPath = nbt.getFloat("NoPathDamage");
 		this.begin=nbt.getShort("Begin");
 		this.scareTick=nbt.getShort("Scare");
 		this.teleportTime=nbt.getShort("Teleport");

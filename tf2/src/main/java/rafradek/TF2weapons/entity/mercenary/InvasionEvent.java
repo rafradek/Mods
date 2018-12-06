@@ -57,7 +57,7 @@ import rafradek.TF2weapons.TF2weapons;
 
 public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 
-	protected final BossInfoServer bossInfo = (new BossInfoServer(new TextComponentString("Robot Invasion - Wave 1"), BossInfo.Color.BLUE,
+	protected final BossInfoServer bossInfo = (new BossInfoServer(new TextComponentTranslation("gui.robotinvasion",1,1), BossInfo.Color.BLUE,
 			BossInfo.Overlay.PROGRESS));
 	
 	public static final float[] DIFFICULTY = {1f, 1.5f, 2f, 2.75f,4f};
@@ -93,14 +93,14 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 	
 	public InvasionEvent(World world, BlockPos targetPos, int diff) {
 		this.world = world;
-		this.startTime = world.getTotalWorldTime();
+		this.startTime = world.getWorldTime();
 		this.target = targetPos;
 		List<EntityPlayerMP> players = this.world.getPlayers(EntityPlayerMP.class, player -> this.isInRange(player.getPosition()));
 		for (EntityPlayerMP player: players) {
 			float killed = player.getStatFile().readStat(TF2weapons.robotsKilled);
-			this.difficulty += 1f + Math.min(0.75f, killed / (400f*diff));
+			this.difficulty += 1f + Math.min(0.75f, killed / (400f*(diff+1)));
 			this.onPlayerEnter(player);
-			player.sendMessage(new TextComponentString("Robots invade the area!"));
+			player.sendMessage(new TextComponentTranslation("gui.robotinvasion.message"));
 		}
 		this.diffTour = diff;
 		this.difficulty *= DIFFICULTY[diff] * (3f / (players.size() + 2));
@@ -290,7 +290,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		else
 			this.pauseTicks--;
 		
-		if (this.world.getTotalWorldTime() >= this.endTime)
+		if (this.world.getWorldTime() >= this.endTime)
 			this.finish();
 	}
 	
@@ -301,8 +301,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		if (wave != 1)
 			giveRobotAwards();
 		this.robotKilledWave = 0;
-		this.endTime = this.world.getTotalWorldTime() + (this.wave+1) * 12000;
-		this.bossInfo.setName(new TextComponentString("Robot Invasion - Wave "+wave+"/"+waves));
+		this.endTime = this.world.getWorldTime() + (this.wave+1) * 12000;
+		this.bossInfo.setName(new TextComponentTranslation("gui.robotinvasion",this.wave,this.waves));
 		
 	}
 	
@@ -443,7 +443,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.wave = nbt.getByte("wave");
 		this.waves = nbt.getByte("waves");
 		this.endTime = nbt.getLong("end");
-		this.bossInfo.setName(new TextComponentString("Robot Invasion - Wave "+wave+"/"+waves));
+		this.bossInfo.setName(new TextComponentTranslation("gui.robotinvasion",this.wave,this.waves));
 		this.robotKilledTotal = nbt.getShort("rkwave");
 		this.robotKilledWave = nbt.getShort("rktotal");
 		this.robotsWave = nbt.getShort("rwave");

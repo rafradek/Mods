@@ -72,9 +72,9 @@ public class GuiUpgradeStation extends GuiContainer {
 				this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4 + 1,
 						this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-"));
 			}
-		this.tooltip.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 15, 100, 12, "Austrialium and strange weapons have higher upgrade limit", this));
+		this.tooltip.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 15, 100, 12, I18n.format("container.upgrades.info"), this));
 		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
-						this.guiTop + 121, 100, 20, "Refund Upgrades"));
+						this.guiTop + 121, 100, 20, I18n.format("container.upgrades.refund")));
 		setButtons();
 	}
 

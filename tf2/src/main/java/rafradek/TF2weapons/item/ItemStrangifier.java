@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.base.Predicates;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
@@ -22,7 +23,7 @@ public class ItemStrangifier extends ItemApplicableEffect {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		if (stack.hasTagCompound() && MapList.nameToData.containsKey(stack.getTagCompound().getString("Weapon"))) {
-			return MapList.nameToData.get(stack.getTagCompound().getString("Weapon")).getString(PropertyType.NAME)+" "+super.getItemStackDisplayName(stack);
+			return I18n.format("weapon."+stack.getTagCompound().getString("Weapon"))+" "+super.getItemStackDisplayName(stack);
 		}
 		return super.getItemStackDisplayName(stack);
 	}

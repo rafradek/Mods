@@ -149,6 +149,18 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 		//data.properties.put(this, prop);
 	}
 
+	public T getDefaultValue(){
+		if (this.type == Boolean.class)
+			return type.cast(false);
+		else if (this.type == Integer.class)
+			return type.cast(0);
+		else if (this.type == Float.class)
+			return type.cast(0f);
+		else if (this.type == String.class)
+			return type.cast("");
+		return null;
+		//data.properties.put(this, prop);
+	}
 	public boolean hasKey(WeaponData data) {
 		return data.properties.get(this) != null;
 	}
@@ -170,7 +182,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	public static class PropertyTypeMap<T> extends PropertyType<Map<String, T>> {
 
 		public Class<T> mapType;
-		
+		public static Map<?, ?> defaultValue = new HashMap<>();
 		public PropertyTypeMap(int id, String name, Class<T> type) {
 			super(id, name, null);
 			this.mapType = type;
@@ -213,6 +225,10 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 			//data.properties.put(this, prop);
 		}
 		
+		@SuppressWarnings("unchecked")
+		public Map<String, T> getDefaultValue(){
+			return (Map<String, T>) defaultValue;
+		}
 		@Override
 		public Map<String, T> deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
 			Map<String, T> prop = new HashMap<>();

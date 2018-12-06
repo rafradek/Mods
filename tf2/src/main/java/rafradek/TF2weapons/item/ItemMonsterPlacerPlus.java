@@ -269,17 +269,18 @@ public class ItemMonsterPlacerPlus extends Item {
 	public String getItemStackDisplayName(ItemStack p_77653_1_) {
 		String s = ("" + I18n.translateToLocal(this.getUnlocalizedName() + ".name")).trim();
 		int i = p_77653_1_.getItemDamage();
-		String s1 = "Saxton Hale";
+		String s1 = "hale";
 		if (i < 18 || (i >= 36 && i < 45))
 			s1 = ItemToken.CLASS_NAMES[i%9];
-		if (p_77653_1_.getItemDamage() == 27)
-			s1 = s1.concat(" (Hostile)");
 		if (p_77653_1_.getItemDamage() == 28)
-			s1 = "Monoculus";
+			s1 = "monoculus";
 		if (p_77653_1_.getItemDamage() == 29)
-			s1 = "HHH";
+			s1 = "hhh";
 		if (p_77653_1_.getItemDamage() == 30)
-			s1 = "Merasmus";
+			s1 = "merasmus";
+		s1= I18n.translateToLocal("entity."+s1+".name");
+		if (p_77653_1_.getItemDamage() == 27)
+			s1 = s1.concat(" "+I18n.translateToLocal("item.placer.hostile"));
 		return s.concat(" " + s1);
 	}
 	@Override

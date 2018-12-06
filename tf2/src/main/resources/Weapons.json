@@ -1141,11 +1141,7 @@
 		"Spread": 0,
 		"Projectile speed": 0.35,
 		"Damage": 5.5,
-		"Hidden": true,
-		"Attributes": 
-		{
-			"DestroyBlock": 0.35
-		}
+		"Hidden": true
 	},
 
 	"mnceyeang": 
@@ -1155,11 +1151,7 @@
 		"Based on": "mnceye",
 		"Projectile": "rocket",
 		"Projectile speed": 1.14,
-		"Spread": 4,
-		"Attributes": 
-		{
-			"DestroyBlock": 0.8
-		}
+		"Spread": 4
 	},
 
 	"chargintarge": 
@@ -1254,6 +1246,7 @@
 		"Class": "projectile",
 		"Projectile": "grenade",
 		"Render": "rafradek_tf2_weapons:merasmus_wand",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
 		"Firing speed": 800,
 		"Pellets": 1,
 		"Spread": 0,
@@ -1263,7 +1256,6 @@
 		"Penetrate": true,
 		"Attributes": 
 		{
-			"DestroyBlock": 0.3,
 			"WeaponMode": 1
 		}
 	},
@@ -1647,7 +1639,10 @@
 	{
 		"Name": "Widowmaker",
 		"Class": "bullet",
-		"Based on": "shotgunengineer",
+		"Slot": {
+			"engineer": 0
+		},
+		"Based on": "shotgun",
 		"Render": "rafradek_tf2_weapons:widowmaker",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.widowmaker",
 		"Drop chance": 0.11,
@@ -1795,7 +1790,7 @@
 		"Projectile speed": 1.04,
 		"Damage": 5,
 		"Drop chance": 0,
-		"Roll hidden": 2,
+		"Roll hidden": 1,
 		"Spread": 0.08,
 		"Hidden": true,
 		"Cost": 80,
@@ -1804,6 +1799,28 @@
 		{
 			"FireRatePenalty": 1.3,
 			"AmmoEfficiencyBonus": 0.4
+		}
+	},
+	"laserminigun": 
+	{
+		"Name": "Laser minigun",
+		"Class": "minigun",
+		"Based on": "minigun",
+		"Projectile": "energy",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
+		"Pellets": 1,
+		"Projectile speed": 1.2,
+		"Damage": 2,
+		"Drop chance": 0,
+		"Roll hidden": 2,
+		"Spread": 0.02,
+		"Hidden": true,
+		"Cost": 80,
+		"Ammo type": 0,
+		"Armor penetration scale": 6,
+		"Attributes": 
+		{
+			"FireRatePenalty": 1.2
 		}
 	},
 	"bigone": 
@@ -1939,12 +1956,12 @@
 		"Firing speed": 20,
 		"Drop chance": 0.07,
 		"Cooldown": 240,
-		
+		"Ammo type": 10,
 		"Cost": 27,
 		"Armor": 5,
 		"Wear flags": 2,
 		"Stock": false,
-		"Description": "Use the jetpack trigger to activate"
+		"Description": "Use the jetpack trigger to activate\nRecharging consumes fuel"
 	},
 	"trigger": 
 	{

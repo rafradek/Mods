@@ -40,6 +40,9 @@ import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.boss.EntityHHH;
+import rafradek.TF2weapons.entity.boss.EntityMerasmus;
+import rafradek.TF2weapons.entity.boss.EntityMonoculus;
 import rafradek.TF2weapons.entity.boss.EntityTF2Boss;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
@@ -111,7 +114,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.owner = entity;
 		this.lostItems=new ItemStackHandler(27);
 		this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
-		
+		this.highestBossLevel.put(EntityHHH.class, (short) 0);
+		this.highestBossLevel.put(EntityMonoculus.class, (short) 0);
+		this.highestBossLevel.put(EntityMerasmus.class, (short) 0);
 	}
 
 	public void tick() {
@@ -182,7 +187,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			
 			int contractDay;
 			if (!PlayerPersistStorage.get(this.owner).itemsToGive.isEmpty()) {
-				ITextComponent text = new TextComponentString("You were awarded:");
+				ITextComponent text = new TextComponentTranslation("gui.robotinvasion.reward");
 				text.getStyle().setColor(TextFormatting.GOLD);
 				this.owner.sendMessage(text);
 				for (ItemStack stack : PlayerPersistStorage.get(this.owner).itemsToGive) {
@@ -255,7 +260,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					if(contract.progress>135)
 						contract.progress=135;
 					
-					((EntityPlayerMP)this.owner).sendMessage(new TextComponentString(contract.className +" contract progress: "+contract.progress+" CP"));
+					((EntityPlayerMP)this.owner).sendMessage(new TextComponentTranslation("contract.progress", contract.className, contract.progress));
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, contract), (EntityPlayerMP) this.owner);
 					break;
 				}

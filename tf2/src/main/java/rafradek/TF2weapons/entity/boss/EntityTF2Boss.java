@@ -47,6 +47,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	public int playersAttacked = 0;
 	private int blockBreakCounter=27;
 	public BlockPos spawnPos;
+	protected float envDamage;
 
 	public float damageMult=1;
 	public EntityTF2Boss(World worldIn) {
@@ -73,7 +74,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		if (super.attackEntityFrom(source, amount*damageMult)) {
 			if (source.getTrueSource() != null && source.getTrueSource() instanceof EntityPlayer)
 				this.attackers.add((EntityPlayer) source.getTrueSource());
-
+			if (!(source.getTrueSource() instanceof EntityLivingBase))
+				this.envDamage+=amount;
 			return true;
 		}
 		return false;
@@ -86,6 +88,12 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
     {
 		
     }
+	
+	@Override
+	protected boolean canDespawn() {
+		return false;
+	}
+	
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
 		int count=this.playersAttacked;
@@ -95,10 +103,10 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		for(int i=0;i<count;i++){
 			if(i>0)
 				this.dropFewItems(wasRecentlyHit, lootingModifier);
-			this.entityDropItem(new ItemStack(TF2weapons.itemTF2,MathHelper.log2(this.level)+1,2), 0);
+			this.entityDropItem(new ItemStack(TF2weapons.itemTF2,this.level/2+MathHelper.log2(this.level)+2,2), 0);
 			ItemStack weapon=ItemFromData.getRandomWeapon(this.rand, ItemFromData.VISIBLE_WEAPON);
-			if(this.level>2)
-				TF2Attribute.upgradeItemStack(weapon,40+(this.level-3)*55+MathHelper.log2(this.level)*40, rand);
+			if(this.level>1)
+				TF2Attribute.upgradeItemStack(weapon,40+(this.level-2)*55+MathHelper.log2(this.level)*40, rand);
 			this.entityDropItem(weapon, 0);
 		}
 	}
@@ -132,8 +140,11 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 
 	}
 	public boolean breakBlocks(){
+		return this.breakBlocks(this.getBreakingBB());
+	}
+	
+	public boolean breakBlocks(AxisAlignedBB box){
 		boolean flag = false;
-		AxisAlignedBB box=this.getBreakingBB();
 		for (int x = MathHelper.floor(box.minX); x <= MathHelper.floor(box.maxX); ++x)
 			for (int y = MathHelper.floor(box.minY); y <= MathHelper.floor(box.maxY); ++y)
 				for (int z = MathHelper.floor(box.minZ); z <= MathHelper.floor(box.maxZ); ++z) {
@@ -179,6 +190,11 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		super.travel(m1 / move, m2, m3 / move);
 	}
 	
+	public boolean attemptTeleportForce(double x, double y, double z)
+    {
+		this.breakBlocks(this.getEntityBoundingBox().offset(x-this.posX, y-this.posY, z-this.posZ));
+		return super.attemptTeleport(x, y, z);
+    }
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance diff, IEntityLivingData p_110161_1_) {
 		int players = 0;
@@ -200,7 +216,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 			statmult++;
 			if(living instanceof EntityPlayer){
 				players++;
-				statmult+=2;
+				statmult+=3;
 				EntityPlayer player=(EntityPlayer) living;
 				if(player.getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.get(this.getClass())==null){
 					player.getCapability(TF2weapons.PLAYER_CAP, null).highestBossLevel.put(this.getClass(), (short)0);
@@ -216,14 +232,14 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		highestLevel++;
 		this.level = Math.min(30, highestLevel);
 		//System.out.println("Level: " + this.level + " player: " + players);
-		float desiredHealth=(float)this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * (0.6f + statmult * 0.13333f) * (0.6f + highestLevel * 0.4f);
+		float desiredHealth=(float)this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * (0.6f + statmult * 0.1f) * (0.5f + highestLevel * 0.5f);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
 				.setBaseValue(Math.min(1000,desiredHealth));
 		this.damageMult=Math.min(1f, 1000f/desiredHealth);
 		this.setHealth(this.getMaxHealth());
 		TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[19],
-				1 * (0.85f + this.level * 0.15f));
-		this.experienceValue = (int) (200 * (0.5f + players * 0.5f) * (0.45f + highestLevel * 0.55f));
+				1 * (0.7f + highestLevel * 0.3f));
+		this.experienceValue = (int) (200 * (0.5f + players * 0.5f) * (0.35f + highestLevel * 0.65f));
 		this.playersAttacked=players;
 		this.playSound(this.getAppearSound(), 4F, 1);
 		return p_110161_1_;

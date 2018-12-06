@@ -91,6 +91,7 @@ import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
+import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
@@ -151,17 +152,21 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.GameRules.ValueType;
+import net.minecraft.world.gen.ChunkGeneratorOverworld;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.storage.loot.LootEntry;
 import net.minecraft.world.storage.loot.LootEntryTable;
@@ -196,6 +201,7 @@ import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
+import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -357,6 +363,7 @@ public class TF2EventsCommon {
 					if (events!=null && new Random(event.world.getSeed() + worldTime * worldTime * 4987142 + worldTime * 5947611)
 							.nextInt(20) == 0){
 						for (EntityPlayer player : event.world.playerEntities) {
+							if (player.getTeam() != null)
 							events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2));
 						}
 					}
@@ -369,12 +376,26 @@ public class TF2EventsCommon {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).nextBossTicks = (int) (worldTime + Math.min(40000,TF2ConfigVars.bossReappear)
 							+ player.getRNG().nextInt(Math.max(1, TF2ConfigVars.bossReappear-40000)));
 							EntityTF2Boss boss;
-							switch(player.getRNG().nextInt(3)){
-							case 0: boss= new EntityMonoculus(event.world);break;
-							case 1: boss= new EntityHHH(event.world);break;
+							int bosslowest = 31;
+							int bossid = 0;
+							if (TF2PlayerCapability.get(player).highestBossLevel.get(EntityHHH.class) < bosslowest) {
+								bosslowest = TF2PlayerCapability.get(player).highestBossLevel.get(EntityHHH.class);
+								bossid = 0;
+							}
+							if (TF2PlayerCapability.get(player).highestBossLevel.get(EntityMonoculus.class) < bosslowest) {
+								bosslowest = TF2PlayerCapability.get(player).highestBossLevel.get(EntityMonoculus.class);
+								bossid = 1;
+							}
+							if (TF2PlayerCapability.get(player).highestBossLevel.get(EntityMerasmus.class) < bosslowest) {
+								bosslowest = TF2PlayerCapability.get(player).highestBossLevel.get(EntityMerasmus.class);
+								bossid = 2;
+							}
+							switch(bossid){
+							case 0: boss= new EntityHHH(event.world);break;
+							case 1: boss= new EntityMonoculus(event.world);break;
 							default: boss= new EntityMerasmus(event.world);break;
 							}
-								player.sendMessage(new TextComponentString(boss.getName()+" is heading your way!"));
+								player.sendMessage(new TextComponentTranslation("boss.message", boss.getName()));
 								TF2PlayerCapability.get(player).bossSpawnTicks = worldTime + 1200;
 								TF2PlayerCapability.get(player).bossToSpawn = boss;
 						}
@@ -1842,6 +1863,13 @@ public class TF2EventsCommon {
 	}
 
 	@SubscribeEvent
+	public void generateStructures(PopulateChunkEvent.Pre event) {
+		if(event.getGenerator() instanceof ChunkGeneratorOverworld && !TF2ConfigVars.disableGeneration) {
+			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).mannCoGenerator.generate(event.getWorld(), event.getChunkX(), event.getChunkZ(), new ChunkPrimer());
+			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).mannCoGenerator.generateStructure(event.getWorld(), event.getRand(), new ChunkPos(event.getChunkX(), event.getChunkZ()));
+		}
+	}
+	@SubscribeEvent
 	public void generateOres(OreGenEvent.Post event) {
 		if (event.getWorld().provider.getDimension() == 0) {
 			if (TF2weapons.generateCopper) {
@@ -2187,6 +2215,7 @@ public class TF2EventsCommon {
 		private HashMap<UUID, PlayerPersistStorage> playerStorage = new HashMap<>();
 		public Map<UUID,InvasionEvent> invasions = new HashMap<>();
 		public ArrayList<DestroyBlockEntry> destroyProgress = new ArrayList<>();
+		public MannCoBuilding.MapGen mannCoGenerator = new MannCoBuilding.MapGen();
 		
 		/*@Override
 		public void readFromNBT(NBTTagCompound nbt) {
@@ -2300,9 +2329,12 @@ public class TF2EventsCommon {
 		
 		public boolean startInvasion(EntityPlayer player, int difficulty) {
 			for (Entry<UUID, InvasionEvent> entry : invasions.entrySet()) {
-				if (entry.getKey().equals(player.getUniqueID()) || entry.getValue().isInRange(player.getPosition()))
-					entry.getValue().finish();
-					//return false;
+				if (entry.getKey().equals(player.getUniqueID()) || entry.getValue().isInRange(player.getPosition())) {
+					if (player.capabilities.isCreativeMode)
+						entry.getValue().finish();
+					else
+						return false;
+				}
 			}
 			
 			InvasionEvent event = new InvasionEvent(world, player.getPosition(), difficulty);

@@ -15,6 +15,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -160,7 +161,7 @@ public class ItemCrate extends ItemFromData {
 			for (String name : getData(stack).get(PropertyType.CONTENT).content.keySet()) {
 				WeaponData data = MapList.nameToData.get(name);
 				if (data != null)
-					tooltip.add(data.getString(PropertyType.NAME));
+					tooltip.add(I18n.format("weapon."+data.getName()));
 			}
 		}
 	}

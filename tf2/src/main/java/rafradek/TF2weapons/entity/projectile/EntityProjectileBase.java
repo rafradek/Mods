@@ -254,7 +254,7 @@ public abstract class EntityProjectileBase extends Entity
 				
 				if (headshot)
 					((TF2DamageSource)src).addAttackFlag(TF2DamageSource.HEADSHOT);
-				boolean proceed=((ItemProjectileWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical, false);
+				boolean proceed=((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, this.shootingEntity, target, dmg, critical, false);
 				if(!proceed || TF2Util.dealDamage(target, this.world, this.shootingEntity, this.usedWeapon, critical, dmg,
 						src)) {
 					if (!this.canPenetrate())
@@ -406,7 +406,7 @@ public abstract class EntityProjectileBase extends Entity
 		if (this.world.isRemote)
 			for (int j = 0; j < this.getSpeed(); ++j) {
 				double pX = this.posX - this.motionX * j / this.getSpeed() - this.motionX;
-				double pY = this.posY + (this.useCollisionBox() ? this.height / 2 : 0) - this.motionY * j / 4.0D
+				double pY = this.posY + (this.useCollisionBox() ? this.height / 2 : 0) - this.motionY * j / this.getSpeed()
 						- this.motionY;
 				double pZ = this.posZ - this.motionZ * j / this.getSpeed() - this.motionZ;
 				if (this.getCritical() == 2)
