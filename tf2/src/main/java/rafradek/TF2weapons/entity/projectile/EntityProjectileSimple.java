@@ -2,6 +2,7 @@ package rafradek.TF2weapons.entity.projectile;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
@@ -23,9 +24,9 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 		super(world);
 		this.setSize(0.3F, 0.3F);
 	}
-
-	public EntityProjectileSimple(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
+	
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3F, 0.3F);
 		if (this.usedWeapon.getTagCompound().getBoolean("ArrowLit")) {
 			this.usedWeaponOrig.getTagCompound().setBoolean("ArrowLit", false);
@@ -39,7 +40,6 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 			this.setType(2);
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
 			this.setType(3);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

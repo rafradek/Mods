@@ -49,12 +49,10 @@ public class EntityMedic extends EntityTF2Character {
 		//this.ammoLeft = 1;
 		this.experienceValue = 15;
 		this.rotation = 15;
-		this.tasks.removeTask(attack);
+		//this.tasks.removeTask(attack);
 
 		if (par1World != null) {
-			this.tasks.addTask(4, useMedigun);
-			//attack.setRange(7f);
-			this.setCombatTask(true);
+			this.tasks.addTask(3, useMedigun);
 			this.friendly = true;
 		}
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -79,7 +77,7 @@ public class EntityMedic extends EntityTF2Character {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(30.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.14111D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
@@ -121,13 +119,11 @@ public class EntityMedic extends EntityTF2Character {
 			// System.out.println("friendly");
 			if (!friendly) {
 				this.friendly = true;
-				this.setCombatTask(true);
 
 			}
 		} else if (entity != null && this.friendly) {
 			// System.out.println("not friendly");
 			this.friendly = false;
-			this.setCombatTask(false);
 		}
 		this.switchSlot(this.getDefaultSlot());
 		//System.out.println("Attack Target Set: "+entity);
@@ -196,17 +192,6 @@ public class EntityMedic extends EntityTF2Character {
 	public boolean isValidTarget(EntityLivingBase target) {
 		return !((target instanceof EntityMedic && target.getHealth() >= target.getMaxHealth()) || target instanceof EntityBuilding)
 				&& TF2Util.isOnSameTeam(EntityMedic.this, target);
-	}
-	public void setCombatTask(boolean ranged) {
-		this.tasks.removeTask(this.attack);
-		this.tasks.removeTask(this.useMedigun);
-		this.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-		// System.out.println(TF2ActionHandler.playerAction.get(this.world.isRemote).size());
-
-		if (ranged)
-			this.tasks.addTask(4, this.useMedigun);
-		else
-			this.tasks.addTask(4, this.attack);
 	}
 	
 	public int getClassIndex() {

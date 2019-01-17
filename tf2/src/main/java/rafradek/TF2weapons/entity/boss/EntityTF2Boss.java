@@ -36,6 +36,7 @@ import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.util.TF2DamageSource;
+import rafradek.TF2weapons.util.TF2Util;
 
 public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 
@@ -49,6 +50,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	public BlockPos spawnPos;
 	protected float envDamage;
 
+	public boolean summoned;
 	public float damageMult=1;
 	public EntityTF2Boss(World worldIn) {
 		super(worldIn);
@@ -127,6 +129,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 				this.playSound(TF2Sounds.MOB_BOSS_ESCAPE_10, 4F, 1f);
 			else if (timeLeft <= 0){
 				this.playSound(TF2Sounds.MOB_BOSS_ESCAPE, 4F, 1f);
+				if (this.summoned)
+					this.returnSpawnItems();
 				this.setDead();
 			}
 			this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
@@ -139,6 +143,11 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		}
 
 	}
+	
+	public void returnSpawnItems() {
+		
+	}
+
 	public boolean breakBlocks(){
 		return this.breakBlocks(this.getBreakingBB());
 	}
@@ -203,12 +212,12 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		this.spawnPos = this.getPosition();
 		this.setHomePosAndDistance(this.getPosition(), 40);
 		for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				this.getEntityBoundingBox().grow(64, 64, 64),new Predicate<EntityLivingBase>(){
+				this.getEntityBoundingBox().grow(64, 28, 64),new Predicate<EntityLivingBase>(){
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return input.hasCapability(TF2weapons.WEAPONS_CAP, null);
+						return input.hasCapability(TF2weapons.WEAPONS_CAP, null) && (TF2Util.getOwnerIfOwnable(input) instanceof EntityPlayer || input.getDistanceSq(EntityTF2Boss.this) < 900);
 					}
 			
 		})) {
@@ -268,6 +277,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		nbt.setShort("Players", (short) this.playersAttacked);
 		nbt.setShort("TimeLeft", (short)this.timeLeft);
 		nbt.setFloat("DamageMult", this.damageMult);
+		nbt.setBoolean("Summoned", this.summoned);
 		if(this.spawnPos != null)
 			nbt.setIntArray("SpawnPos", new int[]{this.spawnPos.getX(), this.spawnPos.getY(), this.spawnPos.getZ()});
 	}
@@ -278,6 +288,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		this.playersAttacked=nbt.getShort("Players");
 		this.timeLeft=nbt.getShort("TimeLeft");
 		this.damageMult=nbt.getFloat("DamageMult");
+		this.summoned = nbt.getBoolean("Summoned");
 		if(this.timeLeft<2250)
 			this.setGlowing(false);
 		if(nbt.hasKey("SpawnPos")) {

@@ -89,18 +89,22 @@ public class TF2Achievements{
 			"merasmus", 10, -6, ItemFromData.getNewStack("merasmushat"),null).initIndependentStat());
 	public static final Achievement BOSS_30_LVL= addAchievement(new Achievement("achievement.boss30lvl",
 			"boss30lvl", 12, -6, ItemFromData.getNewStack("bombinomicon"),null).initIndependentStat().setSpecial());*/
-	public static final StatBase SANDVICH_EATEN = new StatBasic("sandichEaten",new TextComponentTranslation("stat.sandvichEaten", new Object[0])).registerStat();
-	public static final StatBase KILLED_WRANGLER_SNIPER = new StatBasic("killedWranglerSniper",new TextComponentTranslation("stat.killedWranglerSniper", new Object[0])).registerStat();
-	public static final StatBase KILLED_SENTRYGUN = new StatBasic("killedSentrygun",new TextComponentTranslation("stat.killedSentryGun", new Object[0])).registerStat();
-	public static final StatBase TELEPORTED = new StatBasic("teleported",new TextComponentTranslation("stat.teleported", new Object[0])).registerStat();
-	public static final StatBase KILLED_DOUBLEJUMP = new StatBasic("killedDoublejump",new TextComponentTranslation("stat.killedDoublejump", new Object[0])).registerStat();
-	public static final StatBase KILLED_STUNNED = new StatBasic("killedStunned",new TextComponentTranslation("stat.killedStunned", new Object[0])).registerStat();
-	public static final StatBase FLAREGUN_IGNITED = new StatBasic("flaregunIgnited",new TextComponentTranslation("stat.flaregunIgnited", new Object[0])).registerStat();
-	public static final StatBase PROJECTILES_REFLECTED = new StatBasic("projectilesReflected",new TextComponentTranslation("stat.projectilesReflected", new Object[0])).registerStat();
-	public static final StatBase KILLED_NOSCOPE = new StatBasic("killedNoscope",new TextComponentTranslation("stat.killedNoscope", new Object[0])).registerStat();
-	public static final StatBase KILLED_BACKSTAB = new StatBasic("killedBackstab",new TextComponentTranslation("stat.killedBackstab", new Object[0])).registerStat();
-	public static final StatBase KILLED_MERC = new StatBasic("killedMercs",new TextComponentTranslation("stat.killedMercs", new Object[0])).registerStat();
-	public static final StatBase CONTRACT_DAY = new StatBasic("contractDay",new TextComponentTranslation("stat.contractDay", new Object[0])).registerStat();
+	public static final StatBase SANDVICH_EATEN = new StatBasic("stat.sandvichEaten",new TextComponentTranslation("stat.sandvichEaten", new Object[0])).registerStat();
+	public static final StatBase KILLED_WRANGLER_SNIPER = new StatBasic("stat.killedWranglerSniper",new TextComponentTranslation("stat.killedWranglerSniper", new Object[0])).registerStat();
+	public static final StatBase KILLED_SENTRYGUN = new StatBasic("stat.killedSentrygun",new TextComponentTranslation("stat.killedSentryGun", new Object[0])).registerStat();
+	public static final StatBase TELEPORTED = new StatBasic("stat.teleported",new TextComponentTranslation("stat.teleported", new Object[0])).registerStat();
+	public static final StatBase KILLED_DOUBLEJUMP = new StatBasic("stat.killedDoublejump",new TextComponentTranslation("stat.killedDoublejump", new Object[0])).registerStat();
+	public static final StatBase KILLED_STUNNED = new StatBasic("stat.killedStunned",new TextComponentTranslation("stat.killedStunned", new Object[0])).registerStat();
+	public static final StatBase FLAREGUN_IGNITED = new StatBasic("stat.flaregunIgnited",new TextComponentTranslation("stat.flaregunIgnited", new Object[0])).registerStat();
+	public static final StatBase PROJECTILES_REFLECTED = new StatBasic("stat.projectilesReflected",new TextComponentTranslation("stat.projectilesReflected", new Object[0])).registerStat();
+	public static final StatBase KILLED_NOSCOPE = new StatBasic("stat.killedNoscope",new TextComponentTranslation("stat.killedNoscope", new Object[0])).registerStat();
+	public static final StatBase KILLED_BACKSTAB = new StatBasic("stat.killedBackstab",new TextComponentTranslation("stat.killedBackstab", new Object[0])).registerStat();
+	public static final StatBase KILLED_MERC = new StatBasic("stat.killedMercs",new TextComponentTranslation("stat.killedMercs", new Object[0])).registerStat();
+	public static final StatBase CONTRACT_DAY = new StatBasic("stat.contractDay",new TextComponentTranslation("stat.contractDay", new Object[0])).registerStat();
+	
+	public static void init() {
+		
+	}
 	//public static final StatBase KILLED_ABOVE = new StatBasic("killedAbove",new TextComponentTranslation("stat.killedDoublejump", new Object[0])).registerStat();
 	/*public static Achievement addAchievement(Achievement achievement) {
 		ACHIEVEMENTS.add(achievement);

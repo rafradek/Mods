@@ -97,11 +97,11 @@ public class EntitySoldier extends EntityTF2Character {
 					&& !this.airborne && this.onGround && this.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == 0)
 				this.rocketJump = true;
 			if(!this.isRobot() && this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
-				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.getStackInSlot(1).getItemDamage()!=this.loadout.getStackInSlot(1).getMaxDamage() && this.getDistanceSqToEntity(this.getAttackTarget())<36){
+				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.getStackInSlot(1).getItemDamage()!=this.loadout.getStackInSlot(1).getMaxDamage() && this.getDistanceSq(this.getAttackTarget())<36){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 				}
-				else if(this.usedSlot==1 && (this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() || this.getDistanceSqToEntity(this.getAttackTarget())>40)){
+				else if(this.usedSlot==1 && (this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() || this.getDistanceSq(this.getAttackTarget())>40)){
 					this.switchSlot(0);
 				}
 			}
@@ -136,7 +136,7 @@ public class EntitySoldier extends EntityTF2Character {
 		super.onLivingUpdate();
 		/*
 		 * if(this.ammoLeft>0&&this.getAttackTarget()!=null&&this.
-		 * getDistanceSqToEntity(this.getAttackTarget())<=400&&(!
+		 * getDistanceSq(this.getAttackTarget())<=400&&(!
 		 * TF2ActionHandler.playerAction.get(this.world.isRemote).containsKey
 		 * (this)||(TF2ActionHandler.playerAction.get(this.world.isRemote).
 		 * get(this)&3)==0)){

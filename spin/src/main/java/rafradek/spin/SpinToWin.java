@@ -260,7 +260,7 @@ public class SpinToWin {
 						@Override
 						public boolean apply(EntityLivingBase input) {
 							// TODO Auto-generated method stub
-							return input != event.getEntity() && isSuitableTarget(player, input, false, true) && input.getDistanceSqToEntity(player)<(range+input.width/2)*(range+input.width/2);
+							return input != event.getEntity() && isSuitableTarget(player, input, false, true) && input.getDistanceSq(player)<(range+input.width/2)*(range+input.width/2);
 						}
 						
 					})){

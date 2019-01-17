@@ -38,10 +38,12 @@ public class ItemProjectileWeapon extends ItemWeapon {
 			 */
 			try {
 				proj = MapList.projectileClasses.get(ItemFromData.getData(stack).getString(PropertyType.PROJECTILE))
-						.getConstructor(World.class, EntityLivingBase.class, EnumHand.class)
-						.newInstance(world, living, hand);
+						.getConstructor(World.class)
+						.newInstance(world);
+				proj.initProjectile(living, hand, stack);
 				// proj.setIsCritical(thisCritical);
 				world.spawnEntity(proj);
+				
 				proj.setCritical(thisCritical);
 				proj.infinite = this.isProjectileInfinite(living, stack);
 			} catch (Exception exception) {

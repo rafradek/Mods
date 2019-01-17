@@ -22,11 +22,11 @@ public class EntityBall extends EntityProjectileSimple {
 		// TODO Auto-generated constructor stub
 	}
 
-	public EntityBall(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.throwPos = this.getPositionVector();
 	}
-
+	
 	/*
 	 * @Override public void onHitGround(int x, int y, int z, RayTraceResult
 	 * mop) { if(!this.canBePickedUp){ super.onHitGround(x, y, z, mop); } }

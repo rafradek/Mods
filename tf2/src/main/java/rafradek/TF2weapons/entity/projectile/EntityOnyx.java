@@ -17,11 +17,6 @@ public class EntityOnyx extends EntityProjectileBase {
 	public EntityOnyx(World p_i1756_1_) {
 		super(p_i1756_1_);
 	}
-
-	public EntityOnyx(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
-
-	}
 	
 	@Override
 	public int getMaxTime() {

@@ -623,7 +623,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			int metalhit = (int) TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
 			if (metalhit != 0) {
 				int restore=(int) (((TF2DamageSource) source).getAttackPower()*metalhit/TF2ConfigVars.damageMultiplier);
-				if (attacker.getDistanceSqToEntity(target) > this.getWeaponDamageFalloffSq(stack))
+				if (attacker.getDistanceSq(target) > this.getWeaponDamageFalloffSq(stack))
 					restore /= 2;
 				int metaluse = this.getActualAmmoUse(stack, attacker, (int) TF2Attribute.getModifier("Metal Ammo", stack, 0, attacker));
 				if(!enemy && restore > metaluse)

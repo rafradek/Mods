@@ -49,7 +49,9 @@ public class ContainerWearables extends Container {
 		this.isLocalWorld = localWorld;
 		this.player = player;
 		this.wearables = wearables;
-		
+		for (int i = 0; i < 2; i++) {
+			TF2PlayerCapability.get(player).wearablesAttrib[i] = wearables.getStackInSlot(i).getAttributeModifiers(EntityEquipmentSlot.HEAD);
+		}
 		TF2PlayerCapability.get(player).wearablesAttrib[2] = wearables.getStackInSlot(2).getAttributeModifiers(EntityEquipmentSlot.CHEST);
 		TF2PlayerCapability.get(player).wearablesAttrib[2].removeAll(SharedMonsterAttributes.ARMOR);
 		TF2PlayerCapability.get(player).wearablesAttrib[2].removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS);
@@ -87,7 +89,8 @@ public class ContainerWearables extends Container {
 				}
 			});
 		}
-		for (int k = 0; k < 2; k++)
+		for (int k = 0; k < 2; k++) {
+			int l = k;
 			this.addSlotToContainer(new Slot(wearables, k, 77, 8 + k * 18) {
 				@Override
 				public int getSlotStackLimit() {
@@ -97,10 +100,21 @@ public class ContainerWearables extends Container {
 				@Override
 				public void onSlotChanged() {
 					super.onSlotChanged();
-					if (!ContainerWearables.this.player.world.isRemote)
+					if (!ContainerWearables.this.player.world.isRemote) {
 						// System.out.println("changed");
+						if (TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l] != null) {
+							ContainerWearables.this.player.getAttributeMap().removeAttributeModifiers(TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l]);
+							TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l] = null;
+						}
+						
+						if (!this.getStack().isEmpty()) {
+							Multimap<String, AttributeModifier> modifiers = this.getStack().getAttributeModifiers(EntityEquipmentSlot.HEAD);
+							ContainerWearables.this.player.getAttributeMap().applyAttributeModifiers(modifiers);
+							TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l] = modifiers;
+						}
 						TF2Util.sendTracking(
 								new TF2Message.WearableChangeMessage(ContainerWearables.this.player, this.getSlotIndex(), this.getStack()),ContainerWearables.this.player);
+					}
 				}
 
 				/**
@@ -122,6 +136,7 @@ public class ContainerWearables extends Container {
 					return ItemArmor.EMPTY_SLOT_NAMES[EntityEquipmentSlot.HEAD.getIndex()];
 				}
 			});
+		}
 		
 		this.addSlotToContainer(new Slot(wearables, 3, 154, 28) {
 			@Override

@@ -251,7 +251,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 								// TODO Auto-generated method stub
 								return !(input instanceof EntitySaxtonHale)
 										&& !(input instanceof EntityPlayer && ((EntityPlayer) input).isCreative())
-										&& input.getDistanceSqToEntity(EntitySaxtonHale.this) < 144;
+										&& input.getDistanceSq(EntitySaxtonHale.this) < 144;
 							}
 
 						});

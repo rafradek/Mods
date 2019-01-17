@@ -85,7 +85,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 			this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
 			TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 		}
-		this.entityHost.getNavigator().clearPathEntity();
+		this.entityHost.getNavigator().clearPath();
 		this.attackTarget=null;
 		this.entityHost.switchSlot(0);
 	}
@@ -112,7 +112,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 		if (d0 <= this.attackRangeSquared) {
 			if (!this.dodging) {
-				this.entityHost.getNavigator().clearPathEntity();
+				this.entityHost.getNavigator().clearPath();
 				this.dodging = true;
 			}
 		} else {

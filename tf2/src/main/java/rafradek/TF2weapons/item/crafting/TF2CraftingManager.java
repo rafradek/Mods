@@ -91,18 +91,18 @@ public class TF2CraftingManager {
 				new Object[] { "MDR", "SIm", "rIG", 'D', new ItemStack(Blocks.DISPENSER), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmoMedigun), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
 						new ItemStack(TF2weapons.itemTF2, 1, 11), 'r', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'S',
-						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'm', new ItemStack(TF2weapons.itemAmmo, 1, 2) }));
+						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'm', new ItemStack(TF2weapons.itemAmmo, 1, 6) }));
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBuildingBox, 1, 22), new Object[] { "IAI", "ARA",
 				"IAI", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'R', new ItemStack(TF2weapons.itemTF2, 1, 11) }));
 		addRecipe(new ShapedOreRecipe(null, ItemFromData.getNewStack("pda"), new Object[] { "SDT", "AGA","BRB",
 				'G', "paneGlass", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2), 'R', new ItemStack(TF2weapons.itemTF2, 1, 3)
 				, 'B', new ItemStack(Blocks.STONE_BUTTON), 'S', new ItemStack(TF2weapons.itemBuildingBox, 1, 18)
 				, 'D', new ItemStack(TF2weapons.itemBuildingBox, 1, 20), 'T', new ItemStack(TF2weapons.itemBuildingBox, 1, 22)}));
-		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockAmmoFurnace),
+		/*addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockAmmoFurnace),
 				new Object[] { "RIG", "SFr", "sIM", 'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',
 						new ItemStack(TF2weapons.itemAmmo, 1, 7), 'r', new ItemStack(TF2weapons.itemAmmo, 1, 6), 's',
-						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'S', new ItemStack(TF2weapons.itemAmmo, 1, 11) }));
+						new ItemStack(TF2weapons.itemAmmo, 1, 1), 'S', new ItemStack(TF2weapons.itemAmmo, 1, 11) }));*/
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemAmmoBelt),
 				new Object[] { " IL", "IL ", "L  ", 'I', "ingotIron", 'L', "leather" }));
 		addRecipe(new ShapedOreRecipe(null,bonk,
@@ -151,7 +151,18 @@ public class TF2CraftingManager {
 		addRecipe(new ShapedOreRecipe(null,bannern,
 				new Object[] { "WWW", "WWW", " SA", 'W',new ItemStack(Blocks.WOOL), 'A',new ItemStack(TF2weapons.itemTF2, 1, 2),'S', Items.STICK }));
 		
+		/*addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockOverheadDoor), new Object[] { "BI", "B ", "B ", 'B', Blocks.IRON_BARS, 'I',"ingotIron" }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,0), new Object[] { "RIR", "IOI", "RIR", 'R', "dustRedstone", 'I',"ingotIron", 'O', Blocks.OBSERVER }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,1), new Object[] { "SIS", "IOI", "SIS", 'S', "gunpowder", 'I',"ingotIron", 'O', Blocks.OBSERVER }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,2), new Object[] { "RIR", "IOI", "RIR", 'R', "dyeRed", 'I',"ingotIron", 'O', Blocks.OBSERVER }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,3), new Object[] { "RIR", "IOI", "RIR", 'R', "dyeBlue", 'I',"ingotIron", 'O', Blocks.OBSERVER }));*/
+		
 		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("startwrench"), new Object[] { " II", " S ", "I  ", 'I', "ingotIron", 'S', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,0), new Object[] { "II", "SA", "S ", 'I', "ingotIron", 'S', "stickWood", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2) }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,1), new Object[] { "EAE", "ESE", "EAE", 'E', Items.SPIDER_EYE, 'A', new ItemStack(TF2weapons.itemTF2, 1, 6)
+			, 'S', ItemFromData.getNewStack("Bottle") }));
+		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,2), new Object[] { "BEG", "NAN", "GEB", 'E', "gemEmerald", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2)
+				, 'B', Items.BOOK, 'G', Items.GLASS_BOTTLE, 'N', "cropNetherWart" }));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),
 				new ItemStack(TF2weapons.itemTF2, 1, 3), new ItemStack(TF2weapons.itemTF2, 1, 3));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 5), new ItemStack(TF2weapons.itemTF2, 1, 4),

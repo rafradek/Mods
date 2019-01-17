@@ -2,6 +2,7 @@ package rafradek.TF2weapons.entity.projectile;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -18,12 +19,11 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 		// TODO Auto-generated constructor stub
 	}
 
-	public EntityProjectileEnergy(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.setType(4);
-		// TODO Auto-generated constructor stub
 	}
-
+	
 	public boolean isPushable() {
 		return false;
 	}

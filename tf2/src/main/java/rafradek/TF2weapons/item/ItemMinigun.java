@@ -178,7 +178,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 								@Override
 								public boolean apply(EntityLivingBase input) {
 									// TODO Auto-generated method stub
-									return input != living && TF2Util.canHit(living, input) && input.getDistanceSqToEntity(living)<16;
+									return input != living && TF2Util.canHit(living, input) && input.getDistanceSq(living)<16;
 								}
 								
 							})){

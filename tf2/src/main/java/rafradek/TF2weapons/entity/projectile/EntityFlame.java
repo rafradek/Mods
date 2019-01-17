@@ -4,6 +4,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -19,12 +20,11 @@ public class EntityFlame extends EntityProjectileBase {
 		super(world);
 	}
 
-	public EntityFlame(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
-		this.addVelocity(p_i1756_2_.motionX, p_i1756_2_.motionY, p_i1756_2_.motionZ);
-		// TODO Auto-generated constructor stub
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
+		this.addVelocity(shooter.motionX, shooter.motionY, shooter.motionZ);
 	}
-
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean isInRangeToRender3d(double x, double y, double z) {

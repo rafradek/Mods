@@ -112,11 +112,11 @@ public class ItemAirblast extends ItemProjectileWeapon {
 						eyeVec.z + lookVec.z * 256, false, 0.08f, false);
 				if (!rayTraces.isEmpty() && rayTraces.get(0).hitVec != null)
 					// System.out.println("hit: "+mop.hitVec);
-					proj.setThrowableHeading(rayTraces.get(0).hitVec.x - entity.posX,
+					proj.shoot(rayTraces.get(0).hitVec.x - entity.posX,
 							rayTraces.get(0).hitVec.y - entity.posY - entity.height/2, rayTraces.get(0).hitVec.z - entity.posZ,
 							speed, 0);
 				else
-					proj.setThrowableHeading(eyeVec.x + lookVec.x * 256 - entity.posX,
+					proj.shoot(eyeVec.x + lookVec.x * 256 - entity.posX,
 							eyeVec.y + lookVec.y * 256 - entity.posY,
 							eyeVec.z + lookVec.z * 256 - entity.posZ, speed, 0);
 			} else {

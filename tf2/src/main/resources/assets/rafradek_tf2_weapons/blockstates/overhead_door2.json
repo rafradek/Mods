@@ -1,0 +1,20 @@
+{
+    "variants": {
+        "facing=north,holder=true": { "model": "rafradek_tf2_weapons:overhead_door" },
+        "facing=south,holder=true": { "model": "rafradek_tf2_weapons:overhead_door", "y": 180 },
+        "facing=west,holder=true":  { "model": "rafradek_tf2_weapons:overhead_door", "y": 270 },
+        "facing=east,holder=true":  { "model": "rafradek_tf2_weapons:overhead_door", "y": 90 },
+        "facing=north,holder=false": { "model": "rafradek_tf2_weapons:overhead_door" },
+        "facing=south,holder=false": { "model": "rafradek_tf2_weapons:overhead_door", "y": 180 },
+        "facing=west,holder=false":  { "model": "rafradek_tf2_weapons:overhead_door", "y": 270 },
+        "facing=east,holder=false":  { "model": "rafradek_tf2_weapons:overhead_door", "y": 90 },
+        "facing=north,slide=2": { "model": "rafradek_tf2_weapons:overhead_2_n" },
+        "facing=south,slide=2": { "model": "rafradek_tf2_weapons:overhead_2_n", "y": 180 },
+        "facing=west,slide=2":  { "model": "rafradek_tf2_weapons:overhead_2_n", "y": 270 },
+        "facing=east,slide=2":  { "model": "rafradek_tf2_weapons:overhead_2_n", "y": 90 },
+        "facing=north,slide=3": { "model": "rafradek_tf2_weapons:overhead_3_n" },
+        "facing=south,slide=3": { "model": "rafradek_tf2_weapons:overhead_3_n", "y": 180 },
+        "facing=west,slide=3":  { "model": "rafradek_tf2_weapons:overhead_3_n", "y": 270 },
+        "facing=east,slide=3":  { "model": "rafradek_tf2_weapons:overhead_3_n", "y": 90 }
+    }
+}

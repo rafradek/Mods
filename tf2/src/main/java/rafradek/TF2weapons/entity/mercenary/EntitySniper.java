@@ -47,7 +47,7 @@ public class EntitySniper extends EntityTF2Character {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(60.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(12.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1329D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
@@ -81,10 +81,10 @@ public class EntitySniper extends EntityTF2Character {
 		}
 		
 		if (this.getAttackTarget() != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon) {
-			if (this.usedSlot == 0 && this.getAttackTarget().getDistanceSqToEntity(this) < 42) {
+			if (this.usedSlot == 0 && this.getAttackTarget().getDistanceSq(this) < 42) {
 				this.switchSlot(1);
 			}
-			else if (this.usedSlot == 1 && this.getAttackTarget().getDistanceSqToEntity(this) > 42) {
+			else if (this.usedSlot == 1 && this.getAttackTarget().getDistanceSq(this) > 42) {
 				this.switchSlot(0);
 			}
 		}

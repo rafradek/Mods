@@ -356,6 +356,9 @@ public class TF2Attribute {
 		new TF2Attribute(136, "SelfDamageIncreased", "Self Damage", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(137, "MiniCritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(138, "DetonateFlare", "Detonate", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(139, "BombEnemy", "Bomb Enemy", Type.ADDITIVE, 0, State.POSITIVE);
+		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
+				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 

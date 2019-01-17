@@ -219,7 +219,7 @@ public class ItemMedigun extends ItemUsable {
 				// System.out.println("healing:
 				// "+ItemUsable.itemProperties.server.get(par3Entity).getInteger("HealTarget"));
 				double range = getData(par1ItemStack).getFloat(PropertyType.RANGE) + 1.6;
-				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSqToEntity(healTarget) > range * range) {
+				if (!par2World.isRemote && healTarget != null && par3Entity.getDistanceSq(healTarget) > range * range) {
 					par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 					// TF2weapons.sendTracking(new
 					// TF2Message.PropertyMessage("HealTarget",

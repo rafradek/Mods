@@ -8,7 +8,6 @@ import rafradek.TF2weapons.util.TF2Util;
 public class EntityAISentryAttack extends EntityAIBase {
 
 	public EntitySentry host;
-	public EntityLivingBase target;
 	private boolean lockTarget;
 
 	public EntityAISentryAttack(EntitySentry sentry) {
@@ -18,33 +17,33 @@ public class EntityAISentryAttack extends EntityAIBase {
 
 	@Override
 	public void resetTask() {
-		this.target = null;
 		this.host.setSoundState(0);
 	}
 
 	@Override
 	public boolean shouldExecute() {
 		// TODO Auto-generated method stub
-		return !this.host.isDisabled() && !this.host.isControlled() && (target = this.host.getAttackTarget()) != null
+		return !this.host.isDisabled() && !this.host.isControlled() && (this.host.getAttackTarget()) != null
 				&& this.host.getEntitySenses().canSee(this.host.getAttackTarget());
 	}
 
 	@Override
 	public void updateTask() {
-		// System.out.println("Executing: "+this.target+"
-		// "+this.host.attackDelay);
-		if ((this.target != null && this.target.deathTime > 0) || this.host.deathTime > 0) {
+
+		EntityLivingBase target = this.host.getAttackTarget();
+		if (target == null)
+			return;
+		
+		if ((target != null && target.deathTime > 0) || this.host.deathTime > 0) {
 			this.resetTask();
 			return;
 		}
-		if (this.target == null)
-			return;
 		EntityLivingBase owner = this.host.getOwner();
 		if (owner == null || owner.isDead)
 			owner = this.host;
-		double lookX = this.target.posX;
-		double lookY = this.target.posY + this.target.height / 2;
-		double lookZ = this.target.posZ;
+		double lookX = target.posX;
+		double lookY = target.posY + target.height / 2;
+		double lookZ = target.posZ;
 		if (this.lockTarget)
 			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ, 30, 75);
 		else

@@ -35,7 +35,7 @@ public class EntityAISwitchWeapons extends EntityAIBase {
 		ItemStack stack2=this.host.getHeldItemMainhand();
 		if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon){
 			boolean outRange=ItemFromData.getData(stack).getFloat(PropertyType.EFFICIENT_RANGE) != 0 
-					&& this.host.getDistanceSqToEntity(target)>ItemFromData.getData(stack).getFloat(PropertyType.EFFICIENT_RANGE);
+					&& this.host.getDistanceSq(target)>ItemFromData.getData(stack).getFloat(PropertyType.EFFICIENT_RANGE);
 			boolean outAmmo=((ItemWeapon)stack.getItem()).hasClip(stack) && stack.getItemDamage()==stack.getMaxDamage();
 			if(this.host.usedSlot==0 && (outRange || outAmmo)){
 				this.host.usedSlot=1;

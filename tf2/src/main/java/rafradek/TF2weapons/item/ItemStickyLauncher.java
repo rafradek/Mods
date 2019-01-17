@@ -59,7 +59,8 @@ public class ItemStickyLauncher extends ItemProjectileWeapon {
 	@Override
 	public void shoot(ItemStack stack, EntityLivingBase living, World world, int thisCritical, EnumHand hand) {
 		if (!world.isRemote) {
-			EntityStickybomb bomb = new EntityStickybomb(world, living, hand);
+			EntityStickybomb bomb = new EntityStickybomb(world);
+			bomb.initProjectile(living, hand, stack);
 			bomb.setCritical(thisCritical);
 			world.spawnEntity(bomb);
 			ArrayList<EntityStickybomb> list = living.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb;

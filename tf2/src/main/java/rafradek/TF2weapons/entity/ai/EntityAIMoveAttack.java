@@ -102,7 +102,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	public void resetTask() {
 		if (this.jump)
 			this.entityHost.jump = false;
-		this.entityHost.getNavigator().clearPathEntity();
+		this.entityHost.getNavigator().clearPath();
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;
@@ -144,7 +144,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		
 		if ((d0 <= range && this.comeCloser >= 20) || this.entityHost.getWepCapability().isExpJump()) {
 			if (!this.inRange) {
-				this.entityHost.getNavigator().clearPathEntity();
+				this.entityHost.getNavigator().clearPath();
 				this.inRange = true;
 			}
 		} else {

@@ -242,6 +242,7 @@ weaponAttribute.FireRateHealthBonus=Fire rate increases as health decreases
 weaponAttribute.SpreadHealthPenalty=Weapon spread increases as health decreases
 weaponAttribute.DeployTimeBonus=This weapon deploys %1$s faster
 weaponAttribute.Gravity=Projectiles are not affected by gravity
+weaponAttribute.BombEnemy=Shoots bombs at nearby enemies. Bomb damage: %1$s
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
@@ -354,6 +355,12 @@ item.eventmaker.3.name=Expert Tour of Duty Ticket
 item.eventmaker.4.name=Nightmare Tour of Duty Ticket
 item.eventmaker.noteam=You must be assigned to a team
 item.eventmaker.fail=There is a mission in progress
+item.hhh.name=Suspiciously looking axe
+item.hhh.desc=Summons Headless Horseless Horsemann
+item.monoculus.name=Demo eye
+item.monoculus.desc=Summons Monoculus
+item.merasmus.name=Wizardry kit
+item.merasmus.desc=Summons Merasmus
 
 item.killstreakkit.name=Killstreak Kit
 item.killstreakkit.standard.name=Killstreak Kit
@@ -380,6 +387,24 @@ item.robotpart.3.name=Reinforced Robot Emotion Detector
 item.robotpart.4.name=Reinforced Robot Bomb Stabilizer
 item.robotpart.5.name=Pristine Robot Brainstorm Bulb
 item.robotpart.6.name=Pristine Robot Currency Digester
+item.doorcontroller.players.name=Door controller - allow players
+item.doorcontroller.mobs.name=Door controller - allow mobs
+item.doorcontroller.RED.name=Door controller - allow RED team
+item.doorcontroller.BLU.name=Door controller - allow BLU team
+
+item.wearable.effect=Effect - 
+item.wearable.effect.0=Burning Flames
+item.wearable.effect.1=Hearts
+item.wearable.effect.2=Steaming
+item.wearable.effect.3=Bubbling
+item.wearable.effect.4=Stormy Storm
+item.wearable.effect.5=Arcana
+item.wearable.effect.6=Massed Flies
+item.wearable.effect.7=Slimy
+item.wearable.effect.8=Nebula
+item.wearable.effect.9=Dragon's breath
+item.wearable.effect.10=Musically
+
 tile.cabinet.name=TF2 Crafting Table
 tile.oreCopper.name=Copper Ore
 tile.oreLead.name=Lead Ore
@@ -387,6 +412,7 @@ tile.oreAustralium.name=Australium Ore
 tile.blockAustralium.name=Australium Block
 tile.upgradeStation.name=Upgrade Station
 tile.ammoFurnace.name=Ammo Furnace
+tile.blockOverhead.name=Overhead door
 achievement.strangeUp=Reached new strange level: 
 
 item.banner.blu_base.white=Only BLU team can spawn in 35 blocks range
@@ -449,13 +475,18 @@ gui.contracts.contractDay=Days to a new contract: %1$s
 gui.contracts.progress=%1$s contract progress: %2$s CP
 gui.contracts.reject=Reject
 
+gui.boss.night=Bosses can be only summoned at night
+gui.boss.nextnight=Try again next night
+gui.boss.portal=This item must be used on a nether portal
+gui.boss.statue=This item must be used on the statue (jack o'lantern, obsidian for the body and hay for arms and legs)
+
 gui.recoveritems=Recover lost items
 
 gui.robotinvasion=Robot Invasion - Wave %1$s/%2$s
 gui.robotinvasion.message=Robots invade the area!
 gui.robotinvasion.reward=You were awarded:
 
-message.boss=%1$s is heading your way!
+boss.message=%1$s is heading your way!
 objective.kill=Kill a mercenary
 objective.heal_20=Heal 20 points of damage
 objective.kill_w_sentry=Get a sentry kill

@@ -20,6 +20,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.PacketBuffer;
@@ -31,6 +32,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
@@ -174,6 +176,11 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound compound) {
+		if (!TF2ConfigVars.australiumStatue) {
+			this.setDead();
+			return;
+		}
+		
 		this.data = compound.getCompoundTag("Entity");
 		this.ticksLeft = compound.getShort("TicksLeft");
 		this.player = compound.getBoolean("Player");
@@ -229,7 +236,10 @@ public class EntityStatue extends Entity implements IEntityAdditionalSpawnData{
                     }
                 }
 			}
+			int pos = buff.writerIndex();
 			buff.writeCompoundTag(data);
+			if (buff.writerIndex() - pos >= 2097152)
+				buff.clear();
 			buff.writeBoolean(useHand);
 		}
 	}

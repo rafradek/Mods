@@ -2,7 +2,8 @@
 	"__comment": "Designed by Rafał with Cubik Studio - https://cubik.studio",
 	"parent": "block/block",
 	"textures": {
-		"door": "rafradek_tf2_weapons:blocks/door"
+		"door": "rafradek_tf2_weapons:blocks/door",
+		"particle": "rafradek_tf2_weapons:blocks/door"
 	},
 	"elements": [ 	 
 		{

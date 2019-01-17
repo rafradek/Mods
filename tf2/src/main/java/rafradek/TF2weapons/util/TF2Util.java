@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.Random;
@@ -24,6 +25,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -60,6 +65,7 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -69,11 +75,17 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.client.CustomModLoadingErrorDisplayException;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.client.GuiConfirmation;
+import net.minecraftforge.fml.client.IDisplayableError;
+import net.minecraftforge.fml.common.StartupQuery;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -90,6 +102,7 @@ import rafradek.TF2weapons.TF2EventsCommon.InboundDamage;
 import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
 import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.client.gui.GuiConfirm;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
@@ -297,7 +310,7 @@ public class TF2Util {
 		if (initial == 0 && !stack.isEmpty() && shooter != null) {
 			float mindist=TF2Attribute.getModifier("Minicrit Distance", stack, 0, shooter);
 			mindist*=mindist;
-			if(mindist != 0f && target.getDistanceSqToEntity(shooter) >= mindist)
+			if(mindist != 0f && target.getDistanceSq(shooter) >= mindist)
 				initial = 1;
 		}
 		if (initial == 0 && (!stack.isEmpty() && target.isBurning() && TF2Attribute.getModifier("Crit Burn", stack, 0, shooter) == 2))
@@ -935,7 +948,9 @@ public class TF2Util {
 			
 			else if (fire < 20 * MathHelper.ceil(8 * upgrade) + 20) {
 				
-				target.setFire(Math.min(MathHelper.ceil(fire/20f) + Math.round(sec * upgrade),MathHelper.ceil(8 * upgrade)));
+				target.setFire(Math.min(MathHelper.floor(fire/20f) + Math.round(sec * upgrade),MathHelper.ceil(8 * upgrade)));
+				ReflectionAccess.entityFire.setInt(target, ReflectionAccess.entityFire.getInt(target)+ fire % 20);
+				
 			}
 			//	ReflectionAccess.entityFire.setInt(target, Math.min(fire + MathHelper.ceil(sec * upgrade) * 20, 20 * MathHelper.ceil(8 * upgrade) + fire % 20));
 			//fire = ReflectionAccess.entityFire.getInt(target);
@@ -1032,21 +1047,17 @@ public class TF2Util {
 		if (stack.isEmpty() || stack.getCount() > 1)
 			return stack;
 		ItemStack existingAmmo;
-		int amount = stack.getMaxDamage() - stack.getItemDamage() + 1;
-		while (amount > 0 && !(existingAmmo = TF2Util.getFirstItem(inventory, stackL -> stackL.getItem() == stack.getItem()
-				&& stackL.getItemDamage() != 0)).isEmpty()) {
-			int itemDamage = existingAmmo.getItemDamage();
-			existingAmmo.setItemDamage(Math.max(0, itemDamage - amount));
-			if (existingAmmo.getItemDamage() == 0) {
+		int amount = 0;
+		while (amount < ((ItemAmmo)stack.getItem()).getAmount(stack) && !(existingAmmo = TF2Util.getFirstItem(inventory, stackL -> stackL.getCount() == 1 && stackL.getItem() == stack.getItem()
+				&& ((ItemFireAmmo)stackL.getItem()).getAmount(stackL) != ((ItemFireAmmo)stackL.getItem()).uses)).isEmpty()) {
+			amount += ((ItemFireAmmo)existingAmmo.getItem()).restoreAmmo(existingAmmo, ((ItemAmmo)stack.getItem()).getAmount(stack));
+			if (((ItemFireAmmo)existingAmmo.getItem()).getAmount(existingAmmo) == ((ItemFireAmmo)existingAmmo.getItem()).uses) {
 				ItemStack copy = existingAmmo.copy();
 				existingAmmo.setCount(0);
 				ItemHandlerHelper.insertItemStacked(inventory, copy, false);
 			}
-			amount -= itemDamage;
 		}
-		stack.setItemDamage(stack.getMaxDamage() - amount + 1);
-		if (stack.getItemDamage() > stack.getMaxDamage())
-			stack.shrink(1);
+		((ItemAmmo)stack.getItem()).consumeAmmo(null, stack, amount);
 		return stack;
 	}
 	public static boolean hasEnoughItem(IInventory inventory, Predicate<ItemStack> pred, int amount) {
@@ -1107,7 +1118,7 @@ public class TF2Util {
 					})) {
 				mob.getLookHelper().setLookPositionWithEntity(mob, 60, 30);
 				if (!TF2Util.isOnSameTeam(living, mob)) {
-					if (mob.getEntitySenses().canSee(living) || mob.getDistanceSqToEntity(living)<150){
+					if (mob.getEntitySenses().canSee(living) || mob.getDistanceSq(living)<150){
 						mob.setAttackTarget(living);
 						if(mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getModifier(FOLLOW_MODIFIER)==null)
 							mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE)
@@ -1178,7 +1189,7 @@ public class TF2Util {
                 if ((l < 1 || i1 < 1 || l > 3 || i1 > 3) && isTeleportFriendlyBlock(toTeleport, i, j, k, l, i1))
                 {
                     toTeleport.setLocationAndAngles((double)((float)(i + l) + 0.5F), (double)k, (double)((float)(j + i1) + 0.5F), toTeleport.rotationYaw, toTeleport.rotationPitch);
-                    toTeleport.getNavigator().clearPathEntity();
+                    toTeleport.getNavigator().clearPath();
                     return true;
                 }
             }
@@ -1270,7 +1281,7 @@ public class TF2Util {
 				ZipFile zip = new ZipFile(source);
 				ZipEntry entry = zip.getEntry(input);
 				if (entry != null) {
-
+					long crc = entry.getCrc();
 					InputStream zin = zip.getInputStream(entry);
 					byte[] bytes = new byte[(int) entry.getSize()];
 					zin.read(bytes);
@@ -1279,8 +1290,19 @@ public class TF2Util {
 					str.flush();
 					str.close();
 					zin.close();
-
+					
+					FileInputStream istr = new FileInputStream(output);
+					byte[] bytesc = new byte[istr.available()];
+					istr.read(bytesc);
+					CRC32 crc2 = new CRC32();
+					crc2.update(bytesc);
+					istr.close();
+					
+					if (crc2.getValue() != crc) {
+						TF2weapons.corrupted = true;
+					}
 				}
+				zip.close();
 			}
 			else {
 				File inputFile = new File(source, input);
@@ -1293,10 +1315,24 @@ public class TF2Util {
 				str.flush();
 				str.close();
 				istr.close();
+				
+				FileInputStream istr2 = new FileInputStream(output);
+				byte[] bytesc = new byte[istr2.available()];
+				istr2.read(bytesc);
+				CRC32 crc2 = new CRC32();
+				crc2.update(bytesc);
+				TF2weapons.LOGGER.info("Value: "+crc2.getValue());
+				istr2.close();
 			}
 		}
 		catch (IOException e) {
+			TF2weapons.corrupted = true;
 			e.printStackTrace();
+		}
+		
+		if (TF2weapons.corrupted) {
+			TF2weapons.instance.weaponDir.delete();
+			TF2weapons.proxy.displayCorruptedFileError();
 		}
 	}
 	
@@ -1314,6 +1350,33 @@ public class TF2Util {
 			return living;
 	}
 	
+	public static Vec3d getHeightVec(World world, BlockPos pos) {
+		/*EnumFacing facing = EnumFacing.getFacingFromVector((float)living.motionX, 0f, (float)living.motionZ);
+		if (!living.world.isBlockFullCube(pos) && living.world.isBlockFullCube(pos.down()) 
+				&& living.world.isBlockFullCube(pos.offset(facing)) && !living.world.isBlockFullCube(pos.offset(facing).up())) {
+			vec2 = vec2.addVector(0, 1, 0).normalize().scale(motiona);*/
+		Vec3d vec = new Vec3d(0,0,0);
+		IBlockState center = world.getBlockState(pos);
+		IBlockState down = world.getBlockState(pos.offset(EnumFacing.DOWN));
+		IBlockState north = world.getBlockState(pos.offset(EnumFacing.NORTH));
+		IBlockState south = world.getBlockState(pos.offset(EnumFacing.SOUTH));
+		IBlockState west = world.getBlockState(pos.offset(EnumFacing.WEST));
+		IBlockState east = world.getBlockState(pos.offset(EnumFacing.EAST));
+		if (center.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(0, 1-center.getCollisionBoundingBox(world, pos).maxY, 0);
+		else if (down.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(0, 2-down.getCollisionBoundingBox(world, pos).maxY, 0);
+		if (north.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(0, 0, north.getCollisionBoundingBox(world, pos).maxY);
+		if (south.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(0, 0, -south.getCollisionBoundingBox(world, pos).maxY);
+		if (west.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(west.getCollisionBoundingBox(world, pos).maxY, 0, 0);
+		if (east.getCollisionBoundingBox(world, pos) != null)
+			vec = vec.addVector(-east.getCollisionBoundingBox(world, pos).maxY, 0, 0);
+		//vec = vec.normalize();
+		return vec;
+	}
 	public static ItemStack pickAmmo(ItemStack stack, EntityPlayer player, boolean addNormalInventory) {
 		if (stack.getItem() instanceof ItemFireAmmo && stack.getCount() == 1) {
 			stack = TF2Util.mergeStackByDamage(player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
@@ -1352,6 +1415,24 @@ public class TF2Util {
 		}
 		return stack;
 	}
+	
+	public static int getValueOnAxis(Vec3i vec, Axis axis) {
+		switch (axis) {
+		case X: return vec.getX();
+		case Y: return vec.getY();
+		case Z: return vec.getZ();
+		default: return 0;
+		}
+	}
+	
+	public static BlockPos setValueOnAxis(Vec3i vec, Axis axis, int value) {
+		switch (axis) {
+		case X: return new BlockPos(value, vec.getY(), vec.getZ());
+		case Y: return new BlockPos(vec.getX(), value, vec.getZ());
+		case Z: return new BlockPos(vec.getX(), vec.getY(), value);
+		default: return new BlockPos(vec);
+		}
+	}
 	static {
 		for (int i = 0; i < 512; i++) {
 			ASIN_VALUES[i] = (float) Math.asin(i/511D);
@@ -1378,4 +1459,6 @@ public class TF2Util {
             colorCode[i] = (k & 255) << 16 | (l & 255) << 8 | i1 & 255;
         }
 	}
+	
+	
 }

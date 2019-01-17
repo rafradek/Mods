@@ -16,6 +16,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.crafting.IRecipeContainer;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemBuildingBox;
@@ -24,10 +25,10 @@ import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
 import rafradek.TF2weapons.util.TF2Util;
 
-public class ContainerTF2Workbench extends Container {
+public class ContainerTF2Workbench extends Container implements IRecipeContainer{
 	/** The crafting matrix inventory (3x3). */
 	public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
-	public IInventory craftResult = new InventoryCraftResult();
+	public InventoryCraftResult craftResult = new InventoryCraftResult();
 	private final World world;
 	/** Position of the workbench */
 	private final BlockPos pos;
@@ -206,5 +207,17 @@ public class ContainerTF2Workbench extends Container {
 		this.currentRecipe = id;
 		this.onCraftMatrixChanged(null);
 		return true;
+	}
+
+	@Override
+	public InventoryCraftResult getCraftResult() {
+		// TODO Auto-generated method stub
+		return this.craftResult;
+	}
+
+	@Override
+	public InventoryCrafting getCraftMatrix() {
+		// TODO Auto-generated method stub
+		return this.craftMatrix;
 	}
 }

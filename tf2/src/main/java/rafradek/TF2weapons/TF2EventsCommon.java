@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
@@ -57,6 +58,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.inventory.ContainerMercenary;
+import rafradek.TF2weapons.inventory.ContainerWearables;
 import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemAmmoPackage;
@@ -98,7 +100,13 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockWorldState;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.pattern.BlockMaterialMatcher;
+import net.minecraft.block.state.pattern.BlockPattern;
+import net.minecraft.block.state.pattern.BlockStateMatcher;
+import net.minecraft.block.state.pattern.FactoryBlockPattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.SkinManager;
@@ -114,10 +122,13 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityGolem;
+import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerMerchant;
@@ -145,6 +156,7 @@ import net.minecraft.util.CombatRules;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
@@ -235,6 +247,7 @@ public class TF2EventsCommon {
 	public static long[] tickTimeLiving=new long[20];
 	public static long[] tickTimeMercUpdate=new long[20];
 	public static long[] tickTimeOther=new long[20];
+	
 	/*
 	 * @SubscribeEvent public void spawn(WorldEvent.PotentialSpawns event){ int
 	 * time=(int) (event.getWorld().getWorldInfo().getWorldTotalTime()/24000);
@@ -572,6 +585,15 @@ public class TF2EventsCommon {
 		if(event.getEntityPlayer().world.getGameRules().getBoolean("keepInventory")) {
 			for (int i = 0; i < oldInv.getSizeInventory(); i++) {
 				newInv.setInventorySlotContents(i, oldInv.getStackInSlot(i));
+				if (!oldInv.getStackInSlot(i).isEmpty()) {
+					Multimap<String, AttributeModifier> modifiers = oldInv.getStackInSlot(i).getAttributeModifiers(EntityEquipmentSlot.CHEST);
+					if (i == 2) {
+						modifiers.removeAll(SharedMonsterAttributes.ARMOR.getName());
+						modifiers.removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName());
+					}
+					event.getEntityPlayer().getAttributeMap().applyAttributeModifiers(modifiers);
+					TF2PlayerCapability.get(event.getEntityPlayer()).wearablesAttrib[i] = modifiers;
+				}
 			}
 		}
 		else {
@@ -618,7 +640,6 @@ public class TF2EventsCommon {
 		EntityLivingBase attacker=null;
 		EntityLivingBase target=event.getEntityLiving();
 		
-		
 		if(event.getSource().getTrueSource() != null && event.getSource().getTrueSource() instanceof EntityLivingBase){
 			attacker=(EntityLivingBase) event.getSource().getTrueSource();
 		}
@@ -628,6 +649,8 @@ public class TF2EventsCommon {
 		
 		if (!event.getSource().isDamageAbsolute() && !event.getSource().canHarmInCreative()) {
 			if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+				if (attacker != null)
+					WeaponsCapability.get(target).lastAttacked = attacker;
 				if (WeaponsCapability.get(target).getUsedToken() == 2 && event.getSource() == DamageSource.ON_FIRE) {
 					event.setCanceled(true);
 					target.extinguish();
@@ -722,6 +745,7 @@ public class TF2EventsCommon {
 		
 		int crit=0;
 		if (attacker != null && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+			WeaponsCapability.get(attacker).lastAttacked = target;
 			if (attacker.getActivePotionEffect(TF2weapons.it) != null && (event.getSource().damageType.equals("mob") || event.getSource().damageType.equals("player"))){
 				attacker.removePotionEffect(TF2weapons.it);
 				attacker.getCapability(TF2weapons.WEAPONS_CAP, null).itProtection=15;
@@ -829,15 +853,21 @@ public class TF2EventsCommon {
 				//vent.getSource().setDamageBypassesArmor();
 				event.setAmount(event.getAmount() * (protect));
 				if(event.getEntityLiving() instanceof EntityPlayer) {
-					double armorDamage = Math.max(1.0F, event.getAmount() / 4.0F);
-	                
-	                for (ItemStack armor :event.getEntityLiving().getArmorInventoryList())
-	                {
-	                    if (armor.getItem() instanceof ItemArmor)
-	                    {
-	                    	armor.damageItem((int)armorDamage, event.getEntityLiving());
-	                    }
-	                }
+					TF2PlayerCapability cap = TF2PlayerCapability.get((EntityPlayer) event.getEntityLiving());
+					float armorDamage = event.getAmount();
+					armorDamage += cap.damageArmorMin;
+					cap.damageArmorMin = armorDamage % 4f;
+					armorDamage /= 4f;
+					
+					if (armorDamage >= 1f ) {
+		                for (ItemStack armor :event.getEntityLiving().getArmorInventoryList())
+		                {
+		                    if (armor.getItem() instanceof ItemArmor)
+		                    {
+		                    	armor.damageItem((int)armorDamage, event.getEntityLiving());
+		                    }
+		                }
+					}
 				}
 			}
 			//System.out.println("Health2: "+event.getAmount() + " "+protect);
@@ -861,6 +891,8 @@ public class TF2EventsCommon {
 	
 	public static float getDamageReductionFromItem(ItemStack stack, DamageSource source, EntityLivingBase target, float damage) {
 		float initialDamage = damage;
+		if (TF2Attribute.getModifier("Breakable", stack, 0, target) != 0 && stack.getItemDamage() == stack.getMaxDamage())
+			return damage;
 		damage = TF2Attribute.getModifier("Damage Resist", stack, damage, target);
 		if (source.isExplosion()) {
 			damage = TF2Attribute.getModifier("Explosion Resist", stack, damage, target);
@@ -882,8 +914,13 @@ public class TF2EventsCommon {
 		}
 		if(initialDamage != damage){
 			float mult=TF2Attribute.getModifier("Breakable", stack, 0, target);
-			if(mult!=0)
+			if(mult!=0) {
 				stack.damageItem(MathHelper.ceil((initialDamage-damage)*mult), target);
+				if (stack.isEmpty()) {
+					stack.setCount(1);
+					stack.setItemDamage(stack.getMaxDamage());
+				}
+			}
 		}
 		return damage;
 	}
@@ -1151,8 +1188,18 @@ public class TF2EventsCommon {
 			long nanoTickStart=System.nanoTime();
 			final WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 			cap.tick();
-
+			
+			PotionEffect charging = living.getActivePotionEffect(TF2weapons.charging);
+			
+			
+			
+			if (!living.onGround && charging != null)
+				cap.setExpJump(true);
+			
 			if (cap.isExpJump()) {
+				boolean enchanted = TF2ConfigVars.enchantedExplosion && !living.isElytraFlying() && !cap.isUsingParachute()
+						&& !(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isFlying) && 
+						!living.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem().getRegistryName().toString().equals("tconstruct:slime_boots");
 				if (living.onGround) {
 					BlockPos pos = living.getPosition().down();
 					IBlockState block = living.world.getBlockState(pos);
@@ -1160,8 +1207,6 @@ public class TF2EventsCommon {
 					living.motionZ *= block.getBlock().getSlipperiness(block, living.world, pos, living);
 				}
 				
-				boolean enchanted = TF2ConfigVars.enchantedExplosion && !living.isElytraFlying() && !cap.isUsingParachute()
-						&& !(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isFlying);
 				if (cap.expJumpGround > 0) {
 					cap.expJumpGround--;
 					living.onGround = false;
@@ -1175,6 +1220,7 @@ public class TF2EventsCommon {
 						enchanted = false;
 					}
 				}
+				
 				if (!enchanted && living.jumpMovementFactor == 0 && cap.oldFactor != 0) {
 					living.jumpMovementFactor = cap.oldFactor;
 				}
@@ -1195,27 +1241,24 @@ public class TF2EventsCommon {
 						living.motionZ *= 0.99;
 					}
 					if ((!living.world.isRemote || living instanceof EntityPlayer) && !(TF2weapons.squakeLoaded && living instanceof EntityPlayer)) {
-						//if(living.ticksExisted % 20 == 0)
-							//System.out.println("gravity" + living.motionY +" "+ living.posY);
+
 						double speed = Math.sqrt(living.motionX * living.motionX + living.motionZ * living.motionZ);
 		
 						Vec3d moveDir = TF2Util.getMovementVector(living);
 						double combSpeed = living.motionX * moveDir.x + living.motionZ * moveDir.y;
 						
-						//System.out.println("comb "+combSpeed + " "+ speed + " " + moveDir.x * combSpeed + " " + moveDir.y * combSpeed);
-						combSpeed *= 1.15;
-						if(combSpeed < -speed * 0.85)
-							combSpeed = -speed * 0.85;
-						//combSpeed -= living.getAIMoveSpeed();
-						if(combSpeed < 0) {
-							living.motionX -= moveDir.x * combSpeed;
-							living.motionZ -= moveDir.y * combSpeed;
-						}
-						if ((moveDir.x > 0 && living.motionX < moveDir.x * living.getAIMoveSpeed() * 0.1) || (moveDir.x < 0 && living.motionX > moveDir.x * living.getAIMoveSpeed() * 0.1))
-							living.motionX += moveDir.x * living.getAIMoveSpeed() * 0.1;
-						if ((moveDir.z > 0 && living.motionZ < moveDir.y * living.getAIMoveSpeed() * 0.1) || (moveDir.y < 0 && living.motionZ > moveDir.y * living.getAIMoveSpeed() * 0.1))
-							living.motionZ += moveDir.y * living.getAIMoveSpeed() * 0.1;
+						double maxSpeed = charging != null ? living.getAIMoveSpeed() * 2.16 : 0.0287064;
+						double friction = charging != null ? 0.08 : 0.5;
 						
+						combSpeed = (maxSpeed)-combSpeed;
+						double accel = Math.max(speed,maxSpeed) * friction;
+						if (accel > combSpeed)
+							accel = combSpeed;
+						
+						if(accel > 0) {
+							living.motionX += moveDir.x * accel;
+							living.motionZ += moveDir.y * accel;
+						}
 						living.motionX /= 0.91;
 						living.motionZ /= 0.91;
 					
@@ -1225,7 +1268,7 @@ public class TF2EventsCommon {
 					
 					
 				}
-				
+				living.getEntityBoundingBox();
 				//living.motionX += living.motionX -livin
 				//living.motionZ = living.motionZ * 1.035;
 			}
@@ -1233,28 +1276,48 @@ public class TF2EventsCommon {
 				living.jumpMovementFactor = cap.oldFactor;
 				cap.oldFactor = 0;
 			}
-			if(cap.isExpJump() || living.getActivePotionEffect(TF2weapons.charging) != null) {
-				living.getEntityBoundingBox();
+			
+			if(cap.isExpJump() || charging != null) {
 				Vec3d vec = new Vec3d(living.motionX, living.motionY, living.motionZ);
-				double motiona = vec.lengthVector();
 				Vec3d vec2 = new Vec3d(living.motionX, 0, living.motionZ);
-				double motion = vec2.lengthVector();
-				if(motion >= 0.5) {
+				if (living.onGround)
+					vec = vec2;
+				double motion = vec.lengthVector();
+				//double motiona = vec2.lengthVector();
+				if(motion >= 0.375 && (TF2ConfigVars.allowTrimp == 2 || (TF2ConfigVars.allowTrimp == 1 
+						&& EnumFacing.getFacingFromVector((float)vec.x, (float)vec.y, (float)vec.z) != EnumFacing.DOWN))) {
 					vec2 = vec2.normalize();
-					vec = vec.add(vec2.scale(living.width* 1.5));
-					RayTraceResult rayTrace =living.world.rayTraceBlocks(living.getPositionVector(),
-							living.getPositionVector().add(vec));
-					BlockPos pos = new BlockPos(vec);
+					Vec3d entPos = living.getPositionVector();
+					Vec3d vecOff = vec.add(vec2.scale(living.width* 1.5));
+					RayTraceResult rayTrace =living.world.rayTraceBlocks(entPos,
+							entPos.add(vecOff));
+					BlockPos pos = new BlockPos(vecOff.add(entPos));
 					if (rayTrace != null) {
 						pos = rayTrace.getBlockPos().offset(rayTrace.sideHit);
+						//System.out.println(rayTrace.getBlockPos());
 					}
-					EnumFacing facing = EnumFacing.getFacingFromVector((float)living.motionX, 0f, (float)living.motionZ);
-					if (!living.world.isBlockFullCube(pos) && living.world.isBlockFullCube(pos.down()) 
-							&& living.world.isBlockFullCube(pos.offset(facing)) && !living.world.isBlockFullCube(pos.offset(facing).up())) {
-						vec2 = vec2.addVector(0, 1, 0).normalize().scale(motiona);
-						living.motionX= vec2.x;
-						living.motionY= vec2.y;
-						living.motionZ= vec2.z;
+					if (living.world.isBlockFullCube(pos.down())) {
+						Vec3d step=TF2Util.getHeightVec(living.world, pos);
+						Vec3d normal=step.normalize();
+						if (normal.y != 1D && normal.dotProduct(vecOff) < 0 && !(charging != null && normal.y > 0.75)) {
+							double backoff = vec.dotProduct(normal);
+							vec = new Vec3d(vec.x - normal.x * backoff, vec.y - normal.y * backoff, vec.z - normal.z * backoff);
+							living.motionX = vec.x;
+							living.motionY = vec.y;
+							living.motionZ = vec.z;
+							if (charging != null) {
+								double mult = motion/vec.lengthVector();
+								living.motionX *= mult;
+								living.motionY *= mult;
+								living.motionZ *= mult;
+							}
+							rayTrace =living.world.rayTraceBlocks(vecOff.add(entPos),
+									vecOff.add(entPos).add(vec));
+							if (rayTrace != null) {
+								living.setPosition(living.posX, living.posY+1-rayTrace.hitVec.y+rayTrace.getBlockPos().getY(), living.posZ);
+							}
+							
+						}
 					}
 				}
 			}
@@ -1263,11 +1326,6 @@ public class TF2EventsCommon {
 			if (cap.doubleJumped && living.onGround) {
 				cap.doubleJumped = false;
 			}
-			/*
-			 * if(living instanceof EntityPlayer){
-			 * System.out.println("Invisible: "+living.isInvisible())
-			 * ; }
-			 */
 			if (!living.world.isRemote && cap.disguiseTicks > 0){
 				// System.out.println("disguise progress:
 				// "+living.getEntityData().getByte("DisguiseTicks"));
@@ -1277,16 +1335,9 @@ public class TF2EventsCommon {
 				disguise(living, true);
 				}
 			}
-			/*
-			 * if(living.world.isRemote &&
-			 * living.getEntityData().getByte("Disguised")==1&&(
-			 * fakeEntities.get(living)==null||fakeEntities.get(living).isDead))
-			 * { disguise(living,true); }
-			 */
-			PotionEffect charging = living.getActivePotionEffect(TF2weapons.charging);
-			/*if(living instanceof EntityPlayerMP && ((EntityPlayerMP)living).getStatFile().readStat(StatList.getObjectUseStats(TF2weapons.itemSandvich))>=50){
-				((EntityPlayer)living).addStat(TF2Achievements.SANDVICH);
-			}*/
+
+			
+
 			if (living.world.isRemote) {
 				
 				ClientProxy.doChargeTick(living);
@@ -1298,10 +1349,6 @@ public class TF2EventsCommon {
 				Vec3d start = living.getPositionVector().addVector(0, living.height / 2, 0);
 				Vec3d end = start.addVector(-MathHelper.sin(living.rotationYaw / 180.0F * (float) Math.PI) * 0.7, 0,
 						MathHelper.cos(living.rotationYaw / 180.0F * (float) Math.PI) * 0.7);
-				// Vec3d
-				// end=start.addVector(living.motionX*10,0,living.motionZ*10);
-				// System.out.println("yay: "+living.motionX+"
-				// "+living.motionZ);
 				RayTraceResult result = TF2Util.pierce(living.world, living, start.x, start.y, start.z, end.x, end.y, end.z, false, 0.5f, false)
 						.get(0);
 				if (result.entityHit != null) {
@@ -1311,8 +1358,7 @@ public class TF2EventsCommon {
 					}
 					TF2Util.dealDamage(result.entityHit, result.entityHit.world, living, ItemChargingTarge.getChargingShield(living), 0, damage,
 							TF2Util.causeDirectDamage(ItemChargingTarge.getChargingShield(living), living, 0));
-					/*if(living instanceof EntityPlayer && !result.entityHit.isEntityAlive())
-						((EntityPlayer)living).addStat(TF2Achievements.CHARGE_TARGE);*/
+
 					cap.bashCritical = charging.getDuration() < 20;
 					if(charging.getDuration()<12)
 						TF2Util.playSound(living, TF2Sounds.WEAPON_SHIELD_HIT_RANGE, 3F, 1F);
@@ -1424,7 +1470,7 @@ public class TF2EventsCommon {
 
 							});
 					for (Entity ent : closeEntities) {
-						if (ent.getDistanceSqToEntity(living) < 1) {
+						if (ent.getDistanceSq(living) < 1) {
 							visible = true;
 						}
 						break;
@@ -1825,7 +1871,7 @@ public class TF2EventsCommon {
 					stack.getTagCompound().setShort(NBTLiterals.STREAK_REDUCTION, (short)1);
 					stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
 				}
-				if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium")) {
+				if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium")&& TF2ConfigVars.australiumStatue) {
 					event.getEntity().world.spawnEntity(new EntityStatue(event.getEntity().world, event.getEntityLiving(), false));
 					TF2Util.sendTracking(new TF2Message.ActionMessage(19, event.getEntityLiving()), event.getEntity());
 					event.getEntity().playSound(TF2Sounds.WEAPON_TO_GOLD, 1.5f, 2f);
@@ -2068,16 +2114,18 @@ public class TF2EventsCommon {
 	
 	@SubscribeEvent(priority = EventPriority.LOW)
 	public void dropFakeItems(PlayerDropsEvent event) {
-		InventoryWearables inv = event.getEntityLiving().getCapability(TF2weapons.INVENTORY_CAP, null);
-		for (int i = 2; i < 4; i++)
-			if (inv.getStackInSlot(i) != null) {
-				event.getEntityPlayer().dropItem(inv.getStackInSlot(i), true, false);
-			}
-		
 		if(WeaponsCapability.get(event.getEntity()).isFeign())
 			for(EntityItem item:event.getDrops()) {
 				item.getEntityData().setBoolean("Fake", true);
 				item.setAgeToCreativeDespawnTime();
+			}
+	}
+	@SubscribeEvent(priority = EventPriority.HIGH)
+	public void dropItems(PlayerDropsEvent event) {
+		InventoryWearables inv = event.getEntityLiving().getCapability(TF2weapons.INVENTORY_CAP, null);
+		for (int i = 2; i < 4; i++)
+			if (inv.getStackInSlot(i) != null) {
+				event.getEntityPlayer().dropItem(inv.getStackInSlot(i), true, false);
 			}
 	}
 	@SuppressWarnings("unchecked")

@@ -85,10 +85,10 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				this.lastMotionY = EntityLivingBase.motionY;
 			this.attackTarget = EntityLivingBase;
 			return !this.entityHost.getHeldItemMainhand().isEmpty() && this.entityHost.eating <= 0
-					&& (this.entityHost.getHeldItemMainhand().getItem() instanceof ItemWeapon || this.entityHost.getHeldItemMainhand().getItem() instanceof ItemMedigun);
+					&& (this.entityHost.getHeldItemMainhand().getItem() instanceof ItemUsable);
 		}
 	}
-
+	
 	/**
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
@@ -157,7 +157,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		double lookY = this.posTarget.y + this.attackTarget.getEyeHeight() + this.velTarget.y * moveTicks;
 		double lookZ = this.posTarget.z + this.velTarget.z * moveTicks;
 		boolean shouldFireProj = true;
-		float dist = this.entityHost.getDistanceToEntity(this.attackTarget);
+		float dist = this.entityHost.getDistance(this.attackTarget);
 		if (this.projSpeed > 0) {
 
 			
@@ -219,7 +219,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		if (!this.reloading && (this.entityHost.world.getDifficulty() != EnumDifficulty.HARD || !fire)
 				&& item.getItemDamage() == item.getMaxDamage() && weapon.hasClip(item))
 			this.reloading = true;
-		else if (this.reloading && item.getItemDamage() == 0)
+		else if (this.reloading && (item.getItemDamage() == 0 || this.entityHost.getAmmo() == 0 ))
 			this.reloading = false;
 		
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);

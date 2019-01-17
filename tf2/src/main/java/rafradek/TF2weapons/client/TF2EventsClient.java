@@ -1,11 +1,21 @@
 package rafradek.TF2weapons.client;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.FloatBuffer;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -43,8 +53,10 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -123,6 +135,8 @@ public class TF2EventsClient {
 	private static final DynamicTexture TEXTURE_BRIGHTNESS = new DynamicTexture(16, 16);
 	public static TextureAtlasSprite skinIcon;
 	public static TextureAtlasSprite bisonIcon;
+	private long profileStartTime;
+	private int profileStartTick;
 	
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
@@ -149,9 +163,32 @@ public class TF2EventsClient {
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_1"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_2"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/token_empty"));
+		
+		
 		// }
 	}
 
+	@SubscribeEvent
+	public void registerIcons(TextureStitchEvent.Post event) {
+		/*try {
+			for (Field field : event.getMap().getClass().getDeclaredFields()) {
+				//Field field = event.getMap().getClass().getDeclaredField("listAnimatedSprites");
+				if (field.getType().isAssignableFrom(List.class)) {
+					field.setAccessible(true);
+					List<TextureAtlasSprite> animated=(List<TextureAtlasSprite>) field.get(event.getMap());
+					System.out.println("lel");
+					for (TextureAtlasSprite sprite : animated) {
+						System.out.println(sprite.getIconName());
+					}
+					animated.clear();
+				}
+			}
+			//
+		} catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+	}
 	@SubscribeEvent
 	public void keyJumpPress(InputEvent.KeyInputEvent event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
@@ -208,9 +245,107 @@ public class TF2EventsClient {
 					keyPressUpdate(minecraft.gameSettings.keyBindAttack.isKeyDown(), minecraft.gameSettings.keyBindUseItem.isKeyDown());
 				}
 		}
-
+		if (minecraft.gameSettings.showDebugProfilerChart && this.profileStartTime == -1) {
+			this.profileStartTime = MinecraftServer.getCurrentTimeMillis();
+            this.profileStartTick = TF2weapons.server.getTickCounter();
+		}
+		else if (this.profileStartTime != -1) {
+			long i = MinecraftServer.getCurrentTimeMillis();
+            int j = TF2weapons.server.getTickCounter();
+            long k = i - this.profileStartTime;
+            int l = j - this.profileStartTick;
+            this.saveProfilerResults(k, l, TF2weapons.server);
+			this.profileStartTime = -1;
+		}
 	}
 	
+	private void saveProfilerResults(long timeSpan, int tickSpan, MinecraftServer server)
+    {
+        File file1 = new File(server.getFile("debug"), "profile-results-client-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + ".txt");
+        file1.getParentFile().mkdirs();
+        Writer writer = null;
+
+        try
+        {
+            writer = new OutputStreamWriter(new FileOutputStream(file1), StandardCharsets.UTF_8);
+            writer.write(this.getProfilerResults(timeSpan, tickSpan, Minecraft.getMinecraft().mcProfiler));
+        }
+        catch (Throwable throwable)
+        {
+            TF2weapons.LOGGER.error("Could not save profiler results to {}", file1, throwable);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(writer);
+        }
+    }
+
+    private String getProfilerResults(long timeSpan, int tickSpan, Profiler server)
+    {
+        StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("---- Minecraft Profiler Results ----\n");
+        stringbuilder.append("// ");
+        stringbuilder.append(getWittyComment());
+        stringbuilder.append("\n\n");
+        stringbuilder.append("Time span: ").append(timeSpan).append(" ms\n");
+        stringbuilder.append("Tick span: ").append(tickSpan).append(" ticks\n");
+        stringbuilder.append("// This is approximately ").append(String.format("%.2f", (float)tickSpan / ((float)timeSpan / 1000.0F))).append(" ticks per second. It should be ").append((int)20).append(" ticks per second\n\n");
+        stringbuilder.append("--- BEGIN PROFILE DUMP ---\n\n");
+        this.appendProfilerResults(0, "root", stringbuilder, server);
+        stringbuilder.append("--- END PROFILE DUMP ---\n\n");
+        return stringbuilder.toString();
+    }
+
+    private void appendProfilerResults(int depth, String sectionName, StringBuilder builder, Profiler server)
+    {
+        List<Profiler.Result> list = server.getProfilingData(sectionName);
+
+        if (list != null && list.size() >= 3)
+        {
+            for (int i = 1; i < list.size(); ++i)
+            {
+                Profiler.Result profiler$result = list.get(i);
+                builder.append(String.format("[%02d] ", depth));
+
+                for (int j = 0; j < depth; ++j)
+                {
+                    builder.append("|   ");
+                }
+
+                builder.append(profiler$result.profilerName).append(" - ").append(String.format("%.2f", profiler$result.usePercentage)).append("%/").append(String.format("%.2f", profiler$result.totalUsePercentage)).append("%\n");
+
+                if (!"unspecified".equals(profiler$result.profilerName))
+                {
+                    try
+                    {
+                        this.appendProfilerResults(depth + 1, sectionName + "." + profiler$result.profilerName, builder, server);
+                    }
+                    catch (Exception exception)
+                    {
+                        builder.append("[[ EXCEPTION ").append((Object)exception).append(" ]]");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get a random witty comment
+     */
+    private static String getWittyComment()
+    {
+        String[] astring = new String[] {"Shiny numbers!", "Am I not running fast enough? :(", "I'm working as hard as I can!", "Will I ever be good enough for you? :(", "Speedy. Zoooooom!", "Hello world", "40% better than a crash report.", "Now with extra numbers", "Now with less numbers", "Now with the same numbers", "You should add flames to things, it makes them go faster!", "Do you feel the need for... optimization?", "*cracks redstone whip*", "Maybe if you treated it better then it'll have more motivation to work faster! Poor server."};
+
+        try
+        {
+            return astring[(int)(System.nanoTime() % (long)astring.length)];
+        }
+        catch (Throwable var2)
+        {
+            return "Witty comment unavailable :(";
+        }
+    }
+    
 	public int getPressedHotbarKey(KeyBinding[] keys) {
 		int sel=-1;
 		for(int i=0;i<keys.length;i++) {
@@ -301,14 +436,14 @@ public class TF2EventsClient {
 			if (item != null && item.getItem() instanceof ItemUsable && oldState != (getActionType(attackKeyDown, altAttackKeyDown) & 3)
 					&& item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2) {
 				if ((oldState & 2) < (state & 2)) {
-					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getAltFiringSpeed(item, player) / 2);
+					//cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getAltFiringSpeed(item, player) / 2);
 					cap.stateDo(player, item, EnumHand.MAIN_HAND, stateOverride);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 2) > (state & 2)) {
 					((ItemUsable) item.getItem()).endUse(item, player, player.world, oldState, state & 3);
 				}
 				if ((oldState & 1) < (state & 1)) {
-					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getFiringSpeed(item, player) / 2);
+					//cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) item.getItem()).getFiringSpeed(item, player) / 2);
 					cap.stateDo(player, item, EnumHand.MAIN_HAND, stateOverride);
 					((ItemUsable) item.getItem()).startUse(item, player, player.world, oldState, state & 3);
 				} else if ((oldState & 1) > (state & 1)) {
@@ -330,23 +465,7 @@ public class TF2EventsClient {
 				WeaponsCapability.get(minecraft.player).setPrimaryCooldown(Math.max(WeaponsCapability.get(minecraft.player).getPrimaryCooldown(), 250));
 			}
 			
-			/*
-			 * Iterator<Entry<EntityLivingBase,EntityLivingBase>>
-			 * iterator=fakeEntities.entrySet().iterator();
-			 * while(iterator.hasNext()){
-			 * Entry<EntityLivingBase,EntityLivingBase> entry=iterator.next();
-			 * EntityLivingBase real=entry.getKey(); EntityLivingBase
-			 * fake=entry.getValue(); fake.posX=real.posX; fake.posY=real.posY;
-			 * fake.posZ=real.posZ; fake.prevPosX=real.prevPosX;
-			 * fake.prevPosY=real.prevPosY; fake.prevPosZ=real.prevPosZ;
-			 * fake.rotationPitch=real.rotationPitch;
-			 * fake.rotationYaw=real.rotationYaw;
-			 * fake.rotationYawHead=real.rotationYawHead;
-			 * fake.motionX=real.motionX; fake.motionY=real.motionY;
-			 * fake.motionZ=real.motionZ;
-			 * //System.out.println("pos: "+fake.posX+" "+fake.posY+" "+fake.
-			 * posZ); }
-			 */
+
 
 			Iterator<EntityLivingBase> soundIterator = ClientProxy.soundsToStart.keySet().iterator();
 			while (soundIterator.hasNext()) {
@@ -361,7 +480,7 @@ public class TF2EventsClient {
 		}
 	}
 
-	@SubscribeEvent
+	/*@SubscribeEvent
 	public void entityConstructing(final EntityEvent.EntityConstructing event) {
 
 		if (event.getEntity() instanceof EntityPlayerSP) {
@@ -375,7 +494,7 @@ public class TF2EventsClient {
 			
 			TextureUtil.uploadTextureMipmap(tex, skinIcon.getIconWidth(), skinIcon.getIconHeight(), skinIcon.getOriginX(), skinIcon.getOriginY(), false, false);
 		}
-	}
+	}*/
 	
 	@Optional.Method(modid = "dynamiclights")
 	public static void removeSource(){
@@ -564,9 +683,6 @@ public class TF2EventsClient {
 		        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 			}
-			/*if (held != null && held.getItem() instanceof ItemSniperRifle && cap.isCharging()) {
-				
-			}*/
 		}
 		if (event.getType() == ElementType.HOTBAR) {
 			ItemStack pda = TF2Util.getFirstItem(Minecraft.getMinecraft().player.inventory, stackL -> stackL.getItem() instanceof ItemPDA);
@@ -684,10 +800,6 @@ public class TF2EventsClient {
 				GL11.glEnable(GL11.GL_ALPHA_TEST);
 			}
 			Entity healTarget = player.world.getEntityByID(cap.getHealTarget());
-			/*if (held != null && held.getItem() instanceof ItemMedigun) {
-				
-				
-			}*/
 			
 			
 			if (healTarget == null && TF2Util.isOnSameTeam(mouseTarget, player) && !(mouseTarget instanceof EntityBuilding))
@@ -792,39 +904,6 @@ public class TF2EventsClient {
 				GlStateManager.translate(width/2-72, height/2+52-building.getGuiHeight()/2, 0);
 				building.renderGUI(renderer, tessellator, player, width, height, gui);
 				GlStateManager.translate(-width/2+72, -height/2-52+building.getGuiHeight()/2, 0);
-				/*
-				 * float
-				 * uber=player.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().
-				 * getFloat("ubercharge");
-				 * gui.drawString(Minecraft.
-				 * getMinecraft().ingameGUI.getFontRenderer(), "UBERCHARGE: "
-				 * +Math.round(uber*100f)+"%",
-				 * event.getResolution().getScaledWidth()-130,
-				 * event.getResolution().getScaledHeight()-48, 16777215);
-				 * GL11.glDisable(GL11.GL_TEXTURE_2D); GlStateManager.color(1.0F, 1.0F,
-				 * 1.0F, 0.33F); renderer.begin(7, DefaultVertexFormats.POSITION);
-				 * renderer.pos(event.getResolution().getScaledWidth()-132,
-				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-20,
-				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-20,
-				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-132,
-				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-				 * tessellator.draw();
-				 * 
-				 * GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F); renderer.begin(7,
-				 * DefaultVertexFormats.POSITION);
-				 * renderer.pos(event.getResolution().getScaledWidth()-132,
-				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
-				 * event.getResolution().getScaledHeight()-22, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-132+112*uber,
-				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-				 * renderer.pos(event.getResolution().getScaledWidth()-132,
-				 * event.getResolution().getScaledHeight()-36, 0.0D).endVertex();
-				 * tessellator.draw();
-				 */
 				GL11.glEnable(GL11.GL_TEXTURE_2D);
 				GL11.glDepthMask(true);
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -833,7 +912,7 @@ public class TF2EventsClient {
 			}
 		}
 	}
-
+	
 	@SubscribeEvent
 	public void renderOverlayPost(RenderGameOverlayEvent.Post event) {
 
@@ -846,23 +925,6 @@ public class TF2EventsClient {
 	public void renderPlayer(RenderPlayerEvent.Pre event) {
 		if (event.getEntityPlayer() != Minecraft.getMinecraft().player) {
 			renderBeam(event.getEntityPlayer(), event.getPartialRenderTick());
-			/*
-			 * InventoryWearables
-			 * inventory=event.getEntityPlayer().getCapability(TF2weapons.
-			 * INVENTORY_CAP, null); for(int
-			 * i=0;i<inventory.getInventoryStackLimit();i++){ ItemStack
-			 * stack=inventory.getStackInSlot(i); if(stack!=null){
-			 * GlStateManager.pushMatrix();
-			 * event.getRenderer().getMainModel().bipedHead.postRender(0.0625f);
-			 * GlStateManager.translate(0.0F, -0.25F, 0.0F);
-			 * GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
-			 * GlStateManager.scale(0.625F, -0.625F, -0.625F);
-			 * 
-			 * Minecraft.getMinecraft().getItemRenderer().renderItem(event.
-			 * getEntityPlayer(), stack,
-			 * ItemCameraTransforms.TransformType.HEAD);
-			 * GlStateManager.popMatrix(); } }
-			 */
 		}
 	}
 
@@ -892,20 +954,7 @@ public class TF2EventsClient {
 			ClientProxy.renderCritGlow=0;
 		}
 		if (WeaponsCapability.get(player).isInvisible() ||(player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() &&player.getHeldItemMainhand().getItem() instanceof ItemSniperRifle) ) {
-			/*
-			 * GL11.glEnable(GL11.GL_BLEND); GlStateManager.clear(256);
-			 * OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			 * if(Minecraft.getMinecraft().player.getEntityData().getInteger(
-			 * "VisTicks")>=20){ GlStateManager.color(1.0F, 1.0F, 1.0F, 0.75f); }
-			 * else{ GlStateManager.color(1.0F, 1.0F, 1.0F,
-			 * 0.6f*(1-(float)Minecraft.getMinecraft().player.getEntityData()
-			 * .getInteger("VisTicks")/20)); } try { Method
-			 * method=EntityRenderer.class.getDeclaredMethod("renderHand",
-			 * float.class, int.class); method.setAccessible(true);
-			 * method.invoke(Minecraft.getMinecraft().entityRenderer,
-			 * event.partialTicks,event.renderPass); } catch (Exception e) { //
-			 * TODO Auto-generated catch block e.printStackTrace(); }
-			 */
+
 			event.setCanceled(true);
 		}
 	}
@@ -1196,13 +1245,9 @@ public class TF2EventsClient {
 					entToRender.prevLimbSwingAmount=event.getEntity().prevLimbSwingAmount;
 					entToRender.ticksExisted=event.getEntity().ticksExisted;
 
-					Minecraft.getMinecraft().getRenderManager().doRenderEntity(entToRender, event.getX(), event.getY(), event.getZ(), event.getEntity().rotationYaw, partialTicks, false);
+					Minecraft.getMinecraft().getRenderManager().renderEntity(entToRender, event.getX(), event.getY(), event.getZ(), event.getEntity().rotationYaw, partialTicks, false);
 					event.setCanceled(true);
 				}
-				/*if (ClientProxy.entityModel.containsKey(mobType)) {
-					ClientProxy.disguiseRender.setRenderOptions(ClientProxy.entityModel.get(mobType), ClientProxy.textureDisguise.get(mobType));
-					render = ClientProxy.disguiseRender;
-				}*/
 			} else if (event.getEntity() instanceof AbstractClientPlayer && WeaponsCapability.get(event.getEntity()).getDisguiseType().startsWith("P:"))
 				if ("slim".equals(event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).skinType)) {
 					render = ClientProxy.disguiseRenderPlayerSmall;
@@ -1226,13 +1271,6 @@ public class TF2EventsClient {
 	        GlStateManager.disableCull();
 	        GlStateManager.disableBlend();
 	        AxisAlignedBB head=TF2Util.getHead(event.getEntity()).offset(-event.getEntity().posX, -event.getEntity().posY, -event.getEntity().posZ);
-	        /*double ymax = event.getEntity().getEntityBoundingBox().maxY-event.getEntity().posY;
-	        AxisAlignedBB head = new AxisAlignedBB(- 0.32, ymax - 0.24, - 0.32,  0.32, ymax + 0.48, 0.32);
-	        if (event.getEntity().width > event.getEntity().height * 0.65) {
-				double offsetX = MathHelper.cos((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2;
-				double offsetZ = -(double) (MathHelper.sin((event.getEntity().rotationYaw-TF2weapons.lerp(event.getEntity().prevRotationYaw, 0, tickTime)) / 180.0F * (float) Math.PI) * event.getEntity().width / 2);// cos
-				head.offset(offsetX, 0, offsetZ);
-			}*/
 	        RenderGlobal.drawBoundingBox(head.minX + event.getX(), head.minY + event.getY(), head.minZ + event.getZ(), head.maxX + event.getX(), head.maxY + event.getY(), head.maxZ + event.getZ(), 1.0F, 0.0F, 1.0F, 1.0F);
 	        GlStateManager.enableTexture2D();
 	        GlStateManager.enableLighting();

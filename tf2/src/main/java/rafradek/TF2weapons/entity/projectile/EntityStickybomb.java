@@ -3,6 +3,7 @@ package rafradek.TF2weapons.entity.projectile;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
@@ -20,12 +21,12 @@ public class EntityStickybomb extends EntityProjectileBase {
 		this.setSize(0.3f, 0.3f);
 	}
 
-	public EntityStickybomb(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3f, 0.3f);
-		this.setType((int) TF2Attribute.getModifier("Weapon Mode", this.usedWeapon, 0, p_i1756_2_));
+		this.setType((int) TF2Attribute.getModifier("Weapon Mode", this.usedWeapon, 0, shooter));
 	}
-
+	
 	@Override
 	public float getPitchAddition() {
 		return 3;

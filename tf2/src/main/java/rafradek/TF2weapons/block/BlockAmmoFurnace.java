@@ -42,7 +42,6 @@ public class BlockAmmoFurnace extends BlockContainer {
 		this.setSoundType(SoundType.METAL);
 		this.setDefaultState(
 				this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(BURNING, false));
-		this.setCreativeTab(TF2weapons.tabsurvivaltf2);
 	}
 
 	@Override

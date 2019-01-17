@@ -102,11 +102,10 @@ public abstract class EntityProjectileBase extends Entity
 		this.setSize(0.5F, 0.5F);
 	}
 
-	public EntityProjectileBase(World world, EntityLivingBase shooter, EnumHand hand) {
-		this(world);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
 		this.shootingEntity = shooter;
-		this.usedWeapon = shooter.getHeldItem(hand).copy();
-		this.usedWeaponOrig=shooter.getHeldItem(hand);
+		this.usedWeapon = weapon.copy();
+		this.usedWeaponOrig = weapon;
 		this.setLocationAndAngles(shooter.posX, shooter.posY + shooter.getEyeHeight(), shooter.posZ,
 				shooter.rotationYawHead, shooter.rotationPitch + this.getPitchAddition());
 		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch, shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
@@ -131,7 +130,7 @@ public abstract class EntityProjectileBase extends Entity
 			nospread = true;
 		}
 		
-		this.setThrowableHeading(trace.x - this.posX, trace.y - this.posY, trace.z - this.posZ,
+		this.shoot(trace.x - this.posX, trace.y - this.posY, trace.z - this.posZ,
 				((ItemWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
 				nospread ? 0 : ((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter) * (133.3333333f));
 		if(((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon,this.shootingEntity)){
@@ -143,7 +142,6 @@ public abstract class EntityProjectileBase extends Entity
 		}
 		this.getGravityOverride();
 	}
-
 	@Override
 	protected void entityInit() {
 		this.dataManager.register(CRITICAL, (byte) 0);
@@ -170,28 +168,43 @@ public abstract class EntityProjectileBase extends Entity
 	 * direction.
 	 */
 	@Override
-	public void setThrowableHeading(double p_70186_1_, double p_70186_3_, double p_70186_5_, float speed,
+	public void shoot(double x, double y, double z, float speed,
 			float spread) {
 		
-		float f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
-		float yaw = (float) (MathHelper.atan2(p_70186_1_, p_70186_5_));
-		float pitch = (float) (MathHelper.atan2(p_70186_3_, f3));
-		Vec3d rand = TF2Util.radiusRandom2D(spread * 0.0075f, world.rand, yaw, pitch, speed);
-		// System.out.println("motion: "+p_70186_1_+" "+p_70186_3_+"
-		// "+p_70186_5_+" "+f2);
-		p_70186_1_ = rand.x;
-		p_70186_3_ = rand.y;
-		p_70186_5_ = rand.z;
+		if (spread > 0) {
+			float xzlen = MathHelper.sqrt(x * x + z * z);
+			float yaw = (float) (MathHelper.atan2(x, z));
+			float pitch = (float) (MathHelper.atan2(y, xzlen));
+			Vec3d rand = TF2Util.radiusRandom2D(spread * 0.0075f, world.rand, yaw, pitch, speed);
+			// System.out.println("motion: "+p_70186_1_+" "+p_70186_3_+"
+			// "+p_70186_5_+" "+f2);
+			x = rand.x;
+			y = rand.y;
+			z = rand.z;
+		}
+		else {
+			double len = MathHelper.sqrt(x * x + y * y + z * z);
+			x = x / len * speed;
+			y = y / len * speed;
+			z = z / len * speed;
+		}
 		
-		this.motionX = p_70186_1_;
-		this.motionY = p_70186_3_;
-		this.motionZ = p_70186_5_;
+		this.motionX = x;
+		this.motionY = y;
+		this.motionZ = z;
 		
-		f3 = MathHelper.sqrt(p_70186_1_ * p_70186_1_ + p_70186_5_ * p_70186_5_);
-		this.prevRotationYaw = this.rotationYaw = (float) (MathHelper.atan2(p_70186_1_, p_70186_5_) * 180.0D / Math.PI);
-		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(p_70186_3_, f3) * 180.0D / Math.PI);
+		float f3 = MathHelper.sqrt(x * x + z * z);
+		this.prevRotationYaw = this.rotationYaw = (float) (MathHelper.atan2(x, z) * 180.0D / Math.PI);
+		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(y, f3) * 180.0D / Math.PI);
 	}
 
+	public void face(double x, double y, double z, float speedmult) {
+		float speed = (float) Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
+		x -= this.posX;
+		y -= this.posY;
+		z -= this.posZ;
+		this.shoot(x, y, z, speed * speedmult, 0);
+	}
 	/**
 	 * Sets the position and rotation. Only difference from the other one is no
 	 * bounding on the rotation. Args: posX, posY, posZ, yaw, pitch
@@ -586,11 +599,11 @@ public abstract class EntityProjectileBase extends Entity
 			this.world.profiler.endSection();
 			this.world.profiler.startSection("rest");
 			this.resetPositionToBB();
-			this.isCollidedHorizontally = d3 != x || d5 != z;
-			this.isCollidedVertically = d4 != y;
-			this.onGround = this.isCollidedVertically && d4 < 0.0D;
-			this.isCollided = this.isCollidedHorizontally || this.isCollidedVertically;
-			if (this.isSticky() && !this.world.isRemote && this.isCollided)
+			this.collidedHorizontally = d3 != x || d5 != z;
+			this.collidedVertically = d4 != y;
+			this.onGround = this.collidedVertically && d4 < 0.0D;
+			this.collided = this.collidedHorizontally || this.collidedVertically;
+			if (this.isSticky() && !this.world.isRemote && this.collided)
 				this.setSticked(true);
 			j4 = MathHelper.floor(this.posX);
 			int l4 = MathHelper.floor(this.posY - 0.20000000298023224D);

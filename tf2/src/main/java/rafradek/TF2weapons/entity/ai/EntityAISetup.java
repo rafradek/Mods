@@ -61,7 +61,7 @@ public class EntityAISetup extends EntityAIBase {
 
 	@Override
 	public void resetTask() {
-		this.engineer.getNavigator().clearPathEntity();
+		this.engineer.getNavigator().clearPath();
 		this.engineer.switchSlot(0);
 	}
 
@@ -142,6 +142,7 @@ public class EntityAISetup extends EntityAIBase {
 		this.target = null;
 		this.buildType = 0;
 		this.resetTask();
+		this.engineer.buildCount+=1;
 		return building;
 	}
 }

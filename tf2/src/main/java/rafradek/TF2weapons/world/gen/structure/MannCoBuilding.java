@@ -34,6 +34,7 @@ import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Village;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationHandler;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
 import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
@@ -236,7 +237,7 @@ public class MannCoBuilding extends StructureComponent {
 
 	    public MapGen()
 	    {
-	        this.distance = 32;
+	        this.distance = TF2ConfigVars.mannCoChance;
 	    }
 
 	    public String getStructureName()

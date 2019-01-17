@@ -2,6 +2,7 @@ package rafradek.TF2weapons.entity.projectile;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
@@ -17,13 +18,11 @@ public class EntityCleaver extends EntityProjectileSimple {
 		// TODO Auto-generated constructor stub
 	}
 
-	public EntityCleaver(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.usedWeapon.setCount(1);
-		//this.infinite = TF2ConfigVars.freeUseItems && !(living instanceof EntityDummy);
-		
 	}
-
+	
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		super.onHitGround(x, y, z, mop);
 		if(!this.world.isRemote && this.damage <= 0 && !this.infinite) {

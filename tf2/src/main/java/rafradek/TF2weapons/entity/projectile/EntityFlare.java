@@ -16,11 +16,6 @@ public class EntityFlare extends EntityProjectileSimple {
 			this.makeLit();
 	}
 
-	public EntityFlare(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public double getGravity() {
 		return 0.019f;

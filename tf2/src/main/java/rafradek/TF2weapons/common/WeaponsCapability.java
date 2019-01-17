@@ -106,7 +106,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean teleporterPlayer;
 	public boolean teleporterEntity;
 	public boolean forcedClass;
-	
 	public float lastHitCharge;
 	public EntityDataManager dataManager;
 	
@@ -119,10 +118,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public double lastPosY;
 	public double lastPosZ;
 	public ItemStack lastWeapon = ItemStack.EMPTY;
-	
 	public long ticksTotal;
 	public boolean fireCoolReduced;
 	public boolean autoFire;
+	public EntityLivingBase lastAttacked;
 	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
@@ -256,7 +255,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setExpJump(boolean val) {
 		this.dataManager.set(EXP_JUMP, val);
-		if(val) {
+		if(val && !this.owner.world.isRemote) {
 			this.expJumpGround = 2;
 			TF2Util.sendTracking(new TF2Message.ActionMessage(28, this.owner), this.owner);
 		}
@@ -413,7 +412,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			ItemStack stack = owner.getHeldItem(hand);
 			
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && (hand == EnumHand.MAIN_HAND || (hand == EnumHand.OFF_HAND && !hadItem 
-					&& ((ItemUsable)stack.getItem()).getDoubleWieldBonus(lastWeapon, owner) != 1) || ItemUsable.isDoubleWielding(owner))) {
+					&& ((ItemUsable)stack.getItem()).getDoubleWieldBonus(stack, owner) != 1) || ItemUsable.isDoubleWielding(owner))) {
 				
 				hadItem = true;
 				ItemUsable item = (ItemUsable) stack.getItem();
@@ -579,7 +578,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		
 		ItemUsable item = (ItemUsable) stack.getItem();
 		WeaponData.WeaponDataCapability stackcap = WeaponData.getCapability(stack);
-
+		
 		if ((state & 1) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 
 			item.fireTick(stack, player, player.world);
@@ -602,7 +601,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				if (message.hand != hand || !item.canFire(player.world, player, stack))
 					break;
 			}
-			stackcap.fire1Cool += Math.max(1,item.getFiringSpeed(stack, player));
+			int fireRate = item.getFiringSpeed(stack, player);
+			stackcap.fire1Cool += Math.max(1, fireRate);
+			if (ItemUsable.isDoubleWielding(player)) {
+				if (hand == EnumHand.MAIN_HAND)
+					this.setPrimaryCooldown(EnumHand.OFF_HAND, Math.max(this.getPrimaryCooldown(EnumHand.OFF_HAND), fireRate/2-50));
+				else if (hand == EnumHand.OFF_HAND)
+					this.setPrimaryCooldown(EnumHand.MAIN_HAND, Math.max(this.getPrimaryCooldown(EnumHand.MAIN_HAND), fireRate/2-50));
+			}
 
 			if (player instanceof EntityTF2Character)
 				((EntityTF2Character) player).onShot();

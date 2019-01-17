@@ -64,6 +64,9 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 				boolean useIgnot = false;
 				int metalLeft = attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 				float metalMult = TF2Attribute.getModifier("Metal Used", stack, 1f, attacker);
+				if ((attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
+					metalMult = 10;
+				
 				ItemStack ingot = new ItemStack(Items.IRON_INGOT);
 				if (metalLeft == 0 && attacker instanceof EntityPlayer
 						&& ((EntityPlayer) attacker).inventory.hasItemStack(ingot)) {

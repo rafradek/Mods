@@ -234,7 +234,7 @@ public abstract class ItemUsable extends ItemFromData {
 	public static boolean isDoubleWielding(EntityLivingBase living) {
 		return ItemFromData.getData(living.getHeldItemMainhand()) != ItemFromData.BLANK_DATA 
 				&& living.getHeldItemMainhand().getItem() instanceof ItemUsable && living.getHeldItemOffhand().getItem() instanceof ItemUsable
-				&& ((ItemUsable) living.getHeldItemOffhand().getItem()).getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1
+				&& ((ItemUsable) living.getHeldItemOffhand().getItem()).getDoubleWieldBonus(living.getHeldItemOffhand(), living) != 1
 				&& ((ItemUsable) living.getHeldItemMainhand().getItem()).getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1;
 	}
 

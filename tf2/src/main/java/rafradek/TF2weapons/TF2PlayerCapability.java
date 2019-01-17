@@ -105,8 +105,14 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public int carryingType;
 	public int maxInvasionBeaten;
 	
+	public int hhhSummonedDay;
+	public int monoculusSummonedDay;
+	public int merasmusSummonedDay;
 	public long bossSpawnTicks;
 	public EntityTF2Boss bossToSpawn;
+	
+	public float damageArmorMin;
+	
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
 	
@@ -170,6 +176,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				}
 			
 			if (this.bossSpawnTicks != 0 && this.bossToSpawn != null && this.bossSpawnTicks < this.owner.world.getWorldTime()) {
+				if (this.owner.world.getWorldTime() % 24000 < 13000) {
+					this.bossToSpawn = null;
+					this.bossSpawnTicks = 0;
+				}
 				BlockPos spawnPos = null;
 				int i = 0;
 				do {
@@ -177,6 +187,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					spawnPos = this.owner.world.getTopSolidOrLiquidBlock(this.owner.getPosition().add(this.owner.getRNG().nextInt(48) - 24, 0, this.owner.getRNG().nextInt(48) - 24));
 					this.bossToSpawn.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
 				} while (i < 2 && !this.owner.world.getCollisionBoxes(null, this.bossToSpawn.getEntityBoundingBox()).isEmpty());
+				
 				if (spawnPos != null) {
 					this.bossToSpawn.onInitialSpawn(this.owner.world.getDifficultyForLocation(this.bossToSpawn.getPosition()), null);
 					this.owner.world.spawnEntity(this.bossToSpawn);
@@ -260,7 +271,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 					if(contract.progress>135)
 						contract.progress=135;
 					
-					((EntityPlayerMP)this.owner).sendMessage(new TextComponentTranslation("contract.progress", contract.className, contract.progress));
+					((EntityPlayerMP)this.owner).sendMessage(new TextComponentTranslation("gui.contracts.progress", contract.className, contract.progress));
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, contract), (EntityPlayerMP) this.owner);
 					break;
 				}
@@ -316,6 +327,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		tag.setFloat("RobotsKilled", (short) this.robotsKilledInvasion);
 		tag.setByte("MaxInvasionBeaten", (byte) this.maxInvasionBeaten);
 		tag.setLong("BossSpawnTime", this.bossSpawnTicks);
+		tag.setBoolean("HHHSummonedDay", this.hhhSummonedDay == this.owner.world.getWorldTime() / 24000);
+		tag.setBoolean("MonoculusSummonedDay", this.monoculusSummonedDay == this.owner.world.getWorldTime() / 24000);
+		tag.setBoolean("MerasmusSummonedDay", this.merasmusSummonedDay == this.owner.world.getWorldTime() / 24000);
 		if (this.bossToSpawn != null) {
 			NBTTagCompound bosstag = new NBTTagCompound();
 			this.bossToSpawn.writeToNBTOptional(bosstag);
@@ -354,6 +368,12 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.robotsKilledInvasion = nbt.getFloat("RobotsKilled");
 		this.maxInvasionBeaten = nbt.getByte("MaxInvasionBeaten");
 		this.bossSpawnTicks = nbt.getLong("BossSpawnTime");
+		if (nbt.getBoolean("HHHSummonedDay"))
+			this.hhhSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
+		if (nbt.getBoolean("MonoculusSummonedDay"))
+			this.monoculusSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
+		if (nbt.getBoolean("MerasmusSummonedDay"))
+			this.merasmusSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
 		this.bossToSpawn = (EntityTF2Boss) EntityList.createEntityFromNBT(nbt.getCompoundTag("BossSpawn"), this.owner.world);
 	}
 

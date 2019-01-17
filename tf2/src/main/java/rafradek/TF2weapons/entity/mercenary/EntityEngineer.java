@@ -23,6 +23,8 @@ public class EntityEngineer extends EntityTF2Character {
 	public EntitySentry sentry;
 	public EntityDispenser dispenser;
 
+	public int buildCount;
+	
 	public EntityEngineer(World p_i1738_1_) {
 		super(p_i1738_1_);
 		//this.ammoLeft = 24;
@@ -60,7 +62,7 @@ public class EntityEngineer extends EntityTF2Character {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(10.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(12.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1329D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
@@ -122,6 +124,7 @@ public class EntityEngineer extends EntityTF2Character {
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
+		par1NBTTagCompound.setShort("BuildCount", (short) buildCount);
 		/*if (this.sentry != null && this.sentry.isEntityAlive()) {
 			NBTTagCompound sentryTag = new NBTTagCompound();
 			this.sentry.writeToNBTAtomically(sentryTag);
@@ -138,6 +141,7 @@ public class EntityEngineer extends EntityTF2Character {
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
 		super.readEntityFromNBT(par1NBTTagCompound);
+		this.buildCount = par1NBTTagCompound.getShort("BuildCount");
 		/*if (par1NBTTagCompound.hasKey("Sentry") && this.sentry == null) {
 			// System.out.println(par1NBTTagCompound.getCompoundTag("Sentry"));
 			this.sentry = (EntitySentry) EntityList.createEntityFromNBT(par1NBTTagCompound.getCompoundTag("Sentry"), this.world);

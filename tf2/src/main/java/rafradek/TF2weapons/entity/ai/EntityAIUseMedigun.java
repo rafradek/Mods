@@ -17,6 +17,10 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 
 	}
 
+	@Override
+	public boolean shouldExecute() {
+		return this.entityHost.getHeldItemMainhand().getItem() instanceof ItemMedigun && super.shouldExecute();
+	}
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
@@ -67,7 +71,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		//System.out.println(this.comeCloser+" "+this.attackRangeSquared+" "+d0);
 		if (d0 <= 52 && this.comeCloser >= 20) {
 			if (!this.dodging) {
-				this.entityHost.getNavigator().clearPathEntity();
+				this.entityHost.getNavigator().clearPath();
 				this.dodging = true;
 			}
 		} else {

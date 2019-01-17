@@ -140,7 +140,7 @@ public class EntityAIRepair extends EntityAIBase {
 			this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
 			TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 		}
-		this.entityHost.getNavigator().clearPathEntity();
+		this.entityHost.getNavigator().clearPath();
 		this.attackTarget = null;
 		this.field_75318_f = 0;
 		this.entityHost.switchSlot(0);
@@ -174,7 +174,7 @@ public class EntityAIRepair extends EntityAIBase {
 
 		if (d0 <= this.attackRangeSquared && this.field_75318_f >= 6) {
 			if (!this.dodging) {
-				this.entityHost.getNavigator().clearPathEntity();
+				this.entityHost.getNavigator().clearPath();
 				this.dodging = true;
 			}
 		} else {

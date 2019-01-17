@@ -1,0 +1,23 @@
+{
+	"__comment": "Designed by Rafał with Cubik Studio - https://cubik.studio",
+	"parent": "block/block",
+	"textures": {
+		"door": "rafradek_tf2_weapons:blocks/door",
+		"particle": "rafradek_tf2_weapons:blocks/door"
+	},
+	"elements": [ 	 
+		{
+			"__comment": "Box1",
+			"from": [ 0, 13, 0.5 ],
+			"to": [ 16, 16, 3.5 ],
+			"faces": {
+				"down": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" },
+				"up": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" },
+				"north": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" },
+				"south": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" },
+				"west": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" },
+				"east": { "uv": [ 0, 9, 8, 10 ], "texture": "#door" }
+			}
+		}
+	]
+}

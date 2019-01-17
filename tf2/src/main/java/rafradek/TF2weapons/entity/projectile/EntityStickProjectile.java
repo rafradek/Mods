@@ -16,12 +16,6 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 		
 	}
 
-	public EntityStickProjectile(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
-		this.setSize(0.3F, 0.3F);
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		super.onHitGround(x, y, z, mop);

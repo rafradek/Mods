@@ -94,15 +94,21 @@ public class EntityMerasmus extends EntityTF2Boss {
 			@Override
 			public boolean apply(EntityLivingBase input) {
 				// TODO Auto-generated method stub
-				return (input instanceof EntityTF2Character || input instanceof EntityPlayer) && getDistanceSqToEntity(input)<600;
+				return input instanceof EntityTF2Character || input instanceof EntityPlayer;
 			}
         	
-        }));
+        }) {
+        	protected double getTargetDistance()
+		    {
+		        return super.getTargetDistance() * 0.35;
+		    }
+        });
+        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
     }
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(80.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(200);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.098D);
@@ -188,7 +194,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						@Override
 						public boolean apply(EntityPlayer input) {
 							// TODO Auto-generated method stub
-							return getDistanceSqToEntity(input)<900&&!TF2Util.isOnSameTeam(EntityMerasmus.this, input)&&EntityAITarget.isSuitableTarget(EntityMerasmus.this, input, false, false);
+							return getDistanceSq(input)<900&&!TF2Util.isOnSameTeam(EntityMerasmus.this, input)&&EntityAITarget.isSuitableTarget(EntityMerasmus.this, input, false, false);
 						}
 						
 					});
@@ -285,7 +291,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 	}
 	public void setBombSpell(boolean bomb) {
 		this.getDataManager().set(SPELL_BOMB, bomb);
-		this.getNavigator().clearPathEntity();
+		this.getNavigator().clearPath();
 		if(bomb){
 			this.moveHelper=new FloatingMoveHelper(this);
 			this.setItemStackToSlot(EntityEquipmentSlot.OFFHAND, ItemFromData.getNewStack("bombinomicon"));
@@ -373,7 +379,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		this.motionY=0;
 		this.motionZ=0;
 		if(hide){
-			this.navigator.clearPathEntity();
+			this.navigator.clearPath();
 			//this.moveHelper=null;
 			this.playSound(TF2Sounds.MOB_MERASMUS_HIDE, this.getSoundVolume(), 1F);
 			this.setInvisible(true);
@@ -497,7 +503,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 				}
 				else if(this.attacksMade%2==0){
 					this.attackDuration=20-this.host.level/4;
-					if(target != host && this.host.getDistanceSqToEntity(target)<6){
+					if(target != host && this.host.getDistanceSq(target)<6){
 						if(this.host.attackEntityAsMob(target)){
 							target.knockBack(this.host, (float)1.5f, (double)MathHelper.sin(this.host.rotationYaw * 0.017453292F), (double)(-MathHelper.cos(this.host.rotationYaw * 0.017453292F)));
 						}
@@ -509,7 +515,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 				}
 				else{
 					this.attackDuration=(int) (55/(0.91+this.host.level*0.09f));
-					this.host.getNavigator().clearPathEntity();
+					this.host.getNavigator().clearPath();
 					this.host.playSound(TF2Sounds.MOB_MERASMUS_SPELL, 2F, 1F);
 					boolean attacked=false;
 					double range = 10d + this.host.level * 0.8;
@@ -518,7 +524,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						@Override
 						public boolean apply(EntityLivingBase input) {
 							// TODO Auto-generated method stub
-							return input.getDistanceSqToEntity(host)<range * range&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
+							return input.getDistanceSq(host)<range * range&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
 						}
 						
 					})){
@@ -590,5 +596,11 @@ public class EntityMerasmus extends EntityTF2Boss {
 		if(this.getAttackTarget()!=null&&ent instanceof EntityBuilding)
 			return;
 		super.setAttackTarget(ent);
+	}
+	
+	public void returnSpawnItems() {
+		if (!this.usedPos.isEmpty())
+			this.setPosition(hiddenBlock.getX(), hiddenBlock.getY(), hiddenBlock.getZ());
+		this.entityDropItem(new ItemStack(TF2weapons.itemBossSpawn,1,1), 0);
 	}
 }

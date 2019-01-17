@@ -145,7 +145,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 			else if (arrow.getItem() instanceof ItemArrow) {
 				EntityArrow entityarrow = ((ItemArrow) arrow.getItem()).createArrow(world, arrow, living);
 				float motion = this.getProjectileSpeed(stack, living) * 2.6f - super.getProjectileSpeed(stack, living);
-				entityarrow.setAim(living, living.rotationPitch, living.rotationYaw, 0.0F, 
+				entityarrow.shoot(living, living.rotationPitch, living.rotationYaw, 0.0F, 
 						motion, this.getWeaponSpread(stack, living));
 				entityarrow.pickupStatus = living instanceof EntityPlayer && !((ItemArrow) arrow.getItem()).isInfinite(arrow, stack, (EntityPlayer) living)
 						? PickupStatus.ALLOWED : PickupStatus.DISALLOWED;

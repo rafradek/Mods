@@ -239,8 +239,9 @@ public class EntitySentry extends EntityBuilding {
 				this.playSound(TF2Sounds.MOB_SENTRY_ROCKET, 1.5f, 1f);
 				EntityProjectileBase proj = MapList.projectileClasses
 						.get(ItemFromData.getData(this.sentryRocket).getString(PropertyType.PROJECTILE))
-						.getConstructor(World.class, EntityLivingBase.class, EnumHand.class)
-						.newInstance(this.world, this, EnumHand.MAIN_HAND);
+						.getConstructor(World.class)
+						.newInstance(this.world, this);
+				proj.initProjectile(this, EnumHand.MAIN_HAND, this.getHeldItemMainhand());
 				proj.shootingEntity = owner;
 				proj.usedWeapon = sentryRocket;
 				proj.sentry = this;
@@ -327,7 +328,7 @@ public class EntitySentry extends EntityBuilding {
 					if (this.fromPDA)
 						((TF2DamageSource)src).addAttackFlag(TF2DamageSource.SENTRY_PDA);
 					
-					float range = bullet.entityHit.getDistanceToEntity(this);
+					float range = bullet.entityHit.getDistance(this);
 					if (range >= (float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue())
 						range =  Math.max(0.5f,(float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() / range);
 					else
@@ -530,16 +531,7 @@ public class EntitySentry extends EntityBuilding {
 	
 	public boolean isControlled() {
 		// TODO Auto-generated method stub
-		return this.isEntityAlive() && this.dataManager.get(CONTROLLED);// this.getOwner()
-																		// !=
-																		// null
-																		// &&
-																		// this.getOwner()
-																		// instanceof
-																		// EntityPlayer
-																		// &&
-																		// this.getOwner().getCapability(TF2weapons.WEAPONS_CAP,
-																		// null).controlledSentry==this;
+		return this.isEntityAlive() && this.dataManager.get(CONTROLLED);
 	}
 
 	@Override
@@ -557,9 +549,6 @@ public class EntitySentry extends EntityBuilding {
 	}
 	public void onDeath(DamageSource s){
 		super.onDeath(s);
-		/*if(s.getEntity() !=null && s.getEntity() instanceof EntityPlayer && s instanceof TF2DamageSource && !((TF2DamageSource)s).getWeapon().isEmpty() && ItemFromData.getData(((TF2DamageSource)s).getWeapon()).getName().equals("pistol")){
-			((EntityPlayer)s.getEntity()).addStat(TF2Achievements.GUN_DOWN);
-		}*/
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -569,12 +558,6 @@ public class EntitySentry extends EntityBuilding {
 		gui.drawTexturedModalRect(20, 2, 0, 112,124, 60);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 		gui.drawTexturedModalRect(0, 0, 0, 48, 144, 64);
-		/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(width / 2 - 72, height / 2 + 84, 0.0D).tex(0.0D, 0.4375D).endVertex();
-		renderer.pos(width / 2 + 72, height / 2 + 84, 0.0D).tex(0.5625D, 0.4375D).endVertex();
-		renderer.pos(width / 2 + 72, height / 2 + 20, 0.0D).tex(0.5625D, 0.1875D).endVertex();
-		renderer.pos(width / 2 - 72, height / 2 + 20, 0.0D).tex(0.0D, 0.1875D).endVertex();
-		tessellator.draw();*/
 		double imagePos = this.getLevel() == 1 ? 0.375D : this.getLevel() == 2 ? 0.1875D : 0D;
 
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);

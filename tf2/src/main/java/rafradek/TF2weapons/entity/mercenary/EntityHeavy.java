@@ -73,7 +73,7 @@ public class EntityHeavy extends EntityTF2Character {
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 		if (this.getAmmo() > 0 && this.getAttackTarget() != null
-				&& this.getDistanceSqToEntity(this.getAttackTarget()) <= 350
+				&& this.getDistanceSq(this.getAttackTarget()) <= 350
 				&& (this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 2) == 0)
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).state += 2;
 	}

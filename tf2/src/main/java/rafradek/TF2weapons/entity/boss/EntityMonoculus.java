@@ -13,6 +13,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityMoveHelper;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,7 +30,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -78,8 +81,14 @@ public class EntityMonoculus extends EntityTF2Boss {
 						return input instanceof EntityPlayer || input instanceof EntityTF2Character;
 					}
 
-				}));
+				}) {
+			protected double getTargetDistance()
+		    {
+		        return super.getTargetDistance() * 0.5;
+		    }
+		});
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
+		this.targetTasks.addTask(4, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
 	}
 	@Override
 	public void fall(float distance, float damageMultiplier) {
@@ -242,7 +251,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				EntityLivingBase entitylivingbase = this.getAttackTarget();
 				double d0 = 64.0D;
 
-				if (entitylivingbase.getDistanceSqToEntity(this) < 4096.0D) {
+				if (entitylivingbase.getDistanceSq(this) < 4096.0D) {
 					double d1 = entitylivingbase.posX - this.posX;
 					double d2 = entitylivingbase.posZ - this.posZ;
 					double d3 = entitylivingbase.posY - (this.posY + this.getEyeHeight());
@@ -291,7 +300,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(80.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(160);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.11D);
@@ -306,8 +315,11 @@ public class EntityMonoculus extends EntityTF2Boss {
 		return p_110161_1_;
 	}
 	public void dropFewItems(boolean hit,int looting){
-		if(this.rand.nextBoolean())
-			this.entityDropItem(ItemFromData.getNewStack("bombinomicon"), 0);
+		if(this.rand.nextBoolean()) {
+			ItemStack bomb = ItemFromData.getNewStack("bombinomicon");
+			TF2Attribute.setAttribute(bomb, MapList.nameToAttribute.get("BombEnemy"), 1.45f + this.level * 0.2f);
+			this.entityDropItem(bomb, 0);
+		}
 		ItemStack hat=ItemFromData.getNewStack("monoculus");
 		hat.getTagCompound().setShort("BossLevel",(short)this.level);
 		this.entityDropItem(hat, 0);
@@ -364,7 +376,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				entitylivingbase = this.parentEntity;
 			double d0 = 64.0D;
 
-			if (entitylivingbase.getDistanceSqToEntity(this.parentEntity) < 4096.0D) {
+			if (entitylivingbase.getDistanceSq(this.parentEntity) < 4096.0D) {
 				World world = this.parentEntity.world;
 				this.attackTimer--;
 
@@ -432,7 +444,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				EntityLivingBase entitylivingbase = this.parentEntity.getAttackTarget();
 				double d0 = 64.0D;
 
-				if (entitylivingbase.getDistanceSqToEntity(this.parentEntity) < 4096.0D) {
+				if (entitylivingbase.getDistanceSq(this.parentEntity) < 4096.0D) {
 					double d1 = entitylivingbase.posX - this.parentEntity.posX;
 					double d2 = entitylivingbase.posZ - this.parentEntity.posZ;
 					double d3 = entitylivingbase.posY - (this.parentEntity.posY + this.parentEntity.getEyeHeight());
@@ -496,8 +508,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 			double d2 = this.parentEntity.posZ + (random.nextFloat() * 2.0F - 1.0F) * 16.0F;
 			EntityLivingBase target = this.parentEntity.getAttackTarget();
 			this.movingToHome = this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition());
-			boolean flyToPlayer = target != null && target.getDistanceSqToEntity(this.parentEntity) > 680;
-			if((!flyToPlayer || target.getDistanceSq(d0, d1, d2) < target.getDistanceSqToEntity(this.parentEntity))
+			boolean flyToPlayer = target != null && target.getDistanceSq(this.parentEntity) > 680;
+			if((!flyToPlayer || target.getDistanceSq(d0, d1, d2) < target.getDistanceSq(this.parentEntity))
 					&& (flyToPlayer || (this.parentEntity.isWithinHomeDistanceCurrentPosition()
 					|| movingToHome)))
 				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1d);
@@ -554,5 +566,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 			return true;
 		}
+	}
+	
+	public void returnSpawnItems() {
+		this.entityDropItem(new ItemStack(TF2weapons.itemBossSpawn,1,1), 0);
 	}
 }

@@ -175,7 +175,11 @@ public class TF2Explosion extends Explosion {
 				boolean expJump = isExploder && this.directHit == null;
 				// System.out.println("jump: "+expJump);
 				double d5 = entity.posX - this.explosionX;
-				double d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2 - this.explosionY;
+				double d6;
+				if (isExploder)
+					d6 = entity.posY + entity.getEyeHeight() - 0.3 - this.explosionY;
+				else
+					d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2 - this.explosionY;
 				double d7 = entity.posZ - this.explosionZ;
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 

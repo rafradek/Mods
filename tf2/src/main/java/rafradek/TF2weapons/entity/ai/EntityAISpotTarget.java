@@ -88,7 +88,7 @@ public class EntityAISpotTarget extends EntityAIBase {
 										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = 0;
 						boolean fastCheck = allowBehind;
-						if (target.getDistanceToEntity(taskOwner) > d0
+						if (target.getDistance(taskOwner) > d0
 								|| (!fastCheck && !TF2Util.lookingAtFast(taskOwner, 86,
 										target.posX, target.posY + target.getEyeHeight(), target.posZ)))
 							return false;
@@ -124,7 +124,7 @@ public class EntityAISpotTarget extends EntityAIBase {
 	public boolean shouldExecute() {
 		double d0 = this.getTargetDistance() / 2;
 		if (((this.taskOwner.getAttackTarget() == null)
-				|| this.taskOwner.getAttackTarget().getDistanceSqToEntity(taskOwner) > d0 * d0))
+				|| this.taskOwner.getAttackTarget().getDistanceSq(taskOwner) > d0 * d0))
 			this.targetChoosen++;
 		if (((this.taskOwner.getAttackTarget() == null) && this.targetChoosen > 1) || this.targetChoosen > 5 || !this.targetLock) {
 			// System.out.println("executing
@@ -180,7 +180,7 @@ public class EntityAISpotTarget extends EntityAIBase {
 			else {
 				double d0 = this.getTargetDistance();
 
-				if (this.taskOwner.getDistanceSqToEntity(entitylivingbase) > d0 * d0)
+				if (this.taskOwner.getDistanceSq(entitylivingbase) > d0 * d0)
 					return false;
 				else {
 					if (this.shouldCheckSight)

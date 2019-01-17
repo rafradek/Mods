@@ -78,7 +78,7 @@ public class EntitySpy extends EntityTF2Character {
 			if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
 				boolean useKnife = false;
 				if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
-						|| (useKnife = (this.getDistanceSqToEntity(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
+						|| (useKnife = (this.getDistanceSq(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
 
 					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
 							!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
@@ -88,7 +88,7 @@ public class EntitySpy extends EntityTF2Character {
 						this.setCombatTask(false);
 						this.cloakCounter = 36;
 					} else
-						this.cloakCounter = 20 + (int) ((16 - this.getDistanceToEntity(target)) * 10);
+						this.cloakCounter = 20 + (int) ((16 - this.getDistance(target)) * 10);
 				}
 				/*
 				 * float x = -MathHelper.sin(target.rotationYaw / 180.0F *
@@ -104,7 +104,7 @@ public class EntitySpy extends EntityTF2Character {
 			this.weaponCounter--;
 
 			if (this.weaponCounter <= 0 && this.getAttackTarget() != null
-					&& this.getDistanceSqToEntity(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 25)) {
+					&& this.getDistanceSq(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 25)) {
 				this.setCombatTask(false);
 				this.weaponCounter = 8;
 			} else if (this.weaponCounter <= 0 && this.getHeldItemMainhand() == this.loadout.getStackInSlot(2)) {
@@ -209,7 +209,7 @@ public class EntitySpy extends EntityTF2Character {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(12.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.1D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.14111D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.0D);

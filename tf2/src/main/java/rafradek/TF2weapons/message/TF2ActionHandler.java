@@ -479,13 +479,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 				if ((oldState & 2) < (message.value & 2)) {
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
-					cap.setSecondaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getAltFiringSpeed(stack, player) / 2);
+
 					cap.stateDo(player, stack, EnumHand.MAIN_HAND, stateOverride);
 					
 				} else if ((oldState & 2) > (message.value & 2))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
 				if ((oldState & 1) < (message.value & 1)) {
-					cap.setPrimaryCooldown(EnumHand.OFF_HAND, ((ItemUsable) stack.getItem()).getFiringSpeed(stack, player) / 2);
 					((ItemUsable) stack.getItem()).startUse(stack, player, player.world, oldState,
 							message.value & 3);
 					cap.stateDo(player, stack, EnumHand.MAIN_HAND, stateOverride);

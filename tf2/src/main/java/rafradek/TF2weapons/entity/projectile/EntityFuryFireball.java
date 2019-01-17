@@ -18,12 +18,7 @@ public class EntityFuryFireball extends EntityProjectileSimple {
 		if (TF2ConfigVars.dynamicLights)
 			this.makeLit();
 	}
-
-	public EntityFuryFireball(World world, EntityLivingBase living, EnumHand hand) {
-		super(world, living, hand);
-		// TODO Auto-generated constructor stub
-	}
-
+	
 	@Override
 	public void spawnParticles(double x, double y, double z) {
 		if (this.isInWater())

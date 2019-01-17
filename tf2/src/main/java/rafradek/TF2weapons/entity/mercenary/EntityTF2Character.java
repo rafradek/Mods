@@ -102,6 +102,7 @@ import rafradek.TF2weapons.entity.ai.EntityAISwitchWeapons;
 import rafradek.TF2weapons.entity.ai.EntityAIUseRangedWeapon;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
+import rafradek.TF2weapons.inventory.InventoryLoadout;
 import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemBackpack;
@@ -187,11 +188,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIMoveTowardsRestriction2(this, 1.25f));
 		this.tasks.addTask(1, avoidSentry = new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
-			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSqToEntity(this) < 435;
+			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSq(this) < 435;
 		}, 21, 1.0f, 1.0f){
 			public boolean shouldContinueExecuting()
 		    {
-		        return super.shouldContinueExecuting() && !(this.closestLivingEntity == null || this.closestLivingEntity.getDistanceSqToEntity(EntityTF2Character.this) > 435);
+		        return super.shouldContinueExecuting() && !(this.closestLivingEntity == null || this.closestLivingEntity.getDistanceSq(EntityTF2Character.this) > 435);
 		    }
 		});
 		this.tasks.addTask(2, new EntityAIFollowTrader(this));
@@ -203,7 +204,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.targetTasks.addTask(5, findplayer);
 		this.targetTasks.addTask(3, new EntityAIOwnerHurt(this));
 		this.targetTasks.addTask(4, new EntityAINearestChecked(this, EntityLiving.class, true, false, target -> {
-			return (target instanceof IMob && target.getDistanceSqToEntity(this.getOwner()) < 400) || target.getAttackTarget() == this.getOwner();
+			return (target instanceof IMob && target.getDistanceSq(this.getOwner()) < 400) || target.getAttackTarget() == this.getOwner();
 		}, true, false) {
 			public boolean shouldExecute() {
 				return ((EntityTF2Character) this.taskOwner).getOwner() != null && super.shouldExecute();
@@ -213,7 +214,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		// this.motionSensitivity=4;
 		this.rotation = 17;
 		this.lastRotation = new float[20];
-		this.loadout = new ItemStackHandler(5);// NonNullList.withSize(5,ItemStack.EMPTY);
+		this.loadout = new InventoryLoadout(5, this);// NonNullList.withSize(5,ItemStack.EMPTY);
 		this.loadoutHeld = new ItemStackHandler(7);
 		this.refill = new ItemStackHandler(1);
 		this.ammoCount = new int[3];
@@ -520,17 +521,22 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		// if (this.hasHome()) {
 
 		if (!this.world.isRemote) {
-			if (this.isRobot() && this.getAttackTarget() == null)
+			if (this.isRobot() && this.getAttackTarget() == null) {
 				this.idleTime +=1;
+				if (this.idleTime > 800 + this.getRobotSize() * 500)
+					this.setDead();
+			}
 			if (this.getOrder() == Order.HOLD && !this.hasHome())
 				this.setHomePosAndDistance(this.getPos(), 12);
 			else if (this.getOrder() == Order.FOLLOW && this.hasHome())
 				this.detachHome();
 
 			this.setDiff(this.world.getDifficulty().getDifficultyId());
-			if (this.isTrading() && (this.trader.getDistanceSqToEntity(trader) > 100 || !this.isEntityAlive()))
+			if (this.isTrading() && (this.trader.getDistanceSq(trader) > 100 || !this.isEntityAlive()))
 				this.setCustomer(null);
+			
 			if (this.getHeldItemMainhand().getItem() instanceof ItemUsable) {
+
 				if (!((ItemUsable) this.getHeldItemMainhand().getItem()).isAmmoSufficient(this.getHeldItemMainhand(), this, true)) {
 					if (!this.refill(this.usedSlot))
 						this.switchSlot(this.getFirstSlotWithAmmo(), true, false);
@@ -998,6 +1004,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public void onUpdate() {
 		super.onUpdate();
 
+		
 		if (!this.world.isRemote && this.world.getDifficulty() == EnumDifficulty.PEACEFUL)
 			this.setDead();
 	}
@@ -1377,8 +1384,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (stack.getItem() instanceof ItemProjectileWeapon) {
 			String projName = data.getString(PropertyType.PROJECTILE);
 			try {
-				EntityProjectileBase proj = MapList.projectileClasses.get(projName).getConstructor(World.class, EntityLivingBase.class, EnumHand.class).newInstance(world, this,
-						EnumHand.MAIN_HAND);
+				EntityProjectileBase proj = MapList.projectileClasses.get(projName).getConstructor(World.class).newInstance(world);
+				proj.initProjectile(this, EnumHand.MAIN_HAND, stack);
 				this.attack.gravity = (float) proj.getGravityOverride();
 			} catch (Exception e) {
 
@@ -1421,7 +1428,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			}
 		if (this.getOwnerId() != null) {
 			ItemStack stack = new ItemStack(TF2weapons.itemTF2, this.isSharing() ? 2 : 1, 2);
-			if (this.getOwner() != null && this.getDistanceSqToEntity(this.getOwner()) < 100)
+			if (this.getOwner() != null && this.getDistanceSq(this.getOwner()) < 100)
 				this.entityDropItem(stack, 0);
 			else {
 				Map<String, MerchantRecipeList> map = this.getWorld().getCapability(TF2weapons.WORLD_CAP, null).lostItems;
@@ -1666,5 +1673,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public boolean isBackStabbable() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+	
+	public boolean isTargetEnemy() {
+		return !this.friendly;
 	}
 }

@@ -199,7 +199,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 				List<Entity> list2 = this.world.getEntitiesWithinAABBExcludingEntity(this,
 						this.getEntityBoundingBox().expand(this.motionX, this.motionY, this.motionZ).grow(10.0D,
 								10.0D, 10.0D));
-				if (this.mine && this.isCollided && list2.size() != 0)
+				if (this.mine && this.collided && list2.size() != 0)
 					for (Entity ent : list2)
 						if (ent instanceof EntityLivingBase && ent != this.owner
 								&& ent.getEntityBoundingBox().intersects(this.getEntityBoundingBox())) {
@@ -315,7 +315,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 							@Override
 							public boolean apply(Entity input) {
 								// TODO Auto-generated method stub
-								return getDistanceSqToEntity(input)<scale*5;
+								return getDistanceSq(input)<scale*5;
 							}
 							
 						})) {
@@ -332,7 +332,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 			int g = -1;
 			++this.field_145812_b;
 			
-			if (!(this.sticky == 1 && this.isCollided)) {
+			if (!(this.sticky == 1 && this.collided)) {
 				if (!this.nogravity)
 					this.motionY += 0.03999999910593033D * g;
 				this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
@@ -347,7 +347,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 				this.motionY *= 0D;
 			}
 
-			if ((this.sticky == 1 && this.isCollided) || (this.sticky == 0 && this.onGround)) {
+			if ((this.sticky == 1 && this.collided) || (this.sticky == 0 && this.onGround)) {
 				this.motionX *= 0.699999988079071D;
 				this.motionZ *= 0.699999988079071D;
 				this.motionY *= -0.5D;
@@ -360,7 +360,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 						this.makeBurn(blockpos);
 				}
 
-				if (this.isCollided)
+				if (this.collided)
 					if (this.impact)
 						this.fuse = 0;
 				
@@ -383,7 +383,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 				if (!this.isPrimed) {
 					if (this.nogravity && motion < 0.004d)
 						this.nogravity = false;
-					if ((this.sticky == 1 && this.isCollided) || (this.sticky != 1 && this.onGround)) {
+					if ((this.sticky == 1 && this.collided) || (this.sticky != 1 && this.onGround)) {
 						if ((this.sticky == 1 || motion < 0.004d)
 								&& this.world.getBlockState(blockpos).getBlock() != Blocks.PISTON_EXTENSION) {
 							boolean placed = false;
@@ -437,7 +437,7 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 					}
 				}
 			}
-			if (this.isPrimed && (fuse-- <= 0 || (this.isCollided && !this.world.isRemote && !this.stack.isEmpty()
+			if (this.isPrimed && (fuse-- <= 0 || (this.collided && !this.world.isRemote && !this.stack.isEmpty()
 					&& this.stack.getTagCompound() != null && this.stack.getTagCompound().getInteger("explode") > 0))) {
 				
 
@@ -802,10 +802,10 @@ public class EntityFallingEnchantedBlock extends Entity implements IEntityAdditi
 			this.world.profiler.endSection();
 			this.world.profiler.startSection("rest");
 			this.resetPositionToBB();
-			this.isCollidedHorizontally = d6 != x || d8 != z;
-			this.isCollidedVertically = d7 != y;
-			this.onGround = this.isCollidedVertically && d7 < 0.0D;
-			this.isCollided = this.isCollidedHorizontally || this.isCollidedVertically;
+			this.collidedHorizontally = d6 != x || d8 != z;
+			this.collidedVertically = d7 != y;
+			this.onGround = this.collidedVertically && d7 < 0.0D;
+			this.collided = this.collidedHorizontally || this.collidedVertically;
 			int i = MathHelper.floor(this.posX);
 			int j = MathHelper.floor(this.posY - 0.20000000298023224D);
 			int k = MathHelper.floor(this.posZ);

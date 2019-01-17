@@ -19,16 +19,11 @@ public class EntityRocket extends EntityProjectileBase {
 			this.makeLit();
 	}
 
-	public EntityRocket(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
-
-	}
-
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
-		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.05,
-				mop.hitVec.y + mop.sideHit.getFrontOffsetY() * 0.05,
-				mop.hitVec.z + mop.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
+		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.02,
+				mop.hitVec.y + mop.sideHit.getFrontOffsetY() * 0.02,
+				mop.hitVec.z + mop.sideHit.getFrontOffsetZ() * 0.02, null, 1f);
 	}
 
 	@Override

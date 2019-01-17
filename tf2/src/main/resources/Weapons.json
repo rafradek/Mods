@@ -2295,5 +2295,29 @@
 			"DamagePenalty": 0.75,
 			"DetonateFlare": 1
 		}
+	},
+	"bombinomiconbomb": 
+	{
+		"Name": "Bombinomicon",
+		"Class": "projectile",
+		"Based on": "grenadelauncher",
+		"Render": "rafradek_tf2_weapons:loose_cannon",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.loosecannon",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.loosecannon",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.loosecannon",
+		"Hidden": true,
+		"Roll hidden": 1,
+		"Drop chance": 0.0,
+		"Damage": 1,
+		"Armor penetration scale": 1,
+		"Knockback": 20,
+		"Penetrate": true,
+		"Stock": false,
+		"Attributes": 
+		{
+			"SelfDamageReduced": 0,
+			"WeaponMode": 2,
+			"ProjectileSpeedBonus": 1.2
+		}
 	}
 }

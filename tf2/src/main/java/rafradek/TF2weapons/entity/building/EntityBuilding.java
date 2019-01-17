@@ -275,7 +275,6 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			return this.owner;
 		else if (this.getOwnerId() != null)
 			return this.owner = this.world.getPlayerEntityByUUID(this.getOwnerId());
-		// System.out.println("owner: "+this.getOwnerId());
 		return null;
 	}
 
@@ -619,8 +618,9 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		EntityLivingBase attacker=this.getAttackingEntity();
 		if (this.fromPDA || (TF2Util.isOnSameTeam(attacker, this) && this.getOwnerId() == null))
 			return;
-		for (int i = 0; i < this.getIronDrop(); i++)
-			this.dropItem(Items.IRON_INGOT, 1);
+		if (this.getOwner() instanceof EntityEngineer && ((EntityEngineer)this.getOwner()).buildCount < 3)
+			for (int i = 0; i < this.getIronDrop(); i++)
+				this.dropItem(Items.IRON_INGOT, 1);
 	}
 
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier)

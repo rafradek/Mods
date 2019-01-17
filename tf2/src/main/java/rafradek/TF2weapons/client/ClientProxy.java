@@ -2,6 +2,7 @@ package rafradek.TF2weapons.client;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,8 @@ import com.google.common.collect.HashBiMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
@@ -42,6 +45,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -63,6 +67,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.CustomModLoadingErrorDisplayException;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -108,6 +113,7 @@ import rafradek.TF2weapons.client.renderer.entity.RenderStickybomb;
 import rafradek.TF2weapons.client.renderer.entity.RenderSyringe;
 import rafradek.TF2weapons.client.renderer.entity.RenderTF2Character;
 import rafradek.TF2weapons.client.renderer.entity.RenderTeleporter;
+import rafradek.TF2weapons.client.renderer.tileentity.RenderDoor;
 import rafradek.TF2weapons.common.CommonProxy;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.entity.EntityStatue;
@@ -140,6 +146,7 @@ import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
+import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -222,14 +229,14 @@ public class ClientProxy extends CommonProxy {
 					return 0x2AAAFF;
 				return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
 			}, TF2weapons.itemPlacer);
-		List<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
+		Collection<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
 		items.removeIf( item -> !(item instanceof ItemFromData || item instanceof ItemTool || item instanceof ItemSword
 				|| item instanceof ItemBow));
 
 		Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new IItemColor() {
 
 			@Override
-			public int getColorFromItemstack(ItemStack stack, int tintIndex) {
+			public int colorMultiplier(ItemStack stack, int tintIndex) {
 				if (ItemFromData.getData(stack).hasProperty(PropertyType.COLOR))
 					return ItemFromData.getData(stack).getInt(PropertyType.COLOR);
 				if (renderCritGlow > 15){
@@ -274,7 +281,7 @@ public class ClientProxy extends CommonProxy {
 				usemethod = method;
 			}
 		}
-		for(Block block : ForgeRegistries.BLOCKS.getValues()) {
+		for(Block block : ForgeRegistries.BLOCKS.getValuesCollection()) {
 			try {
 			if (!interactingBlocks.contains(block.getClass()))
 				for (Method method : block.getClass().getMethods()) {
@@ -522,6 +529,22 @@ public class ClientProxy extends CommonProxy {
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 8,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_spy", "inventory"));
 		
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":door_controller_player", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 1,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":door_controller_entity", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 2,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":door_controller_red", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 3,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":door_controller_blu", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemBossSpawn, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_hhh", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemBossSpawn, 1,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_monoculus", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemBossSpawn, 2,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_merasmus", "inventory"));
+		
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityOverheadDoor.class, new RenderDoor());
 		RenderingRegistry.registerEntityRenderingHandler(EntityTF2Character.class,
 				new IRenderFactory<EntityTF2Character>() {
 					@Override
@@ -854,9 +877,9 @@ public class ClientProxy extends CommonProxy {
 				Minecraft.getMinecraft().player.movementInput = new MovementInputCharging();
 				KeyBinding.setKeyBindState(Minecraft.getMinecraft().gameSettings.keyBindSprint.getKeyCode(), true);
 				Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 0.1f;
+				
 			} else if (player.getActivePotionEffect(TF2weapons.charging) == null
 					&& player.getCapability(TF2weapons.PLAYER_CAP, null).lastMovementInput != null) {
-
 				Minecraft.getMinecraft().player.movementInput = player.getCapability(TF2weapons.PLAYER_CAP,
 						null).lastMovementInput;
 				player.getCapability(TF2weapons.PLAYER_CAP, null).lastMovementInput = null;
@@ -890,4 +913,30 @@ public class ClientProxy extends CommonProxy {
 				MathHelper.clamp((color >> 8 & 255) / 255f + darken, min, max), MathHelper.clamp((color & 255) / 255f + darken, min, max), alpha);
 	}
 	
+	public void displayCorruptedFileError() {
+		throw new CorruptedFileException();
+	}
+	
+	public static class CorruptedFileException extends CustomModLoadingErrorDisplayException {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRenderer, int mouseRelX, int mouseRelY,
+				float tickTime) {
+			errorScreen.drawCenteredString(fontRenderer, "TF2 Stuff Mod", errorScreen.width / 2, 70, 16777215);
+			errorScreen.drawCenteredString(fontRenderer, "Failed to copy weapon files. Restart the game and try again", errorScreen.width / 2, 90, 16777215);
+
+		}
+		
+	}
 }

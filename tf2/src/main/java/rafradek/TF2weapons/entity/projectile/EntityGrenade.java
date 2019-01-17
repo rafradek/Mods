@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -27,10 +28,10 @@ public class EntityGrenade extends EntityProjectileBase {
 		this.setSize(0.3f, 0.3f);
 	}
 
-	public EntityGrenade(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3f, 0.3f);
-		int weaponmode=(int) TF2Attribute.getModifier("Weapon Mode", this.usedWeapon, 0, p_i1756_2_);
+		int weaponmode=(int) TF2Attribute.getModifier("Weapon Mode", this.usedWeapon, 0, shooter);
 		if(weaponmode==1){
 			this.setBomb(1);
 			this.setSize(0.7f, 0.7f);
@@ -42,10 +43,10 @@ public class EntityGrenade extends EntityProjectileBase {
 		}
 		else if(weaponmode==2) {
 			this.setBomb(2);
-			this.fuse=20-p_i1756_2_.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks;
+			this.fuse=20-shooter.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks;
 		}
 	}
-
+	
 	@Override
 	protected void entityInit() {
 		super.entityInit();
@@ -104,7 +105,7 @@ public class EntityGrenade extends EntityProjectileBase {
 		this.fuse--;
 		if (this.fuse <= 0)
 			this.explode(this.posX, this.posY + this.height / 2, this.posZ, null, this.getBomb()>0?1:0.64f);
-		if (this.isCollided) {
+		if (this.collided) {
 			this.hitGround = true;
 			if (!this.world.isRemote) {
 				int attr = (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);

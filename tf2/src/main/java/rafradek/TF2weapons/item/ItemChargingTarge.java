@@ -16,6 +16,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemChargingTarge extends ItemFromData {
 
@@ -32,7 +33,8 @@ public class ItemChargingTarge extends ItemFromData {
 			
 		
 			if (!world.isRemote)
-				living.addPotionEffect(new PotionEffect(TF2weapons.charging, (int) TF2Attribute.getModifier("Effect Duration", stack, 40, living)));
+				living.addPotionEffect(new PotionEffect(TF2weapons.charging, (int) TF2Attribute.getModifier("Effect Duration", stack, 40, living),
+						(int) TF2Attribute.getModifier("Charge Step", stack, 0, living)));
 			living.getCooldownTracker().setCooldown(this, (int) (280f/TF2Attribute.getModifier("Charge", stack, 1, living)));
 		}
 			//living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put("Charging", 280);
@@ -71,6 +73,12 @@ public class ItemChargingTarge extends ItemFromData {
 				.get("Charging");
 		return (double) (value != null ? value : 0) / (double) 280;*/
 	}
+	
+	public boolean getIsRepairable(ItemStack toRepair, ItemStack repair)
+    {
+        if (TF2Util.isOre("plankWood", repair)) return true;
+        return super.getIsRepairable(toRepair, repair);
+    }
 	
 	public boolean isShield(ItemStack stack, @Nullable EntityLivingBase entity) {
         return true;

@@ -21,6 +21,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.potion.PotionEffect;
@@ -84,7 +85,7 @@ public class EntityHHH extends EntityTF2Boss {
 			@Override
 			public boolean apply(EntityLivingBase input) {
 				// TODO Auto-generated method stub
-				return (input instanceof EntityTF2Character || input instanceof EntityPlayer) && getDistanceSqToEntity(input)<600;
+				return (input instanceof EntityTF2Character || input instanceof EntityPlayer) && getDistanceSq(input)<600;
 			}
         	
         }));*/
@@ -93,7 +94,7 @@ public class EntityHHH extends EntityTF2Boss {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(105);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10D);
@@ -143,7 +144,7 @@ public class EntityHHH extends EntityTF2Boss {
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return (input instanceof EntityTF2Character || input instanceof EntityPlayer || input == getRevengeTarget()) && getDistanceSqToEntity(input)<600
+						return (input instanceof EntityTF2Character || input instanceof EntityPlayer || input == getRevengeTarget()) && getDistanceSq(input)<600
 								&& EntityAITarget.isSuitableTarget(EntityHHH.this, input, false, false);
 					}
 					
@@ -161,7 +162,7 @@ public class EntityHHH extends EntityTF2Boss {
 						@Override
 						public boolean apply(EntityLivingBase input) {
 							// TODO Auto-generated method stub
-							return getDistanceSqToEntity(input)<100 && !TF2Util.isOnSameTeam(EntityHHH.this, input) && !(input.getItemStackFromSlot(EntityEquipmentSlot.HEAD).isEmpty()
+							return getDistanceSq(input)<100 && !TF2Util.isOnSameTeam(EntityHHH.this, input) && !(input.getItemStackFromSlot(EntityEquipmentSlot.HEAD).isEmpty()
 									&& input.getItemStackFromSlot(EntityEquipmentSlot.HEAD).getItem()==Item.getItemFromBlock(Blocks.PUMPKIN));
 						}
 						
@@ -187,7 +188,7 @@ public class EntityHHH extends EntityTF2Boss {
 				Path path = this.getNavigator().getPathToEntityLiving(this.getAttackTarget());
 				boolean shouldTeleport;
 				if (path == null)
-					shouldTeleport = this.getDistanceSqToEntity(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<1;
+					shouldTeleport = this.getDistanceSq(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<1;
 				else
 					shouldTeleport = Math.abs(path.getFinalPathPoint().y - this.getAttackTarget().posY) > 1.5 && this.getAttackTarget().onGround;
 				if (shouldTeleport) {
@@ -197,7 +198,7 @@ public class EntityHHH extends EntityTF2Boss {
 					this.setSneaking(true);
 				}
 			}
-			/*if(--this.teleportTime<=0&&this.getAttackTarget()!=null&&(this.getNavigator().noPath()||this.getDistanceSqToEntity(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<0.75)){
+			/*if(--this.teleportTime<=0&&this.getAttackTarget()!=null&&(this.getNavigator().noPath()||this.getDistanceSq(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<0.75)){
 				
 			}*/
 			if(this.toTeleportTime>0){
@@ -231,7 +232,7 @@ public class EntityHHH extends EntityTF2Boss {
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return getDistanceSqToEntity(input)<4&&!TF2Util.isOnSameTeam(EntityHHH.this, input) && 
+						return getDistanceSq(input)<4&&!TF2Util.isOnSameTeam(EntityHHH.this, input) && 
 								(TF2Util.lookingAt(EntityHHH.this, 30, input.posX, input.posY+input.getEyeHeight(), input.posZ) || input.getCollisionBoundingBox() != null);
 					}
 					
@@ -324,7 +325,7 @@ public class EntityHHH extends EntityTF2Boss {
 					@Override
 					public boolean apply(EntityLivingBase input) {
 						// TODO Auto-generated method stub
-						return getDistanceSqToEntity(input)<100 && !TF2weapons.isOnSameTeam(EntityHHH.this, input) && !(input.getItemStackFromSlot(EntityEquipmentSlot.HEAD) != null 
+						return getDistanceSq(input)<100 && !TF2weapons.isOnSameTeam(EntityHHH.this, input) && !(input.getItemStackFromSlot(EntityEquipmentSlot.HEAD) != null 
 								&& input.getItemStackFromSlot(EntityEquipmentSlot.HEAD).getItem()==Item.getItemFromBlock(Blocks.PUMPKIN));
 					}
 					
@@ -369,5 +370,9 @@ public class EntityHHH extends EntityTF2Boss {
 		this.begin=nbt.getShort("Begin");
 		this.scareTick=nbt.getShort("Scare");
 		this.teleportTime=nbt.getShort("Teleport");
+	}
+	
+	public void returnSpawnItems() {
+		this.entityDropItem(new ItemStack(TF2weapons.itemBossSpawn,1,0), 0);
 	}
 }

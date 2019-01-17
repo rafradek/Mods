@@ -69,7 +69,7 @@ public class EntityDemoman extends EntityTF2Character {
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"), 0.5f);
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ClipSizeBonus"), 4f);
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ReloadRateBonus"), 0.25f);
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("SpreadAdd"), 3f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("SpreadAdd"), 0.1f);
 		}
 	}
 	/*
@@ -89,7 +89,7 @@ public class EntityDemoman extends EntityTF2Character {
 		super.applyEntityAttributes();
 		
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(18.5D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12347D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
@@ -115,7 +115,7 @@ public class EntityDemoman extends EntityTF2Character {
 			if(!this.getWepCapability().activeBomb.isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemStickyLauncher){
 				EntityStickybomb bomb=this.getWepCapability().activeBomb.get(this.rand.nextInt(this.getWepCapability().activeBomb.size()));
 				for(EntityLivingBase target: this.world.getEntitiesWithinAABB(EntityLivingBase.class, bomb.getEntityBoundingBox().grow(5))) {
-					if (this.isValidTarget(target) && target.getDistanceSqToEntity(bomb)<7 && this.getEntitySenses().canSee(target) &&
+					if (this.isValidTarget(target) && target.getDistanceSq(bomb)<7 && this.getEntitySenses().canSee(target) &&
 							target.canEntityBeSeen(bomb)) {
 						((ItemWeapon)this.loadout.getStackInSlot(1).getItem()).altFireTick(this.loadout.getStackInSlot(1), this, world);
 						break;

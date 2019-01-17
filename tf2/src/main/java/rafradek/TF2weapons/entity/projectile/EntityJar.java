@@ -20,17 +20,13 @@ public class EntityJar extends EntityProjectileBase {
 		super(p_i1756_1_);
 	}
 
-	public EntityJar(World p_i1756_1_, EntityLivingBase p_i1756_2_, EnumHand hand) {
-		super(p_i1756_1_, p_i1756_2_, hand);
-	}
-
 	@Override
 	public void explode(double x, double y, double z, Entity direct, float power) {
 		if (!this.world.isRemote) {
 			int coatedCount=0;
 			for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
 					this.getEntityBoundingBox().grow(5, 5, 5)))
-				if (living.canBeHitWithPotion() && living.getDistanceSqToEntity(this) < 25
+				if (living.canBeHitWithPotion() && living.getDistanceSq(this) < 25
 						&& living != this.shootingEntity && !TF2Util.isOnSameTeam(this.shootingEntity, living)){
 					living.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation(
 							ItemFromData.getData(this.usedWeapon).getString(PropertyType.EFFECT_TYPE)),

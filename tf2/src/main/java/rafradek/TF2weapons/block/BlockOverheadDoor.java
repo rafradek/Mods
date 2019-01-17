@@ -2,38 +2,52 @@ package rafradek.TF2weapons.block;
 
 import java.util.Random;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Mirror;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
 
 public class BlockOverheadDoor extends BlockContainer {
 
-	public static final PropertyInteger SLIDE = PropertyInteger.create("slide", 0, 3);
+	public static final PropertyBool HOLDER = PropertyBool.create("holder");
+	public static final PropertyBool SLIDING = PropertyBool.create("sliding");
+	public static final PropertyBool CONTROLLER = PropertyBool.create("controller");
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
+	protected static final AxisAlignedBB SOUTH_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.03125D);
+    protected static final AxisAlignedBB NORTH_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.96875D, 1.0D, 1.0D, 1.0D);
+    protected static final AxisAlignedBB WEST_AABB = new AxisAlignedBB(0.96875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+    protected static final AxisAlignedBB EAST_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.03125D, 1.0D, 1.0D);
 	
 	public BlockOverheadDoor() {
 		super(Material.IRON, MapColor.IRON);
-		this.setDefaultState(this.blockState.getBaseState().withProperty(SLIDE, 0).withProperty(FACING, EnumFacing.NORTH));
+		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(SLIDING, true).withProperty(CONTROLLER, false));
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -45,14 +59,41 @@ public class BlockOverheadDoor extends BlockContainer {
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
 		// TODO Auto-generated method stub
+		if ((meta & 4) == 4)
+			return new TileEntityOverheadDoor();
 		return null;
 	}
 
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    {
+		switch (state.getValue(FACING)) {
+		case NORTH: return SOUTH_AABB;
+		case EAST: return WEST_AABB;
+		case SOUTH: return NORTH_AABB;
+		case WEST: return EAST_AABB;
+		default: return FULL_BLOCK_AABB;
+		}
+    }
+	
+	public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    {
+		if (state.getValue(SLIDING)) {
+			return NULL_AABB;
+		}
+		switch (state.getValue(FACING)) {
+		case NORTH: return SOUTH_AABB;
+		case EAST: return WEST_AABB;
+		case SOUTH: return NORTH_AABB;
+		case WEST: return EAST_AABB;
+		default: return NULL_AABB;
+		}
+    }
+	
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
 		worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 	
-	@SuppressWarnings("deprecation")
+	/*@SuppressWarnings("deprecation")
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 		IBlockState above = world.getBlockState(pos.up());
 		IBlockState bottom = world.getBlockState(pos.down());
@@ -80,11 +121,8 @@ public class BlockOverheadDoor extends BlockContainer {
 		}
 		if(isDown)
 			world.scheduleUpdate(pos, this, this.tickRate(world));
-	}
-	
-	public int tickRate(World world) {
-		return 1;
-	}
+	}*/
+
 	
 	public BlockFaceShape getBlockFaceShape(IBlockAccess world, IBlockState state, BlockPos pos, EnumFacing face) {
 		return face == state.getValue(FACING) ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
@@ -95,7 +133,17 @@ public class BlockOverheadDoor extends BlockContainer {
         return false;
     }
 	
-	@Override
+	public boolean isOpaqueCube(IBlockState state)
+    {
+        return false;
+    }
+	
+	public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+        return state.getValue(SLIDING) ? 0 : 255;
+    }
+	
+	/*@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
 	}
@@ -104,7 +152,7 @@ public class BlockOverheadDoor extends BlockContainer {
 	@SideOnly(Side.CLIENT)
 	public BlockRenderLayer getBlockLayer() {
 		return BlockRenderLayer.CUTOUT;
-	}
+	}*/
 	
 	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ,
@@ -130,16 +178,49 @@ public class BlockOverheadDoor extends BlockContainer {
 	
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3))).withProperty(SLIDE, meta >> 2);
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3))).withProperty(HOLDER, (meta & 4) == 4).withProperty(CONTROLLER, (meta & 8) == 8);
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex()-2 + (state.getValue(SLIDE) << 2);
+		return state.getValue(FACING).getIndex()-2 + (state.getValue(HOLDER) ? 4 : 0) + (state.getValue(CONTROLLER) ? 8 : 0);
 	}
 	
 	@Override
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING, SLIDE });
+		return new BlockStateContainer(this, new IProperty[] { FACING, HOLDER, CONTROLLER, SLIDING });
 	}
+	
+	public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state)
+    {
+		BlockPos off = pos;
+		while (true) {
+			off = off.up();
+			if (worldIn.getBlockState(off).getBlock() == this)
+				worldIn.destroyBlock(off, true);
+			else
+				break;
+		}
+		off = pos;
+		while (true) {
+			off = off.down();
+			if (worldIn.getBlockState(off).getBlock() == this)
+				worldIn.destroyBlock(off, true);
+			else
+				break;
+		}
+    }
+	
+	public Item getItemDropped(IBlockState state, Random rand, int fortune)
+    {
+		return state.getValue(HOLDER) ? super.getItemDropped(state, rand, fortune) : Items.AIR;
+    }
+	
+	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos)
+    {
+		TileEntity ent = worldIn.getTileEntity(pos);
+		if (ent instanceof TileEntityOverheadDoor) {
+			((TileEntityOverheadDoor) ent).powered = worldIn.isBlockPowered(pos);
+		}
+    }
 }

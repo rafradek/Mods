@@ -59,8 +59,10 @@ public class EntityPyro extends EntityTF2Character {
 		if (this.isGiant()) {
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1),MapList.nameToAttribute.get("FireRateBonus"),0.42f);
 		}
+		
+		if (ItemFromData.getData(this.getItemStackFromSlot(EntityEquipmentSlot.HEAD)).getName().equals("head_prize") && this.rand.nextInt(3) == 0)
+			this.setCustomNameTag("Pywwo OwO");
 	}
-	
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		if (source == DamageSource.ON_FIRE)
@@ -83,12 +85,12 @@ public class EntityPyro extends EntityTF2Character {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
 			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon){
-				if(this.isRobot() || (this.usedSlot==0 && this.getDistanceSqToEntity(this.getAttackTarget())>64)){
+				if(this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64)){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 					//this.ammoLeft++;
 				}
-				else if(this.usedSlot==1 && this.getDistanceSqToEntity(this.getAttackTarget())<44){
+				else if(this.usedSlot==1 && this.getDistanceSq(this.getAttackTarget())<44){
 					this.switchSlot(0);
 				}
 			}
@@ -103,7 +105,7 @@ public class EntityPyro extends EntityTF2Character {
 			
 			ItemStack backpack = ItemBackpack.getBackpack(this);
 			if (!this.world.isRemote && backpack.getItem() instanceof ItemJetpack) {
-				if (this.getDistanceSqToEntity(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
+				if (this.getDistanceSq(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
 					((ItemJetpack)backpack.getItem()).activateJetpack(backpack, this, true);
 					
 				}
@@ -117,7 +119,7 @@ public class EntityPyro extends EntityTF2Character {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(18.5D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1329D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
@@ -126,7 +128,7 @@ public class EntityPyro extends EntityTF2Character {
 	/*
 	 * public void onLivingUpdate() { super.onLivingUpdate();
 	 * if(this.ammoLeft>0&&this.getAttackTarget()!=null&&this.
-	 * getDistanceSqToEntity(this.getAttackTarget())<=400&&(!TF2ActionHandler.
+	 * getDistanceSq(this.getAttackTarget())<=400&&(!TF2ActionHandler.
 	 * playerAction.get(this.world.isRemote).containsKey(this)||(
 	 * TF2ActionHandler.playerAction.get(this.world.isRemote).get(this)&3)==0
 	 * )){ TF2ActionHandler.playerAction.get(this.world.isRemote).put(this,

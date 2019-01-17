@@ -29,7 +29,7 @@ public class EntityAIAmbush extends EntityAIBase {
 		 * getFloat("charge")); //--counter;
 		 * if(target!=null&&(this.host.cloak.getTagCompound().getFloat("charge")
 		 * >0.5f||this.host.getEntityData().getByte("IsCloaked")!=0)){
-		 * if(this.host.getDistanceSqToEntity(target)>5||TF2weapons.lookingAt(
+		 * if(this.host.getDistanceSq(target)>5||TF2weapons.lookingAt(
 		 * target, 110, this.host.posX, this.host.posY, this.host.posZ)){
 		 * System.out.println("Start"); return true; } }
 		 */
@@ -41,7 +41,7 @@ public class EntityAIAmbush extends EntityAIBase {
 	@Override
 	public void resetTask() {
 		// System.out.println("Stop");
-		this.host.getNavigator().clearPathEntity();
+		this.host.getNavigator().clearPath();
 		/*
 		 * if(this.host.cloak.getTagCompound().getBoolean("Active")){
 		 * ((ItemCloak)this.host.cloak.getItem()).altUse(this.host.cloak,

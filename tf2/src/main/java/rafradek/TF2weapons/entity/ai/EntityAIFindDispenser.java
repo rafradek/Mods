@@ -53,7 +53,7 @@ public class EntityAIFindDispenser extends EntityAIBase {
 	
 	@Override
 	public void updateTask() {
-		if(this.host.getDistanceSqToEntity(target) > 2) {
+		if(this.host.getDistanceSq(target) > 2) {
 			if(this.host.ticksExisted % 9 == 0)
 				if(!this.host.getNavigator().tryMoveToEntityLiving(host, 1.0f)) {
 					this.target=null;
@@ -63,6 +63,6 @@ public class EntityAIFindDispenser extends EntityAIBase {
 			this.host.getLookHelper().setLookPositionWithEntity(this.target, 30, 15);
 		}
 		else
-			this.host.getNavigator().clearPathEntity();
+			this.host.getNavigator().clearPath();
 	}
 }
