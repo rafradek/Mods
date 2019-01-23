@@ -22,6 +22,7 @@ import net.minecraftforge.common.crafting.CraftingHelper.ShapedPrimer;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemToken;
@@ -158,11 +159,15 @@ public class TF2CraftingManager {
 		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,3), new Object[] { "RIR", "IOI", "RIR", 'R', "dyeBlue", 'I',"ingotIron", 'O', Blocks.OBSERVER }));*/
 		
 		addRecipe(new ShapedOreRecipe(null,ItemFromData.getNewStack("startwrench"), new Object[] { " II", " S ", "I  ", 'I', "ingotIron", 'S', new ItemStack(TF2weapons.itemTF2, 1, 3) }));
-		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,0), new Object[] { "II", "SA", "S ", 'I', "ingotIron", 'S', "stickWood", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2) }));
-		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,1), new Object[] { "EAE", "ESE", "EAE", 'E', Items.SPIDER_EYE, 'A', new ItemStack(TF2weapons.itemTF2, 1, 6)
-			, 'S', ItemFromData.getNewStack("Bottle") }));
-		addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,2), new Object[] { "BEG", "NAN", "GEB", 'E', "gemEmerald", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2)
-				, 'B', Items.BOOK, 'G', Items.GLASS_BOTTLE, 'N', "cropNetherWart" }));
+		if (!TF2ConfigVars.disableBossSpawnItems) {
+			addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,0), new Object[] { "II", "SA", "S ", 'I', "ingotIron", 'S', "stickWood", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2) }));
+			addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,1), new Object[] { "EAE", "ESE", "EAE", 'E', Items.SPIDER_EYE, 'A', new ItemStack(TF2weapons.itemTF2, 1, 6)
+				, 'S', new IngredientWeapon("bottle") }));
+			addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemBossSpawn,1,2), new Object[] { "BEG", "NAN", "GEB", 'E', "gemEmerald", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2)
+					, 'B', Items.BOOK, 'G', Items.GLASS_BOTTLE, 'N', "cropNetherWart" }));
+		}
+		addRecipe(new ShapelessOreRecipe(null,new ItemStack(TF2weapons.blockUpgradeStation), new Object[] { new IngredientWeapon("headtaker"), new IngredientWeapon("monoculus"),
+				new IngredientWeapon("merasmushat")}));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),
 				new ItemStack(TF2weapons.itemTF2, 1, 3), new ItemStack(TF2weapons.itemTF2, 1, 3));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 5), new ItemStack(TF2weapons.itemTF2, 1, 4),

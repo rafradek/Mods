@@ -25,7 +25,17 @@ import java.util.zip.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.stream.JsonWriter;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDispenser;
@@ -61,6 +71,7 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor.ArmorMaterial;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
@@ -81,6 +92,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.village.MerchantRecipe;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
@@ -107,11 +119,15 @@ import net.minecraftforge.fml.common.StartupQuery;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.Mod.Metadata;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms.IMCEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms.IMCMessage;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
@@ -123,6 +139,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
+import net.minecraftforge.registries.IForgeRegistryModifiable;
 import rafradek.TF2weapons.block.BlockAmmoFurnace;
 import rafradek.TF2weapons.block.BlockCabinet;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
@@ -150,6 +167,7 @@ import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityDummy;
+import rafradek.TF2weapons.entity.EntityLightDynamic;
 import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.EntityTarget;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
@@ -221,6 +239,7 @@ import rafradek.TF2weapons.item.ItemTarget;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.crafting.OpenCrateRecipe;
+import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
 import rafradek.TF2weapons.loot.EntityBuildingFunction;
 import rafradek.TF2weapons.loot.EntityNBTCondition;
 import rafradek.TF2weapons.loot.EntityOfClassFunction;
@@ -260,7 +279,7 @@ import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.6", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.8", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -405,7 +424,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 42;
+		return 43;
 	}
 
 	@Mod.EventHandler
@@ -428,6 +447,8 @@ public class TF2weapons {
 		// System.out.println("LOLOLOLOLOLOL2
 		// "+event.getModConfigurationDirectory());
 		// System.out.println("Istnieje? "+outputFile.exists());
+		
+		
 		if (weaponVersion < getCurrentWeaponVersion() || !file.isFile())
 			shouldCopy = true;
 		if (!new File(this.weaponDir, "Weapons.json").exists() || shouldCopy ) {
@@ -563,6 +584,7 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"projenergy"),EntityProjectileEnergy.class, "projenergy", 30, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"onyx"),EntityOnyx.class, "onyx", 31, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"fireball"),EntityFuryFireball.class, "fireball", 32, this, 64, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"light"),EntityLightDynamic.class, "light", 33, this, 256, 20, false);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
 		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
@@ -620,7 +642,7 @@ public class TF2weapons {
 
 		registerBlock(blockCabinet = new BlockCabinet().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("cabinet"), TF2weapons.MOD_ID + ":tf2workbench");
 		registerBlock(blockAmmoFurnace = new BlockAmmoFurnace().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("ammoFurnace"), TF2weapons.MOD_ID + ":ammo_furnace");
-		registerBlock(blockUpgradeStation = new BlockUpgradeStation().setBlockUnbreakable().setResistance(10.0F).setUnlocalizedName("upgradeStation"),
+		registerBlock(blockUpgradeStation = new BlockUpgradeStation().setHardness(5f).setResistance(10.0F).setUnlocalizedName("upgradeStation"),
 				TF2weapons.MOD_ID + ":upgrade_station");
 		registerBlock(blockCopperOre = new BlockOre().setCreativeTab(tabsurvivaltf2).setHardness(3.0F).setResistance(5.0F).setUnlocalizedName("oreCopper"),
 				TF2weapons.MOD_ID + ":copper_ore");
@@ -684,6 +706,9 @@ public class TF2weapons {
 		    {
 				super.applyAttributesModifiersToEntity(entityLivingBaseIn, attributeMapIn, amplifier);
 				entityLivingBaseIn.stepHeight+=amplifier;
+				if (entityLivingBaseIn instanceof EntityTF2Character) {
+					((EntityTF2Character)entityLivingBaseIn).rotation*=0.1f;
+				}
 		    }
 			
 			public void removeAttributesModifiersFromEntity(EntityLivingBase entityLivingBaseIn, AbstractAttributeMap attributeMapIn, int amplifier)
@@ -692,6 +717,9 @@ public class TF2weapons {
 				entityLivingBaseIn.stepHeight-=amplifier;
 				if (entityLivingBaseIn.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
 					WeaponsCapability.get(entityLivingBaseIn).setExpJump(true);
+				}
+				if (entityLivingBaseIn instanceof EntityTF2Character) {
+					((EntityTF2Character)entityLivingBaseIn).rotation*=10f;
 				}
 		    }
 			
@@ -1046,6 +1074,35 @@ public class TF2weapons {
 		}
 	}
 
+	@Mod.EventHandler
+	public void modMessage(IMCEvent event) {
+		for (IMCMessage message : event.getMessages()) {
+			if ("addcraftingrecipe".equals(message.key)) {
+				TF2CraftingManager.INSTANCE.addRecipe(ForgeRegistries.RECIPES.getValue(message.getResourceLocationValue()));
+				((IForgeRegistryModifiable<IRecipe>)ForgeRegistries.RECIPES).remove(message.getResourceLocationValue());
+			}
+			else if ("removecraftingrecipeoutput".equals(message.key)) {
+				for (Iterator<IRecipe> it = TF2CraftingManager.INSTANCE.getRecipeList().iterator(); it.hasNext();) {
+					IRecipe recipe = it.next();
+					if (recipe.getRecipeOutput().isItemEqual(message.getItemStackValue())) {
+						it.remove();
+					}
+				}
+			}
+			else if ("removecraftingrecipeid".equals(message.key)) {
+				TF2CraftingManager.INSTANCE.getRecipeList().remove(Integer.parseInt(message.getStringValue()));
+			}
+			else if ("addsaxtonhalerecipe".equals(message.key)) {
+				MerchantRecipe recipe = new MerchantRecipe(message.getNBTValue());
+				EntitySaxtonHale.addRecipes.add(recipe);
+			}
+			else if ("removesaxtonhalerecipe".equals(message.key)) {
+				MerchantRecipe recipe = new MerchantRecipe(message.getNBTValue());
+				EntitySaxtonHale.removeRecipes.add(recipe);
+			}
+		}
+	}
+	
 	public static void updateOreGenStatus() {
 
 		//System.out.println("Generowane: " + OreDictionary.getOres("oreCopper").size());
@@ -1098,6 +1155,7 @@ public class TF2weapons {
 		}
 	}
 
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void loadConfig(File file,DataOutput output) {
 		/*

@@ -6,10 +6,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.message.TF2Message;
@@ -71,6 +73,12 @@ public class ItemJetpack extends ItemBackpack {
 				itemStack.getTagCompound().setShort("Charge", (short) this.getCooldown(itemStack, player));
 			}
 		}
+		else if (itemStack.getTagCompound().getBoolean("Active") || itemStack.getTagCompound().getByte("Load") > 0){
+			Vec3d vec = TF2Util.getRotationVector(0, player.renderYawOffset);
+			Vec3d vec2 = TF2Util.getRotationVector(0, player.renderYawOffset + 90);
+			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX-vec.x*0.4+vec2.x*0.3, player.posY+1, player.posZ-vec.z*0.4+vec2.z*0.3, 0, 0, 0);
+			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX-vec.x*0.4-vec2.x*0.3, player.posY+1, player.posZ-vec.z*0.4-vec2.z*0.3, 0, 0, 0);
+		}
 	}
 	
 	public int getCooldown(ItemStack stack, EntityLivingBase living) {
@@ -102,6 +110,10 @@ public class ItemJetpack extends ItemBackpack {
 			stack.getTagCompound().setByte("Load", (byte) 12);
 			if (player instanceof EntityPlayerMP)
 				TF2weapons.network.sendTo(new TF2Message.ActionMessage(30, player), (EntityPlayerMP) player);
+		}
+		else {
+			for(int i=0;i<50;i++)
+			ClientProxy.spawnFlameParticle(player.world, player, 0, true);
 		}
 		if (setTimer && !(player.getHeldItemMainhand().getItem() instanceof ItemJetpackTrigger)) {
 			WeaponsCapability.get(player).setPrimaryCooldown(1500);

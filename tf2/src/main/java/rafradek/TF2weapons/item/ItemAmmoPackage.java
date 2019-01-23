@@ -13,6 +13,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemAmmoPackage extends Item{
@@ -82,6 +83,7 @@ public class ItemAmmoPackage extends Item{
 			ammo.setItemDamage(ammoType);
 			ammo.setCount(amount);
 		}
+		WeaponsCapability.get(player).setMetal(WeaponsCapability.get(player).getMetal() + 40 * (stack.getMetadata() / 16 + 1));
 		return ammo;
 		/*if(stack.getMetadata()==10){
 			stack=new ItemStack(TF2weapons.itemAmmoFire,1);

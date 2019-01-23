@@ -144,10 +144,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		this.adjustSize();
 		
 		// System.out.println("Watcher update: "+data);
-		if (!this.world.isRemote && key == CONSTRUCTING) {
+		if (!this.world.isRemote && CONSTRUCTING.equals(key)) {
 			this.setSoundState(this.dataManager.get(CONSTRUCTING) >= this.getConstructionTime()? 0 : 25);
 		}
-		if (this.world.isRemote && key == SOUND_STATE) {
+		if (this.world.isRemote && SOUND_STATE.equals(key)) {
 			SoundEvent sound = this.getSoundNameForState(this.getSoundState());
 			if (sound != null) {
 				// System.out.println("Playing Sound: "+sound);
@@ -314,10 +314,13 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 
 	@Override
 	public void onUpdate() {
-		
-		long nanoTimeStart=System.nanoTime();
 		this.motionX = 0;
 		this.motionZ = 0;
+		if (this.firstUpdate && !this.world.isRemote && this.fromPDA && !PlayerPersistStorage.get(this.world, this.getOwnerId()).allowBuilding(this)) {
+			this.setDead();
+			return;
+		}
+			
 		if (!this.world.isRemote && this.engMade && this.getOwnerId() == null && (this.owner == null || this.owner.isDead) && this.ticksNoOwner++ >= 120)
 			this.setHealth(0);
 		else
@@ -332,7 +335,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				((WorldServer)this.world).getEntityTracker().sendToTracking(this, new SPacketEntity.S16PacketEntityLook(this.getEntityId(), (byte)j1, (byte)l1, true));
 			}
 			
-			if (this.fromPDA && this.ticksExisted % 5 == 0) {
+			if (this.fromPDA && this.ticksExisted % 5 == 0 && this.isEntityAlive()) {
 				PlayerPersistStorage storage = PlayerPersistStorage.get(this.world, this.getOwnerId());
 				if (this.disposableID == -1) {
 					if (storage.buildings[this.getBuildingID()] == null || 
@@ -381,9 +384,6 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		if(this.isConstructing())
 			this.updateConstruction();
 		this.wrenchBonusTime--;
-		if(!this.world.isRemote) {
-			TF2EventsCommon.tickTimeOther[TF2weapons.server.getTickCounter()%20]+=System.nanoTime()-nanoTimeStart;
-		}
 		
 	}
 
@@ -583,8 +583,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			this.ownerName = tag.getString("OwnerName");
 			this.getOwner();
 			
-			if (!this.world.isRemote && this.fromPDA && !PlayerPersistStorage.get(this.world, ownerID).allowBuilding(this))
-				this.setDead();
+			
 			this.enablePersistence();
 		}
 	}

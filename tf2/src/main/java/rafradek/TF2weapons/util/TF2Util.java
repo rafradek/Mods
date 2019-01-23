@@ -139,6 +139,7 @@ public class TF2Util {
 	
 	public static int[] colorCode = new int[32];
 	public static final float[] ASIN_VALUES = new float[512];
+	
 	public static List<RayTraceResult> pierce(World world, Entity living, double startX, double startY, double startZ, double endX, double endY, double endZ,
 			boolean headshot, float size, boolean pierce, Predicate<Entity> selector) {
 		ArrayList<RayTraceResult> targets = new ArrayList<>();
@@ -208,6 +209,14 @@ public class TF2Util {
 		return pierce(world, living, startX, startY, startZ, endX, endY, endZ, headshot, size, pierce, TARGETABLE);
 	}
 
+	
+	public static List<RayTraceResult> pierce(World world, Entity living, double length,
+			boolean headshot, float size, boolean pierce) {
+		Vec3d look= living.getLookVec().scale(length);
+		return pierce(world, living, living.posX, living.posY+living.getEyeHeight(), living.posZ, living.posX+look.x,
+				living.posY+living.getEyeHeight()+look.y, living.posZ+look.z, headshot, size, pierce, TARGETABLE);
+	}
+	
 	public static RayTraceResult getTraceResult(Entity target, RayTraceResult hitVec, float size, boolean headshot, Vec3d start, Vec3d end) {
 		RayTraceResult result = new RayTraceResult(target, hitVec.hitVec);
 		
@@ -455,19 +464,13 @@ public class TF2Util {
 	}
 
 	public static boolean lookingAt(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {
-		/*double d0 = targetX - entity.posX;
-		double d1 = targetY - (entity.posY + entity.getEyeHeight());
-		double d2 = targetZ - entity.posZ;
-		double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
-		float f = (float) (Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-		float f1 = (float) (-(Math.atan2(d1, d3) * 180.0D / Math.PI));
-		float compareyaw = Math.abs(180 - Math.abs(Math.abs(f - MathHelper.wrapDegrees(entity.rotationYawHead)) - 180));
-		float comparepitch = Math.abs(180 - Math.abs(Math.abs(f1 - entity.rotationPitch) - 180));
-		// System.out.println("Angl: "+compareyaw+" "+comparepitch);
-		return compareyaw < max && comparepitch < max;*/
 		return TF2Util.isLyingInCone(new Vec3d(targetX, targetY, targetZ),entity.getPositionEyes(1),entity.getPositionEyes(1).add(entity.getLook(1)),(float) Math.toRadians(max));
 	}
 
+	public static boolean lookingAt(EntityLivingBase entity, double max, Entity target) {
+		return TF2Util.isLyingInCone(target.getPositionEyes(1f),entity.getPositionEyes(1),entity.getPositionEyes(1).add(entity.getLook(1)),(float) Math.toRadians(max));
+	}
+	
 	public static boolean lookingAtFast(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {
 		double d0 = targetX - entity.posX;
 		double d1 = targetY - (entity.posY + entity.getEyeHeight());
@@ -596,12 +599,14 @@ public class TF2Util {
 					e.printStackTrace();
 				}
 				livingTarget.hurtResistantTime = 20;
+				if (TF2Attribute.getModifier("Silent Kill", stack, 0, living) == 0) {
 				if (critical == 2)
 					TF2Util.playSound(entity, TF2Sounds.MISC_CRIT, 1.5F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
 				else if (critical == 1)
 					TF2Util.playSound(entity, TF2Sounds.MISC_MINI_CRIT, 1.5F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
 				if (!(entity instanceof EntityBuilding))
 					TF2Util.playSound(entity, TF2Sounds.MISC_PAIN, 1F, 1.2F / (world.rand.nextFloat() * 0.2F + 0.9F));
+				}
 				livingTarget.isAirBorne = false;
 				livingTarget.motionX = lvelocityX;
 				livingTarget.motionY = lvelocityY;
@@ -609,6 +614,10 @@ public class TF2Util {
 				livingTarget.velocityChanged = false;
 			}
 			return true;
+		}
+		
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
+			((ItemWeapon) stack.getItem()).onHitFinal(stack, living, entity, source);
 		}
 		return false;
 	}
@@ -799,14 +808,16 @@ public class TF2Util {
 				if (shooter.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemGunboats)
 					dmg *= 0.4f;
 			}
+			boolean fromSentry = exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase;
 			
 			DamageSource source;
 			if (TF2Attribute.getModifier("Unblockable", weapon, 0, shooter) == 1)
 				source = TF2Util.causeDirectDamage(weapon, shooter, criticalloc);
-			else
-				source = TF2Util.causeBulletDamage(weapon, shooter, criticalloc, exploder);
+			else {
+				source = TF2Util.causeBulletDamage(weapon, shooter, criticalloc, fromSentry ? ((EntityProjectileBase)exploder).sentry : exploder);
+			}
 			
-			boolean fromSentry = exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase;
+			
 			
 			if (fromSentry) {
 				if (((EntityProjectileBase)exploder).sentry.fromPDA)

@@ -2,6 +2,8 @@ package rafradek.TF2weapons.entity.boss;
 
 import java.util.HashSet;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Predicate;
 
 import net.minecraft.block.Block;
@@ -28,10 +30,12 @@ import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMinigun;
@@ -52,11 +56,15 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 
 	public boolean summoned;
 	public float damageMult=1;
+	
+	public WeaponsCapability weaponCap;
 	public EntityTF2Boss(World worldIn) {
 		super(worldIn);
 		if(!this.world.isRemote)
 			this.setGlowing(true);
 		this.inventoryHandsDropChances=new float[]{0,0};
+		this.weaponCap = new WeaponsCapability(this);
+		this.weaponCap.setCanExpJump(false);
 	}
 	
 	@Override
@@ -312,6 +320,27 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		return potioneffectIn.getPotion() == TF2weapons.stun && potioneffectIn.getAmplifier()>=3;
     }
 	
+	@SuppressWarnings("unchecked")
+    @Override
+    @Nullable
+    public <T> T getCapability(Capability<T> capability, @Nullable net.minecraft.util.EnumFacing facing)
+    {
+        if (capability == TF2weapons.WEAPONS_CAP)
+        {
+        	return (T) this.weaponCap;
+        }
+        /*else if (capability == TF2weapons.INVENTORY_CAP){
+        	return (T) this.wearablesCap;
+        }*/
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable net.minecraft.util.EnumFacing facing)
+    {
+        return capability == TF2weapons.WEAPONS_CAP /*|| capability == TF2weapons.INVENTORY_CAP*/ || super.hasCapability(capability, facing);
+    }
+    
 	@Override
 	public boolean hasHead() {
 		// TODO Auto-generated method stub

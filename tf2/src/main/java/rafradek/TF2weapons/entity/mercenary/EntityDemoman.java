@@ -3,15 +3,20 @@ package rafradek.TF2weapons.entity.mercenary;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
@@ -19,6 +24,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.ai.EntityAIStickybomb;
+import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -29,9 +35,12 @@ import rafradek.TF2weapons.util.WeaponData;
 
 public class EntityDemoman extends EntityTF2Character {
 
-	public ItemStack stickyBombLauncher = ItemFromData.getNewStack("stickybomblauncher");
+	private static final DataParameter<Boolean> SENTRY_BUSTER = EntityDataManager.createKey(EntityDemoman.class, DataSerializers.BOOLEAN);
 
 	public int chargeCool=0;
+	
+	public EntityLivingBase target;
+	public BlockPos targetpos;
 	public EntityDemoman(World par1World) {
 		super(par1World);
 		this.tasks.addTask(5, new EntityAIStickybomb(this,1,10f));
@@ -81,6 +90,29 @@ public class EntityDemoman extends EntityTF2Character {
 	 * this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 	 * ItemFromData.getNewStack("grenadelauncher")); }
 	 */
+	
+	@Override
+	protected void entityInit() {
+		super.entityInit();
+		this.dataManager.register(SENTRY_BUSTER, false);
+	}
+	
+	private void setBusterInternal() {
+		this.dataManager.set(SENTRY_BUSTER, true);
+		this.targetTasks.taskEntries.clear();
+		this.tasks.removeTask(attack);
+	}
+
+	public void setBuster(EntityLivingBase target) {
+		this.setBusterInternal();
+		this.target = target;
+	}
+	
+	public void setBuster(BlockPos target) {
+		this.setBusterInternal();
+		this.targetpos = target;
+	}
+	
 	public float[] getDropChance() {
 		return new float[] { 0.065f, 0.065f, 0.11f };
 	}
@@ -194,6 +226,10 @@ public class EntityDemoman extends EntityTF2Character {
 
 	public int getClassIndex() {
 		return 3;
+	}
+	public void explode() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	/*

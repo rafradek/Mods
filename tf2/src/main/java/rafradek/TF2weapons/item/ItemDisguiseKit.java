@@ -10,8 +10,10 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemDisguiseKit extends Item {
 
@@ -31,7 +33,7 @@ public class ItemDisguiseKit extends Item {
 
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
-		if (world.isRemote && ItemToken.allowUse(living, "spy"))
+		if (world.isRemote && ItemToken.allowUse(living, "spy") && TF2Util.getFirstItem(living.inventory, stack -> TF2Attribute.getModifier("No Disguise Kit", stack, 0, living) != 0).isEmpty())
 			ClientProxy.showGuiDisguise();
 		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}

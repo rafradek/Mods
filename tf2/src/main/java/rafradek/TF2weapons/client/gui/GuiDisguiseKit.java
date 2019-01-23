@@ -90,20 +90,6 @@ public class GuiDisguiseKit extends GuiScreen {
 			this.buttonList.add(new GuiButton(i, this.width / 2 - 135 + (i%2) * 70, this.height / 2 - 60+i/2*20, 70, 20,
 					I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityZombie.class)), new Object[0])));
 		}
-		/*this.buttonList.add(new GuiButton(0, this.width / 2 - 135, this.height / 2 - 20, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityZombie.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(1, this.width / 2 - 65, this.height / 2 - 20, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityCreeper.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(2, this.width / 2 + 5, this.height / 2 - 20, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityEnderman.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(7, this.width / 2 + 75, this.height / 2 - 20, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntitySpider.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(3, this.width / 2 - 135, this.height / 2 + 90, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityCow.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(4, this.width / 2 - 65, this.height / 2 + 90, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityPig.class)), new Object[0])));
-		this.buttonList.add(new GuiButton(8, this.width / 2 + 5, this.height / 2 + 90, 60, 20,
-				I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityChicken.class)), new Object[0])));*/
 		this.buttonList
 				.add(playerDisguise = new GuiButton(30, this.width / 2 + 25, this.height / 2 + 80, 110, 20, "Player"));
 		this.setButtons();
@@ -113,25 +99,11 @@ public class GuiDisguiseKit extends GuiScreen {
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.enabled) {
-			/*if (button.id == 0)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:zombie"));
-			if (button.id == 1)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:creeper"));
-			if (button.id == 2)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:enderman"));
-			if (button.id == 3)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:cow"));
-			if (button.id == 4)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:pig"));*/
 			if (button.id == 30)
 				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("P:" + playerNameField.getText()));
 			if (button.id < 16) {
 				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:"+ EntityList.getKey(mobList.get(button.id+this.firstIndex)).toString()));
 			}
-			/*if (button.id == 7)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:spider"));
-			if (button.id == 8)
-				TF2weapons.network.sendToServer(new TF2Message.DisguiseMessage("M:" + playerNameField.getText()));*/
 			this.mc.displayGuiScreen(null);
 		}
 	}
@@ -271,7 +243,7 @@ public class GuiDisguiseKit extends GuiScreen {
 		if(--this.ticksUpdate<0&&this.needUpdating&&!StringUtils.isBlank(playerNameField.getText())){
 			this.needUpdating=false;
 			this.ticksUpdate=12;
-			TF2EventsCommon.THREAD_POOL.submit(new Runnable() {
+			WeaponsCapability.THREAD_POOL.submit(new Runnable() {
 
 				@Override
 				public void run() {

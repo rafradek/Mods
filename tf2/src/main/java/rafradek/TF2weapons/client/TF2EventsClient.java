@@ -135,7 +135,7 @@ public class TF2EventsClient {
 	private static final DynamicTexture TEXTURE_BRIGHTNESS = new DynamicTexture(16, 16);
 	public static TextureAtlasSprite skinIcon;
 	public static TextureAtlasSprite bisonIcon;
-	private long profileStartTime;
+	private long profileStartTime = -1;
 	private int profileStartTick;
 	
 	@SubscribeEvent
@@ -167,28 +167,7 @@ public class TF2EventsClient {
 		
 		// }
 	}
-
-	@SubscribeEvent
-	public void registerIcons(TextureStitchEvent.Post event) {
-		/*try {
-			for (Field field : event.getMap().getClass().getDeclaredFields()) {
-				//Field field = event.getMap().getClass().getDeclaredField("listAnimatedSprites");
-				if (field.getType().isAssignableFrom(List.class)) {
-					field.setAccessible(true);
-					List<TextureAtlasSprite> animated=(List<TextureAtlasSprite>) field.get(event.getMap());
-					System.out.println("lel");
-					for (TextureAtlasSprite sprite : animated) {
-						System.out.println(sprite.getIconName());
-					}
-					animated.clear();
-				}
-			}
-			//
-		} catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-	}
+	
 	@SubscribeEvent
 	public void keyJumpPress(InputEvent.KeyInputEvent event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
@@ -247,21 +226,21 @@ public class TF2EventsClient {
 		}
 		if (minecraft.gameSettings.showDebugProfilerChart && this.profileStartTime == -1) {
 			this.profileStartTime = MinecraftServer.getCurrentTimeMillis();
-            this.profileStartTick = TF2weapons.server.getTickCounter();
+            this.profileStartTick = (int) Minecraft.getMinecraft().world.getTotalWorldTime();
 		}
 		else if (this.profileStartTime != -1) {
 			long i = MinecraftServer.getCurrentTimeMillis();
-            int j = TF2weapons.server.getTickCounter();
+            int j = (int) Minecraft.getMinecraft().world.getTotalWorldTime();
             long k = i - this.profileStartTime;
             int l = j - this.profileStartTick;
-            this.saveProfilerResults(k, l, TF2weapons.server);
+            this.saveProfilerResults(k, l);
 			this.profileStartTime = -1;
 		}
 	}
 	
-	private void saveProfilerResults(long timeSpan, int tickSpan, MinecraftServer server)
+	private void saveProfilerResults(long timeSpan, int tickSpan)
     {
-        File file1 = new File(server.getFile("debug"), "profile-results-client-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + ".txt");
+        File file1 = new File("./debug/profile-results-client-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + ".txt");
         file1.getParentFile().mkdirs();
         Writer writer = null;
 
@@ -417,11 +396,11 @@ public class TF2EventsClient {
 			changed = true;
 			alreadypressedalt = false;
 		}
-		if (ClientProxy.reload.isKeyDown() && !alreadypressedreload) {
+		if (reloadPressed(minecraft) && !alreadypressedreload) {
 			changed = true;
 			alreadypressedreload = true;
 		}
-		if (!ClientProxy.reload.isKeyDown() && alreadypressedreload) {
+		if (alreadypressedreload && !reloadPressed(minecraft)) {
 			changed = true;
 			alreadypressedreload = false;
 		}
@@ -510,6 +489,11 @@ public class TF2EventsClient {
 		
 		
 	}
+	
+	public static boolean reloadPressed(Minecraft minecraft) {
+		return ClientProxy.reload.isKeyDown() || (minecraft.player != null && TF2ConfigVars.autoReload && minecraft.player.getHeldItemMainhand().getMaxDamage() != 0);
+	}
+	
 	public static int getActionType(boolean attackKeyDown, boolean altAttackKeyDown) {
 		int value = 0;
 		ItemStack stack = Minecraft.getMinecraft().player.getHeldItemMainhand();
@@ -527,7 +511,7 @@ public class TF2EventsClient {
 		if ((swap && attackKeyDown) || (!swap && altAttackKeyDown && allow)) {
 			value += 2;
 		}
-		if (ClientProxy.reload.isKeyDown() || TF2ConfigVars.autoReload) {
+		if (reloadPressed(Minecraft.getMinecraft())) {
 			value += 4;
 		}
 		return value;
@@ -924,7 +908,7 @@ public class TF2EventsClient {
 	@SubscribeEvent
 	public void renderPlayer(RenderPlayerEvent.Pre event) {
 		if (event.getEntityPlayer() != Minecraft.getMinecraft().player) {
-			renderBeam(event.getEntityPlayer(), event.getPartialRenderTick());
+			renderBeam(event.getEntityPlayer(), event.getPartialRenderTick(), 0.04f);
 		}
 	}
 
@@ -966,7 +950,7 @@ public class TF2EventsClient {
 			event.setCanceled(true);
 		}
 	}
-	public static void renderBeam(EntityLivingBase ent, float partialTicks) {
+	public static void renderBeam(EntityLivingBase ent, float partialTicks, float size) {
 		if (!ent.hasCapability(TF2weapons.WEAPONS_CAP, null))
 			return;
 		// System.out.println("Drawing");
@@ -1005,28 +989,28 @@ public class TF2EventsClient {
 				GlStateManager.color(0.0F, 0.0F, 1.0F, 0.23F);
 			}*/
 			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(-0.04, -0.04, 0).endVertex();
-			renderer.pos(0.04, 0.04, 0).endVertex();
-			renderer.pos(0.04, 0.04, fullDist).endVertex();
-			renderer.pos(-0.04, -0.04, fullDist).endVertex();
+			renderer.pos(-size, -size, 0).endVertex();
+			renderer.pos(size, size, 0).endVertex();
+			renderer.pos(size, size, fullDist).endVertex();
+			renderer.pos(-size, -size, fullDist).endVertex();
 			tessellator.draw();
 			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(-0.04, -0.04, fullDist).endVertex();
-			renderer.pos(0.04, 0.04, fullDist).endVertex();
-			renderer.pos(0.04, 0.04, 0).endVertex();
-			renderer.pos(-0.04, -0.04, 0).endVertex();
+			renderer.pos(-size, -size, fullDist).endVertex();
+			renderer.pos(size, size, fullDist).endVertex();
+			renderer.pos(size, size, 0).endVertex();
+			renderer.pos(-size, -size, 0).endVertex();
 			tessellator.draw();
 			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(0.04, -0.04, 0).endVertex();
-			renderer.pos(-0.04, 0.04, 0).endVertex();
-			renderer.pos(-0.04, 0.04, fullDist).endVertex();
-			renderer.pos(0.04, -0.04, fullDist).endVertex();
+			renderer.pos(size, -size, 0).endVertex();
+			renderer.pos(-size, size, 0).endVertex();
+			renderer.pos(-size, size, fullDist).endVertex();
+			renderer.pos(size, -size, fullDist).endVertex();
 			tessellator.draw();
 			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(0.04, -0.04, fullDist).endVertex();
-			renderer.pos(-0.04, 0.04, fullDist).endVertex();
-			renderer.pos(-0.04, 0.04, 0).endVertex();
-			renderer.pos(0.04, -0.04, 0).endVertex();
+			renderer.pos(size, -size, fullDist).endVertex();
+			renderer.pos(-size, size, fullDist).endVertex();
+			renderer.pos(-size, size, 0).endVertex();
+			renderer.pos(size, -size, 0).endVertex();
 			tessellator.draw();
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			GL11.glDisable(GL11.GL_BLEND);
@@ -1070,7 +1054,7 @@ public class TF2EventsClient {
 	@SubscribeEvent
 	public void renderWorld(RenderWorldLastEvent event) {
 		if (Minecraft.getMinecraft().player != null) {
-			renderBeam(Minecraft.getMinecraft().player, event.getPartialTicks());
+			renderBeam(Minecraft.getMinecraft().player, event.getPartialTicks(), 0.04f);
 		}
 	}
 

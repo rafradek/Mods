@@ -53,6 +53,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityMerasmus extends EntityTF2Boss {
@@ -96,15 +97,22 @@ public class EntityMerasmus extends EntityTF2Boss {
 				// TODO Auto-generated method stub
 				return input instanceof EntityTF2Character || input instanceof EntityPlayer;
 			}
-        	
         }) {
         	protected double getTargetDistance()
 		    {
 		        return super.getTargetDistance() * 0.35;
 		    }
+
+			public boolean shouldExecute()
+		    {
+				
+				return super.shouldExecute();
+		    }
         });
         this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
     }
+	
+	
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
@@ -209,32 +217,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 				}
 				
 				if(this.teleportCooldown--<=0 && !this.isBombSpell()){
-					this.teleportCooldown=240;
-					this.playSound(TF2Sounds.MOB_MERASMUS_DISAPPEAR, 1F, 1f);
-					
-					for (int i = 0; i < 10; i++) {
-						double x;
-						double z;
-						if(this.getAttackTarget() != null) {
-							x = this.getAttackTarget().posX + rand.nextDouble() * 40 - 20;
-							z = this.getAttackTarget().posZ + rand.nextDouble() * 40 - 20;
-						}
-						else {
-							x = this.posX + rand.nextDouble() * 40 - 20;
-							z = this.posZ + rand.nextDouble() * 40 - 20;
-						}
-						double y = this.world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z)).getY() + 3;
-						if (this.attemptTeleport(x, y, z)) {
-							this.playSound(TF2Sounds.MOB_MERASMUS_APPEAR, 1F, 1f);
-							for (int j = 0; j < 40; j++) {
-								Vec3d pos = TF2Util.radiusRandom3D(2.7f, this.rand);
-								this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX,
-										pos.y + this.posY, pos.z + this.posZ, 0, 0, 0, new int[0]);
-							}
-							this.teleportCooldown += 200 + rand.nextInt(80);
-							break;
-						}
-					}
+					this.teleport();
 				}
 				if(this.isBombSpell()){
 					float prevPitch=this.rotationPitch;
@@ -285,6 +268,35 @@ public class EntityMerasmus extends EntityTF2Boss {
 			}
 		}
 		
+	}
+	
+	public void teleport() {
+		this.teleportCooldown=240;
+		this.playSound(TF2Sounds.MOB_MERASMUS_DISAPPEAR, 1F, 1f);
+		
+		for (int i = 0; i < 10; i++) {
+			double x;
+			double z;
+			if(this.getAttackTarget() != null) {
+				x = this.getAttackTarget().posX + rand.nextDouble() * 40 - 20;
+				z = this.getAttackTarget().posZ + rand.nextDouble() * 40 - 20;
+			}
+			else {
+				x = this.posX + rand.nextDouble() * 40 - 20;
+				z = this.posZ + rand.nextDouble() * 40 - 20;
+			}
+			double y = this.world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z)).getY() + 3;
+			if (this.attemptTeleport(x, y, z)) {
+				this.playSound(TF2Sounds.MOB_MERASMUS_APPEAR, 1F, 1f);
+				for (int j = 0; j < 40; j++) {
+					Vec3d pos = TF2Util.radiusRandom3D(2.7f, this.rand);
+					this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX,
+							pos.y + this.posY, pos.z + this.posZ, 0, 0, 0, new int[0]);
+				}
+				this.teleportCooldown += 200 + rand.nextInt(80);
+				break;
+			}
+		}
 	}
 	public boolean isBombSpell() {
 		return this.getDataManager().get(SPELL_BOMB);
@@ -494,9 +506,11 @@ public class EntityMerasmus extends EntityTF2Boss {
 				if (host.envDamage > 0)
 					host.envDamage -= 6;
 				this.host.swingArm(EnumHand.MAIN_HAND);
+				boolean sup = this.host.level > 1 && (this.attacksMade % 7 == 0 || (this.attacksMade-1) % 7 == 0);
 				if(this.attacksMade>0&&this.attacksMade%13==0){
 					this.host.setBombSpell(true);
 					this.host.bombDuration=200;
+					this.host.teleport();
 					BlockPos pos = this.host.world.getTopSolidOrLiquidBlock(this.host.getPosition());
 					this.host.topBlock=pos.getY()+7+this.host.rand.nextInt(3);
 					this.attackDuration=200;
@@ -509,8 +523,21 @@ public class EntityMerasmus extends EntityTF2Boss {
 						}
 					}
 					else{
+						this.host.faceEntity(target, 180, 90);
 					((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
 							this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
+						if(sup) {
+							Vec3d right = this.host.getVectorForRotation(0, this.host.rotationYawHead+90);
+							this.host.rotationYawHead -= 24;
+							for (int i =-2; i <=2; i++) {
+							this.host.posX+= right.x * i;
+							this.host.posZ+= right.z * i;
+							this.host.rotationYawHead+=12;
+							((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
+									this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
+							}
+							this.host.rotationYawHead-=24;
+						}
 					}
 				}
 				else{
@@ -529,7 +556,9 @@ public class EntityMerasmus extends EntityTF2Boss {
 						
 					})){
 						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 4.4f + this.host.level * 0.7f);
-						living.addVelocity(0, 0.75, 0);
+						living.addVelocity(0, 0.7, 0);
+						if (living instanceof EntityPlayerMP)
+							TF2Util.sendTracking(new TF2Message.VelocityAddMessage(new Vec3d(0,0.7,0), true),living);
 						if (living.hasCapability(TF2weapons.WEAPONS_CAP, null))
 							WeaponsCapability.get(living).setExpJump(true);
 						else
@@ -539,6 +568,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 					if(!attacked)
 						this.host.teleportCooldown-=20;
 				}
+				if (sup)
+					this.attackDuration *= 0.35f;
 				this.attacksMade++;
 			}
 		}

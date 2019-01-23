@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
 
@@ -32,7 +33,7 @@ public class RenderMerasmus extends RenderBiped<EntityMerasmus> {
 	protected void preRenderCallback(EntityMerasmus entitylivingbaseIn, float partialTickTime)
     {
 		float f = 1.5F;
-        GlStateManager.translate(0, -0.25, 0);
+        GlStateManager.translate(0, -MathHelper.sin((partialTickTime+entitylivingbaseIn.ticksExisted)/20f)*0.4-0.5, 0);
         GlStateManager.scale(f, f, f);
     }
 	public static class ModelMerasmus extends ModelBiped{

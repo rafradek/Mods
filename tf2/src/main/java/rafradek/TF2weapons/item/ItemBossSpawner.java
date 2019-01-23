@@ -24,6 +24,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
@@ -66,7 +67,7 @@ public class ItemBossSpawner extends Item {
 	}
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-		if (world.isRemote)
+		if (world.isRemote || TF2ConfigVars.disableBossSpawnItems)
 			return EnumActionResult.SUCCESS;
 		EntityTF2Boss boss = null;
 		long time = world.getWorldTime();

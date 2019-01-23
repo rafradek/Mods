@@ -1,7 +1,9 @@
 package rafradek.TF2weapons.entity.boss;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import com.google.common.base.Predicate;
 
@@ -16,6 +18,7 @@ import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITarget;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
@@ -54,7 +57,12 @@ public class EntityHHH extends EntityTF2Boss {
 	public int begin=30;
 	private float damageTakenNoPath;
 	private int aboveGroundTicks;
-
+	private int dashCool;
+	private int dashTick;
+	private Vec3d dashMotion;
+	private List<EntityLivingBase> possibleTargets = new ArrayList<>();
+	private UUID slowDash = UUID.fromString("03edb08b-0a2f-4040-9c9c-062d0c2e2a85");
+	
 	public EntityHHH(World worldIn) {
 		super(worldIn);
 		this.setSize(0.9f, 2.85f);
@@ -69,7 +77,7 @@ public class EntityHHH extends EntityTF2Boss {
 		this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, false));
 		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
 		this.tasks.addTask(6, new EntityAILookIdle(this));
-		this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,2, false,false,new Predicate<EntityLivingBase>(){
+		/*this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,2, false,false,new Predicate<EntityLivingBase>(){
 
 			@Override
 			public boolean apply(EntityLivingBase input) {
@@ -77,7 +85,7 @@ public class EntityHHH extends EntityTF2Boss {
 				return input.getActivePotionEffect(TF2weapons.it)!=null;
 			}
         	
-        }));
+        }));*/
 		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntitySentry>(this, EntitySentry.class,2, false,false, null));
 		/*this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false, new Class[0]));
         this.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,2, false,false,new Predicate<EntityLivingBase>(){
@@ -110,7 +118,7 @@ public class EntityHHH extends EntityTF2Boss {
 		return p_110161_1_;
 	}
 	public void dropFewItems(boolean hit,int looting){
-		if(this.rand.nextBoolean())
+		if(this.rand.nextBoolean() || this.level == 1)
 			this.entityDropItem(ItemFromData.getNewStack("headtaker"), 0);
 		//ItemStack hat=ItemFromData.getNewStack("monoculus");
 		//hat.getTagCompound().setShort("BossLevel",(short)this.level);
@@ -135,8 +143,12 @@ public class EntityHHH extends EntityTF2Boss {
 			if(this.begin==0){
 				this.setNoAI(false);
 			}
-			if(this.getAttackTarget()!=null && !(this.getAttackTarget() instanceof EntitySentry) && this.getAttackTarget().getActivePotionEffect(TF2weapons.it)==null)
+			if(this.getAttackTarget()!=null && !(this.getAttackTarget() instanceof EntitySentry) && this.getAttackTarget().getActivePotionEffect(TF2weapons.it)==null) {
+				EntityLivingBase lastTarget = this.getAttackTarget().getLastAttackedEntity();
 				this.setAttackTarget(null);
+				if ( lastTarget != null && lastTarget.getActivePotionEffect(TF2weapons.it) != null)
+					this.setAttackTarget(lastTarget);
+			}
 			this.scareTick--;
 			if(this.getAttackTarget()==null && this.ticksExisted%5==0){
 				List<EntityLivingBase> list=this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(20, 10, 20), new Predicate<EntityLivingBase>(){
@@ -151,9 +163,10 @@ public class EntityHHH extends EntityTF2Boss {
 				});
 				Collections.sort(list, new EntityAINearestAttackableTarget.Sorter(this));
 				if(list.size()>0)
-					list.get(0).addPotionEffect(new PotionEffect(TF2weapons.it,600));
+					this.setAttackTarget(list.get(0));
+					//list.get(0).addPotionEffect(new PotionEffect(TF2weapons.it,600));
 				else if(this.getRevengeTarget() != null) {
-					this.getRevengeTarget().addPotionEffect(new PotionEffect(TF2weapons.it,600));
+					this.setAttackTarget(this.getRevengeTarget());
 				}
 				if(this.scareTick<=0){
 					boolean one=false;
@@ -178,12 +191,28 @@ public class EntityHHH extends EntityTF2Boss {
 					this.scareTick=200;
 				}
 			}
-			/*if (this.getAttackTarget() != null) {
-				if (this.getNavigator().getPathToEntityLiving(this.getAttackTarget()) != null)
-					System.out.println("has way:"+this.getNavigator().getPathToEntityLiving(this.getAttackTarget()).getFinalPathPoint().y);
+			if (this.getAttackTarget() != null) {
+				if (this.level > 2) {
+					if (this.dashCool-- <= 0) {
+						this.dashCool = 300;
+						this.dashTick = 35;
+						this.dashMotion = this.getVectorForRotation(0, this.rotationYawHead).scale(0.45);
+						TF2Util.addModifierSafe(this,SharedMonsterAttributes.MOVEMENT_SPEED,new AttributeModifier(slowDash, "dash", -0.5, 2), false);
+					}
+					if (this.dashTick-- > 0) {
+						if (this.dashTick < 20) {
+							this.motionX+=dashMotion.x;
+							this.motionY+=dashMotion.y;
+							this.motionZ+=dashMotion.z;
+						}
+						if (this.dashTick < 12 && this.getDistanceSq(this.getAttackTarget()) < this.getAttackTarget().getDistanceSq(this.posX+this.motionX, this.posY+this.motionY, this.posZ+this.motionZ))
+							this.dashTick = 0;
+					}
+					else
+						this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowDash);
+				}
 				
-				
-			}*/
+			}
 			if (this.toTeleportTime <= 0 && this.getAttackTarget() != null && this.ticksExisted % 5 == 0) {
 				Path path = this.getNavigator().getPathToEntityLiving(this.getAttackTarget());
 				boolean shouldTeleport;
@@ -362,6 +391,7 @@ public class EntityHHH extends EntityTF2Boss {
 		nbt.setShort("Scare", (short)this.scareTick);
 		nbt.setShort("Teleport", (short)this.teleportTime);
 		nbt.setFloat("NoPathDamange", this.damageTakenNoPath);
+		nbt.setShort("DashCool", (short)this.dashCool);
 	}
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
@@ -370,6 +400,7 @@ public class EntityHHH extends EntityTF2Boss {
 		this.begin=nbt.getShort("Begin");
 		this.scareTick=nbt.getShort("Scare");
 		this.teleportTime=nbt.getShort("Teleport");
+		this.dashCool = nbt.getShort("DashCool");
 	}
 	
 	public void returnSpawnItems() {

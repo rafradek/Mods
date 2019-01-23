@@ -182,6 +182,9 @@ public class ItemWearable extends ItemFromData {
 				}
 			}
 		}
+		
+		if (WeaponsCapability.get(living).isDisguised())
+			return;
 		if (!living.world.isRemote&& living.ticksExisted % 13 == 0 && TF2Attribute.getModifier("Bomb Enemy", stack, 0, living) != 0) {
 			EntityLivingBase target = WeaponsCapability.get(living).lastAttacked;
 			if (target == null || !target.isEntityAlive() || target.getDistanceSq(living) > 200) {

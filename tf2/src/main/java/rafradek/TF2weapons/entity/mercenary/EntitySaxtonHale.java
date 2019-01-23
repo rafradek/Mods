@@ -2,11 +2,10 @@ package rafradek.TF2weapons.entity.mercenary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Predicate;
-
-import akka.util.Collections;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -39,6 +38,7 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
@@ -58,6 +58,8 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	public EntityPlayer trader;
 	public MerchantRecipeList tradeOffers;
+	public static List<MerchantRecipe> addRecipes = new ArrayList<>();
+	public static List<MerchantRecipe> removeRecipes = new ArrayList<>();
 	public float rage;
 	public boolean hostile;
 	public boolean superJump;
@@ -96,9 +98,11 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			makeOffers();
 		MerchantRecipeList list = new MerchantRecipeList();
 		list.addAll(this.tradeOffers);
-		for (int i = 0; i <= TF2PlayerCapability.get(player).maxInvasionBeaten; i++) {
-			if (!(i == 4 && ((EntityPlayerMP) player).getStatFile().readStat(TF2weapons.robotsKilled) < 2000) && i != InvasionEvent.DIFFICULTY.length)
-				this.addTradeOffer(new ItemStack(TF2weapons.itemEventMaker, 1, i), 27+i*9, list, i+1);
+		if (!TF2ConfigVars.disableInvasionItems) {
+			for (int i = 0; i <= TF2PlayerCapability.get(player).maxInvasionBeaten; i++) {
+				if (!(i == 4 && ((EntityPlayerMP) player).getStatFile().readStat(TF2weapons.robotsKilled) < 2000) && i != InvasionEvent.DIFFICULTY.length)
+					this.addTradeOffer(new ItemStack(TF2weapons.itemEventMaker, 1, i), 27+i*9, list, i+1);
+			}
 		}
 		return list;
 	}
@@ -111,6 +115,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	public void makeOffers() {
 		this.lastWeekCheck = (int) (this.world.getTotalWorldTime() / 96000L);
 		this.tradeOffers = new MerchantRecipeList();
+		this.tradeOffers.addAll(addRecipes);
 		this.tradeOffers.add(new MerchantRecipe(new ItemStack(TF2weapons.itemTF2, 5, 2), ItemStack.EMPTY,
 				new ItemStack(TF2weapons.itemTF2, 1, 7), 0, 100));
 		int weaponCount = 13 + this.rand.nextInt(2);
@@ -129,6 +134,11 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			this.addTradeOffer(item, cost);
 		}
 		
+		for (MerchantRecipe toRemove : removeRecipes) {
+			this.tradeOffers.removeIf(recipe -> {
+				return recipe.getItemToBuy().isItemEqual(toRemove.getItemToBuy());
+			});
+		}
 		
 		/*ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
 		list.removeIf(attr -> attr == null || attr.perKill == 0);
@@ -147,6 +157,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	
 	private void addTradeOffer(ItemStack toBuy, int cost) {
+		cost *= TF2ConfigVars.costMult;
 		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
 		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
 		this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
@@ -154,6 +165,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	}
 	
 	private void addTradeOffer(ItemStack toBuy, int cost, MerchantRecipeList list, int index) {
+		cost *= TF2ConfigVars.costMult;
 		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
 		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
 		list.add(index, new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,

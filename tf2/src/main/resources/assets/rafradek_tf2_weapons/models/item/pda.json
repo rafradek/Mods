@@ -3,6 +3,51 @@
 	"textures": {
 		"0": "rafradek_tf2_weapons:items/pda"
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":0,
+            	"building":0.33
+            },
+            "model": "rafradek_tf2_weapons:item/sentryred"
+		},
+		{
+            "predicate": {
+            	"team":0,
+            	"building":0.66
+            },
+            "model": "rafradek_tf2_weapons:item/dispenserred"
+		},
+		{
+            "predicate": {
+            	"team":0,
+            	"building":1
+            },
+            "model": "rafradek_tf2_weapons:item/teleporterred"
+		},
+		{
+            "predicate": {
+            	"team":1,
+            	"building":0.33
+            },
+            "model": "rafradek_tf2_weapons:item/sentryblu"
+		},
+		{
+            "predicate": {
+            	"team":1,
+            	"building":0.66
+            },
+            "model": "rafradek_tf2_weapons:item/dispenserblu"
+		},
+		{
+            "predicate": {
+            	"team":1,
+            	"building":1
+            },
+            "model": "rafradek_tf2_weapons:item/teleporterblu"
+		}
+	],
+	
 	"elements": [
 		{
 			"name": "Base",

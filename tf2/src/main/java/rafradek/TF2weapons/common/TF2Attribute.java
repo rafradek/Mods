@@ -16,6 +16,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.util.text.TextFormatting;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
@@ -357,6 +358,9 @@ public class TF2Attribute {
 		new TF2Attribute(137, "MiniCritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(138, "DetonateFlare", "Detonate", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(139, "BombEnemy", "Bomb Enemy", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(140, "SilentKill", "Silent Kill", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(141, "DisguiseBackstab", "Disguise Backstab", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(142, "NoDisguiseKit", "No Disguise Kit", Type.ADDITIVE, 0, State.NEGATIVE);
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
@@ -459,6 +463,8 @@ public class TF2Attribute {
 			def *= 0.75f;
 		else if (stack.getItem() instanceof ItemChargingTarge && this.effect.equals("Charge"))
 			def *= 2.4f;
+		else if (stack.getItem() instanceof ItemSniperRifle && this.effect.equals("Destroy Block"))
+			def *= 2.52f;
 		return def;
 	}
 	
@@ -480,7 +486,7 @@ public class TF2Attribute {
 	public int getUpgradeCost(ItemStack stack) {
 		if (stack.isEmpty() || !(stack.getItem() instanceof ItemFromData))
 			return this.cost;
-		int baseCost = this.cost;
+		int baseCost = (int) (this.cost * TF2ConfigVars.xpMult);
 		if (ItemFromData.getData(stack).getInt(PropertyType.COST) <= 12)
 			baseCost /= 2;
 		if (getModifier("Damage", stack, 1, null) <= 0)

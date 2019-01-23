@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.item;
 
+import javax.annotation.Nullable;
+
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.block.BlockFence;
@@ -9,8 +11,10 @@ import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -18,6 +22,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,12 +31,17 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -39,7 +49,9 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.WeaponData;
 
 public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay {
 
@@ -48,6 +60,27 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 	
 	public ItemPDA() {
 		this.setMaxStackSize(1);
+		this.addPropertyOverride(new ResourceLocation("building"), new IItemPropertyGetter() {
+			@Override
+			@SideOnly(Side.CLIENT)
+			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
+				if (!stack.hasTagCompound() || (stack.getTagCompound().getByte("Building") == 0)) {
+					return 0f;
+				}
+				else {
+					int building = stack.getTagCompound().getByte("Building");
+					if (building == 1 || building == 5) {
+						return 0.33f;
+					}
+					else if (building == 2) {
+						return 0.66f;
+					}
+					else {
+						return 1f;
+					}
+				}
+			}
+		});
 	}
 
 	@Override
@@ -148,6 +181,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 
 			if (entity != null) {
 				
+				entity.setEntTeam(TF2Util.getTeamForDisplay(playerIn));
 				entity.setOwner(playerIn);
 				if (entity instanceof EntitySentry) {
 					((EntitySentry)entity).attackRateMult = TF2Attribute.getModifier("Sentry Fire Rate", stack, 1, playerIn);
@@ -263,4 +297,5 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 		}
 
 	}
+	
 }

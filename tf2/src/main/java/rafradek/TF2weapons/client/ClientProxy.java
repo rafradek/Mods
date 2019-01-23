@@ -192,20 +192,12 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public static void RegisterWeaponData(WeaponData weapon) {
-		String modelName = weapon.getString(PropertyType.RENDER);
-
-		if (modelName == null || modelName.isEmpty())
-			return;
-
-		ModelResourceLocation model = new ModelResourceLocation(modelName, "inventory");
-		ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
-		nameToModel.put(weapon.getName(), model);
-		if (weapon.hasProperty(PropertyType.RENDER_BACKSTAB)) {
-			modelName = weapon.getString(PropertyType.RENDER_BACKSTAB);
-			model = new ModelResourceLocation(modelName, "inventory");
-			ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
-			nameToModel.put(weapon.getName() + "/b", model);
-		}
+		
+		Item item = MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS));
+		
+		if (item instanceof ItemFromData)
+			((ItemFromData)item).registerModels(weapon);
+		
 	}
 
 	@Override
@@ -346,15 +338,7 @@ public class ClientProxy extends CommonProxy {
 			RegisterWeaponData(weapon);
 		
 		for (Item item : MapList.weaponClasses.values()) {
-			ModelLoader.setCustomMeshDefinition(item, stack -> {
-				if (stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
-					if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst!=ItemFromData.BLANK_DATA)
-						return nameToModel.get(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst.getName());
-					else if(stack.hasTagCompound())
-						return nameToModel.get(stack.getTagCompound().getString("Type"));
-				}
-				return nameToModel.get("minigun");
-			});
+			ModelLoader.setCustomMeshDefinition(item,((ItemFromData)item).getMeshDefinition());
 		}
 		
 		ModelResourceLocation spawnEgg = new ModelResourceLocation("spawn_egg", "inventory");

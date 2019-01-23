@@ -4,10 +4,23 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.Queue;
+
+import com.google.common.base.Predicate;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
+
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -20,10 +33,17 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -32,12 +52,15 @@ import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.item.ItemChargingTarge;
+import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.item.ItemParachute;
@@ -47,6 +70,8 @@ import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.potion.PotionTF2;
+import rafradek.TF2weapons.potion.PotionTF2Item;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 
@@ -122,7 +147,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean fireCoolReduced;
 	public boolean autoFire;
 	public EntityLivingBase lastAttacked;
+	public boolean stabbedDisguise;
+	private boolean canExpJump = true;
 	
+	public double gravity = -0.08;
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
 	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
@@ -136,6 +164,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
 	private static final DataParameter<Float> KNOCKBACK_RAGE= new DataParameter<Float>(5, DataSerializers.FLOAT);
 	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
+	
+	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -247,6 +277,9 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setDisguised(boolean val) {
 		this.dataManager.set(DISGUISED, val);
+		if (!val) {
+			this.stabbedDisguise = false;
+		}
 	}
 	
 	public boolean isDisguised() {
@@ -335,12 +368,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void tick() {
 		// System.out.println("graczin"+state);
-		Iterator<Entry<String, Integer>> iterator = effectsCool.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<String, Integer> entry = iterator.next();
+		
+		Iterator<Entry<String, Integer>> efiterator = effectsCool.entrySet().iterator();
+		while (efiterator.hasNext()) {
+			Entry<String, Integer> entry = efiterator.next();
 			entry.setValue(entry.getValue() - 1);
 			if (entry.getValue() <= 0)
-				iterator.remove();
+				efiterator.remove();
 		}
 		if (!this.owner.world.isRemote && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
 			this.dataManager.set(HEADS, this.dataManager.get(HEADS) - 1);
@@ -541,6 +575,327 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		if (!this.owner.world.isRemote && this.dataManager.isDirty()) {
 			TF2Util.sendTracking(new TF2Message.CapabilityMessage(this.owner, false), this.owner);
 		}
+		
+		PotionEffect charging = owner.getActivePotionEffect(TF2weapons.charging);
+		
+		/*if (owner instanceof EntityPlayer && owner.onGround && owner.motionY < 0) {
+			this.gravity = owner.motionY/0.98;
+			System.out.println(this.gravity);
+		}*/
+		
+		
+		
+		if (!owner.onGround && charging != null)
+			this.setExpJump(true);
+		
+		if (this.isExpJump() && this.canExpJump()) {
+			boolean enchanted = TF2ConfigVars.enchantedExplosion && !owner.isElytraFlying() && !this.isUsingParachute()
+					&& !(owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isFlying) && 
+					!owner.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem().getRegistryName().toString().equals("tconstruct:slime_boots");
+			if (owner.onGround) {
+				BlockPos pos = owner.getPosition().down();
+				IBlockState block = owner.world.getBlockState(pos);
+				owner.motionX *= block.getBlock().getSlipperiness(block, owner.world, pos, owner);
+				owner.motionZ *= block.getBlock().getSlipperiness(block, owner.world, pos, owner);
+			}
+			
+			if (this.expJumpGround > 0) {
+				this.expJumpGround--;
+				owner.onGround = false;
+				owner.isAirBorne = true;
+			}
+			else if (owner.onGround || owner.isInWater()) {
+				this.killsAirborne=0;
+				this.setExpJump(false);
+				if(enchanted && this.oldFactor != 0) {
+					owner.jumpMovementFactor = this.oldFactor;
+					enchanted = false;
+				}
+			}
+			
+			if (!enchanted && owner.jumpMovementFactor == 0 && this.oldFactor != 0) {
+				owner.jumpMovementFactor = this.oldFactor;
+			}
+			if(enchanted) {
+				if(owner.jumpMovementFactor != 0) {
+					this.oldFactor = owner.jumpMovementFactor;
+					owner.jumpMovementFactor = 0;
+				}
+				//System.out.println(""+owner.motionX+ " " + owner.motionY +" "+ owner.motionZ + " "+ (owner.posX - this.lastPosX));
+				
+				/*if(!owner.world.isRemote && owner instanceof EntityPlayer && !TF2weapons.server.isSinglePlayer()) {
+					boolean loaded = owner.world.isBlockLoaded(owner.getPosition());
+					owner.motionX = loaded ? 50 : 5;
+					owner.motionZ = loaded ? 50 : 5;
+				}*/
+				if (owner.world.isRemote && owner instanceof EntityPlayer && !owner.world.getChunkFromBlockCoords(owner.getPosition()).isLoaded()) {
+					owner.motionX *= 0.99;
+					owner.motionZ *= 0.99;
+				}
+				if ((!owner.world.isRemote || owner instanceof EntityPlayer) && !(TF2weapons.squakeLoaded && owner instanceof EntityPlayer)) {
+
+					double speed = Math.sqrt(owner.motionX * owner.motionX + owner.motionZ * owner.motionZ);
+	
+					Vec3d moveDir = TF2Util.getMovementVector(owner);
+					double combSpeed = owner.motionX * moveDir.x + owner.motionZ * moveDir.y;
+					
+					double maxSpeed = charging != null ? owner.getAIMoveSpeed() * 2.16 : 0.0287064;
+					double friction = charging != null ? 0.08 : 0.5;
+					
+					combSpeed = (maxSpeed)-combSpeed;
+					double accel = Math.max(speed,maxSpeed) * friction;
+					if (accel > combSpeed)
+						accel = combSpeed;
+					
+					if(accel > 0) {
+						owner.motionX += moveDir.x * accel;
+						owner.motionZ += moveDir.y * accel;
+					}
+					owner.motionX /= 0.91;
+					owner.motionZ /= 0.91;
+				
+				}
+				owner.motionY /= 0.98;
+				owner.motionY -= this.gravity * 0.375;
+				
+				
+			}
+			owner.getEntityBoundingBox();
+			//owner.motionX += owner.motionX -livin
+			//owner.motionZ = owner.motionZ * 1.035;
+		}
+		else if (this.oldFactor != 0) {
+			owner.jumpMovementFactor = this.oldFactor;
+			this.oldFactor = 0;
+		}
+		
+		if(this.isExpJump() || charging != null) {
+			Vec3d vec = new Vec3d(owner.motionX, owner.motionY, owner.motionZ);
+			Vec3d vec2 = new Vec3d(owner.motionX, 0, owner.motionZ);
+			if (owner.onGround)
+				vec = vec2;
+			double motion = vec.lengthVector();
+			//double motiona = vec2.lengthVector();
+			if(motion >= 0.375 && (TF2ConfigVars.allowTrimp == 2 || (TF2ConfigVars.allowTrimp == 1 
+					&& EnumFacing.getFacingFromVector((float)vec.x, (float)vec.y, (float)vec.z) != EnumFacing.DOWN))) {
+				vec2 = vec2.normalize();
+				Vec3d entPos = owner.getPositionVector();
+				Vec3d vecOff = vec.add(vec2.scale(owner.width* 1.5));
+				RayTraceResult rayTrace =owner.world.rayTraceBlocks(entPos,
+						entPos.add(vecOff));
+				BlockPos pos = new BlockPos(vecOff.add(entPos));
+				if (rayTrace != null) {
+					pos = rayTrace.getBlockPos().offset(rayTrace.sideHit);
+					//System.out.println(rayTrace.getBlockPos());
+				}
+				if (owner.world.isBlockFullCube(pos.down())) {
+					Vec3d step=TF2Util.getHeightVec(owner.world, pos);
+					Vec3d normal=step.normalize();
+					if (normal.y != 1D && normal.dotProduct(vecOff) < 0 && !(charging != null && normal.y > 0.75)) {
+						double backoff = vec.dotProduct(normal);
+						vec = new Vec3d(vec.x - normal.x * backoff, vec.y - normal.y * backoff, vec.z - normal.z * backoff);
+						owner.motionX = vec.x;
+						owner.motionY = vec.y;
+						owner.motionZ = vec.z;
+						if (charging != null) {
+							double mult = motion/vec.lengthVector();
+							owner.motionX *= mult;
+							owner.motionY *= mult;
+							owner.motionZ *= mult;
+						}
+						rayTrace =owner.world.rayTraceBlocks(vecOff.add(entPos),
+								vecOff.add(entPos).add(vec));
+						if (rayTrace != null) {
+							owner.setPosition(owner.posX, owner.posY+1-rayTrace.hitVec.y+rayTrace.getBlockPos().getY(), owner.posZ);
+						}
+						
+					}
+				}
+			}
+		}
+		
+		
+		if (this.doubleJumped && owner.onGround) {
+			this.doubleJumped = false;
+		}
+		if (!owner.world.isRemote && this.disguiseTicks > 0){
+			// System.out.println("disguise progress:
+			// "+owner.getEntityData().getByte("DisguiseTicks"));
+			if(this.invisTicks < 20)
+				((WorldServer)owner.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, owner.posX, owner.posY, owner.posZ, 2, 0.2, 1, 0.2, 0.04f, new int[0]);
+			if (++this.disguiseTicks >= 40) {
+			TF2EventsCommon.disguise(owner, true);
+			}
+		}
+
+		
+
+		if (owner.world.isRemote) {
+			
+			ClientProxy.doChargeTick(owner);
+		}
+		if (!owner.world.isRemote && charging != null) {
+			if (ItemChargingTarge.getChargingShield(owner).isEmpty()) {
+				owner.removePotionEffect(TF2weapons.charging);
+			}
+			Vec3d start = owner.getPositionVector().addVector(0, owner.height / 2, 0);
+			Vec3d end = start.addVector(-MathHelper.sin(owner.rotationYaw / 180.0F * (float) Math.PI) * 0.7, 0,
+					MathHelper.cos(owner.rotationYaw / 180.0F * (float) Math.PI) * 0.7);
+			RayTraceResult result = TF2Util.pierce(owner.world, owner, start.x, start.y, start.z, end.x, end.y, end.z, false, 0.5f, false)
+					.get(0);
+			if (result.entityHit != null) {
+				float damage = 5;
+				if (charging.getDuration() > 30) {
+					damage *= 0.5f;
+				}
+				TF2Util.dealDamage(result.entityHit, result.entityHit.world, owner, ItemChargingTarge.getChargingShield(owner), 0, damage,
+						TF2Util.causeDirectDamage(ItemChargingTarge.getChargingShield(owner), owner, 0));
+
+				this.bashCritical = charging.getDuration() < 20;
+				if(charging.getDuration()<12)
+					TF2Util.playSound(owner, TF2Sounds.WEAPON_SHIELD_HIT_RANGE, 3F, 1F);
+				else
+					TF2Util.playSound(owner, TF2Sounds.WEAPON_SHIELD_HIT, 0.8F, 1F);
+				this.ticksBash = 20;
+				owner.motionX = 0;
+				owner.motionZ = 0;
+				owner.removePotionEffect(TF2weapons.charging);
+
+			}
+		}
+		if (owner.world.isRemote && WeaponsCapability.get(owner).isDisguised()  != this.lastDisgused) {
+			this.lastDisgused=WeaponsCapability.get(owner).isDisguised();
+			if(owner instanceof EntityPlayer)
+				((EntityPlayer)owner).refreshDisplayName();
+		}
+		String disguisetype=this.getDisguiseType();
+		
+		if (owner.world.isRemote && !disguisetype.equals(this.lastDisguiseValue)){
+			if(owner instanceof EntityPlayer) {
+				((EntityPlayer)owner).refreshDisplayName();
+			}
+			
+			this.lastDisguiseValue = disguisetype;
+			if(this.getDisguiseType().startsWith("P:")) {
+				this.skinDisguise = null;
+				this.skinType = DefaultPlayerSkin.getSkinType(owner.getUniqueID());
+				THREAD_POOL.submit(new Runnable() {
+
+					@Override
+					public void run() {
+						GameProfile profile = TileEntitySkull
+								.updateGameprofile(new GameProfile(owner.getUniqueID(), getDisguiseType().substring(2)));
+						if (profile.getId() != null) {
+							skinType = DefaultPlayerSkin.getSkinType(profile.getId());
+							skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
+						}
+						Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile, new SkinManager.SkinAvailableCallback() {
+							@Override
+							public void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture) {
+								if (typeIn == Type.SKIN) {
+									if (typeIn == Type.SKIN) {
+										skinDisguise = location;
+									}
+									skinType = profileTexture.getMetadata("model");
+
+									if (skinType == null) {
+										skinType = "default";
+									}
+								}
+							}
+						}, false);
+					}
+
+				});
+				
+			}
+			
+		}
+			
+
+			/*
+			 * Minecraft.getMinecraft().getSkinManager().loadSkin(new
+			 * MinecraftProfileTexture(
+			 * "http://skins.minecraft.net/MinecraftSkins/"+owner.
+			 * getDataManager().get(TF2EventBusListener.ENTITY_DISGUISE_TYPE
+			 * ).substring(2)+".png",null), Type.SKIN,new
+			 * SkinAvailableCallback(){
+			 * 
+			 * @Override public void skinAvailable(Type typeIn,
+			 * ResourceLocation location, MinecraftProfileTexture
+			 * profileTexture) { if(typeIn==Type.SKIN){
+			 * this.skinDisguise=location; System.out.println("RetrieveD"); }
+			 * }
+			 * 
+			 * });
+			 */
+		if (owner.world.isRemote && owner != ClientProxy.getLocalPlayer()){
+			//System.out.println("uber "+owner.getActivePotionEffect(TF2weapons.uber).getDuration());
+			Iterator<PotionEffect> iterator=owner.getActivePotionEffects().iterator();
+			while(iterator.hasNext()){
+				PotionEffect effect=iterator.next();
+				if(effect.getDuration()<=0 && (effect.getPotion() instanceof PotionTF2 || effect.getPotion() instanceof PotionTF2Item)){
+					iterator.remove();
+				}
+			}
+		}
+		if (!owner.world.isRemote && owner.ticksExisted % 10 == 0 && this.isFeign() && ItemCloak.getFeignDeathWatch(owner).isEmpty()) {
+			this.setFeign(false);
+		}
+		if (!owner.world.isRemote && owner.fallDistance > 0 && owner.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemMantreads ) {
+			TF2Util.stomp(owner);
+		}
+		if (this.isInvisible()) {
+			// System.out.println("cloak");
+			ItemStack cloak=ItemCloak.searchForWatches(owner).getSecond();
+			boolean feign=!cloak.isEmpty() && ((ItemCloak)cloak.getItem()).isFeignDeath(cloak, owner);
+			boolean visible = owner.hurtTime == 10 && !feign;
+			if (!visible && !feign) {
+				List<Entity> closeEntities = owner.world.getEntitiesInAABBexcluding(owner, owner.getEntityBoundingBox().grow(1, 2, 1),
+						new Predicate<Entity>() {
+
+							@Override
+							public boolean apply(Entity input) {
+								// TODO Auto-generated method stub
+								return input instanceof EntityLivingBase && !TF2Util.isOnSameTeam(owner, input);
+							}
+
+						});
+				for (Entity ent : closeEntities) {
+					if (ent.getDistanceSq(owner) < 1) {
+						visible = true;
+					}
+					break;
+				}
+			}
+			if (visible) {
+				// System.out.println("reveal");
+				this.invisTicks = Math.min(10, this.invisTicks);
+				owner.setInvisible(false);
+			}
+			if (feign)
+				this.invisTicks=20;
+			if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks < 20) {
+				this.invisTicks = Math.min(20, this.invisTicks + 2);
+			} else if (!owner.isInvisible() ) {
+				// System.out.println("full");
+				owner.setInvisible(true);
+			}
+			boolean active = owner.world.isRemote || !cloak.isEmpty();
+			if (!active) {
+				this.setInvisible(false);
+				owner.setInvisible(false);
+				// System.out.println("decloak");
+			}
+		} else if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks > 0) {
+			this.invisTicks--;
+			if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0) {
+				owner.setInvisible(false);
+			}
+		}
+		this.lastPosX = owner.posX;
+		this.lastPosY = owner.posY;
+		this.lastPosZ = owner.posZ;
 	}
 
 	@Override
@@ -693,6 +1048,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	}
 
+	public void updateExpJump() {
+		
+	}
+	
 	public void preparePlayerPrediction(EntityLivingBase player, TF2Message.PredictionMessage message) {
 		player.posX = message.x;
 		player.posY = message.y;
@@ -701,7 +1060,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		player.rotationPitch = message.pitch;
 		this.mainHand = message.hand == EnumHand.MAIN_HAND;
 	}
-
+	
 	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound tag = new NBTTagCompound();
@@ -816,5 +1175,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void stopReload() {
 		this.reloadCool = 0;
 		this.reloadingHand = null;
+	}
+
+	public boolean canExpJump() {
+		return canExpJump;
+	}
+
+	public void setCanExpJump(boolean canExpJump) {
+		this.canExpJump = canExpJump;
 	}
 }

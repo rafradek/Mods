@@ -5,13 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.common.TF2Attribute;
 
 public class TileEntityUpgrades extends TileEntity {
@@ -20,6 +23,7 @@ public class TileEntityUpgrades extends TileEntity {
 	public HashMap<TF2Attribute, Integer> attributes = new HashMap<>();
 	public List<TF2Attribute> attributeList = new ArrayList<TF2Attribute>();
 	private int maxSize;
+	public boolean placed;
 
 	public TileEntityUpgrades() {
 		super();
@@ -61,6 +65,7 @@ public class TileEntityUpgrades extends TileEntity {
 		this.attributeList.clear();
 		this.attributes.clear();
 		this.maxSize = compound.getShort("MaxS");
+		this.placed = compound.getBoolean("Placed");
 		if (compound.hasKey("Attributes") && maxSize == TF2Attribute.getAllPassibleAttributesForUpgradeStation().size()) {
 			NBTTagCompound attrs = compound.getCompoundTag("Attributes");
 			NBTTagList attrList = (NBTTagList) compound.getTag("AttributesList");
@@ -80,6 +85,7 @@ public class TileEntityUpgrades extends TileEntity {
 		compound.setShort("MaxS", (short) this.maxSize);
 		compound.setTag("Attributes", attrs);
 		compound.setTag("AttributesList", attrList);
+		compound.setBoolean("Placed", placed);
 		for (TF2Attribute attr : this.attributeList)
 			if (attr != null) {
 				attrList.appendTag(new NBTTagInt(attr.id));
@@ -89,6 +95,11 @@ public class TileEntityUpgrades extends TileEntity {
 		return compound;
 	}
 
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate)
+    {
+        return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockOverheadDoor.HOLDER);
+    }
+	
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
 		// System.out.println("Sending packet");

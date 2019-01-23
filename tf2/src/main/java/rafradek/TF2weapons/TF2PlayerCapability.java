@@ -112,6 +112,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public EntityTF2Boss bossToSpawn;
 	
 	public float damageArmorMin;
+	public int lastDayInvasion;
 	
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
@@ -335,6 +336,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			this.bossToSpawn.writeToNBTOptional(bosstag);
 			tag.setTag("BossSpawn", bosstag);
 		}
+		tag.setInteger("LastDayInvasion", this.lastDayInvasion);
 		return tag;
 	}
 
@@ -375,6 +377,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		if (nbt.getBoolean("MerasmusSummonedDay"))
 			this.merasmusSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
 		this.bossToSpawn = (EntityTF2Boss) EntityList.createEntityFromNBT(nbt.getCompoundTag("BossSpawn"), this.owner.world);
+		this.lastDayInvasion = nbt.getInteger("LastDayInvasion");
 	}
 
 	public static TF2PlayerCapability get(EntityPlayer player) {

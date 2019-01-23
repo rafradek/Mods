@@ -89,7 +89,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public void removeProjecileStatus() {
 		this.notProjectile = true;
 	}
-
+	
 	@Override
 	public boolean isProjectile() {
 		return super.isProjectile() && !this.notProjectile;

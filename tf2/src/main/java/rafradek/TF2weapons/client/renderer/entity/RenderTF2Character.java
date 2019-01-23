@@ -194,7 +194,7 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		}
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
 		if (living.isEntityAlive()) {
-			TF2EventsClient.renderBeam(living, p_76986_9_);
+			TF2EventsClient.renderBeam(living, p_76986_9_, 0.04f);
 			if (sniperZoomed) {
 				Tessellator tessellator = Tessellator.getInstance();
 				BufferBuilder renderer = tessellator.getBuffer();

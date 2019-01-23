@@ -1,12 +1,16 @@
 {
-    "variants": {
-        "facing=north,holder=true": { "model": "rafradek_tf2_weapons:upgrade_station" },
-        "facing=south,holder=true": { "model": "rafradek_tf2_weapons:upgrade_station", "y": 180 },
-        "facing=west,holder=true":  { "model": "rafradek_tf2_weapons:upgrade_station", "y": 270 },
-        "facing=east,holder=true":  { "model": "rafradek_tf2_weapons:upgrade_station", "y": 90 },
-        "facing=north,holder=false": { "model": "rafradek_tf2_weapons:upgrade_station_empty" },
-        "facing=south,holder=false": { "model": "rafradek_tf2_weapons:upgrade_station_empty", "y": 180 },
-        "facing=west,holder=false":  { "model": "rafradek_tf2_weapons:upgrade_station_empty", "y": 270 },
-        "facing=east,holder=false":  { "model": "rafradek_tf2_weapons:upgrade_station_empty", "y": 90 }
-    }
+    "multipart": [
+        {   "when": { "facing": "north", "holder": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:upgrade_station"}
+        },
+        {   "when": { "facing": "south", "holder": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:upgrade_station", "y": 180}
+        },
+        {   "when": { "facing": "west", "holder": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:upgrade_station", "y": 270}
+        },
+        {   "when": { "facing": "east", "holder": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:upgrade_station", "y": 90}
+        }
+    ]
 }

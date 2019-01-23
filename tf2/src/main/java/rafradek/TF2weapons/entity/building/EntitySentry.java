@@ -240,8 +240,8 @@ public class EntitySentry extends EntityBuilding {
 				EntityProjectileBase proj = MapList.projectileClasses
 						.get(ItemFromData.getData(this.sentryRocket).getString(PropertyType.PROJECTILE))
 						.getConstructor(World.class)
-						.newInstance(this.world, this);
-				proj.initProjectile(this, EnumHand.MAIN_HAND, this.getHeldItemMainhand());
+						.newInstance(this.world);
+				proj.initProjectile(this, EnumHand.MAIN_HAND, this.sentryRocket);
 				proj.shootingEntity = owner;
 				proj.usedWeapon = sentryRocket;
 				proj.sentry = this;
@@ -324,7 +324,7 @@ public class EntitySentry extends EntityBuilding {
 				}
 				if (bullet.entityHit != null) {
 
-					DamageSource src = TF2Util.causeDirectDamage(this.getHeldItemOffhand(), owner, 0).setProjectile();
+					DamageSource src = TF2Util.causeBulletDamage(this.getHeldItemOffhand(), owner, 0, this).setProjectile();
 					if (this.fromPDA)
 						((TF2DamageSource)src).addAttackFlag(TF2DamageSource.SENTRY_PDA);
 					

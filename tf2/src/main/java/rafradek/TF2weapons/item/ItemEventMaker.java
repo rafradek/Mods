@@ -11,6 +11,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
 import rafradek.TF2weapons.util.TF2Util;
@@ -29,7 +30,7 @@ public class ItemEventMaker extends Item {
 	
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		ItemStack stack = living.getHeldItem(hand);
-		if (!world.isRemote) {
+		if (!world.isRemote && !TF2ConfigVars.disableInvasionItems) {
 			if (TF2Util.getTeam(living) == null) {
 				living.sendMessage(new TextComponentTranslation("item.eventmaker.noteam"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);

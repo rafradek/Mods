@@ -145,7 +145,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public EntityPlayer trader;
 	public EntityPlayer lastTrader;
 	public Map<EntityPlayer, Integer> tradeCount;
-	public ItemStackHandler loadout;
+	public InventoryLoadout loadout;
 	public ItemStackHandler loadoutHeld;
 	public ItemStackHandler refill;
 	// public int heldWeaponSlot;
@@ -179,7 +179,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public boolean spawnMedic;
 	private int robotSizeEnsured;
 	public float robotStrength;
-	
+	public BlockPos spawnPos = BlockPos.ORIGIN;
+	public InvasionEvent event;
+	public boolean damagedByEnv;
 	private WeaponsCapability weaponCap;
 	//private InventoryWearables wearablesCap;
 	
@@ -473,7 +475,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	@Override
 	public void onLivingUpdate() {
 
-		long nanoTimeStart = System.nanoTime();
 		super.onLivingUpdate();
 		this.updateArmSwingProgress();
 		ItemStack hat = this.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
@@ -520,7 +521,15 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				this.rotationYaw = this.rotationYawHead - 60;
 		// if (this.hasHome()) {
 
+		if (this.firstUpdate) {
+			this.spawnPos = this.getPosition();
+		}
+		
 		if (!this.world.isRemote) {
+			
+			if (this.ticksExisted % 2 == 0) {
+				this.loadout.updateSlots();
+			}
 			if (this.isRobot() && this.getAttackTarget() == null) {
 				this.idleTime +=1;
 				if (this.idleTime > 800 + this.getRobotSize() * 500)
@@ -600,8 +609,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.lastRotation[0] = (float) Math.sqrt((this.rotationYawHead - this.prevRotationYawHead) * (this.rotationYawHead - this.prevRotationYawHead)
 				+ (this.rotationPitch - this.prevRotationPitch) * (this.rotationPitch - this.prevRotationPitch));
 
-		if (!this.world.isRemote)
-			TF2EventsCommon.tickTimeMercUpdate[TF2weapons.server.getTickCounter() % 20] += System.nanoTime() - nanoTimeStart;
 	}
 
 	public void travel(float m1, float m2, float m3) {
@@ -1043,6 +1050,13 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		if (this.isEntityInvulnerable(source))
 			return false;
 		else if (super.attackEntityFrom(source, amount)) {
+			if (event != null && !(source.getTrueSource() instanceof EntityLivingBase) || source.getTrueSource() == TF2weapons.dummyEnt) {
+				event.onDamageEnv(this,source,amount);
+				this.damagedByEnv = true;
+			}
+			if (event != null && (source.getImmediateSource() instanceof EntitySentry)) {
+				event.onDamageSentry(this,(EntitySentry)source.getImmediateSource(),source,amount);
+			}
 			Entity entity = source.getTrueSource();
 			return this.getRidingEntity() != entity && this.getRidingEntity() != entity ? true : true;
 		} else
@@ -1496,7 +1510,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	
 	public void notifyDataManagerChange(DataParameter<?> key) {
 		super.notifyDataManagerChange(key);
-		if (key == ROBOT) {
+		if (ROBOT.equals(key)) {
 			if (this.robotSizeEnsured != this.getRobotSize()) {
 				this.robotSizeEnsured = this.getRobotSize();
 				float scale = 1f;

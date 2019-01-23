@@ -8,15 +8,21 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class InventoryLoadout extends ItemStackHandler {
 
 	EntityLivingBase living;
+	private final NonNullList<ItemStack> inventoryContentsOld;
 	public InventoryLoadout(int size, EntityLivingBase ent) {
 		super(size);
+		this.inventoryContentsOld = NonNullList.withSize(size, ItemStack.EMPTY);
 		living = ent;
 	}
 	
@@ -34,4 +40,17 @@ public class InventoryLoadout extends ItemStackHandler {
 			living.getAttributeMap().applyAttributeModifiers(modifiers);
 		}
     }
+	
+	public void updateSlots() {
+		for (int i = 0; i < this.getSlots(); i++) {
+			ItemStack stack = this.getStackInSlot(i);
+			ItemStack old = inventoryContentsOld.get(i);
+			
+			if ((stack.getItem() instanceof ItemFromData && ((ItemFromData)stack.getItem()).getVisibilityFlags(stack, living) != 0) ||
+					(old.getItem() instanceof ItemFromData && ((ItemFromData)old.getItem()).getVisibilityFlags(old, living) != 0) && !ItemStack.areItemStacksEqual(stack, old)) {
+				inventoryContentsOld.set(i, stack.copy());
+				TF2Util.sendTracking(new TF2Message.WearableChangeMessage(living, 20+i, stack),living);
+			}
+		}
+	}
 }

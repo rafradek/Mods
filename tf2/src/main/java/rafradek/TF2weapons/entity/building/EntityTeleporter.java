@@ -349,7 +349,7 @@ public class EntityTeleporter extends EntityBuilding {
 	public void notifyDataManagerChange(DataParameter<?> key) {
 		super.notifyDataManagerChange(key);
 		if (!this.world.isRemote)
-			if (key == OWNER_UUID) {
+			if (OWNER_UUID.equals(key)) {
 				UUID id = this.getOwnerId();
 				if (!teleporters.containsKey(id))
 					teleporters.put(id, new TeleporterData[TP_PER_PLAYER]);
@@ -414,8 +414,8 @@ public class EntityTeleporter extends EntityBuilding {
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
+		
 		super.readEntityFromNBT(par1NBTTagCompound);
-
 		this.tpID = par1NBTTagCompound.getInteger("TeleID");
 		this.setTeleports(par1NBTTagCompound.getShort("Teleports"));
 		this.getDataManager().set(CHANNEL, par1NBTTagCompound.getByte("TeleExitID"));
@@ -425,6 +425,8 @@ public class EntityTeleporter extends EntityBuilding {
 		if (this.world.isRemote)
 			this.getDataManager().set(EXIT,par1NBTTagCompound.getBoolean("TeleExit"));
 		this.getDataManager().set(COLOR, par1NBTTagCompound.getByte("Color"));
+		
+		
 	}
 
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {

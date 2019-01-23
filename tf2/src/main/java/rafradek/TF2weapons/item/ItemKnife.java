@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,8 +19,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.common.TF2Achievements;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -100,9 +104,22 @@ public class ItemKnife extends ItemMeleeWeapon {
 		if(attacker instanceof EntityPlayer && isBackstab(attacker,target) && target.isEntityAlive()) {
 			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/20);
 		}
+		boolean isBackstab = isBackstab(attacker,target);
+		
 		if(attacker instanceof EntityPlayerMP&& isBackstab(attacker,target)&& target instanceof EntityLivingBase 
 				&& !target.isEntityAlive() && TF2Util.isEnemy(attacker, (EntityLivingBase) target)){
 			((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_BACKSTAB);
+			if (TF2Attribute.getModifier("Disguise Backstab", stack, 0, attacker) != 0) {
+				
+				WeaponsCapability.get(attacker).stabbedDisguise = true;
+				if (!(target instanceof EntityPlayer))
+					WeaponsCapability.get(attacker).setDisguiseType("M:"+EntityList.getKey(target).toString());
+				else
+					WeaponsCapability.get(attacker).setDisguiseType("P:"+target.getName());
+				((EntityLivingBase)target).deathTime = 15;
+				//TF2Util.sendTracking(new TF2Message.ActionMessage(19, (EntityLivingBase) target), target);
+				WeaponsCapability.get(attacker).setDisguised(true);
+			}
 			/*if(((EntityPlayerMP) attacker).getStatFile().readStat(TF2Achievements.KILLED_BACKSTAB)>=400)
 				((EntityPlayerMP) attacker).addStat(TF2Achievements.SPYMASTER);
 			if(attacker.getCapability(TF2weapons.PLAYER_CAP, null).sapperTime>0 && attacker.getCapability(TF2weapons.PLAYER_CAP, null).buildingOwnerKill==target)

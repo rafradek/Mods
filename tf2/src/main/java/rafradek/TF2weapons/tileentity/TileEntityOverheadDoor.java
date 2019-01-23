@@ -23,7 +23,7 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 
-	public float amountScrolled;
+	public float amountScrolled=1;
 	public Team team;
 	public Allow allow;
 	boolean entitySome;
@@ -80,7 +80,7 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 				this.minBounds = minBounds.down();
 			else if (this.world.getBlockState(this.minBounds.down()).getBlock() instanceof BlockOverheadDoor) {
 				this.minBounds = minBounds.down();
-				this.amountScrolled+=1f;
+				this.amountScrolled+=1;
 			}
 			else if (!(this.world.getBlockState(this.minBounds).getBlock() instanceof BlockOverheadDoor || world.isAirBlock(this.minBounds))){
 				this.minBounds = new BlockPos(this.minBounds.getX(),this.pos.getY(),this.minBounds.getZ());
@@ -124,7 +124,7 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		boolean isClosed = this.world.getBlockState(this.minBounds).getBlock() == this.getBlockType();
 		//this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, !isClosed));
 		if (isClosed && pos.getY() - this.minBounds.getY() + 1 > amountScrolled) {
-			
+			if (!this.world.isRemote) {
 			for (int y = pos.getY()-1; y >= this.minBounds.getY(); y--) {
 				//IBlockState state = this.world.getBlockState(pos);
 				BlockPos doorpos = new BlockPos(pos.getX(), y, pos.getZ());
@@ -132,19 +132,25 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 					this.world.setBlockToAir(doorpos);
 			}
 			this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, true));
+			}
 		}
 		else if (!isClosed && pos.getY() - this.minBounds.getY() + 1<= amountScrolled) {
 			
 			IBlockState state = this.world.getBlockState(pos).withProperty(BlockOverheadDoor.HOLDER, false).withProperty(BlockOverheadDoor.SLIDING, false);
 			for (int y = pos.getY()-1; y >= this.minBounds.getY(); y--) {
 				BlockPos doorpos = new BlockPos(pos.getX(), y, pos.getZ());
-				if (this.world.isAirBlock(doorpos))
+				if (this.world.isAirBlock(doorpos)) {
+					if (!this.world.isRemote)
 					this.world.setBlockState(doorpos, state);
+				}
+					
 				else
 					this.minBounds = new BlockPos(pos.getX(),doorpos.getY()+1,pos.getZ());
 			}
+			if (!this.world.isRemote)
 			this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, false));
 		}
+		//System.out.println("done"+this.minBounds.getY()+" "+this.pos.getY()+" ");
 		this.lastIsEntity = isEntity;
 		this.tickTime = this.world.getTotalWorldTime();
 		entitySome = false;
@@ -291,7 +297,7 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
     {
 		super.readFromNBT(compound);
 		//this.master = compound.getBoolean("Master");
-		if (compound.hasKey("Team"))
+		if (this.hasWorld() && compound.hasKey("Team"))
 			this.team = this.world.getScoreboard().getTeam(compound.getString("Team"));
 		if (compound.hasKey("Allow"))
 			this.allow = Allow.values()[compound.getByte("Allow")];
@@ -327,4 +333,9 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		}
 		this.getWorld().spawnEntity( new EntityItem(this.world,this.pos.getX(), this.pos.getY(), this.pos.getZ(),new ItemStack(TF2weapons.itemDoorController, 1, meta)));
 	}
+	
+	protected void setWorldCreate(World worldIn)
+    {
+        this.setWorld(worldIn);
+    }
 }

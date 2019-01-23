@@ -105,6 +105,7 @@ weapon.crate6=Mann Co. Supply Crate #6
 weapon.crate7=Mann Co. Supply Crate #7
 weapon.crate8=Mann Co. Supply Crate #8
 weapon.crate9=Mann Co. Supply Crate #9
+weapon.eternalreward=Your Eternal Reward
 
 weaponAttribute.DamageBonus=+%1$s damage bonus
 weaponAttribute.DamagePenalty=%1$s damage penalty
@@ -243,6 +244,9 @@ weaponAttribute.SpreadHealthPenalty=Weapon spread increases as health decreases
 weaponAttribute.DeployTimeBonus=This weapon deploys %1$s faster
 weaponAttribute.Gravity=Projectiles are not affected by gravity
 weaponAttribute.BombEnemy=Shoots bombs at nearby enemies. Bomb damage: %1$s
+weaponAttribute.NoDisguiseKit=No disguise kit
+weaponAttribute.DisguiseBackstab=On backstab: disguise as an enemy
+weaponAttribute.SilentKill=Silent Killer: No attack noise from backstabs
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s

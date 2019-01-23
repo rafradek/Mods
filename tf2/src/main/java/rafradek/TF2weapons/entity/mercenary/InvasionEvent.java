@@ -52,6 +52,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
@@ -74,11 +75,13 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 	public int progress;
 	public List<UUID> playersTotal = new ArrayList<>();
 	public Set<EntityPlayer> playersArea = new HashSet<>();
+	public Set<BlockPos> notSpawnArea = new HashSet<>();
 	public int robotKilledWave;
 	public int robotKilledTotal;
 	public int robotsWave;
 	public int pauseTicks;
 	public long endTime;
+	public Map<UUID, Float> sentryDamage = new HashMap<>();
 	private Set<ChunkPos> eligibleChunksForSpawning = new HashSet<>();
 	private HashMap<EntityTF2Character,Integer> entityList = new HashMap<>();
 	
@@ -100,7 +103,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		List<EntityPlayerMP> players = this.world.getPlayers(EntityPlayerMP.class, player -> this.isInRange(player.getPosition()));
 		for (EntityPlayerMP player: players) {
 			float killed = player.getStatFile().readStat(TF2weapons.robotsKilled);
-			this.difficulty += 1f + Math.min(0.75f, killed / (400f*(diff+1)));
+			this.difficulty += 1f + Math.min(0.75f, killed / (500f*(diff+1)));
 			this.onPlayerEnter(player);
 			player.sendMessage(new TextComponentTranslation("gui.robotinvasion.message"));
 		}
@@ -127,7 +130,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		return this.difficulty * (1f+(this.wave-1)/3f);
 	}
 	public int getMaxActiveRobots() {
-		return (int) (this.getWaveDifficulty() * 6);
+		return (int) (this.getWaveDifficulty() * 5);
 	}
 	public void onUpdate() {
 		//this.playersArea.removeIf(player -> !isInRange(player.getPosition()));
@@ -258,7 +261,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
                                 float f = (float)l2 + 0.5F;
                                 float f1 = (float)j3 + 0.5F;
 
-                                if (!world.isAnyPlayerWithinRangeAt((double)f, (double)i3, (double)f1, 20.0D) && spawnPoint.distanceSq((double)f, (double)i3, (double)f1) >= 576.0D)
+                                if (!world.isAnyPlayerWithinRangeAt((double)f, (double)i3, (double)f1, 20.0D) && this.checkInArea((int)f, i3, (int)f1)
+                                		&& spawnPoint.distanceSq((double)f, (double)i3, (double)f1) >= 576.0D)
                                 {
 
                                     if (true && WorldEntitySpawner.canCreatureTypeSpawnAtLocation(EntitySpawnPlacementRegistry.getPlacementForEntity(EntityTF2Character.class), world, blockpos$mutableblockpos))
@@ -325,14 +329,17 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.endTime = this.world.getWorldTime() + (this.wave+1) * 12000;
 		this.bossInfo.setName(new TextComponentTranslation("gui.robotinvasion",this.wave,this.waves));
 		this.bossInfo.setPercent(1f - (float)this.robotKilledWave / this.robotsWave);
-		this.entityList.keySet().removeIf(ent-> {ent.onDeath(DamageSource.GENERIC); return true;});
+		this.entityList.keySet().removeIf(ent-> {ent.attackEntityFrom(DamageSource.GENERIC, 99999); return true;});
 	}
 	
 	public void onKill(Entity player, DamageSource source, EntityTF2Character robot) {
 		if (player instanceof EntityPlayer)
 			this.playersTotal.add(player.getUniqueID());
-		else
+		if (robot.damagedByEnv) {
 			this.robotKilledEnv += 1;
+			this.addNotSpawnArea(robot.spawnPos);
+			this.addNotSpawnArea(robot.getPosition());
+		}
 		int robotSize = robot.getRobotSize();
 		this.robotKilledTotal+=robotSize*robotSize*robotSize;
 		this.robotKilledWave+=robotSize*robotSize*robotSize;
@@ -340,6 +347,22 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		this.bossInfo.setPercent(1f - (float)this.robotKilledWave / this.robotsWave);
 		//this.players.put(player, this.players.get(player)+robot.getRobotSize()*robot.getRobotSize());
 		
+	}
+	
+	public void addNotSpawnArea(BlockPos pos) {
+		for (BlockPos pos2 : this.notSpawnArea) {
+			if (pos.distanceSq(pos2) < 400)
+				return;
+		}
+		this.notSpawnArea.add(pos);
+	}
+	
+	public boolean checkInArea(int x, int y, int z) {
+		for (BlockPos pos : this.notSpawnArea) {
+			if (pos.distanceSq(x,y,z) < 400)
+				return false;
+		}
+		return true;
 	}
 	
 	public void finish() {
@@ -491,5 +514,14 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		spawnList.add(new SpawnListEntry(EntityEngineer.class, 1, 1, 1));
 		spawnList.add(new SpawnListEntry(EntitySniper.class, 1, 1, 1));
 		spawnList.add(new SpawnListEntry(EntitySpy.class, 1, 1, 1));
+	}
+
+	public void onDamageSentry(EntityTF2Character entity, EntitySentry sentry, DamageSource source,
+			float amount) {
+		this.sentryDamage.compute(sentry.getUniqueID(), (uuid,dmg)->dmg == null ? 0: dmg + amount);
+	}
+
+	public void onDamageEnv(EntityTF2Character entity, DamageSource source, float amount) {
+		
 	}
 }

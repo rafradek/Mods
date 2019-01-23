@@ -47,7 +47,7 @@ public class BlockOverheadDoor extends BlockContainer {
 	
 	public BlockOverheadDoor() {
 		super(Material.IRON, MapColor.IRON);
-		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(SLIDING, true).withProperty(CONTROLLER, false));
+		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(SLIDING, false));
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -178,17 +178,17 @@ public class BlockOverheadDoor extends BlockContainer {
 	
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3))).withProperty(HOLDER, (meta & 4) == 4).withProperty(CONTROLLER, (meta & 8) == 8);
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3))).withProperty(HOLDER, (meta & 4) == 4).withProperty(SLIDING, (meta & 8) == 8);
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex()-2 + (state.getValue(HOLDER) ? 4 : 0) + (state.getValue(CONTROLLER) ? 8 : 0);
+		return state.getValue(FACING).getIndex()-2 + (state.getValue(HOLDER) ? 4 : 0) + (state.getValue(SLIDING) ? 8 : 0);
 	}
 	
 	@Override
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING, HOLDER, CONTROLLER, SLIDING });
+		return new BlockStateContainer(this, new IProperty[] { FACING, HOLDER, SLIDING });
 	}
 	
 	public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state)

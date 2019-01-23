@@ -26,7 +26,9 @@ import com.google.gson.JsonParseException;
 
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -46,6 +48,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -58,6 +61,7 @@ import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.TF2Attribute.State;
@@ -636,5 +640,36 @@ public class ItemFromData extends Item implements IItemOverlay{
 		WeaponData data = getData(stack);
 		String key = "weapon."+data.getName();
 		return I18n.canTranslate(key) ? I18n.translateToLocal(key) : getData(stack).hasProperty(PropertyType.NAME) ? getData(stack).getString(PropertyType.NAME) : getData(stack).getName();
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public ItemMeshDefinition getMeshDefinition() {
+		return stack -> {
+			if (stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)) {
+				if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst!=ItemFromData.BLANK_DATA)
+					return ClientProxy.nameToModel.get(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst.getName());
+				else if(stack.hasTagCompound())
+					return ClientProxy.nameToModel.get(stack.getTagCompound().getString("Type"));
+			}
+			return ClientProxy.nameToModel.get("minigun");
+		};
+	}
+
+	@SideOnly(Side.CLIENT)
+	public void registerModels(WeaponData weapon) {
+		String modelName = weapon.getString(PropertyType.RENDER);
+
+		if (modelName == null || modelName.isEmpty())
+			return;
+
+		ModelResourceLocation model = new ModelResourceLocation(modelName, "inventory");
+		ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
+		ClientProxy.nameToModel.put(weapon.getName(), model);
+		if (weapon.hasProperty(PropertyType.RENDER_BACKSTAB)) {
+			modelName = weapon.getString(PropertyType.RENDER_BACKSTAB);
+			model = new ModelResourceLocation(modelName, "inventory");
+			ModelLoader.registerItemVariants(MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS)), model);
+			ClientProxy.nameToModel.put(weapon.getName() + "/b", model);
+		}
 	}
 }

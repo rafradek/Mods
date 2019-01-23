@@ -159,7 +159,7 @@ public class EntityGrenade extends EntityProjectileBase {
 	}
 	@Override
 	public void notifyDataManagerChange(DataParameter<?> key) {
-		if(key==BOMB && this.getBomb()==1){
+		if(BOMB.equals(key) && this.getBomb()==1){
 			this.setSize(0.7f, 0.7f);
 		}
 	}

@@ -1,6 +1,6 @@
 {
-    "parent": "item/generated",
-    "textures": {
-        "layer0": "rafradek_tf2_weapons:items/teleporterblu"
-    }
+	"parent": "rafradek_tf2_weapons:item/teleporterred",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/dispenserblu"
+	}
 }

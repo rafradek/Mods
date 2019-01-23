@@ -303,8 +303,6 @@ public class ItemBulletWeapon extends ItemWeapon {
 					else if(removeBlocks){
 						float damage = TF2Util.calculateDamage(TF2weapons.dummyEnt, world, living, stack, critical,
 								(float) living.getPositionVector().distanceTo(var4.hitVec));
-						if (stack.getItem() instanceof ItemSniperRifle)
-							damage *= 2.52f;
 						damage *= TF2Attribute.getModifier("Destroy Block", stack, 0, living);
 						TF2Util.damageBlock(var4.getBlockPos(), living, world, stack, critical, damage,
 								new Vec3d(endX, endY, endZ), null);

@@ -27,9 +27,12 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
@@ -43,18 +46,25 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityMonoculus extends EntityTF2Boss {
 
+	public static final int LASER_DURATION=110;
+	public static final int LASER_START=80;
 	public int teleport = 200;
 	public int angryTicks = 0;
 	public int begin = 30;
 	public float toAngry=0;
+	public int laserTime;
+	public int laserCooldown = 150;
+	
 	private static final DataParameter<Boolean> ANGRY = EntityDataManager.createKey(EntityMonoculus.class,
+			DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> LASER = EntityDataManager.createKey(EntityMonoculus.class,
 			DataSerializers.BOOLEAN);
 
 	public EntityMonoculus(World worldIn) {
 		super(worldIn);
 		this.setSize(4, 4);
 		this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mnceye"));
-
+		this.setHeldItem(EnumHand.OFF_HAND, ItemFromData.getNewStack("mnclaser"));
 		this.moveHelper = new MonoculusMoveHelper(this);
 		// TODO Auto-generated constructor stub
 	}
@@ -63,11 +73,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 	public void entityInit() {
 		super.entityInit();
 		this.dataManager.register(ANGRY, false);
+		this.dataManager.register(LASER, false);
 	}
 
 	@Override
 	protected void initEntityAI() {
 		this.tasks.addTask(5, new AIRandomFly(this));
+		this.tasks.addTask(3, new AILaserAttack(this));
 		this.tasks.addTask(6, new AIFireballAttack(this));
 		this.tasks.addTask(7, new AILookAround(this));
 		
@@ -116,6 +128,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.getDataManager().set(ANGRY, angry);
 	}
 
+	public boolean isLaser() {
+		return this.getDataManager().get(LASER);
+	}
+
+	public void setLaser(boolean laser) {
+		this.getDataManager().set(LASER, laser);
+	}
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		
@@ -149,6 +168,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		nbt.setShort("Begin", (short)this.begin);
 		nbt.setShort("Angry", (short)this.angryTicks);
 		nbt.setShort("Teleport", (short)this.teleport);
+		nbt.setShort("LaserCooldown", (short)this.laserCooldown);
 		
 	}
 	@Override
@@ -158,6 +178,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.angryTicks=nbt.getShort("Angry");
 		this.setAngry(this.angryTicks);
 		this.teleport=nbt.getShort("Teleport");
+		this.laserCooldown = nbt.getShort("LaserCooldown");
 	}
 	/**
 	 * Moves the entity based on the specified heading.
@@ -236,8 +257,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 		}
 		
+		this.laserTime--;
+		if (this.world.isRemote) {
+			this.ignoreFrustumCheck = this.isLaser();
+		}
 		//System.out.println(" "+this.rotationPitch);
 		if (!this.world.isRemote) {
+			
 			if (this.getAttackTarget() == null) {
 				double f = MathHelper.sqrt(this.motionX * this.motionX
 						+ this.motionZ * this.motionZ);
@@ -256,12 +282,21 @@ public class EntityMonoculus extends EntityTF2Boss {
 					double d2 = entitylivingbase.posZ - this.posZ;
 					double d3 = entitylivingbase.posY - (this.posY + this.getEyeHeight());
 					double f = MathHelper.sqrt(d1 * d1 + d2 * d2);
-					this.rotationYaw = -((float) MathHelper.atan2(d1, d2)) * (180F / (float) Math.PI);
+					float clamp = this.isLaser() ? 1.35f: 10f;
+					float yaw = -((float) MathHelper.atan2(d1, d2)) * (180F / (float) Math.PI);
+					float pitch = -((float) MathHelper.atan2(d3, f)) * (180F / (float) Math.PI);
+					yaw = MathHelper.clamp(MathHelper.wrapDegrees(yaw-this.rotationYawHead),-clamp,clamp);
+					pitch = MathHelper.clamp(MathHelper.wrapDegrees(pitch-this.rotationPitch),-clamp*33, clamp * 33);
+					this.rotationYaw = this.rotationYaw + yaw;
 					this.renderYawOffset = this.rotationYaw;
-					this.rotationPitch = -((float) MathHelper.atan2(d3, f)) * (180F / (float) Math.PI);
+					this.rotationPitch = this.rotationPitch + pitch;
 					this.rotationYawHead = this.rotationYaw;
 				}
 			}
+			
+			if (this.level > 1)
+			this.laserCooldown--;
+			
 			if (this.ticksExisted%20==0 && !this.isAngry() &&this.rand.nextInt(20)==0)
 				this.setAngry(100);
 				
@@ -269,14 +304,17 @@ public class EntityMonoculus extends EntityTF2Boss {
 				if (this.getAttackTarget() != null && !this.getEntitySenses().canSee(this.getAttackTarget())) {
 					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39],
 							this.isAngry() ? 0.8f : 0.45f);
+					TF2Attribute.setAttribute(this.getHeldItemOffhand(), TF2Attribute.attributes[39], 0f);
 				}
-				else
+				else {
 					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39], 0f);
+					//TF2Attribute.setAttribute(this.getHeldItemOffhand(), TF2Attribute.attributes[39], 0f);
+				}
 			}
 			this.toAngry=Math.max(0, this.toAngry-0.4f);
 			if (this.isAngry() && --this.angryTicks <= 0)
 				this.setAngry(0);
-			if (--this.teleport <= 0)
+			if (--this.teleport <= 0 && !this.isLaser())
 				for (int i = 0; i < 10; i++) {
 
 					double x = this.posX + rand.nextDouble() * 48 - 24;
@@ -333,6 +371,12 @@ public class EntityMonoculus extends EntityTF2Boss {
 		return this.height / 2;
 	}
 
+	@Override
+	public void notifyDataManagerChange(DataParameter<?> key) {
+		if (this.world.isRemote && LASER.equals(key))
+			this.laserTime = 100;
+	}
+	
 	static class AIFireballAttack extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
 		private int attackTimer;
@@ -341,6 +385,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 
 		public AIFireballAttack(EntityMonoculus ghast) {
 			this.parentEntity = ghast;
+			this.setMutexBits(4);
 		}
 
 		/**
@@ -410,6 +455,72 @@ public class EntityMonoculus extends EntityTF2Boss {
 		}
 	}
 
+	static class AILaserAttack extends EntityAIBase {
+		private final EntityMonoculus parentEntity;
+
+		public int damageCooldown;
+		public AILaserAttack(EntityMonoculus ghast) {
+			this.parentEntity = ghast;
+			this.setMutexBits(4);
+		}
+
+		/**
+		 * Returns whether the EntityAIBase should begin execution.
+		 */
+		@Override
+		public boolean shouldExecute() {
+			return this.parentEntity.begin <= 0 && this.parentEntity.laserCooldown <= 0
+					&& (this.parentEntity.getAttackTarget() != null && TF2Util.lookingAt(this.parentEntity, 13, this.parentEntity.getAttackTarget()));
+		}
+
+		@Override
+		public boolean shouldContinueExecuting() {
+			return this.parentEntity.begin <= 0 && this.parentEntity.laserCooldown <= 0 && (this.parentEntity.getAttackTarget() != null || this.parentEntity.envDamage > 0);
+		}
+		
+		/**
+		 * Execute a one shot task or start executing a continuous task
+		 */
+		@Override
+		public void startExecuting() {
+			this.parentEntity.laserTime = LASER_DURATION;
+		}
+
+		/**
+		 * Resets the task
+		 */
+		
+		public void resetTask() { 
+			this.parentEntity.setLaser(false);
+			this.parentEntity.laserCooldown = 140;
+		}
+		 
+
+		/**
+		 * Updates the task
+		 */
+		@Override
+		public void updateTask() {
+			if (this.parentEntity.laserTime <= 0) {
+				this.parentEntity.laserCooldown = 260;
+				this.parentEntity.setLaser(false);
+			}
+			else
+				this.parentEntity.setLaser(true);
+			if (this.parentEntity.laserTime < LASER_START && --this.damageCooldown <= 0) {
+			((ItemWeapon) this.parentEntity.getHeldItemOffhand().getItem()).use(
+					this.parentEntity.getHeldItemOffhand(), this.parentEntity, this.parentEntity.world, EnumHand.OFF_HAND, null);
+			this.damageCooldown= 5;
+			}
+			for (RayTraceResult trace : TF2Util.pierce(this.parentEntity.world, parentEntity, 120, false, 0.5f, true)) {
+				//if (trace.entityHit != null) {
+					
+				//}
+				((WorldServer)parentEntity.world).spawnParticle(EnumParticleTypes.CRIT, trace.hitVec.x, trace.hitVec.y, trace.hitVec.z, 1, 0D, 0D, 0D, 0D);
+			}
+		}
+	}
+	
 	static class AILookAround extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
 
@@ -431,7 +542,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		 */
 		@Override
 		public void updateTask() {
-			if (this.parentEntity.getAttackTarget() == null) {
+			/*if (this.parentEntity.getAttackTarget() == null) {
 				double f = MathHelper.sqrt(this.parentEntity.motionX * this.parentEntity.motionX
 						+ this.parentEntity.motionZ * this.parentEntity.motionZ);
 				this.parentEntity.rotationYaw = -((float) MathHelper.atan2(this.parentEntity.motionX,
@@ -454,7 +565,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 					this.parentEntity.rotationPitch = -((float) MathHelper.atan2(d3, f)) * (180F / (float) Math.PI);
 					this.parentEntity.rotationYawHead = this.parentEntity.rotationYaw;
 				}
-			}
+			}*/
 			//System.out.println("coto: "+this.parentEntity.rotationPitch);
 		}
 	}
@@ -509,10 +620,11 @@ public class EntityMonoculus extends EntityTF2Boss {
 			EntityLivingBase target = this.parentEntity.getAttackTarget();
 			this.movingToHome = this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition());
 			boolean flyToPlayer = target != null && target.getDistanceSq(this.parentEntity) > 680;
+			
 			if((!flyToPlayer || target.getDistanceSq(d0, d1, d2) < target.getDistanceSq(this.parentEntity))
 					&& (flyToPlayer || (this.parentEntity.isWithinHomeDistanceCurrentPosition()
 					|| movingToHome)))
-				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 1d);
+				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 0.3d);
 		}
 	}
 
@@ -528,6 +640,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 		@Override
 		public void onUpdateMoveHelper() {
 			double speed = this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue();
+			if (this.parentEntity.isLaser())
+				speed *= 0.2;
 			if (this.action == EntityMoveHelper.Action.MOVE_TO) {
 				double d0 = this.posX - this.parentEntity.posX;
 				double d1 = this.posY - this.parentEntity.posY;
@@ -535,7 +649,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
 				if (this.courseChangeCooldown-- <= 0) {
-					this.courseChangeCooldown += this.parentEntity.getRNG().nextInt(5) + 2;
+					this.courseChangeCooldown = 0;
 					d3 = MathHelper.sqrt(d3);
 
 					if (this.isNotColliding(this.posX, this.posY, this.posZ, d3)) {

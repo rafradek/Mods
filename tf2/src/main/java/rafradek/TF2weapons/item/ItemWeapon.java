@@ -15,12 +15,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.EntityLightDynamic;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
@@ -101,6 +103,10 @@ public abstract class ItemWeapon extends ItemUsable {
 	@Override
 	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
+		if (!par2World.isRemote && TF2Attribute.getModifier("No Disguise Kit", par1ItemStack, 0, (EntityLivingBase) par3Entity) != 0) {
+			if (par3Entity.hasCapability(TF2weapons.WEAPONS_CAP, null) && !WeaponsCapability.get(par3Entity).stabbedDisguise )
+				TF2EventsCommon.disguise((EntityLivingBase) par3Entity, false);
+		}
 		if (par5 && ((EntityLivingBase)par3Entity).getHeldItemMainhand() == par1ItemStack) {
 			WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			NBTTagCompound tag = par1ItemStack.getTagCompound();
@@ -608,6 +614,13 @@ public abstract class ItemWeapon extends ItemUsable {
 				attacker.addPotionEffect(new PotionEffect(MobEffects.SPEED,(int) (speedtime*36),1));
 			}
 		}
+		if (TF2Attribute.getModifier("Silent Kill", stack, 0, attacker) != 0) {
+			target.setSilent( true);
+			if (target instanceof EntityPlayer) {
+				target.world.getCapability(TF2weapons.WORLD_CAP, null).silent = target.world.getGameRules().getBoolean("showDeathMessages");
+				target.world.getGameRules().setOrCreateGameRule("showDeathMessages", "false");
+			}
+		}
 		return true;
 	}
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
@@ -672,9 +685,11 @@ public abstract class ItemWeapon extends ItemUsable {
 	public boolean doMuzzleFlash(ItemStack stack, EntityLivingBase attacker, EnumHand hand) {
 
 		ClientProxy.spawnFlashParticle(attacker.world, attacker, hand);
-		
-		if(TF2ConfigVars.dynamicLights)
+		attacker.world.spawnEntity(new EntityLightDynamic(attacker.world, attacker, 3));
+		if(TF2ConfigVars.dynamicLights) {
 			this.doMuzzleFlashLight(stack, attacker);
+			
+		}
 		return true;
 	}
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
@@ -781,7 +796,7 @@ public abstract class ItemWeapon extends ItemUsable {
 	
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub
-		return living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0 && TF2Attribute.getModifier("Headshot", stack, 0, living) > 0;
+		return TF2Attribute.getModifier("Headshot", stack, 0, living) > 0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire <= 0;
 	}
 	
 	public int getHeadshotCrit(EntityLivingBase living, ItemStack stack) {
@@ -843,6 +858,15 @@ public abstract class ItemWeapon extends ItemUsable {
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
 				GL11.glEnable(GL11.GL_ALPHA_TEST);
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		}
+	}
+
+	public void onHitFinal(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source) {
+		if (TF2Attribute.getModifier("Silent Kill", stack, 0, attacker) != 0) {
+			target.setSilent( false);
+			if (target instanceof EntityPlayer) {
+				target.world.getGameRules().setOrCreateGameRule("showDeathMessages", Boolean.toString(target.world.getCapability(TF2weapons.WORLD_CAP, null).silent));
+			}
 		}
 	}
 }

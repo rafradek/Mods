@@ -2319,5 +2319,41 @@
 			"WeaponMode": 2,
 			"ProjectileSpeedBonus": 1.2
 		}
+	},
+	"eternalreward":
+	{
+		"Class": "knife",
+		"Based on": "butterflyknife",
+		"Render": "rafradek_tf2_weapons:eternalreward",
+		"Stock": false,
+		"Cost": 36,
+		"Knockback": 0,
+		"Attributes": 
+		{
+			"SilentKill": 1,
+			"DisguiseBackstab": 1,
+			"NoDisguiseKit": 1
+		}
+	},
+	"mnclaser":
+	{
+		"Name": "Laser eye",
+		"Class": "bullet",
+		"Render": "rafradek_tf2_weapons:rocketlauncher",
+		"Firing speed": 250,
+		"Pellets": 1,
+		"Spread": 0,
+		"Damage": 6,
+		"Max damage": 1,
+		"Min damage": 1,
+		"Random crits": false,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Spread recovery": false,
+		"Hidden": true,
+		"Attributes": 
+		{
+			"DestroyBlock":3.5
+		}
 	}
 }
