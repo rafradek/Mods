@@ -1,5 +1,10 @@
 package rafradek.TF2weapons.item;
 
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -80,4 +85,12 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 		return 16777215;
 	}
 
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip,
+			ITooltipFlag advanced) {
+		if (Minecraft.getMinecraft().player != null && Minecraft.getMinecraft().player.isCreative()) {
+			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn natural building");
+		}
+	}
 }

@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
 
@@ -19,7 +20,7 @@ public class RenderDoor extends TileEntitySpecialRenderer<TileEntityOverheadDoor
 	public void render(TileEntityOverheadDoor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
     {
 		BlockPos orig = te.getPos();
-		if (!te.getWorld().isAirBlock(new BlockPos(orig.getX(), te.minBounds.getY(), orig.getZ())))
+		if (!te.getWorld().isAirBlock(new BlockPos(orig.getX(), te.minBounds.getY(), orig.getZ())) || te.getWorld().getBlockState(orig).getBlock() != TF2weapons.blockOverheadDoor)
 			return;
 		IBlockState state = te.getWorld().getBlockState(orig).withProperty(BlockOverheadDoor.HOLDER, false).withProperty(BlockOverheadDoor.SLIDING, false);
 		this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);

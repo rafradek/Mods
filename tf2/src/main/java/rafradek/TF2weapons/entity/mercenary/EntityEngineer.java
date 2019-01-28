@@ -1,9 +1,11 @@
 package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -24,6 +26,8 @@ public class EntityEngineer extends EntityTF2Character {
 	public EntityDispenser dispenser;
 
 	public int buildCount;
+	public NBTTagCompound grabbed;
+	public int grabbedid;
 	
 	public EntityEngineer(World p_i1738_1_) {
 		super(p_i1738_1_);
@@ -61,7 +65,7 @@ public class EntityEngineer extends EntityTF2Character {
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(10.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(20.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(12.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1329D);
@@ -89,10 +93,21 @@ public class EntityEngineer extends EntityTF2Character {
 		return TF2Sounds.MOB_ENGINEER_DEATH;
 	}
 
+	public void switchSlot(int slot, boolean noAmmoSwitch, boolean forceRefresh) {
+		if (this.grabbed != null) {
+			int buildType = this.grabbedid + 1;
+			this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
+					new ItemStack(TF2weapons.itemBuildingBox, 1, 16 + buildType * 2 + this.getEntTeam()));
+			this.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());
+		}
+		else
+			super.switchSlot(slot, noAmmoSwitch, forceRefresh);
+	}
+	
 	public void onLivingUpdate() {
-		if(!this.world.isRemote &&this.ticksExisted == 3) {
-			for(EntityBuilding building : this.world.getEntitiesWithinAABB(EntityBuilding.class, this.getEntityBoundingBox().grow(16), building -> {
-				return building.getOwnerId() == null && building.getOwner() == null;
+		if(!this.world.isRemote &&this.ticksExisted == 2) {
+			for(EntityBuilding building : this.world.getEntitiesWithinAABB(EntityBuilding.class, this.getEntityBoundingBox().grow(32), building -> {
+				return building.getOwnerId() == null && building.getOwner() == null && building.ownerEntityID.equals(this.getUniqueID());
 			})){
 				if(building instanceof EntitySentry && this.sentry == null) {
 					this.sentry = (EntitySentry) building;
@@ -104,6 +119,25 @@ public class EntityEngineer extends EntityTF2Character {
 				}
 			};
 		}
+		if (this.getMaximumHomeDistance() == 0 && this.getDistanceSq(this.getHomePosition()) < 1) {
+			this.setHomePosAndDistance(this.getHomePosition(), 8);
+		}
+		if (this.getOwner() != null && this.getOrder() == Order.FOLLOW && this.grabbed == null) {
+			if (this.sentry != null && this.sentry.isEntityAlive() && !this.sentry.isMini() && this.getDistanceSq(sentry) < 16) {
+				this.sentry.grab();
+			}
+			else if (this.dispenser != null && this.dispenser.isEntityAlive() && this.getDistanceSq(dispenser) < 16) {
+				this.dispenser.grab();
+			}
+		}
+		/*else if(this.getOwner() != null && this.getOrder() == Order.HOLD) {
+			if (this.sentry != null && this.sentry.isEntityAlive() && !this.isWithinHomeDistanceFromPosition(this.sentry.getPosition())) {
+				this.sentry.detonate();
+			}
+			else if (this.dispenser != null && this.dispenser.isEntityAlive() && !this.isWithinHomeDistanceFromPosition(this.dispenser.getPosition())) {
+				this.dispenser.detonate();
+			}
+		}*/
 		super.onLivingUpdate();
 	}
 	/**
@@ -125,6 +159,9 @@ public class EntityEngineer extends EntityTF2Character {
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
 		par1NBTTagCompound.setShort("BuildCount", (short) buildCount);
+		par1NBTTagCompound.setByte("GrabbedID", (byte) this.grabbedid);
+		if (this.grabbed != null)
+		par1NBTTagCompound.setTag("Grabbed", this.grabbed);
 		/*if (this.sentry != null && this.sentry.isEntityAlive()) {
 			NBTTagCompound sentryTag = new NBTTagCompound();
 			this.sentry.writeToNBTAtomically(sentryTag);
@@ -140,8 +177,12 @@ public class EntityEngineer extends EntityTF2Character {
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
+		if (par1NBTTagCompound.hasKey("Grabbed"))
+		this.grabbed = par1NBTTagCompound.getCompoundTag("Grabbed");
 		super.readEntityFromNBT(par1NBTTagCompound);
 		this.buildCount = par1NBTTagCompound.getShort("BuildCount");
+		this.grabbedid = par1NBTTagCompound.getByte("GrabbedID");
+		
 		/*if (par1NBTTagCompound.hasKey("Sentry") && this.sentry == null) {
 			// System.out.println(par1NBTTagCompound.getCompoundTag("Sentry"));
 			this.sentry = (EntitySentry) EntityList.createEntityFromNBT(par1NBTTagCompound.getCompoundTag("Sentry"), this.world);

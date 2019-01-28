@@ -98,7 +98,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	}
 
 	private int getPosUpdateTime() {
-		return Math.round(this.entityHost.scaleWithDifficulty(18, 1)*TF2ConfigVars.accurracyMult);
+		return Math.max(1,Math.round(this.entityHost.scaleWithDifficulty(18, 1)*TF2ConfigVars.accurracyMult));
 	}
 	/**
 	 * Resets the task
@@ -132,7 +132,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			return;
 		
 		int updateTime = this.getPosUpdateTime();
-		if (--this.ticksUpdatePos < 0 || this.posTarget == null) {
+		if (--this.ticksUpdatePos <= 0 || this.posTarget == null) {
 			
 			if (this.posTarget != null)
 				this.velTarget = this.attackTarget.getPositionVector().subtract(this.posTarget).scale(1D/updateTime);

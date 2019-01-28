@@ -155,10 +155,10 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 
 		ItemStack stack=playerIn.getHeldItem(hand);
-		if (worldIn.isRemote)
-			return EnumActionResult.SUCCESS;
+		if (worldIn.isRemote && (!stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0))
+			return EnumActionResult.PASS;
 		else if (!playerIn.canPlayerEdit(pos.offset(facing), facing, stack) || !stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0)
-			return EnumActionResult.FAIL;
+			return EnumActionResult.PASS;
 		else {
 			IBlockState iblockstate = worldIn.getBlockState(pos);
 

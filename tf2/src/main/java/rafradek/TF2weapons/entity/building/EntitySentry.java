@@ -41,6 +41,7 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
@@ -54,6 +55,7 @@ import rafradek.TF2weapons.entity.ai.EntityAISpotTarget;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2DamageSource;
@@ -358,11 +360,7 @@ public class EntitySentry extends EntityBuilding {
 								((EntityLivingBase) bullet.entityHit).setLastAttackedEntity(this);
 								((EntityLivingBase) bullet.entityHit).setRevengeTarget(this);
 								if (!bullet.entityHit.isEntityAlive()) {
-									this.setKills(this.getKills() + 1);
-									if(owner instanceof EntityPlayer && bullet.entityHit instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
-										owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
-									}
-										
+									this.scoreKill((EntityLivingBase) bullet.entityHit);
 								}
 							}
 						}
@@ -373,6 +371,23 @@ public class EntitySentry extends EntityBuilding {
 		}
 	}
 
+	public void scoreKill(EntityLivingBase target) {
+		this.setKills(this.getKills() + 1);
+		if(owner instanceof EntityPlayer && target instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
+			owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
+		}
+		if (owner instanceof EntityPlayer && TF2Util.isEnemy(this.owner, target)) {
+			ItemStack stack = TF2Util.getFirstItem(((EntityPlayer)this.owner).inventory, stackl -> stackl.getItem() instanceof ItemPDA);
+			if (!stack.isEmpty()) {
+				if (!(target instanceof EntityPlayer)) {
+					stack.getTagCompound().setInteger("Kills", stack.getTagCompound().getInteger("Kills") + 1);
+				} else {
+					stack.getTagCompound().setInteger("PlayerKills", stack.getTagCompound().getInteger("PlayerKills") + 1);
+				}
+				TF2EventsCommon.onStrangeUpdate(stack, target);
+			}
+		}
+	}
 	@Override
 	public boolean canEntityBeSeen(Entity entityIn) {
 		return this.world.rayTraceBlocks(new Vec3d(this.posX, this.posY + this.getEyeHeight(), this.posZ),

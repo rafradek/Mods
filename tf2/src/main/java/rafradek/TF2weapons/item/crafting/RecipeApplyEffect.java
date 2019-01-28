@@ -40,7 +40,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 			if (!stack.isEmpty())
 				if (effect.isEmpty() && stack.getItem() == type) {
 					effect = stack;
-				} else if (stack2.isEmpty() && stack.getItem() instanceof ItemUsable)
+				} else if (stack2.isEmpty() && stack.getItem() != type)
 					stack2 = stack;
 				else
 					return false;
@@ -60,7 +60,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 			if (!stack.isEmpty())
 				if (effect.isEmpty() && stack.getItem() == type) {
 					effect = stack;
-				} else if (stack2.isEmpty() && stack.getItem() instanceof ItemUsable)
+				} else if (stack2.isEmpty() && stack.getItem() != type)
 					stack2 = stack;
 		}
 		// System.out.println("OutPut: "+stack2);

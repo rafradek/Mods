@@ -3,7 +3,13 @@ package rafradek.TF2weapons.message;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,6 +25,8 @@ import net.minecraft.util.math.Vec3d;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.config.Property.Type;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
@@ -902,6 +910,8 @@ public abstract class TF2Message implements IMessage {
 		
 		boolean energyUse;
 		
+		Multimap<String, Property> property;
+		
 		public InitMessage() {
 
 		}
@@ -917,6 +927,11 @@ public abstract class TF2Message implements IMessage {
 			this.port = buf.readUnsignedShort();
 			this.id = buf.readShort();
 			this.energyUse = buf.readBoolean();
+			PacketBuffer packet = new PacketBuffer(buf);
+			property = HashMultimap.create();
+			while (packet.readableBytes() > 0) {
+				property.put(packet.readString(255), new Property(packet.readString(255), packet.readString(255), Type.STRING));
+			}
 		}
 
 		@Override
@@ -924,6 +939,12 @@ public abstract class TF2Message implements IMessage {
 			buf.writeShort(this.port);
 			buf.writeShort(id);
 			buf.writeBoolean(this.energyUse);
+			PacketBuffer packet = new PacketBuffer(buf);
+			for (Entry<ConfigCategory, Property> entry : TF2ConfigVars.propertyNetworked.entries()) {
+				packet.writeString(entry.getKey().getName());
+				packet.writeString(entry.getValue().getName());
+				packet.writeString(entry.getValue().getString());
+			}
 		}
 	}
 	

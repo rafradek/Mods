@@ -265,8 +265,8 @@ public class MannCoBuilding extends StructureComponent {
 	        Random random = this.world.setRandomSeed(k, l, 5325624);
 	        k = k * this.distance;
 	        l = l * this.distance;
-	        k = k + random.nextInt(this.distance - 8);
-	        l = l + random.nextInt(this.distance - 8);
+	        k = k + random.nextInt(Math.max(1,this.distance - 8));
+	        l = l + random.nextInt(Math.max(1,this.distance - 8));
 
 	        if (i == k && j == l)
 	        {

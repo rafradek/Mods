@@ -177,7 +177,7 @@ public class TF2Explosion extends Explosion {
 				double d5 = entity.posX - this.explosionX;
 				double d6;
 				if (isExploder)
-					d6 = entity.posY + entity.getEyeHeight() - 0.3 - this.explosionY;
+					d6 = entity.posY + entity.getEyeHeight() - 0.35 - this.explosionY;
 				else
 					d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2 - this.explosionY;
 				double d7 = entity.posZ - this.explosionZ;

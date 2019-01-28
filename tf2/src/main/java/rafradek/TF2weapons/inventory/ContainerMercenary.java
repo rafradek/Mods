@@ -46,7 +46,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	public ContainerMercenary(EntityPlayer player, EntityTF2Character merc, World worldIn) {
 		super(player.inventory, merc, worldIn);
 		this.mercenary = merc;
-		for(int i=0;i<3;i++) {
+		for(int i=0;i<4;i++) {
 			if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
 				ItemStack buf= this.mercenary.loadout.getStackInSlot(i);
         		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
@@ -59,8 +59,8 @@ public class ContainerMercenary extends ContainerMerchant {
 			int i = 3;
 			for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
 				if(slot.getSlotType() == Type.ARMOR) {
-				 if(this.mercenary.loadoutHeld.getStackInSlot(3+i).isEmpty() && !this.mercenary.isEmpty[i]) {
-			        	this.mercenary.loadoutHeld.setStackInSlot(3+i, this.mercenary.getItemStackFromSlot(slot));
+				 if(this.mercenary.loadoutHeld.getStackInSlot(4+i).isEmpty() && !this.mercenary.isEmpty[i]) {
+			        	this.mercenary.loadoutHeld.setStackInSlot(4+i, this.mercenary.getItemStackFromSlot(slot));
 			        	this.mercenary.setItemStackToSlot(slot, ItemStack.EMPTY);
 			        }
 				 i--;
@@ -117,7 +117,7 @@ public class ContainerMercenary extends ContainerMerchant {
 				}
 			});
 		}
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			final int index=i;
 			/*this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
 
@@ -348,13 +348,13 @@ public class ContainerMercenary extends ContainerMerchant {
             			return ItemStack.EMPTY;
             	}
             	else if (itemstack1.getItem() instanceof ItemUsable ) {
-            		for(int i = 0; i < 3; i++) {
+            		for(int i = 0; i < 4; i++) {
             			if(!this.getSlot(i + 43).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, i + 43, i + 44, false))
             				return ItemStack.EMPTY;
             		}
             	}
-            	else if (this.getSlot(46).isItemValid(itemstack1)) {
-        			if(!this.mergeItemStack(itemstack1, 46, 47, false))
+            	else if (this.getSlot(47).isItemValid(itemstack1)) {
+        			if(!this.mergeItemStack(itemstack1, 47, 48, false))
         				return ItemStack.EMPTY;
             	}
             	else if (index >= 3 && index < 30)

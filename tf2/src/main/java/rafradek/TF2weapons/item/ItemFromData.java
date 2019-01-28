@@ -441,7 +441,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 				TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
 				if (attribute != null && attribute.state != State.HIDDEN)
 					tooltip.add(attribute.getTranslatedString(ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)
-							, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)), true));
+							, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS), getData(stack)), true));
 			}
 			
 			if (getData(stack).hasProperty(PropertyType.DESC)) {

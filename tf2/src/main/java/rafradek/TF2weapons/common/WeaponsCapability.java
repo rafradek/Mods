@@ -248,6 +248,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.owner instanceof EntityEngineer?TF2ConfigVars.maxMetalEngineer:MAX_METAL));
 	}
 	
+	public void giveMetal(int metal) {
+		this.dataManager.set(METAL, MathHelper.clamp(this.getMetal()+metal,0,this.owner instanceof EntityEngineer?TF2ConfigVars.maxMetalEngineer:MAX_METAL));
+	}
+	
 	public int getMaxMetal() {
 		return this.owner instanceof EntityEngineer ? TF2ConfigVars.maxMetalEngineer : WeaponsCapability.MAX_METAL;
 	}
@@ -656,7 +660,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				
 				}
 				owner.motionY /= 0.98;
-				owner.motionY -= this.gravity * 0.375;
+				owner.motionY += 0.08-TF2ConfigVars.explosiveJumpGravity;
 				
 				
 			}

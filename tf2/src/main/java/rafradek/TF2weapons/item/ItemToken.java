@@ -31,6 +31,7 @@ public class ItemToken extends Item {
 	public static final float[] SPEED_VALUES= {0.7638f, 0.0583f, 0.329f, 0.2347f, 0f, 0.329f, 0.4111f, 0.329f, 0.4111f};
 	public static final float[] FOV_VALUES= {0.7638f, 0.0583f, 0.329f, 0.2347f, 0f, 0.329f, 0.4111f, 0.329f, 0.4111f};
 	public static final float[] HEALTH_VALUES= {-7.5f, 0f, -2.5f, -2.5f, 10f, -7.5f, -5f, -7.5f, -7.5f};
+	public static final double[] EXPLOSION_VALUES= {1D, 0.667D, 0.95D, 0.75D, 0.5D, 1D, 0.95D, 1D, 1D};
 	public static final String[] CLASS_NAMES= {"scout", "soldier", "pyro", "demoman", "heavy", "engineer", "medic", "sniper", "spy"};
 	public ItemToken() {
 		this.setHasSubtypes(true);

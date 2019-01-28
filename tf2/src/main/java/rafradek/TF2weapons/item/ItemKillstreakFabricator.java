@@ -83,7 +83,7 @@ public class ItemKillstreakFabricator extends ItemFabricator {
 		
 		if (attrib != null) {
 			tooltip.add("For each kill gain up to:");
-			tooltip.add(attrib.getTranslatedString(attrib.defaultValue + attrib.perKill * ItemKillstreakKit.getBonusMult(this.getLevel(stack), attrib), true));
+			tooltip.add(attrib.getTranslatedString(attrib.defaultValue + attrib.perKill * ItemKillstreakKit.getBonusMult(this.getLevel(stack), attrib, null), true));
 		}
 		tooltip.add("");
 		super.addInformation(stack, world, tooltip, advanced);

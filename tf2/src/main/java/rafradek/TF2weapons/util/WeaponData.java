@@ -231,7 +231,7 @@ public class WeaponData implements ICapabilityProvider {
 					if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
 						TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
 						float value = ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
-								stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS));
+								stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS), this.inst);
 						if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
 							if (!cachedAttrAdd.containsKey(attribute.effect))
 								cachedAttrAdd.put(attribute.effect, 0f);

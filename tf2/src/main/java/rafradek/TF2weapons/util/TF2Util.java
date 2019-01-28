@@ -104,6 +104,7 @@ import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.client.gui.GuiConfirm;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
+import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityStatue;
@@ -671,7 +672,7 @@ public class TF2Util {
 			if (living != null && living instanceof EntityPlayer)
 				block.harvestBlock(world, (EntityPlayer) living, pos, state, null, stack);
 			else {
-				block.dropBlockAsItem(world, pos, state, 0);
+				block.dropBlockAsItem(world, pos, state, (int) TF2Attribute.getModifier("Looting", stack, 0, living));
 				block.onBlockExploded(world, pos, explosion);
 			}
 			cap.destroyProgress.remove(finalEntry);
@@ -785,8 +786,21 @@ public class TF2Util {
 			if(vec != null) {
 				
 				boolean expJump=ent == shooter;
-				vec=vec.scale((expJump ? TF2Attribute.getModifier("Self Push Force", weapon, dmg, shooter) : dmg)/9f * 
-						(ent instanceof EntityLivingBase && !expJump? 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue():1));	
+				double scale = dmg;
+				if (expJump) {
+						String used =TF2Util.getWeaponUsedByClass(weapon);
+						if (used!=null)
+							scale *= ItemToken.EXPLOSION_VALUES[ItemToken.getClassID(used)];
+				}
+				else {
+					if (ent instanceof EntityLivingBase)
+						scale *= 1-((EntityLivingBase)ent).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue();
+				}
+				
+				scale = Math.min(7.5,scale);
+				if (expJump)
+					scale = TF2Attribute.getModifier("Self Push Force", weapon, (float) scale, shooter);
+				vec=vec.scale(scale * TF2ConfigVars.explosionKnockback);	
 				if(ent.motionY!=0)
 					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.y)/ent.motionY));
 				if(vec.y>0) {
@@ -837,7 +851,7 @@ public class TF2Util {
 				((EntityLivingBase) ent).setRevengeTarget(sentry);
 				
 				if (!ent.isEntityAlive())
-					sentry.setKills(sentry.getKills() + 1);
+					sentry.scoreKill((EntityLivingBase)ent);
 			}
 			
 		}
@@ -1349,9 +1363,25 @@ public class TF2Util {
 	
 	public static boolean isWeaponOfClass(ItemStack stack, int slot, String name) {
 		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+		WeaponData data;
 		if (!parent.isEmpty())
-			stack = ItemFromData.getNewStack(parent);
-		return ItemFromData.isItemOfClassSlot(ItemFromData.getData(stack), slot, name);
+			data = MapList.nameToData.get(parent);
+		else
+			data = ItemFromData.getData(stack);
+		return ItemFromData.isItemOfClassSlot(data, slot, name);
+	}
+	
+	public static String getWeaponUsedByClass(ItemStack stack) {
+		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+		WeaponData data;
+		if (!parent.isEmpty() && MapList.nameToData.get(parent).hasProperty(PropertyType.SLOT))
+			data = MapList.nameToData.get(parent);
+		else
+			data = ItemFromData.getData(stack);
+		if (data.hasProperty(PropertyType.SLOT))
+			return Iterables.getFirst(data.get(PropertyType.SLOT).keySet(),null);
+		else
+			return null;
 	}
 	
 	public static EntityLivingBase getOwnerIfOwnable(EntityLivingBase living) {

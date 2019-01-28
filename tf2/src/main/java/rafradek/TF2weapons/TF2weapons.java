@@ -424,7 +424,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 43;
+		return 44;
 	}
 
 	@Mod.EventHandler
@@ -440,7 +440,7 @@ public class TF2weapons {
 		boolean shouldCopy = false;
 		if (!conf.hasKey("internal", "Weapon Config Version"))
 			shouldCopy = true;
-		TF2ConfigVars.createConfig();
+		TF2ConfigVars.createConfig(true);
 		File file = event.getSourceFile();
 		File squadFile = new File(event.getModConfigurationDirectory(), "TF2RobotSquad.json");
 		// System.out.println("LOLOLOLOLOLOL "+file.getAbsolutePath());
@@ -553,15 +553,15 @@ public class TF2weapons {
 		
 		// EntityRegistry.registerModEntity(EntityBullet.class, "bullet", 1,
 		// this, 256, 100, false);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"heavy"),EntityHeavy.class, "heavy", 2, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"scout"),EntityScout.class, "scout", 3, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"sniper"),EntitySniper.class, "sniper", 4, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"soldier"),EntitySoldier.class, "soldier", 5, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"pyro"),EntityPyro.class, "pyro", 6, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"demoman"),EntityDemoman.class, "demoman", 7, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"medic"),EntityMedic.class, "medic", 8, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"spy"),EntitySpy.class, "spy", 9, this, 80, 3, true);
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"engineer"),EntityEngineer.class, "engineer", 10, this, 80, 3, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"heavy"),EntityHeavy.class, "heavy", 2, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"scout"),EntityScout.class, "scout", 3, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"sniper"),EntitySniper.class, "sniper", 4, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"soldier"),EntitySoldier.class, "soldier", 5, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"pyro"),EntityPyro.class, "pyro", 6, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"demoman"),EntityDemoman.class, "demoman", 7, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"medic"),EntityMedic.class, "medic", 8, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"spy"),EntitySpy.class, "spy", 9, this, 80, TF2ConfigVars.updateDelay, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"engineer"),EntityEngineer.class, "engineer", 10, this, 80, TF2ConfigVars.updateDelay, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"rocket"),EntityRocket.class, "rocket", 11, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"flame"),EntityFlame.class, "flame", 12, this, 0, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"grenade"),EntityGrenade.class, "grenade", 13, this, 64, 5, true);

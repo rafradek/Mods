@@ -119,10 +119,10 @@ public class GuiMercenary extends GuiMerchant {
 		GlStateManager.enableRescaleNormal();
 		RenderHelper.enableGUIStandardItemLighting();
 		this.itemRender.zLevel = 0;
-		for (int k = 0; k < 3; k++) {
+		for (int k = 0; k < 4; k++) {
 				ItemStack stack = this.mercenary.loadout.getStackInSlot(k);
 				if (!stack.isEmpty()) {
-					if (k < 3 && !this.inventorySlots.getSlot(k+43).getHasStack()) {
+					if (k < 4 && !this.inventorySlots.getSlot(k+43).getHasStack()) {
 						this.itemRender.renderItemIntoGUI(stack, this.inventorySlots.getSlot(k+43).xPos + this.guiLeft, this.inventorySlots.getSlot(k+43).yPos + this.guiTop);
 					}
 					else if (k >= 3 && !this.inventorySlots.getSlot(k+36).getHasStack()) {
@@ -167,7 +167,7 @@ public class GuiMercenary extends GuiMerchant {
         if (this.mc.player.inventory.getItemStack().isEmpty() && this.getSlotUnderMouse() != null && !this.getSlotUnderMouse().getHasStack())
         {
         	int id = this.getSlotUnderMouse().slotNumber;
-        	if (id >= 43 && id < 46)
+        	if (id >= 43 && id < 47 && !this.mercenary.loadout.getStackInSlot(id - 43).isEmpty())
         		this.renderToolTip(this.mercenary.loadout.getStackInSlot(id - 43), p_191948_1_, p_191948_2_);
         }
     }

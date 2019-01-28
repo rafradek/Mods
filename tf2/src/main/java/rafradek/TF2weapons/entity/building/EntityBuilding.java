@@ -58,6 +58,7 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.BuildingSound;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.item.ItemSapper;
@@ -109,6 +110,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public ItemStackHandler charge;
 	public boolean fromPDA;
 	private int disposableID = -1;
+	public UUID ownerEntityID;
 	
 	public EntityBuilding(World worldIn) {
 		super(worldIn);
@@ -182,7 +184,14 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	
 	public void grab() {
 		if(!this.isDisabled() && this.disposableID == -1) {
-			if (this.fromPDA) {
+			if (this.owner instanceof EntityEngineer) {
+				NBTTagCompound tag = new NBTTagCompound();
+				this.writeEntityToNBT(tag);
+				((EntityEngineer)this.owner).grabbed=tag;
+				((EntityEngineer)this.owner).grabbedid = this.getBuildingID();
+				((EntityEngineer)this.owner).switchSlot(0);
+			}
+			else if (this.fromPDA) {
 				NBTTagCompound tag = new NBTTagCompound();
 				this.writeEntityToNBT(tag);
 				TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carrying = tag;
@@ -294,6 +303,9 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	@Override
 	public void onDeath(DamageSource source) {
 		super.onDeath(source);
+		if (this.getOwner() instanceof EntityEngineer) {
+			WeaponsCapability.get(this.getOwner()).giveMetal(getCost(this.getBuildingID(),((EntityEngineer)this.getOwner()).loadout.getStackInSlot(2))/2);
+		}
 		this.clearReferences();
 	}
 	
@@ -387,6 +399,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		
 	}
 
+	public void detonate() {
+		this.setHealth(0);
+		this.onDeath(DETONATE);
+	}
 	public void drawFromBlock(BlockPos pos, TileEntity ent, EnumFacing facing) {
 		if (ent.hasCapability(CapabilityEnergy.ENERGY, facing.getOpposite())) {
 			this.energy.receiveEnergy(ent.getCapability(CapabilityEnergy.ENERGY, facing.getOpposite())
@@ -548,6 +564,8 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		par1NBTTagCompound.setTag("Charge", this.charge.serializeNBT());
 		par1NBTTagCompound.setInteger("Energy", this.energy.getEnergyStored());
 		par1NBTTagCompound.setByte("DisposableID", (byte) this.disposableID);
+		if (this.getOwner() != null && !(this.getOwner() instanceof EntityPlayer))
+			par1NBTTagCompound.setUniqueId("OwnerE", this.getOwner().getUniqueID());
 		if (this.getOwnerId() != null) {
 			par1NBTTagCompound.setUniqueId("Owner", this.getOwnerId());
 			par1NBTTagCompound.setString("OwnerName", this.ownerName);
@@ -576,7 +594,8 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		this.disposableID = tag.getByte("DisposableID");
 		if (tag.getByte("Sapper") != 0)
 			this.setSapped(this, ItemStack.EMPTY);
-		
+		if (tag.hasUniqueId("OwnerE"))
+			this.ownerEntityID=tag.getUniqueId("OwnerE");
 		if (tag.hasUniqueId("Owner")) {
 			UUID ownerID = tag.getUniqueId("Owner");
 			this.dataManager.set(OWNER_UUID, Optional.of(ownerID));

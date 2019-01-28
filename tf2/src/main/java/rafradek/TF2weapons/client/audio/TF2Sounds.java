@@ -244,6 +244,8 @@ public class TF2Sounds {
 	
 	
 	public static SoundEvent register(ResourceLocation location) {
+		if (SOUND_EVENTS.containsKey(location))
+			return SOUND_EVENTS.get(location);
 		SoundEvent event=new SoundEvent(location).setRegistryName(location);
 		SOUND_EVENTS.put(location, event);
 		return event;

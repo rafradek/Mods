@@ -5,6 +5,8 @@ import net.minecraft.entity.MoverType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityLightDynamic extends Entity {
 
@@ -17,6 +19,7 @@ public class EntityLightDynamic extends Entity {
 	
 	public EntityLightDynamic(World worldIn, Entity parent, int timeToLive) {
 		super(worldIn);
+		this.setPosition(parent.posX, parent.posY+parent.getEyeHeight(), parent.posZ);
 		this.parent=parent;
 		this.timeToLive = timeToLive;
 		// TODO Auto-generated constructor stub
@@ -37,6 +40,8 @@ public class EntityLightDynamic extends Entity {
 	
 	public void onUpdate() {
 		super.onUpdate();
+		if (this.parent != null)
+			this.setPosition(this.parent.posX, this.parent.posY+this.parent.getEyeHeight(), this.parent.posZ);
 		this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
 		if (this.ticksExisted >= timeToLive || (this.parent != null && this.parent.isDead)) {
 			this.setDead();
@@ -55,4 +60,8 @@ public class EntityLightDynamic extends Entity {
 
 	}
 
+	@SideOnly(Side.CLIENT)
+    public boolean isInRangeToRender3d(double x, double y, double z) {
+		return false;
+	}
 }

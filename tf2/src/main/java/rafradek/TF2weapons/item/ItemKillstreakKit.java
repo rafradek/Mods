@@ -16,6 +16,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.TF2Attribute.Type;
+import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.WeaponData;
 
 public class ItemKillstreakKit extends ItemApplicableEffect {
 
@@ -60,17 +63,20 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 		
 		if (attrib != null) {
 			tooltip.add("For each kill gain up to:");
-			tooltip.add(attrib.getTranslatedString(attrib.defaultValue + attrib.perKill * getBonusMult(this.getLevel(stack), attrib), true));
+			tooltip.add(attrib.getTranslatedString(attrib.defaultValue + attrib.perKill * getBonusMult(this.getLevel(stack), attrib, null), true));
 		}
 	}
 	
-	public static float getBonusMult(int level, TF2Attribute attrib) {
+	public static float getBonusMult(int level, TF2Attribute attrib, WeaponData weapon) {
+		float base=1f;
 		switch (level) {
-		case 1: return 1f;
-		case 2: return attrib.perKill > 0 ? 1.25f : 1.2f;
-		case 3: return attrib.perKill > 0 ? 1.5f : 1.4f;
-		default: return 1f;
+		case 1: base = 1f; break;
+		case 2: base = 1.25f; break;
+		case 3: base = 1.5f; break;
 		}
+		if (weapon != null && attrib.effect.equals("Fire Rate") && weapon.getBoolean(PropertyType.RELOADS_CLIP))
+			base *= 0.89f;
+		return base;
 	}
 	
 	public static float getLevelDrain(int level, TF2Attribute attrib) {
@@ -80,7 +86,7 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 		case 2: base = 0.75f; break;
 		case 3: base = 0.8f; break;
 		}
-		return attrib.perKill > 0 ? base : base*0.9f;
+		return base;
 	}
 	
 	public static int getCooldown(int level) {
@@ -92,11 +98,15 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 		}
 	}
 	
-	public static float getKillstreakBonus(TF2Attribute attrib, int level, int kills) {
+	public static float getKillstreakBonus(TF2Attribute attrib, int level, int kills, WeaponData weapon) {
 		float levelDrain = 1f;
 		for (int i = 0; i < kills/5; i++)
 			levelDrain*=getLevelDrain(level, attrib);
-		return attrib.defaultValue + (5*(1-levelDrain)/(1-getLevelDrain(level, attrib))+(kills%5)*levelDrain)*(attrib.perKill*getBonusMult(level, attrib));
+		float value = attrib.defaultValue + (5*(1-levelDrain)/(1-getLevelDrain(level, attrib))+(kills%5)*levelDrain)*(Math.abs(attrib.perKill)*getBonusMult(level, attrib, weapon));
+		if (attrib.perKill < 0) {
+			value = 1/value;
+		}
+		return value;
 	}
 	
 	public boolean isApplicable(ItemStack stack, ItemStack weapon) {

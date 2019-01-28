@@ -51,7 +51,9 @@ public class EntityAIFollowTrader extends EntityAIBase {
 			this.timeToRecalcPath = 8;
 
 			double distance = this.owner.getDistanceSq(this.owner.getOwner());
-			if((!this.owner.getNavigator().tryMoveToEntityLiving(this.owner.getOwner(), 1.08f) && distance > 750) || (this.owner.getNavigator().noPath() && distance > 144)) {
+			boolean move = this.owner.getNavigator().tryMoveToEntityLiving(this.owner.getOwner(), 1.08f);
+			
+			if((!move && distance > 750) || (this.owner.getNavigator().noPath() && distance > 144)) {
 				
 				TF2Util.teleportSafe(owner, owner.getOwner());
 			}

@@ -11,9 +11,15 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemHuntsman;
+import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
+import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.WeaponData;
 
 public class EntitySniper extends EntityTF2Character {
 

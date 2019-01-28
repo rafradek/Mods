@@ -1,9 +1,14 @@
 package rafradek.TF2weapons.message;
 
+import java.util.Map.Entry;
+
 import io.netty.util.internal.SocketUtils;
+import net.minecraftforge.common.config.ConfigCategory;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
@@ -18,7 +23,12 @@ public class TF2InitHandler implements IMessageHandler<TF2Message.InitMessage, I
 				TF2UdpClient.playerId = message.id;
 				TF2weapons.network.useUdp = false;
 			}
+			for (Entry<String, Property> entry : message.property.entries()) {
+				TF2weapons.conf.getCategory(entry.getKey()).get(entry.getValue().getName()).set(entry.getValue().getString());
+				TF2ConfigVars.createConfig(false);
+			}
 			ClientProxy.buildingsUseEnergy = message.energyUse;
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -181,7 +181,7 @@ public class TF2Attribute {
 		new TF2Attribute(5, "MinigunSpinPenalty", "Minigun Spinup", Type.PERCENTAGE, 1f, State.NEGATIVE, ITEM_MINIGUN,
 				0.1f, 2, -200, 1);
 		new TF2Attribute(6, "FireRateBonus", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
-				NOT_FLAMETHROWER, -0.08f, 5, 80, 8, -0.027f, 1.5f);
+				NOT_FLAMETHROWER, -0.08f, 5, 80, 8, -0.043f, 1.5f);
 		new TF2Attribute(7, "FireRatePenalty", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE,
 				NOT_FLAMETHROWER, 0.06f, 2, -100, 1);
 		new TF2Attribute(8, "SpreadBonus", "Spread", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE,
@@ -192,7 +192,7 @@ public class TF2Attribute {
 		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, Predicates.and(WITH_CLIP, stack -> {
 			return !ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_FULL_CLIP);
 			}),
-				-0.2f, 3, 100, 5, -0.033f, 0.75f);
+				-0.2f, 3, 100, 5, -0.05f, 0.75f);
 		new TF2Attribute(13, "ReloadRatePenalty", "Reload Time", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_CLIP, 0.2f,
 				3, -200, 1);
 		new TF2Attribute(14, "KnockbackBonus", "Knockback", Type.PERCENTAGE, 1f, State.POSITIVE);
@@ -211,7 +211,7 @@ public class TF2Attribute {
 		new TF2Attribute(22, "ExplosionRadiusPenalty", "Explosion Radius", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(23, "DestroyOnImpact", "Coll Remove", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(24, "AmmoEfficiencyBonus", "Ammo Eff", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE, WITH_AMMO,
-				-0.2f, 3, 120, 6, -0.024f, 0.75f);
+				-0.2f, 3, 120, 6, -0.04f, 0.75f);
 		new TF2Attribute(25, "AmmoEfficiencyPenalty", "Ammo Eff", Type.PERCENTAGE, 1f, State.NEGATIVE, WITH_AMMO, 0.15f,
 				2, -150, 2);
 		new TF2Attribute(26, "Penetration", "Penetration", Type.ADDITIVE, 0, State.POSITIVE, ITEM_BULLET, 1, 1, 200, 1);
@@ -523,7 +523,7 @@ public class TF2Attribute {
 	public static int getMaxExperience(ItemStack stack, EntityPlayer playerIn) {
 		if (playerIn != null && playerIn.capabilities.isCreativeMode)
 			return 99999;
-		int base = 1300;
+		int base = 1400;
 		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium"))
 			base += 1000;
 		if (!(stack.getItem() instanceof ItemWeapon))
@@ -532,6 +532,6 @@ public class TF2Attribute {
 		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Strange")) {
 			strangeLevel = stack.getTagCompound().getInteger("StrangeLevel");
 		}
-		return base + strangeLevel * strangeLevel * 40;
+		return (int) Math.min(TF2ConfigVars.xpCap, ((base + strangeLevel * strangeLevel * 40) * TF2ConfigVars.xpMult));
 	}
 }

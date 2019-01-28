@@ -70,7 +70,7 @@ public class EntityAIRepair extends EntityAIBase {
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
 	public boolean isValidTarget(EntityBuilding building) {
-		return building != null && building.isEntityAlive()
+		return building != null && building.isEntityAlive() && this.entityHost.isWithinHomeDistanceFromPosition(building.getPosition())
 				&& (building.getMaxHealth() > building.getHealth()
 						|| ((this.entityHost.getAttackTarget() == null || this.entityHost.getAttackTarget().isDead) && this.entityHost.hasSentryAndDispenser()
 								&& building.canUseWrench()));
@@ -79,7 +79,7 @@ public class EntityAIRepair extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 		this.searchTimer--;
-		if (this.entityHost.loadout.getStackInSlot(2).isEmpty())
+		if (this.entityHost.grabbed != null || this.entityHost.loadout.getStackInSlot(2).isEmpty())
 			return false;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){
 			/*Entity

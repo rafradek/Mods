@@ -137,7 +137,10 @@ public class TF2EventsClient {
 	public static TextureAtlasSprite bisonIcon;
 	private long profileStartTime = -1;
 	private int profileStartTick;
-	
+	public static Vec3d armLpos;
+	public static Vec3d armRpos;
+	public static Vec3d armLang;
+	public static Vec3d armRang;
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
 		// if(event.getMap().getGlTextureId()==1){
@@ -361,7 +364,7 @@ public class TF2EventsClient {
 	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent eventArgs) {
 		// TF2weapons.syncConfig();
 		if (eventArgs.getModID().equals("rafradek_tf2_weapons")) {
-			TF2ConfigVars.createConfig();
+			TF2ConfigVars.createConfig(true);
 			if(Minecraft.getMinecraft().player != null)
 				TF2weapons.network.sendToServer(new TF2Message.InitClientMessage(TF2weapons.conf));
 		}

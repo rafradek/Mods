@@ -371,6 +371,13 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 									}
 								}
 							}
+							else if (id == 5) {
+								for(EntityEngineer living : player.world.getEntitiesWithinAABB(EntityEngineer.class, player.getEntityBoundingBox().grow(40, 15, 40), (test) -> {
+									return TF2Util.isOnSameTeam(player, test);
+								})){
+									
+								}
+							}
 						}
 					}
 				}

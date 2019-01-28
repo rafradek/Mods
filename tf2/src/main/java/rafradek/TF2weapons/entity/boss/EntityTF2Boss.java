@@ -104,6 +104,11 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		return false;
 	}
 	
+	protected float getWaterSlowDown()
+    {
+        return 1F;
+    } 
+	
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
 		int count=this.playersAttacked;

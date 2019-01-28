@@ -784,7 +784,7 @@ public abstract class ItemWeapon extends ItemUsable {
     }
 	
 	public boolean hasEffect(ItemStack stack) {
-		return super.hasEffect(stack) || (this.hasKillstreak(stack, 2) && stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) > 0);
+		return super.hasEffect(stack) || (stack.hasTagCompound() && this.hasKillstreak(stack, 2) && stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) > 0);
 	}
 	
 	public void setDamage(ItemStack stack, int damage)
