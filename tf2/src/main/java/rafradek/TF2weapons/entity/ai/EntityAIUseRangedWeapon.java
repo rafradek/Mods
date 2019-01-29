@@ -229,17 +229,18 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			this.reloading = false;
 			if (!pressed) {
 				pressed = true;
+				int state = this.entityHost.getState(true);
 				weapon.startUse(item, this.entityHost, this.entityHost.world,
-						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
-				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
-				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, state);
+				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = state;
+				TF2Util.sendTracking(new TF2Message.ActionMessage(state, entityHost), entityHost);
 			}
 
 		} else if (weapon.getCharge(entityHost, item) >= this.releaseAt){
 			if (pressed) {
 				if (this.jump)
 					this.entityHost.jump = false;
-				int valuedef = this.entityHost instanceof EntityHeavy ? 2 : 0;
+				int valuedef = this.entityHost.getState(false);
 				weapon.endUse(item, this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, valuedef);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = valuedef;

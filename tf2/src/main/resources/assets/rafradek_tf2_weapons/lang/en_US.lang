@@ -247,6 +247,7 @@ weaponAttribute.BombEnemy=Shoots bombs at nearby enemies. Bomb damage: %1$s
 weaponAttribute.NoDisguiseKit=No disguise kit
 weaponAttribute.DisguiseBackstab=On backstab: disguise as an enemy
 weaponAttribute.SilentKill=Silent Killer: No attack noise from backstabs
+weaponAttribute.SentryRangeBonus=+%1$s sentry range
 
 container.upgrades=Upgrades station
 container.currency=Experiece: %1$s
@@ -318,6 +319,8 @@ commands.giveweapon.notfound=Cannot find weapon: %s
 commands.forceclass.usage=/forceclass <class number | clear> [player]
 commands.forceclass.success=Changed class of %s to %s
 commands.forceclass.success2=Removed class from %s
+commands.cmodc.usage=/cmodc <config file> <category> <property> [value]
+commands.cmodc.success=Property %s is successfully set to %s
 
 effect.bonk=Bonk! Atomic Punch
 effect.stun=Scared

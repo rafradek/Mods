@@ -208,7 +208,7 @@ public class ContainerMercenary extends ContainerMerchant {
 				return TF2weapons.MOD_ID + ":items/refill_empty";
 			}*/
 		});
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			final int index=i;
 			this.addSlotToContainer(new SlotItemHandler(merc.loadout, i, -888888, -566788) {
 				
@@ -291,7 +291,7 @@ public class ContainerMercenary extends ContainerMerchant {
     {
         super.onContainerClosed(playerIn);
         if(!this.mercenary.world.isRemote) {
-	        for(int i=0;i<3;i++) {
+	        for(int i=0;i<4;i++) {
 	        	if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
 	        		ItemStack buf = this.mercenary.loadout.getStackInSlot(i);
 	        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));

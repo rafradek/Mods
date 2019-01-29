@@ -24,6 +24,7 @@ import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -97,15 +98,20 @@ public abstract class ItemUsable extends ItemFromData {
 		WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 		EntityLivingBase living=(EntityLivingBase) par3Entity;
 		
-		if (stackcap.fire1Cool > 0)
+		int mincool = 0;
+		
+		if (living instanceof EntityPlayer && !par2World.isRemote)
+			mincool = -200;
+		
+		if (stackcap.fire1Cool > mincool)
 			stackcap.fire1Cool -= 50;
 		else
-			stackcap.fire1Cool = 0;
+			stackcap.fire1Cool = mincool;
 		
-		if (stackcap.fire2Cool > 0)
+		if (stackcap.fire2Cool > mincool)
 			stackcap.fire2Cool -= 50;
 		else
-			stackcap.fire2Cool = 0;
+			stackcap.fire2Cool = mincool;
 		
 		if (stackcap.active == 0 && (par5 || stack == living.getHeldItemOffhand())) {
 			stackcap.active = 1;
@@ -172,7 +178,14 @@ public abstract class ItemUsable extends ItemFromData {
 		return true;
 	}
 
+	public boolean canFireInternal(World world, EntityLivingBase living, ItemStack stack, EnumHand hand) {
+		if (world.isRemote && living != Minecraft.getMinecraft().player)
+			return WeaponsCapability.get(living).canFire(hand,true);
+		return canFire(world, living, stack);
+	}
+	
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
+		
 		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0 && ItemToken.allowUse(living, this.getUsableClasses(stack))
 				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1) && this.getFiringSpeed(stack, living) != Integer.MAX_VALUE;
 	}
@@ -246,6 +259,12 @@ public abstract class ItemUsable extends ItemFromData {
 				: ItemFromData.getData(stack).getFloat(PropertyType.DUAL_WIELD_SPEED);
 	}
 
+	public boolean canAltFireInternal(World worldObj, EntityLivingBase player, ItemStack item, EnumHand hand) {
+		if (worldObj.isRemote && player != Minecraft.getMinecraft().player)
+			return WeaponsCapability.get(player).canFire(hand,false);
+		return canAltFire(worldObj, player, item);
+	}
+	
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		// TODO Auto-generated method stub
 		return item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0

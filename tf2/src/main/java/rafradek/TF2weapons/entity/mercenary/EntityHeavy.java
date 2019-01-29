@@ -129,4 +129,8 @@ public class EntityHeavy extends EntityTF2Character {
 	public int getClassIndex() {
 		return 4;
 	}
+	
+	public int getState(boolean onTarget) {
+		return onTarget ? 1 : 2;
+	}
 }

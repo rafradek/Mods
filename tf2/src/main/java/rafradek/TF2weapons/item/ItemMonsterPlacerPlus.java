@@ -92,7 +92,7 @@ public class ItemMonsterPlacerPlus extends Item {
 				if (!playerIn.capabilities.isCreativeMode)
 					stack.shrink(1);
 				if (entity instanceof EntityBuilding) {
-					if (!(playerIn.isCreative() && playerIn.isSneaking()))
+					if (entity instanceof EntityTeleporter || !(playerIn.isCreative() && playerIn.isSneaking()))
 						((EntityBuilding) entity).setOwner(playerIn);
 					if(hastag) {
 						((EntityBuilding) entity).setConstructing(true);
@@ -148,7 +148,7 @@ public class ItemMonsterPlacerPlus extends Item {
 						if (!playerIn.capabilities.isCreativeMode)
 							itemStackIn.shrink(1);
 						if (entity instanceof EntityBuilding) {
-							if (!(playerIn.isCreative() && playerIn.isSneaking()))
+							if (entity instanceof EntityTeleporter || !(playerIn.isCreative() && playerIn.isSneaking()))
 								((EntityBuilding) entity).setOwner(playerIn);
 							if(hastag) {
 								((EntityBuilding) entity).setConstructing(true);

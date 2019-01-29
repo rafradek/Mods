@@ -155,8 +155,12 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 
 		ItemStack stack=playerIn.getHeldItem(hand);
-		if (worldIn.isRemote && (!stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0))
+		if (worldIn.isRemote ) {
+			if ((!stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0))
 			return EnumActionResult.PASS;
+			else
+				 return EnumActionResult.SUCCESS;
+		}
 		else if (!playerIn.canPlayerEdit(pos.offset(facing), facing, stack) || !stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0)
 			return EnumActionResult.PASS;
 		else {
@@ -185,6 +189,8 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				entity.setOwner(playerIn);
 				if (entity instanceof EntitySentry) {
 					((EntitySentry)entity).attackRateMult = TF2Attribute.getModifier("Sentry Fire Rate", stack, 1, playerIn);
+					TF2Util.addModifierSafe(entity, SharedMonsterAttributes.FOLLOW_RANGE,
+							new AttributeModifier("upgraderange", TF2Attribute.getModifier("Sentry Range", stack, 1f, entity) - 1f, 2), true);
 					((EntitySentry)entity).setHeat((int) TF2Attribute.getModifier("Piercing", stack, 0, playerIn));
 					if (disposable || !TF2Util.getFirstItem(playerIn.inventory, 
 							stackL -> stackL.getItem() instanceof ItemWrench && TF2Attribute.getModifier("Weapon Mode", stackL, 0, playerIn) == 2).isEmpty()) {
@@ -210,8 +216,10 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				if (stack.getTagCompound().getByte("Building") == 5 && entity.getDisposableID() == -1)
 					entity.setDisposableID(PlayerPersistStorage.get(playerIn).disposableBuildings.size());
 				
-				if (entity instanceof EntityTeleporter)
+				if (entity instanceof EntityTeleporter) {
+					((EntityTeleporter) entity).setID(127);
 					((EntityTeleporter) entity).setExit(stack.getTagCompound().getByte("Building") == 4);
+				}
 				PlayerPersistStorage.get(playerIn).setBuilding(entity,TF2PlayerCapability.get(playerIn).calculateMaxSentries());
 				TF2PlayerCapability.get(playerIn).carrying = null;
 				if (!playerIn.capabilities.isCreativeMode && TF2PlayerCapability.get(playerIn).carrying == null)

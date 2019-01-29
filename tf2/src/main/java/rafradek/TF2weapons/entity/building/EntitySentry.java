@@ -373,18 +373,18 @@ public class EntitySentry extends EntityBuilding {
 
 	public void scoreKill(EntityLivingBase target) {
 		this.setKills(this.getKills() + 1);
-		if(owner instanceof EntityPlayer && target instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
-			owner.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
+		if(this.getOwner() instanceof EntityPlayer && target instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
+			this.getOwner().getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
 		}
-		if (owner instanceof EntityPlayer && TF2Util.isEnemy(this.owner, target)) {
-			ItemStack stack = TF2Util.getFirstItem(((EntityPlayer)this.owner).inventory, stackl -> stackl.getItem() instanceof ItemPDA);
+		if (this.getOwner() instanceof EntityPlayer && TF2Util.isEnemy(this.getOwner(), target)) {
+			ItemStack stack = TF2Util.getFirstItem(((EntityPlayer)this.getOwner()).inventory, stackl -> stackl.getItem() instanceof ItemPDA);
 			if (!stack.isEmpty()) {
 				if (!(target instanceof EntityPlayer)) {
 					stack.getTagCompound().setInteger("Kills", stack.getTagCompound().getInteger("Kills") + 1);
 				} else {
 					stack.getTagCompound().setInteger("PlayerKills", stack.getTagCompound().getInteger("PlayerKills") + 1);
 				}
-				TF2EventsCommon.onStrangeUpdate(stack, target);
+				TF2EventsCommon.onStrangeUpdate(stack, this.getOwner());
 			}
 		}
 	}

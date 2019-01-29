@@ -1064,8 +1064,8 @@ public class TF2EventsClient {
 	@SubscribeEvent
 	public void playerName(PlayerEvent.NameFormat event) {
 		if(Minecraft.getMinecraft().player != null && WeaponsCapability.get(event.getEntityPlayer()).isDisguised()) {
-			String username=WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().substring(2);
 			
+			String username=WeaponsCapability.get(event.getEntityPlayer()).getDisguiseType().substring(2);
 			if(TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, event.getEntityPlayer())) {
 				event.setDisplayname(event.getDisplayname()+" ["+username+"]");
 			}

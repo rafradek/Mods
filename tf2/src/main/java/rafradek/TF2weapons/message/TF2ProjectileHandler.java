@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.message;
 
 import java.util.ArrayList;
+import java.util.Deque;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -48,7 +49,8 @@ public class TF2ProjectileHandler implements IMessageHandler<TF2Message.Predicti
 						}
 						message.target.add(result);
 					}
-				shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList[(message.state == 1 ? 0 : 2) + message.hand.ordinal()] = message;
+				Deque<PredictionMessage> deque = shooter.getCapability(TF2weapons.WEAPONS_CAP, null).predictionList[(message.state == 1 ? 0 : 2) + message.hand.ordinal()];
+				deque.addLast(message);
 				message.time=shooter.world.getTotalWorldTime();
 			}
 

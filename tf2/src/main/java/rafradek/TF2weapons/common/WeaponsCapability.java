@@ -2,6 +2,7 @@ package rafradek.TF2weapons.common;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -83,8 +84,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public EntityLivingBase owner;
 	public int state;
 	public int minigunTicks;
-	private int fire1Cool;
-	private int fire2Cool;
 	public EnumHand reloadingHand;
 	public int reloadCool;
 	public int lastFire;
@@ -95,7 +94,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int chargeTicks;
 	//public boolean charging;
 	public int critTimeCool;
-	public TF2Message.PredictionMessage[] predictionList = new TF2Message.PredictionMessage[8];
+	@SuppressWarnings("unchecked")
+	public Deque<TF2Message.PredictionMessage>[] predictionList = new Deque[8];
 	public float recoil;
 	public int invisTicks;
 	public int disguiseTicks;
@@ -164,7 +164,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
 	private static final DataParameter<Float> KNOCKBACK_RAGE= new DataParameter<Float>(5, DataSerializers.FLOAT);
 	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
-	
+	private static final DataParameter<Byte> CAN_FIRE = new DataParameter<Byte>(13, DataSerializers.BYTE);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 	//public int killsSpinning;
 	
@@ -182,6 +182,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public WeaponsCapability(EntityLivingBase entity) {
 		this.owner = entity;
 
+		for (int i = 0; i < this.predictionList.length; i++)
+			this.predictionList[i]= new ArrayDeque<TF2Message.PredictionMessage>();
 		this.dataManager = new EntityDataManager(entity);
 		this.dataManager.register(CRIT_TIME, 0);
 		this.dataManager.register(HEADS, 0);
@@ -196,6 +198,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(EXP_JUMP, false);
 		this.dataManager.register(CHARGING, false);
 		this.dataManager.register(TOKEN_USED, -1);
+		this.dataManager.register(CAN_FIRE, (byte)0);
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -334,6 +337,28 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public int getUsedToken() {
 		return this.dataManager.get(TOKEN_USED);
+	}
+	
+	public boolean canFire(EnumHand hand, boolean primary) {
+		int flags=this.dataManager.get(CAN_FIRE);
+		return (flags & (1 << hand.ordinal())) == (1 << hand.ordinal()) && (((flags & 4) == 4 && primary) || ((flags & 8) == 8 && !primary));
+		
+	}
+	
+	public void setCanFire(boolean fire, EnumHand hand, boolean primary) {
+		int flag = 0;
+		if (hand == EnumHand.MAIN_HAND)
+			flag +=1;
+		else
+			flag +=2;
+		if (primary)
+			flag +=4;
+		else
+			flag +=8;
+		if (fire)
+			this.dataManager.set(CAN_FIRE, (byte)(this.dataManager.get(CAN_FIRE) | flag));
+		else
+			this.dataManager.set(CAN_FIRE, (byte)(this.dataManager.get(CAN_FIRE) & ~(flag)));
 	}
 	
 	public void addEffectCooldown(String name, int time) {
@@ -503,6 +528,9 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					}
 				}
 				
+				this.setCanFire(item.canFireInternal(owner.world, owner, stack,hand), hand, true);
+				this.setCanFire(item.canAltFireInternal(owner.world, owner, stack, hand), hand, false);
+				
 				this.stateDo(owner, stack, hand, state);
 	
 				if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.knockbackActive && this.getKnockbackRage() >= 1f) {
@@ -569,6 +597,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				} else if (this.reloadingHand == hand)
 					this.reloadingHand = null;
 			}
+			
 		}
 		if (!hadItem) {
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemMinigun.slowdown);
@@ -927,7 +956,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public boolean shouldShoot(EntityLivingBase player, int state, EnumHand hand, int actualState) {
 		return (!(!player.world.isRemote
 				&& player instanceof EntityPlayer
-				&& this.predictionList[hand.ordinal() + (state == 1 ? 0 : 2)] == null))
+				&& this.predictionList[hand.ordinal() + (state == 1 ? 0 : 2)].isEmpty()))
 				&& !((player.world.isRemote || !(player instanceof EntityPlayer)) && (actualState & state) != state);
 	}
 
@@ -946,18 +975,18 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer) {
-				message = this.predictionList[hand.ordinal()];
-				this.predictionList[hand.ordinal()] = null;
+				message = this.predictionList[hand.ordinal()].pollLast();
+				//this.predictionList[hand.ordinal()] = null;
 			}
 
 			if (message == null) {
-				boolean canFire = item.canFire(player.world, player, stack);
+				boolean canFire = item.canFireInternal(player.world, player, stack,hand);
 				if ( !canFire)
 					break;
 			} else {
 				
 				this.mainHand = message.hand == EnumHand.MAIN_HAND;
-				if (message.hand != hand || !item.canFire(player.world, player, stack))
+				if (message.hand != hand || !item.canFireInternal(player.world, player, stack,hand))
 					break;
 			}
 			int fireRate = item.getFiringSpeed(stack, player);
@@ -1005,6 +1034,9 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				this.stopReload();
 			}
 			
+			if (stackcap.fire1Cool > 200) {
+				this.predictionList[hand.ordinal()].clear();
+			}
 		}
 		if ((state & 2) != 0 && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)
 			((ItemUsable) stack.getItem()).altFireTick(stack, player, player.world);
@@ -1012,12 +1044,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 			TF2Message.PredictionMessage message = null;
 			if (!player.world.isRemote && player instanceof EntityPlayer) {
-				message = this.predictionList[hand.ordinal() + 2];
-				this.predictionList[hand.ordinal() + 2] = null;
+				message = this.predictionList[hand.ordinal() + 2].pollLast();
+				//this.predictionList[hand.ordinal() + 2] = null;
 			}
 
 			if (item.getAltFiringSpeed(stack, player) == Short.MAX_VALUE
-					|| !item.canAltFire(player.world, player, stack))
+					|| !item.canAltFireInternal(player.world, player, stack, hand))
 				break;
 			stackcap.fire2Cool += item.getAltFiringSpeed(stack, player);
 
@@ -1048,8 +1080,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (stack.getItem() instanceof ItemWeapon) {
 				this.stopReload();
 			}
+			
+			if (stackcap.fire2Cool > 200) {
+				this.predictionList[hand.ordinal() + 2].clear();
+			}
 		}
-
 	}
 
 	public void updateExpJump() {

@@ -322,6 +322,18 @@ public class TF2EventsCommon {
 	@SubscribeEvent
 	public void worldTick(TickEvent.WorldTickEvent event) {
 		if (event.phase == TickEvent.Phase.START && event.side == Side.SERVER) {
+			/*long biggest = 0;
+			int biggesttick = 0;
+			if (event.world.getMinecraftServer().getTickCounter()%20 == 0) {
+				for (int i = 0; i < 100; i++) {
+					if (event.world.getMinecraftServer().tickTimeArray[i] > biggest) {
+						biggest = event.world.getMinecraftServer().tickTimeArray[i];
+					}
+					if (event.world.getMinecraftServer().tickTimeArray[i] > 50000000)
+						biggesttick +=1;
+				}
+				System.out.println(biggest/1000000+ " "+biggesttick);
+			}*/
 			
 			/*if(TF2weapons.server.getTickCounter()%20 == 0) {
 				System.out.println("TickTimeLiving: "+avg(tickTimeLiving));
@@ -596,6 +608,7 @@ public class TF2EventsCommon {
 						modifiers.removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName());
 					}
 					event.getEntityPlayer().getAttributeMap().applyAttributeModifiers(modifiers);
+					if (i < TF2PlayerCapability.get(event.getEntityPlayer()).wearablesAttrib.length)
 					TF2PlayerCapability.get(event.getEntityPlayer()).wearablesAttrib[i] = modifiers;
 				}
 			}
@@ -1392,11 +1405,11 @@ public class TF2EventsCommon {
 			if (event.getSource() instanceof TF2DamageSource) {
 				
 				stack = ((TF2DamageSource) event.getSource()).getWeaponOrig();
-				if (event.getEntity() instanceof EntityPlayerMP && ((TF2DamageSource) event.getSource()).hasAttackFlag(TF2DamageSource.SENTRY_PDA)) {
+				/*if (event.getEntity() instanceof EntityPlayerMP && ((TF2DamageSource) event.getSource()).hasAttackFlag(TF2DamageSource.SENTRY_PDA)) {
 					ItemStack pda = TF2Util.getFirstItem(((EntityPlayerMP)event.getEntity()).inventory, pred -> pred.getItem() instanceof ItemPDA && pred.getTagCompound().hasKey("Strange"));
 					if (!pda.isEmpty())
 						onStrangeUpdate(pda, living);
-				}
+				}*/
 					
 			} else {
 				stack = living.getHeldItemMainhand();

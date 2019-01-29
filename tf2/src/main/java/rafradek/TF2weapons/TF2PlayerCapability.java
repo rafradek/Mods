@@ -180,20 +180,23 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				if (this.owner.world.getWorldTime() % 24000 < 13000) {
 					this.bossToSpawn = null;
 					this.bossSpawnTicks = 0;
+					
 				}
-				BlockPos spawnPos = null;
-				int i = 0;
-				do {
-					i++;
-					spawnPos = this.owner.world.getTopSolidOrLiquidBlock(this.owner.getPosition().add(this.owner.getRNG().nextInt(48) - 24, 0, this.owner.getRNG().nextInt(48) - 24));
-					this.bossToSpawn.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-				} while (i < 2 && !this.owner.world.getCollisionBoxes(null, this.bossToSpawn.getEntityBoundingBox()).isEmpty());
-				
-				if (spawnPos != null) {
-					this.bossToSpawn.onInitialSpawn(this.owner.world.getDifficultyForLocation(this.bossToSpawn.getPosition()), null);
-					this.owner.world.spawnEntity(this.bossToSpawn);
-					this.bossToSpawn = null;
-					this.bossSpawnTicks = 0;
+				else {
+					BlockPos spawnPos = null;
+					int i = 0;
+					do {
+						i++;
+						spawnPos = this.owner.world.getTopSolidOrLiquidBlock(this.owner.getPosition().add(this.owner.getRNG().nextInt(48) - 24, 0, this.owner.getRNG().nextInt(48) - 24));
+						this.bossToSpawn.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+					} while (i < 2 && !this.owner.world.getCollisionBoxes(null, this.bossToSpawn.getEntityBoundingBox()).isEmpty());
+					
+					if (spawnPos != null) {
+						this.bossToSpawn.onInitialSpawn(this.owner.world.getDifficultyForLocation(this.bossToSpawn.getPosition()), null);
+						this.owner.world.spawnEntity(this.bossToSpawn);
+						this.bossToSpawn = null;
+						this.bossSpawnTicks = 0;
+					}
 				}
 			}
 			

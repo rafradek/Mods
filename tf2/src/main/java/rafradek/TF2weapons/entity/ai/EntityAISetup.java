@@ -147,6 +147,8 @@ public class EntityAISetup extends EntityAIBase {
 		
 		ItemStack pda = this.engineer.loadout.getStackInSlot(3);
 		if (building instanceof EntitySentry) {
+			TF2Util.addModifierSafe(building, SharedMonsterAttributes.FOLLOW_RANGE,
+					new AttributeModifier("upgraderange", TF2Attribute.getModifier("Sentry Range", pda, 1f, engineer) - 1f, 2), true);
 			((EntitySentry)building).attackRateMult = TF2Attribute.getModifier("Sentry Fire Rate", pda, 1, engineer);
 			((EntitySentry)building).setHeat((int) TF2Attribute.getModifier("Piercing", pda, 0, engineer));
 		}

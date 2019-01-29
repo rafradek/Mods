@@ -50,6 +50,7 @@ public class GuiTeleporter extends GuiContainer {
 		this.teleportField=new GuiTextField(5, fontRenderer, this.width / 2 -40, this.height / 2 - 40, 30, 20);
 		this.teleportField.setMaxStringLength(3);
 		this.teleportField.setFocused(true);
+		
 		this.teleportField.setText(Integer.toString(this.channel+1));
 		this.buttonList
 				.add(this.teleportUpBtn = new GuiButton(1, this.width / 2 - 60, this.height / 2 - 40, 20, 20, "+"));
@@ -59,6 +60,12 @@ public class GuiTeleporter extends GuiContainer {
 				.add(this.exitToggle = new GuiButton(3, this.width / 2 + 10, this.height / 2 - 40, 50, 20, "Exit"));
 		this.buttonList.add(this.grab = new GuiButton(4, this.guiLeft + 86, this.guiTop + 90, 40, 20,
 				I18n.format("gui.teleporter.drop", new Object[0])));
+		if (this.channel == 127) {
+			this.teleportField.setEnabled(false);
+			this.teleportUpBtn.enabled = false;
+			this.teleportDownBtn.enabled = false;
+			this.exitToggle.enabled = false;
+		}
 	}
 
 	@Override
@@ -67,13 +74,13 @@ public class GuiTeleporter extends GuiContainer {
 			
 			if (button.id == 1) {
 				channel++;
-				if (channel >= EntityTeleporter.TP_PER_PLAYER)
+				if (channel >= EntityTeleporter.TP_PER_PLAYER - 1)
 					channel = 0;
 				this.teleportField.setText(Integer.toString(this.channel + 1));
 			} else if (button.id == 2) {
 				channel--;
 				if (channel < 0)
-					channel = EntityTeleporter.TP_PER_PLAYER - 1;
+					channel = EntityTeleporter.TP_PER_PLAYER - 2;
 				this.teleportField.setText(Integer.toString(this.channel + 1));
 			} else if (button.id == 3 && !this.teleporter.isExit())
 				exit = !exit;
@@ -103,8 +110,10 @@ public class GuiTeleporter extends GuiContainer {
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		super.keyTyped(typedChar, keyCode);
 		this.teleportField.textboxKeyTyped(typedChar, keyCode);
+		if (this.channel == 127)
+			return;
 		try {
-			channel = MathHelper.clamp(Integer.parseInt(this.teleportField.getText())-1,0,EntityTeleporter.TP_PER_PLAYER-1);
+			channel = MathHelper.clamp(Integer.parseInt(this.teleportField.getText())-1,0,EntityTeleporter.TP_PER_PLAYER-2);
 		}
 		catch (Exception ex) {
 			

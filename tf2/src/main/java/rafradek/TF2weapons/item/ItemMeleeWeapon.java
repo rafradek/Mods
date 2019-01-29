@@ -11,6 +11,7 @@ import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
@@ -32,8 +33,14 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 
 	@Override
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
-		return TF2Attribute.getModifier("Ball Release", item, 0, player) > 0 ? 2000
-				: super.getAltFiringSpeed(item, player);
+		if (TF2Attribute.getModifier("Ball Release", item, 0, player) > 0) {
+			if (player instanceof EntityTF2Character) {
+				return (short) this.getFiringSpeed(getNewStack("sandmanball"), player);
+			}
+			else
+				return 2000;
+		}
+		return super.getAltFiringSpeed(item, player);
 	}
 	
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {

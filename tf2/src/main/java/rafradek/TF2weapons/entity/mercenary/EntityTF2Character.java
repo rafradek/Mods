@@ -195,11 +195,15 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIMoveTowardsRestriction2(this, 1.25f));
 		this.tasks.addTask(1, avoidSentry = new EntityAIAvoidEntity<EntitySentry>(this, EntitySentry.class, sentry -> {
-			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSq(this) < 435;
-		}, 21, 1.0f, 1.0f){
+			double range = sentry.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() + 1;
+			range *= range;
+			return !TF2Util.isOnSameTeam(this, sentry) && !sentry.isDisabled() && sentry.getDistanceSq(this) < range;
+		}, 25, 1.0f, 1.0f){
 			public boolean shouldContinueExecuting()
 		    {
-		        return super.shouldContinueExecuting() && !(this.closestLivingEntity == null || this.closestLivingEntity.getDistanceSq(EntityTF2Character.this) > 435);
+				double range = closestLivingEntity.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() + 1;
+				range *= range;
+		        return super.shouldContinueExecuting() && !(this.closestLivingEntity == null || this.closestLivingEntity.getDistanceSq(EntityTF2Character.this) > range);
 		    }
 		});
 		this.tasks.addTask(2, new EntityAIFollowTrader(this));
@@ -273,6 +277,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.loadout.setStackInSlot(0, ItemFromData.getRandomWeaponOfSlotMob(className, 0, this.rand, false, true, this.noEquipment));
 		this.loadout.setStackInSlot(1, ItemFromData.getRandomWeaponOfSlotMob(className, 1, this.rand, false, true, this.noEquipment));
 		this.loadout.setStackInSlot(2, ItemFromData.getRandomWeaponOfSlotMob(className, 2, this.rand, false, true, this.noEquipment));
+		this.loadout.setStackInSlot(3, ItemFromData.getRandomWeaponOfSlotMob(className, 3, this.rand, false, true, this.noEquipment));
 		if (!this.noEquipment && !this.isRobot()) {
 			if (this.rand.nextInt(Math.max(1,(int) ((14 - this.world.getDifficulty().getDifficultyId() * 3) / TF2ConfigVars.hatMercenaryMult))) == 0) {
 				this.tradeLevel = 1;
@@ -285,14 +290,20 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 					this.tradeLevel = 2;
 					this.difficulty = 2;
 					this.experienceValue *= 1.5;
-					TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(this.getDefaultSlot()), Math.min(1600, 640 + (int) (this.world.getWorldTime() / 2000)), rand);
+					for (int i = 0; i < this.loadout.getSlots(); i++) {
+						TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(i), Math.min(1600, 640 + (int) (this.world.getWorldTime() / 2000)), rand);
+					}
 				}
 				this.setItemStackToSlot(EntityEquipmentSlot.HEAD, hat);
 				if (this.world.getWorldTime() > 48000)
-					TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(this.getDefaultSlot()), Math.min(800, 232 + (int) (this.world.getWorldTime() / 4000)), rand);
+					for (int i = 0; i < this.loadout.getSlots(); i++) {
+					TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(i), Math.min(800, 232 + (int) (this.world.getWorldTime() / 4000)), rand);
+					}
 			}
 		}
 	}
+	
+	
 
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
 		if (this.noEquipment || this.isRobot())
@@ -1285,8 +1296,6 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-
-		
 		if (!this.world.isRemote && this.world.getDifficulty() == EnumDifficulty.PEACEFUL)
 			this.setDead();
 	}
@@ -1888,6 +1897,10 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			}
 		}
 		return true;
+	}
+	
+	public int getState(boolean onTarget) {
+		return onTarget ? 1 : 0;
 	}
 	
 	public int getClassIndex() {

@@ -50,7 +50,7 @@ public class EntityScout extends EntityTF2Character {
 	protected void addWeapons() {
 		super.addWeapons();
 		if(TF2Attribute.getModifier("Crit Stun", this.loadout.getStackInSlot(1), 0, this) != 0) {
-			this.loadout.setStackInSlot(2, ItemFromData.getNewStack("sandmanball"));
+			this.loadout.setStackInSlot(2, ItemFromData.getNewStack("sandman"));
 		}
 	}
 	
@@ -86,17 +86,17 @@ public class EntityScout extends EntityTF2Character {
 			this.ballCooldown--;
 			if(this.getAttackTarget() == null || this.getAttackTarget().getActivePotionEffect(TF2weapons.stun) == null) {
 				this.switchSlot(2);
-				if(this.getAttackTarget() != null && this.getWepCapability().getPrimaryCooldown()<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
-					((ItemWeapon)this.getHeldItemMainhand().getItem()).altUse(getHeldItemMainhand(), this, world);
-					this.getWepCapability().setPrimaryCooldown(1000);
-				}
+				//if(this.getAttackTarget() != null && this.getWepCapability().getPrimaryCooldown()<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
+					//((ItemWeapon)this.getHeldItemMainhand().getItem()).altUse(getHeldItemMainhand(), this, world);
+					//this.getWepCapability().setPrimaryCooldown(1000);
+				//}
 			}
 			else if (!this.isRobot()){
 				this.switchSlot(1);
 				this.getHeldItemMainhand().setCount(16);
 			}
 		}
-		else
+		else if (!this.world.isRemote)
 			this.switchSlot(0);
 	}
 
@@ -190,4 +190,13 @@ public class EntityScout extends EntityTF2Character {
 	public int getClassIndex() {
 		return 0;
 	}
+	
+	public int getState(boolean onTarget) {
+		if (onTarget && this.usedSlot == 2) {
+			return 3;
+		}
+		else
+			return super.getState(onTarget);
+	}
+	
 }

@@ -49,7 +49,6 @@ public class EntityEngineer extends EntityTF2Character {
 
 	@Override
 	protected void addWeapons() {
-		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("engineer", 3, this.rand, false, true, this.noEquipment));
 		super.addWeapons();
 		
 	}
@@ -107,7 +106,7 @@ public class EntityEngineer extends EntityTF2Character {
 	public void onLivingUpdate() {
 		if(!this.world.isRemote &&this.ticksExisted == 2) {
 			for(EntityBuilding building : this.world.getEntitiesWithinAABB(EntityBuilding.class, this.getEntityBoundingBox().grow(32), building -> {
-				return building.getOwnerId() == null && building.getOwner() == null && building.ownerEntityID.equals(this.getUniqueID());
+				return building.getOwnerId() == null && building.getOwner() == null && this.getUniqueID().equals(building.ownerEntityID);
 			})){
 				if(building instanceof EntitySentry && this.sentry == null) {
 					this.sentry = (EntitySentry) building;

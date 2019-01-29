@@ -22,12 +22,16 @@ public class FastProfiler extends Profiler {
     /** List of timestamps (System.nanoTime) */
     private final List<Long> timestampList = Lists.<Long>newArrayList();
     /** Flag profiling enabled */
-    public boolean profilingEnabled;
     /** Current profiling section */
     private String profilingSection = "";
     /** Profiling map */
     private final Map<String, Long> profilingMap = Maps.<String, Long>newHashMap();
+    
+    private long nanotime;
 
+    private String lastcaller="";
+    private long maxcomplex=6;
+    private long complex=0;
     /**
      * Clear profiling.
      */
@@ -36,6 +40,7 @@ public class FastProfiler extends Profiler {
         this.profilingMap.clear();
         this.profilingSection = "";
         this.sectionList.clear();
+        this.nanotime = 0;
     }
 
     /**
@@ -45,14 +50,24 @@ public class FastProfiler extends Profiler {
     {
         if (this.profilingEnabled)
         {
-            if (!this.profilingSection.isEmpty())
-            {
-                this.profilingSection = this.profilingSection + ".";
-            }
-
-            this.profilingSection = this.profilingSection + name;
-            this.sectionList.add(this.profilingSection);
-            this.timestampList.add(Long.valueOf(System.nanoTime()));
+        	this.complex +=1;
+        	if (nanotime == 0) {
+        		long prev = System.nanoTime();
+        		long total = 0;
+        		for (int i = 0; i < 100; i++) {
+        			total += System.nanoTime()-prev;
+        		}
+        		nanotime = total / 100;
+        	}
+        	if (this.complex <= this.maxcomplex) {
+	            if (!this.profilingSection.isEmpty())
+	            {
+	                this.profilingSection = this.profilingSection + ".";
+	            }
+	            this.profilingSection = this.profilingSection + name;
+	            this.sectionList.add(this.profilingSection);
+	            this.timestampList.add(Long.valueOf(System.nanoTime()));
+        	}
         }
     }
 
@@ -71,6 +86,8 @@ public class FastProfiler extends Profiler {
     {
         if (this.profilingEnabled)
         {
+        	this.complex--;
+        	if (this.complex < this.maxcomplex) {
             long i = System.nanoTime();
             long j = ((Long)this.timestampList.remove(this.timestampList.size() - 1)).longValue();
             this.sectionList.remove(this.sectionList.size() - 1);
@@ -85,12 +102,13 @@ public class FastProfiler extends Profiler {
                 this.profilingMap.put(this.profilingSection, Long.valueOf(k));
             }
 
-            if (k > 100000000L)
+            if (k > 50000000L)
             {
-                LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", this.profilingSection, Double.valueOf((double)k / 1000000.0D));
+                LOGGER.warn("Something's taking too long! '{}' of {} took aprox {} ms", this.profilingSection, lastcaller, Double.valueOf((double)k / 1000000.0D));
             }
 
             this.profilingSection = this.sectionList.isEmpty() ? "" : (String)this.sectionList.get(this.sectionList.size() - 1);
+        	}
         }
     }
 
@@ -184,41 +202,6 @@ public class FastProfiler extends Profiler {
         this.endSection();
         this.func_194340_a(p_194339_1_);
     }
-
-    public static final class Result implements Comparable<Profiler.Result>
-        {
-            public double usePercentage;
-            public double totalUsePercentage;
-            public String profilerName;
-
-            public Result(String profilerName, double usePercentage, double totalUsePercentage)
-            {
-                this.profilerName = profilerName;
-                this.usePercentage = usePercentage;
-                this.totalUsePercentage = totalUsePercentage;
-            }
-
-            public int compareTo(Profiler.Result p_compareTo_1_)
-            {
-                if (p_compareTo_1_.usePercentage < this.usePercentage)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return p_compareTo_1_.usePercentage > this.usePercentage ? 1 : p_compareTo_1_.profilerName.compareTo(this.profilerName);
-                }
-            }
-
-            /**
-             * Return a color to display the profiler, generated from the hash code of the profiler's name
-             */
-            @SideOnly(Side.CLIENT)
-            public int getColor()
-            {
-                return (this.profilerName.hashCode() & 11184810) + 4473924;
-            }
-        }
 
     /**
      * Forge: Fix for MC-117087, World.updateEntities is wasting time calling Class.getSimpleName() when the profiler is not active

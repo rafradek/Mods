@@ -30,8 +30,8 @@ public class WeaponLoopSound extends WeaponSound {
 		ItemStack stack = this.entity.getHeldItem(EnumHand.MAIN_HAND);
 		boolean boost=TF2Util.calculateCritPre(stack, entity) == 2;
 		boolean playThis = (boost && crit) || (!boost && !crit);
-		if (((ItemUsable) stack.getItem()).canFire(entity.world, entity,
-				stack)/*
+		if (((ItemUsable) stack.getItem()).canFireInternal(entity.world, entity,
+				stack, EnumHand.MAIN_HAND)/*
 						 * stack.getTagCompound().getShort("minigunticks")>=17*
 						 * TF2Attribute.getModifier("Minigun Spinup", stack,
 						 * 1,entity)

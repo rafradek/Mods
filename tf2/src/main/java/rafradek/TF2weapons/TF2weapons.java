@@ -154,6 +154,7 @@ import rafradek.TF2weapons.client.gui.inventory.GuiTF2Crafting;
 import rafradek.TF2weapons.client.gui.inventory.GuiTeleporter;
 import rafradek.TF2weapons.client.gui.inventory.GuiUpgradeStation;
 import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
+import rafradek.TF2weapons.command.CommandChangeConfig;
 import rafradek.TF2weapons.command.CommandClientDebug;
 import rafradek.TF2weapons.command.CommandForceClass;
 import rafradek.TF2weapons.command.CommandGenerateReferences;
@@ -279,7 +280,7 @@ import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.8", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.9.2", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -424,7 +425,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 44;
+		return 45;
 	}
 
 	@Mod.EventHandler
@@ -1233,7 +1234,6 @@ public class TF2weapons {
 		if (!event.getServer().isDedicatedServer())
 			for (WeaponData weapon : MapList.nameToData.values())
 				ClientProxy.RegisterWeaponData(weapon);
-		
 		/*if(event.getSide()==Side.SERVER)
 			AchievementPage.registerAchievementPage(new TF2Achievements());*/
 	}
@@ -1245,6 +1245,8 @@ public class TF2weapons {
 		event.registerServerCommand(new CommandResetStat());
 		event.registerServerCommand(new CommandForceClass());
 		event.registerServerCommand(new CommandGenerateReferences());
+		event.registerServerCommand(new CommandChangeConfig());
+		
 		if(event.getServer().isSinglePlayer())
 			TF2UdpClient.addressToUse = "127.0.0.1";
 		try {
