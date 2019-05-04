@@ -43,7 +43,7 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				proj.initProjectile(living, hand, stack);
 				// proj.setIsCritical(thisCritical);
 				world.spawnEntity(proj);
-				
+				proj.trace();
 				proj.setCritical(thisCritical);
 				proj.infinite = this.isProjectileInfinite(living, stack);
 			} catch (Exception exception) {

@@ -75,7 +75,14 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 		cap.setPrimaryCooldown(400);
 
 	}
-
+	@Override
+	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
+		if (!world.isRemote && living instanceof EntityPlayer && living.ticksExisted % 20 == 0 && 
+				TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 1 && !living.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
+			TF2Util.playSound(living,getSound(stack, PropertyType.NO_FIRE_SOUND),0.7f,1);
+		}
+		return super.fireTick(stack, living, world);
+	}
 	public void disableZoom(ItemStack stack, EntityLivingBase living) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		
@@ -179,7 +186,6 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	public boolean canFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		if(super.canFire(worldObj, player, item)) {
 			if(player instanceof EntityPlayer && TF2Attribute.getModifier("Weapon Mode", item, 0, player) == 1 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
-				TF2Util.playSound(player,getSound(item, PropertyType.NO_FIRE_SOUND),0.7f,1);
 				return false;
 			}
 			return true;

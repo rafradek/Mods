@@ -1,0 +1,16 @@
+[
+{
+  "modid": "rafradek_offhand",
+  "name": "Offhand improvements",
+  "description": "Bring your best Garen experience",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["rafradek"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

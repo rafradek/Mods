@@ -205,6 +205,54 @@ public abstract class EntityProjectileBase extends Entity
 		z -= this.posZ;
 		this.shoot(x, y, z, speed * speedmult, 0);
 	}
+	
+	public void face(EntityLivingBase target, float speedmult) {
+		float speed = (float) Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
+		double x = target.posX;
+		double y = target.posY + target.getEyeHeight();
+		double z = target.posZ;
+		
+		speed = speed * speedmult;
+
+		double dist = target.getDistance(this);
+		float gravity = (float) this.getGravityOverride();
+		int ticksToReach = MathHelper.ceil(dist / speed);
+		
+		if (ticksToReach != 0) {
+			x += target.motionX * ticksToReach * 1;
+			z += target.motionZ * ticksToReach * 1;
+			//y += this.velTarget.y * moveTicks;
+			//double yFall = !target.onGround? -target.motionY : 0;
+			if (!target.isInWater()) {
+				int ticksGrav = ticksToReach-1;
+				int i = (ticksGrav * ticksGrav + ticksGrav)/2;
+				y+= gravity * i;
+				/*if (!target.onGround && target.motionY < 0)
+					yFall += MathHelper.clamp(0.08, 0, 0.1) * i;*/
+				/*for (int i = 1; i <= ticksToReach; i++) {
+					lookY += gravity * i;
+					
+						
+				}*/
+			}
+
+			/*RayTraceResult mop = this.entityHost.world.rayTraceBlocks(this.attackTarget.getPositionVector(),
+					this.attackTarget.getPositionVector().addVector(0, -0.3 - yFall, 0));
+			if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK)
+				yFall = this.attackTarget.posY - mop.hitVec.y;
+			shouldFireProj = mop != null || this.attackTarget.motionY <= 0f;
+			lookY -= yFall;
+			
+			if (this.fireAtFeet > 0 && this.entityHost.world.rayTraceBlocks(
+					new Vec3d(this.entityHost.posX, this.entityHost.posY + this.entityHost.getEyeHeight(),
+							this.entityHost.posZ),
+					new Vec3d(lookX, this.attackTarget.posY, lookZ), false, true, false) == null) {
+				lookY -= (this.attackTarget.height/2)*this.fireAtFeet;
+				
+			}*/
+		}
+		this.face(x, y, z, speedmult);
+	}
 	/**
 	 * Sets the position and rotation. Only difference from the other one is no
 	 * bounding on the rotation. Args: posX, posY, posZ, yaw, pitch
@@ -301,6 +349,59 @@ public abstract class EntityProjectileBase extends Entity
 		return 2.8f;
 	}
 
+	public void trace() {
+		boolean flag = this.shootingEntity.hasCapability(TF2weapons.WEAPONS_CAP, null);
+		if (flag) {
+			WeaponsCapability.get(this.shootingEntity).lastHitCharge = this.chargeLevel;
+		}
+		boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
+		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
+				this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
+				)) {
+			
+			if (target.entityHit != null
+					&& target.entityHit instanceof EntityPlayer) {
+				EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
+	
+				if (entityplayer.capabilities.disableDamage/* || this.shootingEntity instanceof EntityPlayer
+						&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)*/)
+					continue;
+			}
+			
+			if (target.entityHit != null && !ForgeEventFactory.onProjectileImpact(this, target) && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
+					&& (this.ticksExisted < 3 && !world.isRemote && ((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, shootingEntity, target.entityHit, 1, 0, true)) )) {
+				this.onHitMob(target.entityHit, target);
+			}
+				
+			else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
+				if (TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
+					TF2Attribute.setAttribute(usedWeapon, TF2Attribute.attributes[0], 0);
+					this.explode(target.hitVec.x + target.sideHit.getFrontOffsetX() * 0.05, 
+							target.hitVec.y+ target.sideHit.getFrontOffsetY() * 0.05,
+							target.hitVec.z+ target.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
+					return;
+				}
+				int attr = this.world.isRemote ? 0
+						: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
+				if (attr == 0 && !ForgeEventFactory.onProjectileImpact(this, target)) {
+					BlockPos blpos = target.getBlockPos();
+					this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
+				} else if (attr == 2)
+					this.explode(target.hitVec.x, target.hitVec.y,
+							target.hitVec.z, null, 1f);
+				else
+					this.setDead();
+			}
+			
+		}
+		if (flag) {
+			WeaponsCapability.get(this.shootingEntity).lastHitCharge = 0;
+			if (!this.isDead && (WeaponsCapability.get(this.shootingEntity).state & 2) == 2 && TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
+				this.explode(this.posX + this.motionX * 0.5, this.posY + this.motionY * 0.5, this.posZ + this.motionZ * 0.5, null, 1);
+				return;
+			}
+		}
+	}
 	/**
 	 * Called to update the entity's position/logic.
 	 */
@@ -322,57 +423,7 @@ public abstract class EntityProjectileBase extends Entity
 
 		if (this.shootingEntity != null) {
 			
-			boolean flag = this.shootingEntity.hasCapability(TF2weapons.WEAPONS_CAP, null);
-			if (flag) {
-				WeaponsCapability.get(this.shootingEntity).lastHitCharge = this.chargeLevel;
-			}
-			boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
-			for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
-					this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
-					)) {
-				
-				if (target.entityHit != null
-						&& target.entityHit instanceof EntityPlayer) {
-					EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
-		
-					if (entityplayer.capabilities.disableDamage/* || this.shootingEntity instanceof EntityPlayer
-							&& !((EntityPlayer) this.shootingEntity).canAttackPlayer(entityplayer)*/)
-						continue;
-				}
-				
-				if (target.entityHit != null && !ForgeEventFactory.onProjectileImpact(this, target) && !(TF2Util.isOnSameTeam(this.shootingEntity, target.entityHit) 
-						&& (this.ticksExisted < 3 && !world.isRemote && ((ItemWeapon)this.usedWeapon.getItem()).onHit(usedWeapon, shootingEntity, target.entityHit, 1, 0, true)) )) {
-					this.onHitMob(target.entityHit, target);
-				}
-					
-				else if (target.typeOfHit == Type.BLOCK && !this.useCollisionBox()) {
-					if (TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
-						TF2Attribute.setAttribute(usedWeapon, TF2Attribute.attributes[0], 0);
-						this.explode(target.hitVec.x + target.sideHit.getFrontOffsetX() * 0.05, 
-								target.hitVec.y+ target.sideHit.getFrontOffsetY() * 0.05,
-								target.hitVec.z+ target.sideHit.getFrontOffsetZ() * 0.05, null, 1f);
-						return;
-					}
-					int attr = this.world.isRemote ? 0
-							: (int) TF2Attribute.getModifier("Coll Remove", this.usedWeapon, 0, this.shootingEntity);
-					if (attr == 0 && !ForgeEventFactory.onProjectileImpact(this, target)) {
-						BlockPos blpos = target.getBlockPos();
-						this.onHitGround(blpos.getX(), blpos.getY(), blpos.getZ(), target);
-					} else if (attr == 2)
-						this.explode(target.hitVec.x, target.hitVec.y,
-								target.hitVec.z, null, 1f);
-					else
-						this.setDead();
-				}
-				
-			}
-			if (flag) {
-				WeaponsCapability.get(this.shootingEntity).lastHitCharge = 0;
-				if (!this.isDead && (WeaponsCapability.get(this.shootingEntity).state & 2) == 2 && TF2Attribute.getModifier("Detonate", usedWeapon, 0, shootingEntity) != 0) {
-					this.explode(this.posX + this.motionX * 0.5, this.posY + this.motionY * 0.5, this.posZ + this.motionZ * 0.5, null, 1);
-					return;
-				}
-			}
+			this.trace();
 			
 		}
 		float f2;

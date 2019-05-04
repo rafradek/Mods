@@ -56,14 +56,18 @@ public class ItemWearable extends ItemFromData {
 			new Tuple<>(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier("Mod e1", 0.1, 2)),
 			new Tuple<>(SharedMonsterAttributes.MAX_HEALTH.getName(), new AttributeModifier("Mod e2", 1, 0)),
 			new Tuple<>(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier("Mod e3", 0.12, 1)),
-			new Tuple<>(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier("Mod e4", 2, 0)),
+			new Tuple<>(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier("Mod e4", 3, 0)),
 			new Tuple<>(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier("Mod e5", 0.14, 2)),
 			new Tuple<>(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier("Mod e6", 1, 0)),
 			new Tuple<>(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier("Mod e7", 0.08, 2)),
 			new Tuple<>(SharedMonsterAttributes.MAX_HEALTH.getName(), new AttributeModifier("Mod e8", 2, 0)),
-			new Tuple<>(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier("Mod e9", 3, 0)),
+			new Tuple<>(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier("Mod e9", 4, 0)),
 			new Tuple<>(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier("Mod e10", 0.08, 2)),
-			new Tuple<>(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier("Mod e11", 0.16, 1))
+			new Tuple<>(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier("Mod e11", 0.16, 1)),
+			new Tuple<>(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier("Mod e12", 0.12, 2)),
+			new Tuple<>(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier("Mod e13", 0.1, 1)),
+			new Tuple<>(SharedMonsterAttributes.MAX_HEALTH.getName(), new AttributeModifier("Mod e14", 0.1, 2)),
+			new Tuple<>(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), new AttributeModifier("Mod e15", 5, 0))
 	};
 	
 	public ItemWearable() {
@@ -226,13 +230,17 @@ public class ItemWearable extends ItemFromData {
 			case 6: type=EnumParticleTypes.SUSPENDED_DEPTH; break;
 			case 7: type=EnumParticleTypes.SLIME; break;
 			case 8: type=EnumParticleTypes.CRIT_MAGIC; break;
-			case 9: type=EnumParticleTypes.DRAGON_BREATH; break;
-			default: type=EnumParticleTypes.NOTE;
+			case 9: type=EnumParticleTypes.DRAGON_BREATH; break;	
+			case 10: type=EnumParticleTypes.NOTE; break;
+			case 11: type=EnumParticleTypes.FIREWORKS_SPARK; break;
+			case 12: type=EnumParticleTypes.EXPLOSION_NORMAL; break;
+			case 13: type=EnumParticleTypes.SPELL_MOB; break;
+			default: type=EnumParticleTypes.END_ROD; break;
 			}
 			par2World.spawnParticle(type, living.posX+living.getRNG().nextDouble()*living.width-(living.width/2),
 				living.posY+living.height+living.getRNG().nextDouble()*0.2, 
-				living.posZ+living.getRNG().nextDouble()*living.width-(living.width/2), living.getRNG().nextDouble()*0.02-0.01,
-				living.getRNG().nextDouble()*0.02, living.getRNG().nextDouble()*0.02-0.01, new int[0]);
+				living.posZ+living.getRNG().nextDouble()*living.width-(living.width/2), living.motionX,
+				living.getRNG().nextDouble()*0.02, living.motionZ, new int[0]);
 		}
 	}
 }

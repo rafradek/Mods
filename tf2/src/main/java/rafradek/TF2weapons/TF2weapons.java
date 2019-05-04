@@ -101,6 +101,7 @@ import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.Capability.IStorage;
@@ -144,11 +145,13 @@ import rafradek.TF2weapons.block.BlockAmmoFurnace;
 import rafradek.TF2weapons.block.BlockCabinet;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.block.BlockProp;
+import rafradek.TF2weapons.block.BlockRobotDeploy;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.gui.inventory.GuiAmmoFurnace;
 import rafradek.TF2weapons.client.gui.inventory.GuiDispenser;
 import rafradek.TF2weapons.client.gui.inventory.GuiMercenary;
+import rafradek.TF2weapons.client.gui.inventory.GuiRobotDeploy;
 import rafradek.TF2weapons.client.gui.inventory.GuiSentry;
 import rafradek.TF2weapons.client.gui.inventory.GuiTF2Crafting;
 import rafradek.TF2weapons.client.gui.inventory.GuiTeleporter;
@@ -159,9 +162,9 @@ import rafradek.TF2weapons.command.CommandClientDebug;
 import rafradek.TF2weapons.command.CommandForceClass;
 import rafradek.TF2weapons.command.CommandGenerateReferences;
 import rafradek.TF2weapons.command.CommandGiveWeapon;
+import rafradek.TF2weapons.command.CommandInvasion;
 import rafradek.TF2weapons.command.CommandResetStat;
 import rafradek.TF2weapons.command.CommandResetWeapons;
-import rafradek.TF2weapons.command.CommandSetOnShoulder;
 import rafradek.TF2weapons.common.CommonProxy;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Achievements;
@@ -209,6 +212,7 @@ import rafradek.TF2weapons.inventory.ContainerAmmoFurnace;
 import rafradek.TF2weapons.inventory.ContainerDispenser;
 import rafradek.TF2weapons.inventory.ContainerEnergy;
 import rafradek.TF2weapons.inventory.ContainerMercenary;
+import rafradek.TF2weapons.inventory.ContainerRobotDeploy;
 import rafradek.TF2weapons.inventory.ContainerTF2Workbench;
 import rafradek.TF2weapons.inventory.ContainerUpgrades;
 import rafradek.TF2weapons.inventory.ContainerWearables;
@@ -261,6 +265,7 @@ import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2NetworkWrapper;
 import rafradek.TF2weapons.message.TF2ProjectileHandler;
 import rafradek.TF2weapons.message.TF2ParticleSpawnHandler;
+import rafradek.TF2weapons.message.TF2PlayerCapabilityHandler;
 import rafradek.TF2weapons.message.TF2PropertyHandler;
 import rafradek.TF2weapons.message.TF2ShowGuiHandler;
 import rafradek.TF2weapons.message.TF2UseHandler;
@@ -274,13 +279,15 @@ import rafradek.TF2weapons.potion.PotionTF2;
 import rafradek.TF2weapons.potion.PotionTF2Item;
 import rafradek.TF2weapons.tileentity.TileEntityAmmoFurnace;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
+import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
+import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.9.2", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.10", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -339,7 +346,8 @@ public class TF2weapons {
 	public static Block blockUpgradeStation;
 	public static Block blockAmmoFurnace;
 	public static Block blockOverheadDoor;
-
+	public static Block blockRobotDeploy;
+	
 	public static boolean generateCopper;
 	public static boolean generateLead;
 	public static boolean generateAustralium;
@@ -360,6 +368,7 @@ public class TF2weapons {
 	public static Potion bombmrs;
 	public static Potion bleeding;
 	public static Potion noKnockback;
+	public static Potion sapped;
 	
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
@@ -402,6 +411,7 @@ public class TF2weapons {
 	public static ResourceLocation lootDemoman;
 	public static ResourceLocation lootSniper;
 	public static ResourceLocation lootHale;
+	public static ResourceLocation lootTF2Base;
 
 	public static byte[] itemDataCompressed;
 	public static GZIPOutputStream out;
@@ -425,7 +435,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 45;
+		return 47;
 	}
 
 	@Mod.EventHandler
@@ -640,6 +650,7 @@ public class TF2weapons {
 		GameRegistry.registerTileEntity(TileEntityUpgrades.class, "UpgradeStation");
 		GameRegistry.registerTileEntity(TileEntityAmmoFurnace.class, "AmmoFurnace");
 		GameRegistry.registerTileEntity(TileEntityOverheadDoor.class, new ResourceLocation(TF2weapons.MOD_ID, "overhead_door"));
+		GameRegistry.registerTileEntity(TileEntityRobotDeploy.class, new ResourceLocation(TF2weapons.MOD_ID, "robot_deploy"));
 
 		registerBlock(blockCabinet = new BlockCabinet().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("cabinet"), TF2weapons.MOD_ID + ":tf2workbench");
 		registerBlock(blockAmmoFurnace = new BlockAmmoFurnace().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("ammoFurnace"), TF2weapons.MOD_ID + ":ammo_furnace");
@@ -655,6 +666,8 @@ public class TF2weapons {
 				.setUnlocalizedName("blockAustralium"), TF2weapons.MOD_ID + ":australium_block");
 		registerBlock(blockOverheadDoor = new BlockOverheadDoor().setCreativeTab(tabsurvivaltf2).setHardness(3.0F).setResistance(5.0F)
 				.setUnlocalizedName("blockOverhead"), TF2weapons.MOD_ID + ":overhead_door");
+		registerBlock(blockRobotDeploy= new BlockRobotDeploy().setCreativeTab(tabsurvivaltf2).setHardness(3.0F).setResistance(5.0F)
+				.setUnlocalizedName("blockRobotDeploy"), TF2weapons.MOD_ID + ":robot_deploy");
 		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(0.75F).setResistance(2.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
@@ -735,12 +748,38 @@ public class TF2weapons {
 		ForgeRegistries.POTIONS.register(bleeding = new PotionTF2(true, 0, 4, 0).setPotionName("effect.bleeding").setRegistryName(TF2weapons.MOD_ID + ":bleedingEff"));
 		ForgeRegistries.POTIONS.register(noKnockback = new PotionTF2(true, 0, 0, 0).setPotionName("effect.noKnockback").setRegistryName(TF2weapons.MOD_ID + ":noKnockbackEff")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "0d09b7c3-ac5e-4f56-9b65-fe2d09b99dc3", 10, 0));
+		ForgeRegistries.POTIONS.register(sapped = new PotionTF2(true, 0, 0, 0) {
+			public void applyAttributesModifiersToEntity(EntityLivingBase entityLivingBaseIn, AbstractAttributeMap attributeMapIn, int amplifier)
+		    {
+				super.applyAttributesModifiersToEntity(entityLivingBaseIn, attributeMapIn, amplifier);
+				if (entityLivingBaseIn instanceof EntityTF2Character) {
+					if (((EntityTF2Character)entityLivingBaseIn).isGiant())
+						((EntityTF2Character)entityLivingBaseIn).rotation*=0.4f;
+					else
+						((EntityTF2Character)entityLivingBaseIn).rotation*=0.1f;
+				}
+		    }
+			public void removeAttributesModifiersFromEntity(EntityLivingBase entityLivingBaseIn, AbstractAttributeMap attributeMapIn, int amplifier)
+		    {
+				super.removeAttributesModifiersFromEntity(entityLivingBaseIn, attributeMapIn, amplifier);
+				if (entityLivingBaseIn instanceof EntityTF2Character) {
+					if (((EntityTF2Character)entityLivingBaseIn).isGiant())
+						((EntityTF2Character)entityLivingBaseIn).rotation*=2.5f;
+					else
+						((EntityTF2Character)entityLivingBaseIn).rotation*=10f;
+				}
+		    }
+		}.setPotionName("effect.sapped")
+				.setRegistryName(TF2weapons.MOD_ID + ":sapped")
+				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE6F-7CE8-4030-940E-14B354F0D4AB", -0.5D, 2));
 		// conf.save();
 		ItemKillstreakFabricator.initKillstreaks();
 		PropertyType.init();
 		if(!TF2ConfigVars.disableGeneration){
 			MapGenStructureIO.registerStructureComponent(MannCoBuilding.class, "ViMC");
 			MapGenStructureIO.registerStructure(MannCoBuilding.Start.class, "MCBuild");
+			MapGenStructureIO.registerStructureComponent(ScatteredFeatureTF2Base.class, "TF2B");
+			MapGenStructureIO.registerStructure(ScatteredFeatureTF2Base.Start.class, "TF2Base");
 			//GameRegistry.registerWorldGenerator(generator, modGenerationWeight);
 		}
 		
@@ -840,7 +879,7 @@ public class TF2weapons {
 		lootMedic = LootTableList.register(new ResourceLocation(MOD_ID, "entities/medic"));
 		lootPyro = LootTableList.register(new ResourceLocation(MOD_ID, "entities/pyro"));
 		lootHale = LootTableList.register(new ResourceLocation(MOD_ID, "entities/hale"));
-
+		lootTF2Base = LootTableList.register(new ResourceLocation(MOD_ID, "chests/tf2_base"));
 		
 
 		// new
@@ -984,6 +1023,7 @@ public class TF2weapons {
 		network.registerMessage(TF2InitClientHandler.class, TF2Message.InitClientMessage.class, 17, Side.SERVER, false);
 		network.registerMessage(TF2EffectCooldownHandler.class, TF2Message.EffectCooldownMessage.class, 20, Side.CLIENT, false);
 		network.registerMessage(TF2ParticleSpawnHandler.class, TF2Message.ParticleSpawnMessage.class, 21, Side.CLIENT, true);
+		network.registerMessage(TF2PlayerCapabilityHandler.class, TF2Message.PlayerCapabilityMessage.class, 22, Side.CLIENT, false);
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new IGuiHandler() {
 
 			@Override
@@ -1016,6 +1056,8 @@ public class TF2weapons {
 					else
 						return new ContainerEnergy((EntityBuilding) world.getEntityByID(x), player.inventory);
 				}
+				else if (ID == 6 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityRobotDeploy)
+					return new ContainerRobotDeploy(player.inventory, (TileEntityRobotDeploy) world.getTileEntity(pos));
 				return null;
 			}
 
@@ -1043,7 +1085,8 @@ public class TF2weapons {
 					else if (world.getEntityByID(x) instanceof EntityTeleporter)
 						return new GuiTeleporter((EntityTeleporter) world.getEntityByID(x));
 				}
-					
+				else if (ID == 6 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityRobotDeploy)
+					return new GuiRobotDeploy(player.inventory, (TileEntityRobotDeploy) world.getTileEntity(pos));
 				return null;
 			}
 
@@ -1246,7 +1289,7 @@ public class TF2weapons {
 		event.registerServerCommand(new CommandForceClass());
 		event.registerServerCommand(new CommandGenerateReferences());
 		event.registerServerCommand(new CommandChangeConfig());
-		
+		event.registerServerCommand(new CommandInvasion());
 		if(event.getServer().isSinglePlayer())
 			TF2UdpClient.addressToUse = "127.0.0.1";
 		try {

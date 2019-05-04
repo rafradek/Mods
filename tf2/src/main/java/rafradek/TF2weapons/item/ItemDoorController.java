@@ -19,7 +19,7 @@ public class ItemDoorController extends Item {
 	
 	public static final String[] NAMES = {"players","mobs","RED","BLU"};
 	public ItemDoorController() {
-		this.setHasSubtypes(hasSubtypes);
+		this.setHasSubtypes(true);
 		// TODO Auto-generated constructor stub
 	}
 

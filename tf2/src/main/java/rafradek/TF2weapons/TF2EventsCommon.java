@@ -72,6 +72,7 @@ import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.item.ItemFireAmmo;
+import rafradek.TF2weapons.item.ItemFoodThrowable;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemJetpack;
@@ -100,6 +101,8 @@ import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
+import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
+import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base.MapGen;
 import scala.swing.event.Key;
 import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.client.ClientProxy;
@@ -271,13 +274,13 @@ public class TF2EventsCommon {
 	public void untargetable(LivingSetAttackTargetEvent event) {
 		if (event.getTarget() != null
 				&& ((event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20))) {
-			event.getEntityLiving().setRevengeTarget(null);
+			//event.getEntityLiving().setRevengeTarget(null);
 			if (event.getEntityLiving() instanceof EntityLiving) {
 				((EntityLiving) event.getEntity()).setAttackTarget(null);
 			}
 		}
 		if (event.getTarget() instanceof EntityTF2Character && event.getEntity() instanceof EntityGolem && ((IEntityOwnable) event.getTarget()).getOwner() != null) {
-			event.getEntityLiving().setRevengeTarget(null);
+			//event.getEntityLiving().setRevengeTarget(null);
 			((EntityLiving) event.getEntity()).setAttackTarget(null);
 		}
 		if (event.getTarget() != null && event.getEntityLiving().isNonBoss()
@@ -394,7 +397,7 @@ public class TF2EventsCommon {
 							.nextFloat() <= TF2ConfigVars.invasionChance){
 						for (EntityPlayer player : event.world.playerEntities) {
 							if (player.getTeam() != null && player.getRNG().nextFloat() < (dayNum - TF2PlayerCapability.get(player).lastDayInvasion ) * 0.04f)
-							events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2));
+							events.startInvasion(player, MathHelper.clamp(MathHelper.ceil(worldTime/960000f), 0, 2), false);
 						}
 					}
 				}
@@ -734,6 +737,7 @@ public class TF2EventsCommon {
 					event.setAmount(Math.min(event.getAmount(), 8f));
 				}
 				if ((event.getSource().damageType.equals("mob") || event.getSource().damageType.equals("player")) && (attacker != null && attacker.getAttributeMap()
+						.getAttributeInstance(SharedMonsterAttributes.ATTACK_DAMAGE) != null && attacker.getAttributeMap()
 								.getAttributeInstance(SharedMonsterAttributes.ATTACK_DAMAGE).getModifier(UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF")) != null)) {
 					event.setAmount((float) Math.min(event.getAmount(),
 							1 + attacker.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.ATTACK_DAMAGE)
@@ -1405,11 +1409,6 @@ public class TF2EventsCommon {
 			if (event.getSource() instanceof TF2DamageSource) {
 				
 				stack = ((TF2DamageSource) event.getSource()).getWeaponOrig();
-				/*if (event.getEntity() instanceof EntityPlayerMP && ((TF2DamageSource) event.getSource()).hasAttackFlag(TF2DamageSource.SENTRY_PDA)) {
-					ItemStack pda = TF2Util.getFirstItem(((EntityPlayerMP)event.getEntity()).inventory, pred -> pred.getItem() instanceof ItemPDA && pred.getTagCompound().hasKey("Strange"));
-					if (!pda.isEmpty())
-						onStrangeUpdate(pda, living);
-				}*/
 					
 			} else {
 				stack = living.getHeldItemMainhand();
@@ -1417,46 +1416,6 @@ public class TF2EventsCommon {
 			if(living instanceof EntityPlayerMP && TF2Util.isEnemy(living, event.getEntityLiving())){
 				EntityPlayerMP player=(EntityPlayerMP)living;
 				TF2PlayerCapability plcap = player.getCapability(TF2weapons.PLAYER_CAP, null);
-				/*if(living.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped){
-					player.addStat(TF2Achievements.KILLED_DOUBLEJUMP);
-					if(player.getStatFile().readStat(TF2Achievements.KILLED_DOUBLEJUMP)>=20){
-						player.addStat(TF2Achievements.DOUBLE_JUMP_KILL);
-					}
-				}
-				if(living.getDataManager().get(ENTITY_EXP_JUMP)){
-					living.getCapability(TF2weapons.WEAPONS_CAP, null).killsAirborne++;
-					if(living.getCapability(TF2weapons.WEAPONS_CAP, null).killsAirborne>=2){
-						player.addStat(TF2Achievements.DEATH_FROM_ABOVE);
-					}
-				}
-				if(event.getEntityLiving().getActivePotionEffect(TF2weapons.stun)!=null){
-					player.addStat(TF2Achievements.KILLED_STUNNED);
-					if(player.getStatFile().readStat(TF2Achievements.KILLED_STUNNED)>=40){
-						player.addStat(TF2Achievements.KILL_STUNNED);
-					}
-				}
-				if(event.getEntityLiving() instanceof EntitySpy && event.getEntityLiving().getDataManager().get(ENTITY_INVIS)
-						&& ((EntitySpy)event.getEntityLiving()).prevHealth>=event.getEntityLiving().getMaxHealth()){
-					player.addStat(TF2Achievements.KILL_SPY_CLOAKED);
-				}
-				if(!living.onGround && !event.getEntityLiving().onGround){
-					player.addStat(TF2Achievements.WINGS_OF_GLORY);
-				}
-				if(!stack.isEmpty() && stack.getItem() instanceof ItemMeleeWeapon && ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains("heavy")){
-					player.addStat(TF2Achievements.CRIT_PUNCH);
-				}
-				if(!stack.isEmpty() && ItemFromData.getData(stack).getName().contains("sentry")){
-					player.addStat(TF2Achievements.KILLED_SENTRYGUN);
-					if(event.getEntity() instanceof EntityTF2Character)
-						plcap.completeObjective(Objective.KILL_W_SENTRY,stack);
-					if(player.getStatFile().readStat(TF2Achievements.KILLED_SENTRYGUN)>=500)
-						player.addStat(TF2Achievements.SENTRYGUN_KILLS);
-					if(event.getEntityLiving() instanceof EntitySniper && living.getHeldItemMainhand() != null && living.getHeldItemMainhand().getItem() instanceof ItemWrangler){
-						player.addStat(TF2Achievements.KILLED_WRANGLER_SNIPER);
-						if(player.getStatFile().readStat(TF2Achievements.KILLED_WRANGLER_SNIPER)>=10)
-							player.addStat(TF2Achievements.KILL_SNIPER_WRANGLER);
-					}
-				}*/
 				if(event.getEntity() instanceof EntityTF2Character) {
 					if((plcap.fastKillTimer+=120)>360) {
 						plcap.fastKillTimer=0;
@@ -1481,7 +1440,7 @@ public class TF2EventsCommon {
 					if(player.getCapability(TF2weapons.WEAPONS_CAP, null).isExpJump()) {
 						plcap.completeObjective(Objective.KILL_BLAST,stack);
 					}
-					if(player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
+					if(player.getCapability(TF2weapons.WEAPONS_CAP, null).airJumps > 0) {
 						plcap.completeObjective(Objective.KILL_DOUBLE,stack);
 					}
 				}
@@ -1587,9 +1546,11 @@ public class TF2EventsCommon {
 
 	@SubscribeEvent
 	public void generateStructures(PopulateChunkEvent.Pre event) {
-		if(event.getGenerator() instanceof ChunkGeneratorOverworld && !TF2ConfigVars.disableGeneration) {
+		if(event.getWorld().provider.getDimension() == 0 && !TF2ConfigVars.disableGeneration && event.getWorld().getWorldInfo().isMapFeaturesEnabled()) {
 			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).mannCoGenerator.generate(event.getWorld(), event.getChunkX(), event.getChunkZ(), new ChunkPrimer());
 			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).mannCoGenerator.generateStructure(event.getWorld(), event.getRand(), new ChunkPos(event.getChunkX(), event.getChunkZ()));
+			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).tf2BaseGenerator.generate(event.getWorld(), event.getChunkX(), event.getChunkZ(), new ChunkPrimer());
+			event.getWorld().getCapability(TF2weapons.WORLD_CAP, null).tf2BaseGenerator.generateStructure(event.getWorld(), event.getRand(), new ChunkPos(event.getChunkX(), event.getChunkZ()));
 		}
 	}
 	@SubscribeEvent
@@ -1625,12 +1586,17 @@ public class TF2EventsCommon {
 			return;
 		}
 		
-		if ((stack.getItem() == TF2weapons.itemSandvich || stack.getItem() == TF2weapons.itemChocolate) && event.getEntityPlayer().getHealth() < event.getEntityPlayer().getMaxHealth()) {
-			
-			event.getEntityPlayer().heal(event.getEntityPlayer().getMaxHealth()*((ItemFood) TF2weapons.itemSandvich).getHealAmount(stack)/28f);
-			stack.shrink(1);
-			if(stack.isEmpty())
-				event.setResult(Result.ALLOW);
+		if ((stack.getItem() instanceof ItemFoodThrowable) && stack.hasTagCompound() && stack.getTagCompound().getBoolean("IsHealing")) {
+			if (event.getEntityPlayer().getHealth() < event.getEntityPlayer().getMaxHealth()) {
+				event.getEntityPlayer().heal(event.getEntityPlayer().getMaxHealth()*((ItemFood) TF2weapons.itemSandvich).getHealAmount(stack)/28f);
+				stack.shrink(1);
+				if(stack.isEmpty())
+					event.setResult(Result.ALLOW);
+			}
+			else {
+				event.getEntityPlayer().getCooldownTracker().removeCooldown(stack.getItem());
+			}
+			stack.setTagCompound(null);
 			return;
 		}
 		
@@ -1736,11 +1702,14 @@ public class TF2EventsCommon {
 		if(!event.getPlayer().world.isRemote && stack.getItem() instanceof ItemUsable && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0){
 		
 		//event.getPlayer().getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
-			if(stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2){
-				TF2weapons.network.sendTo(new TF2Message.WeaponDroppedMessage(ItemFromData.getData(stack).getName()), (EntityPlayerMP) event.getPlayer());
-				((ItemUsable) stack.getItem()).holster(event.getPlayer().getCapability(TF2weapons.WEAPONS_CAP, null), stack, event.getPlayer(), event.getPlayer().world);
-			}
-			stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 0;
+			WeaponsCapability.get(event.getPlayer()).setInactiveHand(EnumHand.MAIN_HAND, stack);
+		}
+		
+		if (stack.getItem() instanceof ItemFoodThrowable && !event.getPlayer().getCooldownTracker().hasCooldown(stack.getItem())) {
+			event.getPlayer().getCooldownTracker().setCooldown(stack.getItem(), ((ItemFoodThrowable)stack.getItem()).waitTime);
+			if (!stack.hasTagCompound())
+				stack.setTagCompound(new NBTTagCompound());
+			stack.getTagCompound().setBoolean("IsHealing", true);
 		}
 		
 		if(stack.getItem() instanceof ItemFromData && stack.hasTagCompound() && (stack.getTagCompound().getBoolean("Bought") || stack.getTagCompound().getBoolean("Valve"))){
@@ -1771,6 +1740,9 @@ public class TF2EventsCommon {
 	public void startTrack(PlayerEvent.StartTracking event) {
 		if(event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)) {
 			TF2weapons.network.sendTo(new TF2Message.CapabilityMessage(event.getTarget(), true), (EntityPlayerMP) event.getEntityPlayer());
+		}
+		if(event.getTarget().hasCapability(TF2weapons.PLAYER_CAP, null) && event.getTarget() == event.getEntityPlayer()) {
+			TF2weapons.network.sendTo(new TF2Message.PlayerCapabilityMessage(event.getTarget(), true), (EntityPlayerMP) event.getEntityPlayer());
 		}
 		if (event.getTarget().hasCapability(TF2weapons.INVENTORY_CAP, null) && !event.getTarget().world.isRemote) {
 			// System.out.println("Tracking");
@@ -1942,7 +1914,7 @@ public class TF2EventsCommon {
 		public Map<UUID,InvasionEvent> invasions = new HashMap<>();
 		public ArrayList<DestroyBlockEntry> destroyProgress = new ArrayList<>();
 		public MannCoBuilding.MapGen mannCoGenerator = new MannCoBuilding.MapGen();
-
+		public MapGen tf2BaseGenerator = new ScatteredFeatureTF2Base.MapGen(null);
 		public boolean silent;
 		
 		/*@Override
@@ -2055,10 +2027,10 @@ public class TF2EventsCommon {
 			return this.playerStorage.get(player);
 		}
 		
-		public boolean startInvasion(EntityPlayer player, int difficulty) {
+		public boolean startInvasion(EntityPlayer player, int difficulty, boolean force) {
 			for (Entry<UUID, InvasionEvent> entry : invasions.entrySet()) {
 				if (entry.getKey().equals(player.getUniqueID()) || entry.getValue().isInRange(player.getPosition())) {
-					if (player.capabilities.isCreativeMode)
+					if (force)
 						entry.getValue().finish();
 					else
 						return false;

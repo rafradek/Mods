@@ -351,7 +351,15 @@ public class TF2Attribute {
 		new TF2Attribute(141, "DisguiseBackstab", "Disguise Backstab", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(142, "NoDisguiseKit", "No Disguise Kit", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(143, "SentryRangeBonus", "Sentry Range", Type.PERCENTAGE, 1, State.POSITIVE)
-		.setUpgrade(PDA, 0.1f, 3, 160, 3);
+		.setUpgrade(PDA, 0.1f, 3, 160, 2);
+		new TF2Attribute(144, "MetalBonus", "Max Metal", Type.PERCENTAGE, 1, State.POSITIVE)
+		.setUpgrade(PDA, 0.5f, 4, 140, 5);
+		new TF2Attribute(145, "DamagePlayerPenalty", "Damage Player", Type.PERCENTAGE, 1, State.NEGATIVE);
+		new TF2Attribute(146, "MinicritAirborneSelf", "Minicrit Airborne Self", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(147, "DeployTimePenalty", "Deploy Time", Type.PERCENTAGE, 1, State.NEGATIVE);
+		new TF2Attribute(148, "GrantsTripleJump", "Triple Jump", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(149, "DealDamageRage", "Build Rage Damage", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(150, "MinicritRage", "Minicrit Rage", Type.ADDITIVE, 0, State.POSITIVE);
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);

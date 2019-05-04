@@ -107,6 +107,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	public static final PropertyType<ItemFromData.AttributeProvider> ATTRIBUTES = new ItemFromData.PropertyAttribute(81, "Attributes", ItemFromData.AttributeProvider.class);
 	public static final PropertyType<ItemCrate.CrateContent> CONTENT = new ItemCrate.PropertyContent(82, "Content", ItemCrate.CrateContent.class);
 	public static final PropertyType<Integer> COLOR = new PropertyType<>(83, "Color", Integer.class);
+	public static final PropertyType<Boolean> F2P = new PropertyType<>(84, "F2P", Boolean.class);
 	public Class<T> type;
 	public int id;
 	public String name;

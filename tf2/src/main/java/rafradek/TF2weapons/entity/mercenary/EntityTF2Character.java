@@ -114,10 +114,12 @@ import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
 import rafradek.TF2weapons.item.ItemMonsterPlacerPlus;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
+import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWearable;
+import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
@@ -228,7 +230,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.loadout = new InventoryLoadout(5, this);// NonNullList.withSize(5,ItemStack.EMPTY);
 		this.loadoutHeld = new ItemStackHandler(8);
 		this.refill = new ItemStackHandler(1);
-		this.ammoCount = new int[3];
+		this.ammoCount = new int[4];
 		this.isEmpty = new boolean[4];
 		this.inventoryHandsDropChances[0] = 0;
 		this.inventoryArmorDropChances[0] = 0.25f;
@@ -294,11 +296,19 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 						TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(i), Math.min(1600, 640 + (int) (this.world.getWorldTime() / 2000)), rand);
 					}
 				}
+				
 				this.setItemStackToSlot(EntityEquipmentSlot.HEAD, hat);
 				if (this.world.getWorldTime() > 48000)
 					for (int i = 0; i < this.loadout.getSlots(); i++) {
 					TF2Attribute.upgradeItemStack(this.loadout.getStackInSlot(i), Math.min(800, 232 + (int) (this.world.getWorldTime() / 4000)), rand);
 					}
+			}
+			else if (this.rand.nextInt(2+Math.min(5,(int)(this.world.getWorldTime()/160000))) == 0){
+				ItemStack hat = ItemFromData.getRandomWeapon(rand, (data) -> data.getBoolean(PropertyType.F2P));
+				this.setItemStackToSlot(EntityEquipmentSlot.HEAD, hat);
+				this.inventoryArmorDropChances[0] = 0.35f;
+				this.difficulty = -1;
+				this.tradeLevel = -1;
 			}
 		}
 	}
@@ -421,8 +431,9 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public void setRobot(int robot) {
 		this.dataManager.set(ROBOT, (byte) robot);
 		if (robot > 0) {
-			this.unlimitedAmmo = true;
-			TF2Util.addModifierSafe(this, SharedMonsterAttributes.FOLLOW_RANGE, new AttributeModifier(FOLLOW_MULT_UUID, "GiantRange", 0.4, 2), true);
+			//this.unlimitedAmmo = true;
+			if (this.getOwnerId() != null)
+				TF2Util.addModifierSafe(this, SharedMonsterAttributes.FOLLOW_RANGE, new AttributeModifier(FOLLOW_MULT_UUID, "GiantRange", 0.4, 2), true);
 			if (robot > 1) {
 				this.tasks.removeTask(avoidSentry);
 				TF2Util.addModifierSafe(this, SharedMonsterAttributes.MAX_HEALTH, new AttributeModifier(HEALTH_MULT_UUID, "GiantHealth", (1+this.robotStrength)*2.5, 1), true);
@@ -444,6 +455,18 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		return this.getAmmo(this.usedSlot);
 	}
 
+	public void setAIMoveSpeed(float speedIn)
+    {
+		if (this.isGiant()) {
+			speedIn = Math.max(speedIn, (float)this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(this.getRobotSize() == 2 ? 0.4f : 0.5f));
+		}
+		super.setAIMoveSpeed(speedIn);
+    }
+	public boolean isPotionApplicable(PotionEffect potioneffectIn)
+    {
+		return !(this.isGiant() && potioneffectIn.getPotion() == TF2weapons.stun);
+    }
+	
 	@Override
 	public void setAttackTarget(EntityLivingBase target) {
 
@@ -475,20 +498,27 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public float getAttributeModifier(String attribute) {
+		float base = 1f;
+		if (this.getActivePotionEffect(TF2weapons.sapped) != null)
+			base *= 2f;
 		if (shouldScaleAttributes())
 			if (attribute.equals("Knockback"))
-				return this.scaleWithDifficulty(0.4f, 1f);
+				base *= this.scaleWithDifficulty(0.4f, 1f);
 			else if (attribute.equals("Fire Rate"))
-				return this.scaleWithDifficulty(1.9f, 1f);
+				base *= this.scaleWithDifficulty(1.9f, 1f);
 			else if (attribute.equals("Spread")) {
-				return this.scaleWithDifficulty(1.9f, 1f);
+				base *= this.scaleWithDifficulty(1.9f, 1f);
 			} else if (attribute.equals("Damage") && this.getHeldItemMainhand().getItem() instanceof ItemMeleeWeapon)
-				return 1.25f;
+				base *= 1.25f;
 		if (attribute.equals("Auto Fire"))
 			return 0f;
-		return 1f;
+		return base;
 	}
 
+	public boolean hasHeldInventory() {
+		return !(this.isRobot() && this.getOwnerId() != null);
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 
@@ -558,10 +588,15 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			if (this.ticksExisted % 2 == 0) {
 				this.loadout.updateSlots();
 			}
-			if (this.isRobot() && this.getAttackTarget() == null) {
-				this.idleTime +=1;
-				if (this.idleTime > 800 + this.getRobotSize() * 500)
-					this.setDead();
+			if (this.isRobot()) {
+				if (this.getAttackTarget() == null || (this.friendly && this.getAttackTarget().getAttackingEntity() == null)) {
+					this.idleTime +=1;
+					if (this.idleTime > 800 + this.getRobotSize() * 500)
+						this.setDead();
+				}
+				if (this.getActivePotionEffect(TF2weapons.sapped) != null) {
+					this.rotationPitch = 40;
+				}
 			}
 			if (this.getOrder() == Order.HOLD && !this.hasHome())
 				this.setHomePosAndDistance(this.getPos(), 12);
@@ -975,6 +1010,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.setHealth(this.getMaxHealth());
 		for (int j = 0; j < this.ammoCount.length; j++) {
 			this.ammoCount[j] = this.getMaxAmmo(j);
+			if (this.isRobot())
+				this.ammoCount[j] *= 20;
 		}
 		
 		return data;
@@ -1027,12 +1064,12 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
-		if (!this.isRobot() && !(player.getHeldItemMainhand() != null && player.getHeldItemMainhand().getItem() instanceof ItemMonsterPlacerPlus)
+		if (!(player.getHeldItemMainhand() != null && player.getHeldItemMainhand().getItem() instanceof ItemMonsterPlacerPlus)
 				&& (this.getOwner() == player || this.getAttackTarget() == null || this.friendly) && this.isEntityAlive() && !this.isTrading() && !this.isChild()
 				&& !player.isSneaking()) {
-			if (this.world.isRemote && player.getTeam() == null && ((this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 1) == 0 || this.friendly) && !player.isCreative())
+			if (this.world.isRemote && !this.isRobot() &&player.getTeam() == null && ((this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 1) == 0 || this.friendly) && !player.isCreative())
 				ClientProxy.displayScreenConfirm("Choose a team to interact", "Visit the Mann Co. Store located in a village");
-			if (!this.world.isRemote && (TF2Util.isOnSameTeam(this, player) || player.isCreative()) && (this.tradeOffers == null || !this.tradeOffers.isEmpty())) {
+			if (!this.world.isRemote && (TF2Util.isOnSameTeam(this, player) || player.isCreative()) && (this.getOwner() == player ||this.tradeOffers == null || !this.tradeOffers.isEmpty())) {
 				this.setCustomer(player);
 				FMLNetworkHandler.openGui(player, TF2weapons.instance, 4, world, this.getEntityId(), 0, 0);
 			}
@@ -1443,6 +1480,13 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		return this.scaleWithDifficulty(0.18f, 0.03f);
 	}
 
+	public ItemStack getItemStackFromSlot(EntityEquipmentSlot slotIn) {
+		if (!this.world.isRemote && slotIn == EntityEquipmentSlot.MAINHAND)
+			return this.loadout.getStackInSlot(this.usedSlot);
+		else
+			return super.getItemStackFromSlot(slotIn);
+	}
+	
 	public void onShot() {
 
 	}
@@ -1477,6 +1521,8 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	public void makeOffers() {
 		this.tradeOffers = new MerchantRecipeList();
+		if (this.isRobot() || this.tradeLevel == -1)
+			return;
 		int weaponCount = 1 + this.rand.nextInt(2 + this.tradeLevel);
 		for (int i = 0; i < weaponCount; i++) {
 
@@ -1600,7 +1646,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 	public float getEyeHeight()
     {
-        return 1.62F * (this.getRobotSize() > 1 ? 1.75f : this.getRobotSize() > 2 ? 2f : 1f);
+        return 1.62F * (this.getRobotSize() > 1 ? 1.68f : this.getRobotSize() > 2 ? 1.9f : 1f);
     }
 	public int[] getValidSlots() {
 		return new int[] { 0, 1, 2 };
@@ -1640,16 +1686,20 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	public void switchSlot(int slot, boolean noAmmoSwitch, boolean forceRefresh) {
 		ItemStack stack = this.loadout.getStackInSlot(slot);
 
+		if (stack.isEmpty())
+			return;
+		if (stack.getItem() instanceof ItemFromData && !((ItemFromData) stack.getItem()).canSwitchTo(stack)) {
+			return;
+		}
 		if (!noAmmoSwitch)
 			this.preferredSlot = slot;
-
 
 		if (this.getHeldItemMainhand().getItem() instanceof ItemUsable && slot != this.usedSlot)
 			((ItemUsable) this.getHeldItemMainhand().getItem()).holster(getWepCapability(), stack, this, world);
 
 		this.setHeldItem(EnumHand.MAIN_HAND, stack);
 
-		if ((slot != this.usedSlot || forceRefresh) && !stack.isEmpty() && stack.getItem() instanceof ItemUsable) {
+		if ((slot != this.usedSlot || forceRefresh) && stack.getItem() instanceof ItemUsable) {
 			if (!((ItemUsable) stack.getItem()).isAmmoSufficient(stack, this, true))
 				if (!this.refill(this.usedSlot)) {
 					this.switchSlot(this.getFirstSlotWithAmmo(), true, forceRefresh);
@@ -1711,17 +1761,18 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
-		for (int i = 0; i < 3; i++) {
-			if (!this.loadoutHeld.getStackInSlot(i).isEmpty()) {
-				this.entityDropItem(this.loadout.getStackInSlot(i), 0).setThrower(ownerName);
+		for (int i = 0; i < 4; i++) {
+			if (!this.loadoutHeld.getStackInSlot(i).isEmpty() || !this.hasHeldInventory()) {
+				if (!this.loadout.getStackInSlot(i).isEmpty())
+					this.entityDropItem(this.loadout.getStackInSlot(i), 0).setThrower(ownerName);
 				this.loadout.setStackInSlot(i, this.loadoutHeld.getStackInSlot(i));
 			}
 		}
 		for (int i = 0; i < 4; i++)
-			if (!this.loadoutHeld.getStackInSlot(i + 3).isEmpty()) {
+			if (!this.loadoutHeld.getStackInSlot(i + 4).isEmpty() || !this.hasHeldInventory()) {
 				if (!this.getItemStackFromSlot(EntityEquipmentSlot.values()[5 - i]).isEmpty())
 				this.entityDropItem(this.getItemStackFromSlot(EntityEquipmentSlot.values()[5 - i]), 0).setThrower(ownerName);
-				this.setItemStackToSlot(EntityEquipmentSlot.values()[5 - i], this.loadoutHeld.getStackInSlot(3));
+				this.setItemStackToSlot(EntityEquipmentSlot.values()[5 - i], this.loadoutHeld.getStackInSlot(i+4));
 				this.setDropChance(EntityEquipmentSlot.values()[5 - i], i == 0 ? 0.25f : 0f);
 			}
 		if (this.getOwnerId() != null) {
@@ -1753,6 +1804,14 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			}
 		else if (this.inventoryArmorDropChances[0] < 1) {
 			this.inventoryArmorDropChances[0] = 0;
+		}
+		if (this.isRobot() && this.getOwnerId() != null) {
+			int notDropPiece = this.rand.nextInt(ItemRobotPart.LEVEL.length);
+			for (int i = 0; i < ItemRobotPart.LEVEL.length; i++) {
+				if (i != notDropPiece)
+					this.entityDropItem(new ItemStack(TF2weapons.itemRobotPart,
+							this.isGiant() ? TileEntityRobotDeploy.GIANT_REQUIRE[ItemRobotPart.LEVEL[i]] :TileEntityRobotDeploy.NORMAL_REQUIRE[ItemRobotPart.LEVEL[i]],i), 0);
+			}
 		}
 		super.dropEquipment(wasRecentlyHit, lootingModifier);
 	}
@@ -1835,17 +1894,24 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	}
 
+	public void setOwnerID(String name, UUID owner) {
+		this.ownerName= name;
+		this.dataManager.set(OWNER_UUID, Optional.of(owner));
+		this.enablePersistence();
+	}
+	
 	public static enum Order {
 		FOLLOW, HOLD;
 	}
 
 	public int getMaxAmmo(int slot) {
+		
 		int ammo = ItemFromData.getData(this.loadout.getStackInSlot(slot == -1 ? this.usedSlot : slot)).getInt(PropertyType.MAX_AMMO);
 		return (int) (this.getOwnerId() != null ? ammo : this.scaleWithDifficulty(0.5f, 1f) * ammo);
 	}
 
 	public int getAmmo(int slot) {
-		if (slot == 1000 || slot == -1)
+		if (slot == 1000 || slot == -1 || slot >= ammoCount.length)
 			slot = 0;
 		if (this.unlimitedAmmo)
 			return this.getMaxAmmo(slot);

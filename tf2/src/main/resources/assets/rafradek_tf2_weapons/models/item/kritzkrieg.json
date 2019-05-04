@@ -1,0 +1,15 @@
+{
+	"parent": "rafradek_tf2_weapons:item/medigun",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/medigun",
+		"1": "rafradek_tf2_weapons:items/kritzkrieg"
+	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/kritzkrieg_blu"
+		}
+	]
+}

@@ -20,6 +20,7 @@ import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileEnergy;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.item.ItemAirblast;
@@ -130,6 +131,7 @@ public class MapList {
 		projectileClasses.put("repairclaw", EntityStickProjectile.class);
 		projectileClasses.put("arrow", EntityStickProjectile.class);
 		projectileClasses.put("cleaver", EntityCleaver.class);
+		projectileClasses.put("hhhaxe", EntityProjectileSimple.class);
 		projectileClasses.put("energy", EntityProjectileEnergy.class);
 		projectileClasses.put("onyx", EntityOnyx.class);
 	}

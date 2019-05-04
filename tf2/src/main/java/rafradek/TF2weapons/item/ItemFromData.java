@@ -24,6 +24,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.ItemMeshDefinition;
@@ -45,6 +46,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
@@ -65,6 +67,8 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.TF2Attribute.State;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemCrate.CrateContent;
@@ -477,6 +481,37 @@ public class ItemFromData extends Item implements IItemOverlay{
 		
 	}
 	
+	@Override
+	public boolean showDurabilityBar(ItemStack stack) {
+		return this.getMaxRage(stack, null) > 0f ? (this.getRage(stack, Minecraft.getMinecraft().player) < this.getMaxRage(stack, Minecraft.getMinecraft().player)) : super.showDurabilityBar(stack);
+	}
+
+	@Override
+	public double getDurabilityForDisplay(ItemStack stack) {
+		return this.getMaxRage(stack, null) > 0f ? (1 - this.getRage(stack, Minecraft.getMinecraft().player)/this.getMaxRage(stack, Minecraft.getMinecraft().player))
+				: super.getDurabilityForDisplay(stack);
+	}
+	
+	public RageType getRageType(ItemStack stack, EntityLivingBase living) {
+		return null;
+	}
+	
+	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
+		return 0f;
+	}
+	
+	public float getRage(ItemStack stack, EntityLivingBase living) {
+		return WeaponsCapability.get(living).getRage(this.getRageType(stack, living));
+	}
+	
+	public void setRage(ItemStack stack, EntityLivingBase living, float value) {
+		WeaponsCapability.get(living).setRage(this.getRageType(stack, living), MathHelper.clamp(value, 0f, this.getMaxRage(stack, living)));
+	}
+	
+	public void addRage(ItemStack stack, EntityLivingBase living, float value) {
+		this.setRage(stack, living, this.getRage(stack, living) + value);
+	}
+	
 	public boolean isAmmoSufficient(ItemStack stack, EntityLivingBase living, boolean all) {
 		return true;
 	}
@@ -640,6 +675,10 @@ public class ItemFromData extends Item implements IItemOverlay{
 		WeaponData data = getData(stack);
 		String key = "weapon."+data.getName();
 		return I18n.canTranslate(key) ? I18n.translateToLocal(key) : getData(stack).hasProperty(PropertyType.NAME) ? getData(stack).getString(PropertyType.NAME) : getData(stack).getName();
+	}
+	
+	public boolean canSwitchTo(ItemStack stack) {
+		return false;
 	}
 	
 	@SideOnly(Side.CLIENT)

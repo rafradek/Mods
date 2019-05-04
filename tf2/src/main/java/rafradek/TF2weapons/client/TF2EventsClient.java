@@ -91,6 +91,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.gui.GuiContracts;
 import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
@@ -166,6 +167,13 @@ public class TF2EventsClient {
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_1"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/weapon_empty_2"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/token_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_1_1_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_2_1_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_3_1_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_1_2_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_2_2_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_3_2_empty"));
+		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_1_3_empty"));
 		
 		
 		// }
@@ -178,15 +186,13 @@ public class TF2EventsClient {
 			ItemStack stack = minecraft.player.getHeldItemMainhand();
 			if (minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
 				ItemStack chest = ItemBackpack.getBackpack(minecraft.player);
-				if((WeaponsCapability.get(minecraft.player).getUsedToken() == 0 || 
-						(ItemToken.allowUse(minecraft.player, "scout") && minecraft.player.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))
-					&& !minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
+				if(WeaponsCapability.get(minecraft.player).airJumps < WeaponsCapability.get(minecraft.player).getMaxAirJumps()) {
 					minecraft.player.jump();
 					float speedmult=minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
 					Vec3d moveDir = TF2Util.getMovementVector(minecraft.player);
 					minecraft.player.motionX=moveDir.x * speedmult;
 					minecraft.player.motionZ=moveDir.y * speedmult;
-					minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped = true;
+					minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).airJumps += 1;
 					
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 				}
@@ -679,12 +685,12 @@ public class TF2EventsClient {
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 				GL11.glDisable(GL11.GL_ALPHA_TEST);
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
-				
+				TF2PlayerCapability plcap = TF2PlayerCapability.get(player);
 				GlStateManager.pushMatrix();
 				GlStateManager.scale(0.75f, 0.75f, 1f);
 				
-				if (pda.getTagCompound().hasKey("SentryView"))
-					TF2EventsCommon.sentryView.readEntityFromNBT(pda.getTagCompound().getCompoundTag("SentryView"));
+				if (plcap.getSentryView().getSize() > 0)
+					TF2EventsCommon.sentryView.readEntityFromNBT(plcap.getSentryView());
 				else
 					TF2EventsCommon.sentryView.setHealth(0);
 
@@ -692,8 +698,8 @@ public class TF2EventsClient {
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
 				TF2EventsCommon.sentryView.renderGUI(renderer, tessellator, player, width, height, Minecraft.getMinecraft().ingameGUI);
 				
-				if (pda.getTagCompound().hasKey("DispenserView"))
-					TF2EventsCommon.dispenserView.readEntityFromNBT(pda.getTagCompound().getCompoundTag("DispenserView"));
+				if (plcap.getDispenserView().getSize() > 0)
+					TF2EventsCommon.dispenserView.readEntityFromNBT(plcap.getDispenserView());
 				else {
 					TF2EventsCommon.dispenserView.setHealth(0);
 				}
@@ -702,8 +708,8 @@ public class TF2EventsClient {
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
 				TF2EventsCommon.dispenserView.renderGUI(renderer, tessellator, player, width, height, Minecraft.getMinecraft().ingameGUI);
 				
-				if (pda.getTagCompound().hasKey("TeleporterAView"))
-					TF2EventsCommon.teleporterAView.readEntityFromNBT(pda.getTagCompound().getCompoundTag("TeleporterAView"));
+				if (plcap.getTeleporterAView().getSize() > 0)
+					TF2EventsCommon.teleporterAView.readEntityFromNBT(plcap.getTeleporterAView());
 				else
 					TF2EventsCommon.teleporterAView.setHealth(0);
 				
@@ -711,8 +717,8 @@ public class TF2EventsClient {
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.buildingTexture);
 				TF2EventsCommon.teleporterAView.renderGUI(renderer, tessellator, player, width, height, Minecraft.getMinecraft().ingameGUI);
 				
-				if (pda.getTagCompound().hasKey("TeleporterBView"))
-					TF2EventsCommon.teleporterBView.readEntityFromNBT(pda.getTagCompound().getCompoundTag("TeleporterBView"));
+				if (plcap.getTeleporterBView().getSize() > 0)
+					TF2EventsCommon.teleporterBView.readEntityFromNBT(plcap.getTeleporterBView());
 				else
 					TF2EventsCommon.teleporterBView.setHealth(0);
 

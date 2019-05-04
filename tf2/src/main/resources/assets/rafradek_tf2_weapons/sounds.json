@@ -105,6 +105,18 @@
     	"rafradek_tf2_weapons:weapon/pistol_shoot_crit"
     ]
   },
+  "weapon.fire.capper": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/capper_shoot"
+    ]
+  },
+  "weapon.fire.capper.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/capper_shoot_crit"
+    ]
+  },
   "weapon.reload.pistol": {
     "category": "neutral",
     "sounds": [
@@ -124,6 +136,24 @@
     ]
   },
   "weapon.reload.smg": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/smg_worldreload"
+    ]
+  },
+  "weapon.fire.cleanerscarbine": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/doom_sniper_smg"
+    ]
+  },
+  "weapon.fire.cleanerscarbine.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/doom_sniper_smg_crit"
+    ]
+  },
+  "weapon.reload.cleanerscarbine": {
     "category": "neutral",
     "sounds": [
     	"rafradek_tf2_weapons:weapon/smg_worldreload"
@@ -485,6 +515,12 @@
     	"rafradek_tf2_weapons:weapon/axe_hit_flesh1",
     	"rafradek_tf2_weapons:weapon/axe_hit_flesh2",
     	"rafradek_tf2_weapons:weapon/axe_hit_flesh3"
+    ]
+  },
+  "weapon.hit.bat": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/bat_hit"
     ]
   },
   "weapon.hit.baseball": {

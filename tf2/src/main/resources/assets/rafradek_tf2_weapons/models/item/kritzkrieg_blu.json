@@ -1,0 +1,7 @@
+{
+	"parent": "rafradek_tf2_weapons:item/kritzkrieg",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/medigun_blu",
+		"1": "rafradek_tf2_weapons:items/kritzkrieg"
+	}
+}

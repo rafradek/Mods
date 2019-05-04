@@ -133,6 +133,12 @@ public class RenderProjectileSimple extends Render<EntityProjectileSimple> {
 	        GlStateManager.disableRescaleNormal();
 	        GlStateManager.popMatrix();
 		}
+		else if(entity.getType() == 8) {
+			GlStateManager.pushMatrix();
+			GlStateManager.scale(2, 2, 2);
+			Minecraft.getMinecraft().getRenderItem().renderItem(ItemFromData.getNewStack("hhhaxe"), ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
+			GlStateManager.popMatrix();
+		}
 		else	
 			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
 		// GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);

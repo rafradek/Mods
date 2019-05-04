@@ -1,0 +1,16 @@
+{
+	"credit": "By FaithSDK, Made with Blockbench",
+	"parent": "rafradek_tf2_weapons:item/bat",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/atomizer",
+		"particle": "rafradek_tf2_weapons:items/atomizer"
+	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/atomizer_blu"
+		}
+	]
+}

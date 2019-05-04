@@ -32,7 +32,9 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
+import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor.Allow;
 
 public class BlockOverheadDoor extends BlockContainer {
 
@@ -47,6 +49,7 @@ public class BlockOverheadDoor extends BlockContainer {
 	
 	public BlockOverheadDoor() {
 		super(Material.IRON, MapColor.IRON);
+		this.setLightOpacity(TF2ConfigVars.doorBlockLight ? 255 : 0);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(SLIDING, false));
 		// TODO Auto-generated constructor stub
 	}
@@ -140,7 +143,7 @@ public class BlockOverheadDoor extends BlockContainer {
 	
 	public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
     {
-        return state.getValue(SLIDING) ? 0 : 255;
+        return state.getValue(SLIDING) ? 0 : super.getLightOpacity(state, world, pos);
     }
 	
 	/*@Override
@@ -222,5 +225,24 @@ public class BlockOverheadDoor extends BlockContainer {
 		if (ent instanceof TileEntityOverheadDoor) {
 			((TileEntityOverheadDoor) ent).powered = worldIn.isBlockPowered(pos);
 		}
+    }
+	
+	public net.minecraft.pathfinding.PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos)
+    {
+		return super.getAiPathNodeType(state, world, pos);
+    }
+	
+	public boolean isPassable(IBlockAccess worldIn, BlockPos pos)
+    {
+		if (worldIn.getBlockState(pos).getValue(SLIDING))
+			return true;
+		for (int y = 0; y < 5; y++) {
+			BlockPos off = pos.add(0, y, 0);
+			if (worldIn.getTileEntity(off) instanceof TileEntityOverheadDoor) {
+				TileEntityOverheadDoor ent = (TileEntityOverheadDoor) worldIn.getTileEntity(off);
+				return ent.allow == Allow.ENTITY || ent.allow == Allow.TEAM;
+			}
+		}
+		return false;
     }
 }

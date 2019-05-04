@@ -25,6 +25,7 @@ public class TF2GuiConfig extends GuiConfig {
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("sound volume")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("adaption")));
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("building")));
+		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("miscellaneous")));
 		configElements.addAll(new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements());
 		return configElements;
 		

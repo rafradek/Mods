@@ -25,6 +25,7 @@ import rafradek.TF2weapons.entity.ai.EntityAIUseMedigun;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 
@@ -39,9 +40,20 @@ public class EntityMedic extends EntityTF2Character {
 		this.targetTasks.addTask(1, this.findplayer = new EntityAINearestChecked(this, EntityLivingBase.class, true,
 				false, Predicates.and(this::isValidTarget, target -> {
 					return target.getHealth()<target.getMaxHealth() || (target instanceof EntityPlayer && target.getCapability(TF2weapons.PLAYER_CAP, null).medicCall > 0);
-				}), false, true));
+				}), false, true) {
+			
+			@Override
+			public boolean shouldExecute() {
+				return canHeal() && super.shouldExecute();
+			}
+		});
 		this.targetTasks.addTask(2, new EntityAINearestChecked(this, EntityLivingBase.class, true,
-				false, this::isValidTarget, true, false));
+				false, this::isValidTarget, true, false) {
+			@Override
+			public boolean shouldExecute() {
+				return canHeal() && super.shouldExecute();
+			}
+		});
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true));
 		this.targetTasks.addTask(4,
 				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super::isValidTarget, true, false));
@@ -60,6 +72,9 @@ public class EntityMedic extends EntityTF2Character {
 
 	}
 
+	public boolean canHeal() {
+		return this.loadout.getStackInSlot(1).getItem() instanceof ItemMedigun;
+	}
 	protected void addWeapons() {
 		super.addWeapons();
 		if (this.isGiant()) {
@@ -190,7 +205,7 @@ public class EntityMedic extends EntityTF2Character {
 	}
 	
 	public boolean isValidTarget(EntityLivingBase target) {
-		return !((target instanceof EntityMedic && target.getHealth() >= target.getMaxHealth()) || target instanceof EntityBuilding)
+		return !((target instanceof EntityMedic && (((EntityTF2Character) target).isRobot() || target.getHealth() >= target.getMaxHealth())) || target instanceof EntityBuilding)
 				&& TF2Util.isOnSameTeam(EntityMedic.this, target);
 	}
 	

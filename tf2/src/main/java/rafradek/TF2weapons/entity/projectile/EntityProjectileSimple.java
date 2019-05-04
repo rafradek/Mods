@@ -34,12 +34,14 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 		}
 		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
 			this.setType(0);
-		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
+		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
 			this.setType(1);
-		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
+		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
 			this.setType(2);
-		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
+		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
 			this.setType(3);
+		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("hhhaxe"))
+			this.setType(8);
 	}
 
 	@Override

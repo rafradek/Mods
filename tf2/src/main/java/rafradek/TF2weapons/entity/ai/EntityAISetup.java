@@ -23,6 +23,7 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
+import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -48,8 +49,7 @@ public class EntityAISetup extends EntityAIBase {
 			this.buildType = this.engineer.grabbedid + 1;
 			return true;
 		}
-		if (this.engineer.isInWater() || this.engineer.getHeldItem(EnumHand.MAIN_HAND).isEmpty()
-				|| this.engineer.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemWrench)
+		if (this.engineer.isInWater() || !(this.engineer.loadout.getStackInSlot(3).getItem() instanceof ItemPDA))
 			return false;
 		
 		boolean dispensernear = TF2Util.findAmmoSource(engineer, 16, false) != null;
@@ -72,9 +72,11 @@ public class EntityAISetup extends EntityAIBase {
 				: (this.engineer.getWepCapability().getMetal() >= dispenserCost && !dispenserhome)
 						? 2 : 0;
 		if (buildType > 0) {
-			this.engineer.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
+			this.engineer.loadout.getStackInSlot(3).getTagCompound().setByte("Building", (byte) this.buildType);
+			this.engineer.switchSlot(3);
+			/*this.engineer.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 					new ItemStack(TF2weapons.itemBuildingBox, 1, 16 + buildType * 2 + this.engineer.getEntTeam()));
-			this.engineer.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());
+			this.engineer.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());*/
 		}
 		// System.out.println("Promote: "+buildType);
 		
@@ -89,6 +91,8 @@ public class EntityAISetup extends EntityAIBase {
 	public void resetTask() {
 		this.engineer.getNavigator().clearPath();
 		this.engineer.switchSlot(0);
+		if (this.engineer.loadout.getStackInSlot(3).getItem() instanceof ItemPDA)
+			this.engineer.loadout.getStackInSlot(3).getTagCompound().setByte("Building", (byte) 0);
 	}
 
 	@Override

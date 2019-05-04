@@ -13,6 +13,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.ai.EntityAIAirblast;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFlameThrower;
@@ -94,13 +95,14 @@ public class EntityPyro extends EntityTF2Character {
 					this.switchSlot(0);
 				}
 			}
-			if (this.getWepCapability().getPhlogRage() >= 20f 
-					&& this.getHeldItemMainhand().getItem() instanceof ItemFlameThrower && !this.getHeldItemMainhand().getTagCompound().getBoolean("RageActive")) {
+			ItemStack weapon = this.getHeldItemMainhand();
+			if (weapon.getItem() instanceof ItemFlameThrower && ((ItemFromData) weapon.getItem()).getMaxRage(weapon, this) > 0 &&
+					((ItemFromData) weapon.getItem()).getRage(weapon,this) >= ((ItemFromData) weapon.getItem()).getMaxRage(weapon, this)) {
 				this.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
 				this.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
 				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber,40,0));
-				this.getHeldItemMainhand().getTagCompound().setBoolean("RageActive", true);
-				this.playSound(ItemFromData.getSound(this.getHeldItemMainhand(), PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
+				this.getWepCapability().setRageActive(RageType.PHLOG, true, 2f);
+				this.playSound(ItemFromData.getSound(weapon, PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
 			}
 			
 			ItemStack backpack = ItemBackpack.getBackpack(this);

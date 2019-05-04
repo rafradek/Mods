@@ -64,45 +64,50 @@ public class EntitySpy extends EntityTF2Character {
 		return 80;
 	}
 
+	public boolean hasWatch() {
+		return this.loadout.getStackInSlot(3).getItem() instanceof ItemCloak;
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 		if (!this.world.isRemote) {
-			if (!(this.loadout.getStackInSlot(3).getItem() instanceof ItemCloak)) {
-				this.setDead();
-				return;
+			if (this.ticksExisted == 0) {
+				this.getWepCapability().setInvisible(this.hasWatch());
 			}
 			this.prevHealth=this.getHealth();
+			
 			this.cloakCounter--;
 			EntityLivingBase target = this.getAttackTarget();
-			if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
-				boolean useKnife = false;
-				if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
-						|| (useKnife = (this.getDistanceSq(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
-
-					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
-							!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
-							this.world);
-					if (useKnife) {
-						this.weaponCounter = 19;
-						this.setCombatTask(false);
-						this.cloakCounter = 36;
-					} else
-						this.cloakCounter = 20 + (int) ((16 - this.getDistance(target)) * 10);
+			if (this.hasWatch()) {
+				if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
+					boolean useKnife = false;
+					if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
+							|| (useKnife = (this.getDistanceSq(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
+	
+						((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
+								!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
+								this.world);
+						if (useKnife) {
+							this.weaponCounter = 19;
+							this.setCombatTask(false);
+							this.cloakCounter = 36;
+						} else
+							this.cloakCounter = 20 + (int) ((16 - this.getDistance(target)) * 10);
+					}
+					/*
+					 * float x = -MathHelper.sin(target.rotationYaw / 180.0F *
+					 * (float)Math.PI); float z = MathHelper.cos(target.rotationYaw
+					 * / 180.0F * (float)Math.PI);
+					 * this.setPosition(target.posX-x,target.posY,target.posZ-z);
+					 */
 				}
-				/*
-				 * float x = -MathHelper.sin(target.rotationYaw / 180.0F *
-				 * (float)Math.PI); float z = MathHelper.cos(target.rotationYaw
-				 * / 180.0F * (float)Math.PI);
-				 * this.setPosition(target.posX-x,target.posY,target.posZ-z);
-				 */
+	
+				//System.out.println(this.loadout.getStackInSlot(3));
+				if (this.cloakCounter <= 0 && !this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
+					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);
 			}
-
-			//System.out.println(this.loadout.getStackInSlot(3));
-			if (this.cloakCounter <= 0 && !this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
-				((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);
 			this.weaponCounter--;
-
 			if (this.weaponCounter <= 0 && this.getAttackTarget() != null
 					&& this.getDistanceSq(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 25)) {
 				this.setCombatTask(false);
@@ -125,10 +130,8 @@ public class EntitySpy extends EntityTF2Character {
 
 	@Override
 	protected void addWeapons() {
-		this.loadout.setStackInSlot(0,ItemFromData.getRandomWeaponOfSlotMob("spy", 0, this.rand, false, true, this.noEquipment));
+		super.addWeapons();
 		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true, this.noEquipment));
-		this.loadout.setStackInSlot(2,ItemFromData.getRandomWeaponOfSlotMob("spy", 2, this.rand, false, true, this.noEquipment));
-		this.loadout.setStackInSlot(3,ItemFromData.getRandomWeaponOfSlotMob("spy", 3, this.rand, false, true, this.noEquipment));
 		this.loadout.getStackInSlot(1).setCount( 64);
 	}
 

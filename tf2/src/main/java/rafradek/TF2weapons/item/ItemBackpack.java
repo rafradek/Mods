@@ -61,12 +61,12 @@ public class ItemBackpack extends ItemFromData {
 
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
-		return stack.getTagCompound().getShort("Cooldown") > 0;
+		return stack.getTagCompound().getShort("Cooldown") > 0 || super.showDurabilityBar(stack);
 	}
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
-		return (double)stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack);
+		return (double) (stack.getTagCompound().getShort("Cooldown") > 0 ? stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack) : super.getDurabilityForDisplay(stack));
 	}
 	
 	@Override

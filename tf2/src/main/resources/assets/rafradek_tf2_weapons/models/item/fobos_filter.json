@@ -1,0 +1,117 @@
+{
+	"parent": "rafradek_tf2_weapons:item/hat",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/phobos_filter",
+		"particle": "rafradek_tf2_weapons:items/phobos_filter"
+	},
+	"elements": [
+		{
+			"from": [0, 0, -1],
+			"to": [16, 15, 0],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"up": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#0"}
+			}
+		},
+		{
+			"from": [0, 0, 16],
+			"to": [16, 15, 17],
+			"faces": {
+				"north": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"south": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"up": {"uv": [0, 0, 1, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 1, 1], "texture": "#0"}
+			}
+		},
+		{
+			"from": [-1, 0, 0],
+			"to": [0, 15, 16],
+			"faces": {
+				"north": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"east": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"south": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"west": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"up": {"uv": [1, 0, 0, 1], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [1, 0, 0, 1], "rotation": 270, "texture": "#0"}
+			}
+		},
+		{
+			"from": [16, 0, 0],
+			"to": [17, 15, 16],
+			"faces": {
+				"north": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"east": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"south": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"west": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"up": {"uv": [1, 0, 0, 1], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [1, 0, 0, 1], "rotation": 270, "texture": "#0"}
+			}
+		},
+		{
+			"from": [0, 14, 0],
+			"to": [17, 15, 16],
+			"faces": {
+				"north": {"uv": [1, 0, 0, 1], "rotation": 180, "texture": "#0"},
+				"east": {"uv": [1, 0, 0, 1], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"west": {"uv": [1, 0, 0, 1], "rotation": 270, "texture": "#0"},
+				"up": {"uv": [1, 0, 0, 1], "texture": "#0"},
+				"down": {"uv": [1, 0, 0, 1], "rotation": 180, "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, 1, -2],
+			"to": [12, 8, -1],
+			"faces": {
+				"north": {"uv": [4, 8, 11, 15], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"up": {"uv": [0, 0, 7, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 7, 1], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6, 2, -3],
+			"to": [11, 7, -2],
+			"faces": {
+				"north": {"uv": [4, 8, 11, 15], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"up": {"uv": [0, 0, 7, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 7, 1], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6, 1, -4],
+			"to": [11, 6, -3],
+			"faces": {
+				"north": {"uv": [4, 8, 11, 15], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"up": {"uv": [0, 0, 7, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 7, 1], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6, 0, -5],
+			"to": [11, 5, -4],
+			"faces": {
+				"north": {"uv": [4, 8, 11, 15], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 7], "texture": "#0"},
+				"up": {"uv": [0, 0, 7, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 7, 1], "texture": "#0"}
+			}
+		}
+	]
+}

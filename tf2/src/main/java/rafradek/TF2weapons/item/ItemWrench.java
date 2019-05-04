@@ -33,6 +33,7 @@ import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.building.EntityTeleporter.TeleporterData;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
@@ -118,6 +119,45 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metalLeft);
 			}
 
+			return false;
+		}
+		if (target instanceof EntityTF2Character && TF2Util.isOnSameTeam(target, attacker) && ((EntityTF2Character)target).isRobot()) {
+			EntityTF2Character robot = (EntityTF2Character)target;
+			if (robot.getActivePotionEffect(TF2weapons.sapped) != null)
+				robot.removeActivePotionEffect(TF2weapons.sapped);
+			else {
+				boolean useIgnot = false;
+				int metalLeft = attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+				float metalMult = TF2Attribute.getModifier("Metal Used", stack, 1f, attacker);
+				if ((attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
+					metalMult = 10;
+				
+				ItemStack ingot = new ItemStack(Items.IRON_INGOT);
+				if (metalLeft == 0 && attacker instanceof EntityPlayer
+						&& ((EntityPlayer) attacker).inventory.hasItemStack(ingot)) {
+					metalLeft = 50;
+					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(50);
+					useIgnot = true;
+				}
+				int metalUse = 0;
+				
+				if (robot.getHealth() < robot.getMaxHealth()) {
+					metalUse = (int) Math.min(
+							(Math.min((robot.getMaxHealth() - robot.getHealth()) * 3.333333f, 33 * metalMult) + 1),
+							metalLeft);
+					robot.heal(metalUse * 0.3f);
+					metalLeft -= metalUse;
+				}
+				
+				if (useIgnot && metalLeft != 50)
+					((EntityPlayer) attacker).inventory.clearMatchingItems(Items.IRON_INGOT, 0, 1, null);
+				
+				robot.playSound(ItemFromData.getSound(stack, metalLeft != attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()
+						? PropertyType.BUILD_HIT_SUCCESS_SOUND : PropertyType.BUILD_HIT_FAIL_SOUND), 1.7f, 1f);
+				
+				if (!(attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
+					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metalLeft);
+			}
 			return false;
 		}
 		return true;

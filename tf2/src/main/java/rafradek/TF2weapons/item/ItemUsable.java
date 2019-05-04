@@ -112,8 +112,9 @@ public abstract class ItemUsable extends ItemFromData {
 			stackcap.fire2Cool -= 50;
 		else
 			stackcap.fire2Cool = mincool;
-		
-		if (stackcap.active == 0 && (par5 || stack == living.getHeldItemOffhand())) {
+		boolean offhand = stack == living.getHeldItemOffhand();
+		boolean doublewield = offhand && isDoubleWielding(living);
+		if (stackcap.active == 0 && (par5 || doublewield)) {
 			stackcap.active = 1;
 			// itemProperties.get(par2World.isRemote).get(par3Entity).setShort("reloadd",
 			// (short) 800);
@@ -124,13 +125,8 @@ public abstract class ItemUsable extends ItemFromData {
 			}
 			stackcap.fire1Cool = Math.max(stackcap.fire1Cool, this.getDeployTime(stack, living));
 			stackcap.fire2Cool = Math.max(stackcap.fire2Cool, this.getDeployTime(stack, living));
-		} else if (stackcap.active > 0
-				&& stack != living.getHeldItemOffhand() && !par5) {
-			if (stackcap.active == 2 && (cap.state & 3) > 0)
-				this.endUse(stack, living, par2World, cap.state, 0);
-			
-			stackcap.active = 0;
-			this.holster(cap, stack, living, par2World);
+		} else if (stackcap.active > 0 && ((offhand && !doublewield) || (!offhand && !par5))) {
+			cap.setInactiveHand(offhand? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, stack);
 			cap.lastWeapon = stack;
 		}
 		if (par3Entity.ticksExisted % 5 == 0 && stackcap.active == 2
@@ -326,6 +322,10 @@ public abstract class ItemUsable extends ItemFromData {
 			return stack.getItemDamage() > 0 && (stack.getItemDamage() == stack.getMaxDamage() || WeaponsCapability.get(living).reloadingHand != null);
 		}*/
 		
+		return true;
+	}
+	
+	public boolean canSwitchTo(ItemStack stack) {
 		return true;
 	}
 }

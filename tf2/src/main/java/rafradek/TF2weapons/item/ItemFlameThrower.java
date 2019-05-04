@@ -25,6 +25,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -34,6 +35,8 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
@@ -45,7 +48,7 @@ public class ItemFlameThrower extends ItemAirblast {
 	
 	@Override
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
-		return super.canAltFire(worldObj, player, item) || (TF2Attribute.getModifier("Rage Crit", item, 0, player)!=0 && player.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f);
+		return super.canAltFire(worldObj, player, item) || (TF2Attribute.getModifier("Rage Crit", item, 0, player)!=0 && this.getRage(item, player) >= this.getMaxRage(item, player));
 	}
 	
 	@Override
@@ -129,12 +132,18 @@ public class ItemFlameThrower extends ItemAirblast {
 		return speed * 0.6f + TF2Attribute.getModifier("Flame Range", stack, speed * 0.4f, living);
 	}
 	
+	public RageType getRageType(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Rage Crit", stack, 0, null) == 1f ? RageType.PHLOG : super.getRageType(stack, living);
+	}
 	
+	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Rage Crit", stack, 0, null) == 1f ? 20f : super.getMaxRage(stack, living);
+	}
 	
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		
-		if(target instanceof EntityLivingBase && TF2Attribute.getModifier("Rage Crit", stack, 0, attacker)!=0 && !stack.getTagCompound().getBoolean("RageActive")){
+		if(target instanceof EntityLivingBase && TF2Attribute.getModifier("Rage Crit", stack, 0, attacker)!=0 && !WeaponsCapability.get(attacker).isRageActive(RageType.PHLOG)){
 			float mult = 1f;
 			if (attacker instanceof EntityPlayer) {
 				if (target instanceof EntityPlayer)
@@ -148,21 +157,17 @@ public class ItemFlameThrower extends ItemAirblast {
 				if(target instanceof EntityPlayer)
 					mult = 4f;
 			}
-			attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(Math.min(20, attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()+amount
-					*mult));
+			this.addRage(stack, attacker,amount*mult);
 		}
 	}
 	
 	@Override
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(stack, par2World, par3Entity, par4, par5);
-		if(stack.getTagCompound().getBoolean("RageActive")) {
-			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setPhlogRage(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()-0.1f);
+		if(WeaponsCapability.get(par3Entity).isRageActive(RageType.PHLOG)) {
 			if(par5 && par3Entity.ticksExisted%5==0) {
 				((EntityLivingBase) par3Entity).addPotionEffect(new PotionEffect(TF2weapons.critBoost,5));
 			}
-			if(par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()<=0)
-				stack.getTagCompound().setBoolean("RageActive", false);
 		}
 			
 	}
@@ -207,18 +212,6 @@ public class ItemFlameThrower extends ItemAirblast {
 	}*/
 	
 	@Override
-	public boolean showDurabilityBar(ItemStack stack) {
-		return super.showDurabilityBar(stack) || (TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 
-				&& Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage() < 20f);
-	}
-
-	@Override
-	public double getDurabilityForDisplay(ItemStack stack) {
-		return TF2Attribute.getModifier("Rage Crit", stack, 0, null)==1 ? (20D - Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage())/20D 
-				: super.getDurabilityForDisplay(stack);
-	}
-	
-	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn = playerIn.getHeldItem(hand);
@@ -236,13 +229,13 @@ public class ItemFlameThrower extends ItemAirblast {
 	
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
-		if (TF2Attribute.getModifier("Rage Crit", stack, 0, living)!=0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).getPhlogRage()>=20f) {
+		if (TF2Attribute.getModifier("Rage Crit", stack, 0, living)!=0 && this.getRage(stack, living) >= this.getMaxRage(stack, living)) {
 			living.setActiveHand(EnumHand.MAIN_HAND);
 			living.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
 			TF2Util.addAndSendEffect(living, new PotionEffect(TF2weapons.uber,40,0));
 			living.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
 			living.playSound(ItemFromData.getSound(stack, PropertyType.CHARGE_SOUND), 1f, 1f);
-			stack.getTagCompound().setBoolean("RageActive", true);
+			WeaponsCapability.get(living).setRageActive(RageType.PHLOG, true, 2f);
 		}
 		else
 			super.altUse(stack, living, world);

@@ -12,6 +12,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
@@ -39,11 +40,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -59,9 +64,11 @@ public class EntityHHH extends EntityTF2Boss {
 	private int aboveGroundTicks;
 	private int dashCool;
 	private int dashTick;
+	private int targetInAir;
 	private Vec3d dashMotion;
 	private List<EntityLivingBase> possibleTargets = new ArrayList<>();
 	private UUID slowDash = UUID.fromString("03edb08b-0a2f-4040-9c9c-062d0c2e2a85");
+	private Vec3d lastPos= Vec3d.ZERO;
 	
 	public EntityHHH(World worldIn) {
 		super(worldIn);
@@ -74,7 +81,8 @@ public class EntityHHH extends EntityTF2Boss {
 	protected void initEntityAI()
     {
 		this.tasks.addTask(1, new EntityAISwimming(this));
-		this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, false));
+		this.tasks.addTask(2, new EntityAIAirAttack());
+		this.tasks.addTask(3, new EntityAIAttackMelee(this, 1.0D, false));
 		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
 		this.tasks.addTask(6, new EntityAILookIdle(this));
 		/*this.targetTasks.addTask(1, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,2, false,false,new Predicate<EntityLivingBase>(){
@@ -192,6 +200,8 @@ public class EntityHHH extends EntityTF2Boss {
 				}
 			}
 			if (this.getAttackTarget() != null) {
+				if (!this.getAttackTarget().onGround)
+					this.targetInAir +=1;
 				if (this.level > 2) {
 					if (this.dashCool-- <= 0) {
 						this.dashCool = 300;
@@ -213,13 +223,21 @@ public class EntityHHH extends EntityTF2Boss {
 				}
 				
 			}
-			if (this.toTeleportTime <= 0 && this.getAttackTarget() != null && this.ticksExisted % 5 == 0) {
+			if (--this.teleportTime <= 0 && this.getAttackTarget() != null && this.ticksExisted % 5 == 0) {
 				Path path = this.getNavigator().getPathToEntityLiving(this.getAttackTarget());
-				boolean shouldTeleport;
+				boolean shouldTeleport = false;
 				if (path == null)
 					shouldTeleport = this.getDistanceSq(this.getAttackTarget())>1.5&&this.getDistanceSq(this.getAttackTarget().posX, this.posY, this.getAttackTarget().posZ)<1;
-				else
-					shouldTeleport = Math.abs(path.getFinalPathPoint().y - this.getAttackTarget().posY) > 1.5 && this.getAttackTarget().onGround;
+				else {
+					if (this.ticksExisted % 20 == 0) {
+						if (this.lastPos.squareDistanceTo(this.getPositionVector()) < 2) {
+							shouldTeleport = true;
+						}
+						this.lastPos= this.getPositionVector();
+					}
+					if (!shouldTeleport)
+						shouldTeleport = Math.abs(path.getFinalPathPoint().y - this.getAttackTarget().posY) > 1.5 && this.getAttackTarget().onGround;
+				}
 				if (shouldTeleport) {
 					this.toTeleportTime=40;
 					this.teleportTime=250;
@@ -284,7 +302,7 @@ public class EntityHHH extends EntityTF2Boss {
 		if (super.attackEntityFrom(source, amount)) {
 			if (this.getAttackTarget() == null || this.getNavigator().noPath()) {
 				this.damageTakenNoPath += amount;
-				if (this.damageTakenNoPath >= 20) {
+				if (this.damageTakenNoPath >= 20 && this.teleportTime <= 50) {
 					this.damageTakenNoPath = 0;
 					this.toTeleportTime=40;
 					this.teleportTime=250;
@@ -405,5 +423,59 @@ public class EntityHHH extends EntityTF2Boss {
 	
 	public void returnSpawnItems() {
 		this.entityDropItem(new ItemStack(TF2weapons.itemBossSpawn,1,0), 0);
+	}
+	
+	public class EntityAIAirAttack extends EntityAIBase {
+
+		public int ticksInAir;
+		public int attackTime;
+		public int attackCooldown;
+		@Override
+		public boolean shouldExecute() {
+			return getAttackTarget() != null;
+		}
+		
+		public void updateTask()
+	    {
+			if (getAttackTarget() == null)
+				return;
+			EntityLivingBase target = getAttackTarget();
+			if (!target.onGround) {
+				this.ticksInAir++;
+				if (this.ticksInAir > 30) {
+					this.attackTime = 60;
+				}
+			}
+			else
+				this.ticksInAir--;
+			
+			if (--this.attackTime > 0) {
+				this.setMutexBits(3);
+				this.ticksInAir = 0;
+				EntityHHH.this.faceEntity(target, 45, 90);
+				EntityHHH.this.getLookHelper().setLookPositionWithEntity(target, 90, 90);
+				if (this.attackTime == 30) {
+					ItemStack stack = ItemFromData.getNewStack("hhhaxe");
+					try {
+						EntityProjectileBase proj = MapList.projectileClasses.get(ItemFromData.getData(stack).getString(PropertyType.PROJECTILE))
+								.getConstructor(World.class)
+								.newInstance(EntityHHH.this.world);
+						proj.initProjectile(EntityHHH.this, EnumHand.MAIN_HAND, stack);
+						double x = target.posX;
+						double y = target.posY + target.getEyeHeight();
+						double z = target.posZ;
+						//float speed = TF2Attribute.getModifier("Proj Speed", stackW, ItemFromData.getData(stackW).getFloat(PropertyType.PROJECTILE_SPEED), living);
+						proj.face(target, 1);
+						EntityHHH.this.world.spawnEntity(proj);
+					}
+					catch (Exception e) {
+						
+					}
+				}
+			}
+			else
+				this.setMutexBits(0);
+	    }
+		
 	}
 }

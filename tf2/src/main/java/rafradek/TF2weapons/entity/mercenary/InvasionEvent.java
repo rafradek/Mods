@@ -146,7 +146,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 			this.onPlayerEnter(player);
 		}
 		if ((this.world.getTotalWorldTime() & 111) == 0)
-		for (EntityTF2Character ent : this.world.getEntitiesWithinAABB(EntityTF2Character.class, new AxisAlignedBB(target).grow(256), entity -> entity.isEntityAlive() && entity.isRobot())) {
+		for (EntityTF2Character ent : this.world.getEntitiesWithinAABB(EntityTF2Character.class, new AxisAlignedBB(target).grow(256), entity -> entity.isEntityAlive() 
+				&& entity.getOwnerId() == null&&entity.isRobot())) {
 			this.entityList.put(ent,-1);
 		}
 		
@@ -391,8 +392,11 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		List<ItemStack> items = new ArrayList<>();
 		float chance = this.difficulty;
 		chance = Math.min(40f,(float)Math.pow(this.robotKilledWave, 0.7)) * (this.world.rand.nextFloat()*0.7f + 0.9f);
-		if (this.wave == this.waves)
+		if (this.wave == this.waves) {
+			if (this.diffTour >= 1)
+				items.add(new ItemStack(TF2weapons.blockRobotDeploy));
 			chance *=2;
+		}
 		
 		while (chance >= 4f) {
 			int itemtype = world.rand.nextInt(2);

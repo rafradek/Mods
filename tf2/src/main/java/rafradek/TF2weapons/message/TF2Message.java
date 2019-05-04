@@ -30,6 +30,7 @@ import net.minecraftforge.common.config.Property.Type;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.util.Contract;
@@ -341,15 +342,12 @@ public abstract class TF2Message implements IMessage {
 			WeaponsCapability cap = entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			this.entityID = entity.getEntityId();
 			this.healTarget = cap.getHealTarget();
-			//this.critTime = cap.critTime;
-			//this.heads = cap.collectedHeads;
 			if(sendAll) {
 				this.entries=cap.dataManager.getAll();
 			}
 			else {
 				this.entries=cap.dataManager.getDirty();
 			}
-			// new Exception().printStackTrace();
 		}
 
 		@Override
@@ -358,38 +356,63 @@ public abstract class TF2Message implements IMessage {
 			healTarget = buf.readInt();
 			try {
 				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
-				//System.out.println("Entries rec: "+(entries != null ? entries.size() : 0));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			/*
-			 * try { tag=CompressedStreamTools.read(new ByteBufInputStream(buf),
-			 * new NBTSizeTracker(2097152L)); } catch (IOException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 */
 		}
 
 		@Override
 		public void toBytes(ByteBuf buf) {
 			buf.writeInt(entityID);
 			buf.writeInt(healTarget);
-			//System.out.println("Entries: "+entries.size());
 			try {
 				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			/*
-			 * try { CompressedStreamTools.write(tag, new
-			 * ByteBufOutputStream(buf)); } catch (IOException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); }
-			 */
 		}
 
 	}
 
+	public static class PlayerCapabilityMessage extends TF2Message {
+		List < EntityDataManager.DataEntry<? >> entries;
+		int entityID;
+		public PlayerCapabilityMessage() {
+		}
+
+		public PlayerCapabilityMessage(Entity entity,boolean sendAll) {
+			TF2PlayerCapability cap = entity.getCapability(TF2weapons.PLAYER_CAP, null);
+			this.entityID = entity.getEntityId();
+			if(sendAll) {
+				this.entries=cap.dataManager.getAll();
+			}
+			else {
+				this.entries=cap.dataManager.getDirty();
+			}
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			entityID = buf.readInt();
+			try {
+				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeInt(entityID);
+			try {
+				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+	
 	public static class BulletMessage extends TF2Message {
 		// public int shooter;
 		public ArrayList<RayTraceResult> target;

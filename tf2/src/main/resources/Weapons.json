@@ -1180,7 +1180,7 @@
 		"Name": "Kritzkrieg",
 		"Class": "medigun",
 		"Based on": "medigun",
-		"Render": "rafradek_tf2_weapons:medigun",
+		"Render": "rafradek_tf2_weapons:kritzkrieg",
 		"Heal start sound": "rafradek_tf2_weapons:weapon.heal.medigun",
 		"Uber start sound": "rafradek_tf2_weapons:weapon.invulnerable.on.medigun",
 		"Uber stop sound": "rafradek_tf2_weapons:weapon.invulnerable.off.medigun",
@@ -1714,7 +1714,8 @@
 		{
 			"CritStunned": 1,
 			"BleedingDuration": 5,
-			"MiniCritDistance": 24
+			"MiniCritDistance": 24,
+			"DeployTimeBonus": 0.6
 		}
 	},
 	"startwrench": 
@@ -2356,5 +2357,85 @@
 		{
 			"DestroyBlock":3.5
 		}
+	},
+	"hhhaxe": 
+	{
+		"Name": "HHHaxe",
+		"Class": "projectile",
+		"Projectile": "hhhaxe",
+		"Render": "rafradek_tf2_weapons:headtaker",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.sword",
+		"Hit sound": "rafradek_tf2_weapons:mob.hhh.hit",
+		"Hit world sound": "rafradek_tf2_weapons:mob.hhh.miss",
+		"Firing speed": 3200,
+		"Pellets": 1,
+		"Spread": 0,
+		"Projectile speed": 2.1,
+		"Damage": 20,
+		"Max damage": 1,
+		"Min damage": 1,
+		"Random crits": false,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": false,
+		"Knockback": 4,
+		"Spread recovery": false,
+		"Efficient range": 25,
+		"Hidden": true
+	},
+	"atomizer": 
+	{
+		"Class": "melee",
+		"Based on": "fryingpan",
+		"Slot": 
+		{
+			"scout": 2
+		},
+		"Render": "rafradek_tf2_weapons:atomizer",
+		"Hit sound": "rafradek_tf2_weapons:weapon.hit.bat",
+		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.bat",
+		"Firing speed": 500,
+		"Damage": 3.5,
+		"Drop chance": 0.11,
+		"Cost": 13,
+		"Stock": false,
+		"Attributes": 
+		{
+			"GrantsTripleJump": 1,
+			"MinicritAirborneSelf": 1,
+			"DamagePlayerPenalty": 0.85,
+			"DeployTimePenalty": 1.5
+		}
+	},
+	"cleanerscarbine": 
+	{
+		"Class": "bullet",
+		"Based on": "smg",
+		"Slot": 
+		{
+			"sniper": 1
+		},
+		"Render": "rafradek_tf2_weapons:cleaners_carbine",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.cleanerscarbine",
+		"Stock": false,
+		"Drop chance": 0.11,
+		"Cost": 13,
+		"Attributes": 
+		{
+			"DealDamageRage": 10,
+			"MinicritRage": 8,
+			"FireRatePenalty": 1.25,
+			"ClipSizePenalty": 0.8
+		}
+	},
+	"capper": 
+	{
+		"Class": "bullet",
+		"Based on": "pistol",
+		"Render": "rafradek_tf2_weapons:capper",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.capper",
+		"Stock": false,
+		"Cost": 13,
+		"Roll hidden": 2
 	}
 }

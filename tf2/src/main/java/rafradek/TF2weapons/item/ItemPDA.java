@@ -26,6 +26,7 @@ import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
@@ -55,7 +56,9 @@ import rafradek.TF2weapons.util.WeaponData;
 
 public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay {
 
-	private static final String[] VIEWS = new String[] {"SentryView", "DispenserView", "TeleporterAView", "TeleporterBView"};
+	@SuppressWarnings("unchecked")
+	private static final DataParameter<NBTTagCompound>[] VIEWS = new DataParameter[] {TF2PlayerCapability.SENTRY_VIEW, TF2PlayerCapability.DISPENSER_VIEW, 
+			TF2PlayerCapability.TELEPORTERA_VIEW, TF2PlayerCapability.TELEPORTERB_VIEW};
 	private static final String[] GUI_BUILD_NAMES = new String[] {"gui.build.sentry", "gui.build.dispenser", "gui.build.entrance", "gui.build.exit", "gui.build.disposable"};
 	
 	public ItemPDA() {
@@ -125,22 +128,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				stack.getTagCompound().setByte("Building", (byte) 0);
 			}
 				
-			if (storage.buildings[0] != null)
-				stack.getTagCompound().setTag("SentryView", storage.buildings[0].getSecond());
-			else
-				stack.getTagCompound().removeTag("SentryView");
-			if (storage.buildings[1] != null)
-				stack.getTagCompound().setTag("DispenserView", storage.buildings[1].getSecond());
-			else
-				stack.getTagCompound().removeTag("DispenserView");
-			if (storage.buildings[2] != null)
-				stack.getTagCompound().setTag("TeleporterAView", storage.buildings[2].getSecond());
-			else
-				stack.getTagCompound().removeTag("TeleporterAView");
-			if (storage.buildings[3] != null)
-				stack.getTagCompound().setTag("TeleporterBView", storage.buildings[3].getSecond());
-			else
-				stack.getTagCompound().removeTag("TeleporterBView");
+			
 		}
 	}
 	
@@ -251,9 +239,14 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 		return new ActionResult<ItemStack>(EnumActionResult.FAIL, living.getHeldItem(hand));
 	}
 	
+	public boolean canSwitchTo(ItemStack stack) {
+		return true;
+	}
+	
 	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution) {
 		if (!stack.hasTagCompound() || (stack.getTagCompound().getByte("Building") == 0)) {
+			TF2PlayerCapability plcap = TF2PlayerCapability.get(player);
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blueprintTexture);
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDepthMask(false);
@@ -265,7 +258,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			int buildCount = TF2Attribute.getModifier("Extra Sentry", stack, 0, player) > 0 ? 5 : 4;
 			for (int i = 0; i < buildCount; i++) {
 				int cost = EntityBuilding.getCost(i, TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench));
-				if (hasTag && i < 4 && stack.getTagCompound().hasKey(VIEWS[i])) {
+				if (hasTag && i < 4 && plcap.dataManager.get(VIEWS[i]).getSize() != 0) {
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 64, 64, 64);
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-132 + i * 72, resolution.getScaledHeight()/2+12, 208, 64+i*48, 48, 48);
 				}
@@ -273,8 +266,8 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 					//gui.drawString(gui.getFontRenderer(), gui.getFontRenderer().getStringWidth(Integer.toString(cost));
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, i == 4 ? 0 : i*64, 0, 64, 64);
 				}
-				else
-					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 0, 64, 64);
+				/*else
+					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 0, 64, 64);*/
 				
 			}
 			for (int i = 0; i < buildCount; i++) {
@@ -283,6 +276,10 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 						gui.getFontRenderer().getStringWidth(Integer.toString(cost)) + i * 72, resolution.getScaledHeight()/2 - 8, 0xFFFFFFFF);
 				gui.drawCenteredString(gui.getFontRenderer(), "["+(i+1)+"]", resolution.getScaledWidth()/2-108 + i * 72, resolution.getScaledHeight()/2+72, 0xFFFFFFFF);
 				gui.drawString(gui.getFontRenderer(), I18n.format(GUI_BUILD_NAMES[i]), resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2-18, 0xFFFFFFFF);
+				if (WeaponsCapability.get(player).getMetal() < cost && !(hasTag && i < 4 && plcap.dataManager.get(VIEWS[i]).getSize() != 0)) {
+					gui.getFontRenderer().drawSplitString(I18n.format("gui.build.nometal"), resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2+20, 80, 0xFFF00F0F);
+				}
+				
 			}
 			/*gui.drawTexturedModalRect(resolution.getScaledWidth()/2-68, resolution.getScaledHeight()/2-32, 64, 0, 64, 64);
 			gui.drawTexturedModalRect(resolution.getScaledWidth()/2+4, resolution.getScaledHeight()/2-32, 128, 0, 64, 64);

@@ -22,6 +22,7 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.EntityLightDynamic;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -193,18 +194,6 @@ public abstract class ItemWeapon extends ItemUsable {
 		
 		if (!world.isRemote && this.getAmmoType(stack) != 0 && !this.hasClip(stack)) {
 			this.consumeAmmoGlobal(living, stack, 1);
-			/*if (living instanceof EntityTF2Character && ((EntityTF2Character) living).getAmmo() >= 0)
-				((EntityTF2Character) living).useAmmo(((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
-			else if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode) {
-				if(TF2Attribute.getModifier("Metal Ammo", stack, 0, living) != 0)
-					cap.setMetal(cap.getMetal()-((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
-				else {
-					ItemStack stackAmmo = this.searchForAmmo(living, stack);
-					if (!stackAmmo.isEmpty())
-						((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
-								((ItemWeapon) stack.getItem()).getActualAmmoUse(stack, living, 1));
-				}
-			}*/
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
 			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,!this.hasClip(stack)?this.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
@@ -225,21 +214,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			TF2Util.attractMobs(living, world);
 		}
 			
-		/*ItemStack toUse=stack;
-		if(!getNewStack(getData(stack).getString(PropertyType.OVERRIDE)).isEmpty())
-			toUse = getNewStack(getData(stack).getString(PropertyType.OVERRIDE));*/
 		for (int x = 0; x < this.getWeaponPelletCount(stack, living); x++)
-			// System.out.println("shoot");
-			/*
-			 * EntityBullet bullet; if(target==null){ bullet = new
-			 * EntityBullet(world, living, this.scatter); } else{ bullet = new
-			 * EntityBullet(world, living, target, this.scatter); } bullet.stack
-			 * = stack; bullet.setDamage(this.damage*damagemult); bullet.damageM
-			 * = this.maxDamage; bullet.damageMM = this.damageFalloff;
-			 * bullet.minDamage = this.minDamage; if(thisCritical)
-			 * bullet.critical = true; bullet.setDamage(this.damage*3); }
-			 * world.spawnEntity(bullet);
-			 */
 			
 			this.shoot(stack, living, world, thisCritical, hand);
 		
@@ -252,10 +227,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		TF2EventsClient.muzzleFlashes.add(light);
 		DynamicLights.addLightSource(light);
 	}
-
-	/*public IFireMethod getFireMethod(ItemStack stack, EntityLivingBase living) {
-		return getData(stack).hasProperty(PropertyType.PROJECTILE);
-	}*/
+	
 	public abstract void shoot(ItemStack stack, EntityLivingBase living, World world, int thisCritical, EnumHand hand);
 
 	public void doFireSound(ItemStack stack, EntityLivingBase living, World world, int critical) {
@@ -272,11 +244,6 @@ public abstract class ItemWeapon extends ItemUsable {
 	
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		/*
-		 * boolean flag=true; if(living instanceof
-		 * EntityTF2Character&&((EntityTF2Character)living).getAmmo()<=0){
-		 * flag=false; }
-		 */
 		return super.canFire(world, living, stack) && !(this.holdingMode(stack, living) > 0 && living.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging())
 				&& ( this.isAmmoSufficient(stack, living, false)
 						);
@@ -284,10 +251,6 @@ public abstract class ItemWeapon extends ItemUsable {
 
 	@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int action, int newState) {
-		/*
-		 * if(!world.isRemote&&(!ClientProxy.fireSounds.containsKey(living)||
-		 * ClientProxy.fireSounds.get(living).type!=3)){ worl }
-		 */
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
 		if (this.holdingMode(stack, living) > 0 && (newState & 1) == 0 && cap.isCharging()) {
 			// System.out.println("stop charging "+newState);
@@ -314,16 +277,7 @@ public abstract class ItemWeapon extends ItemUsable {
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
 		super.addInformation(stack, world, tooltip, advanced);
-		/*
-		 * if (par1ItemStack.hasTagCompound()) {
-		 * par2List.add("Firing: "+Integer.toString(par1ItemStack.getTagCompound
-		 * ().getShort("reload")));
-		 * par2List.add("Reload: "+Integer.toString(par1ItemStack.getTagCompound
-		 * ().getShort("reloadd")));
-		 * par2List.add("Crit: "+Integer.toString(par1ItemStack.getTagCompound()
-		 * .getShort("crittime"))); }
-		 */
-
+		
 		if (this.hasClip(stack))
 			tooltip.add(
 					"Clip: " + (this.getWeaponClipSize(stack, null) - stack.getItemDamage())
@@ -397,6 +351,10 @@ public abstract class ItemWeapon extends ItemUsable {
 				((EntityBuilding) result.entityHit).grab();
 			}
 		}
+		if (!world.isRemote && this.getRageType(stack, living) == RageType.MINICRIT && this.getRage(stack, living) >= this.getMaxRage(stack, living)) {
+			WeaponsCapability.get(living).setRageActive(RageType.MINICRIT, true, this.getMaxRage(stack, living) / TF2Attribute.getModifier("Minicrit Rage", stack, 0f, living));
+			living.addPotionEffect(new PotionEffect(TF2weapons.buffbanner,(int) (20*TF2Attribute.getModifier("Minicrit Rage", stack, 0f, living))));
+		}
 		return false;
 	}
 
@@ -418,12 +376,16 @@ public abstract class ItemWeapon extends ItemUsable {
 			damage=TF2Attribute.getModifier("Damage", stack,damage, living);
 			if (living != null && (isDoubleWielding(living) || living.isHandActive()))
 				damage *= 0.85f;
-			if (target != null && !target.isBurning() && !(target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding()))
-				damage = TF2Attribute.getModifier("Damage Non Burn", stack, damage, living);
-			if (target != null && target.isBurning())
-				damage = TF2Attribute.getModifier("Damage Burning", stack, damage, living);
-			if (target != null && target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding())
-				damage = TF2Attribute.getModifier("Damage Building", stack, damage, living);
+			if (target != null) {
+				if (!target.isBurning() && !(target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding()))
+					damage = TF2Attribute.getModifier("Damage Non Burn", stack, damage, living);
+				else if (target.isBurning())
+					damage = TF2Attribute.getModifier("Damage Burning", stack, damage, living);
+				if (target instanceof IEntityTF2 && ((IEntityTF2)target).isBuilding())
+					damage = TF2Attribute.getModifier("Damage Building", stack, damage, living);
+				else if (target instanceof EntityLivingBase)
+					damage = TF2Attribute.getModifier("Damage Player", stack, damage, living);
+			}
 			if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE) != null){
 				//System.out.println("Pre "+damage);
 				damage=(float) calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE),ATTACK_DAMAGE_MODIFIER,damage,1D/9D);
@@ -450,22 +412,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			for (int i = 0; i < 20; i++)
 				totalRotation += ((EntityTF2Character) living).lastRotation[i];
 			
-			/*
-			 * double
-			 * speed=Math.sqrt((target.posX-shooter.targetPrevPos[1])*(target.
-			 * posX-shooter.targetPrevPos[1])+(target.posY-shooter.targetPrevPos
-			 * [3]) (target.posY-shooter.targetPrevPos[3])+(target.posZ-shooter.
-			 * targetPrevPos[5])*(target.posZ-shooter.targetPrevPos[5]));
-			 */
-			base += /* (speed+0.045) */((EntityTF2Character) living).getMotionSensitivity() * totalRotation * 0.001f;
-			// System.out.println(target.motionX+" "+target.motionY+"
-			// "+target.motionZ+"
-			// "+(speed+0.045)*((EntityTF2Character)living).getMotionSensitivity());
-			/*
-			 * shooter.targetPrevPosX=target.posX;
-			 * shooter.targetPrevPosY=target.posY;
-			 * shooter.targetPrevPosZ=target.posZ;
-			 */
+			base += ((EntityTF2Character) living).getMotionSensitivity() * totalRotation * 0.001f;
 		}
 		return Math.abs(base);
 	}
@@ -504,17 +451,14 @@ public abstract class ItemWeapon extends ItemUsable {
 
 	public int getWeaponFirstReloadTime(ItemStack stack, EntityLivingBase living) {
 		return (int) (TF2Attribute.getModifier("Reload Time", stack,
-				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME_FIRST), living)
-				/* * (living != null && isDoubleWielding(living) ? 2f : 1f)*/);
+				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME_FIRST), living));
 	}
 
 	public boolean hasClip(ItemStack stack) {
-		// System.out.println("Clip:"+stack.getTagCompound());
 		return ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_CLIP);
 	}
 
 	public int getWeaponClipSize(ItemStack stack, EntityLivingBase living) {
-		// System.out.println("With tag: "+stack.getTagCompound());
 		int headsbonus = (int) (TF2Attribute.getModifier("Clip Kill", stack, 0, living) * 
 				Math.min(TF2Attribute.getModifier("Kill Count", stack, 0, living), stack.getTagCompound().getInteger("Heads")));
 		return (int) (TF2Attribute.getModifier("Clip Size", stack,
@@ -532,7 +476,7 @@ public abstract class ItemWeapon extends ItemUsable {
 
 	public double getWeaponKnockback(ItemStack stack, EntityLivingBase living) {
 		return TF2Attribute.getModifier("Knockback", stack, ItemFromData.getData(stack).getInt(PropertyType.KNOCKBACK),living) 
-				* (living.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(living).knockbackActive 
+				* (living.hasCapability(TF2weapons.WEAPONS_CAP, null) && WeaponsCapability.get(living).isRageActive(RageType.KNOCKBACK)
 						&& TF2Attribute.getModifier("Knockback Rage", stack, 0, living) != 0? 4.5 : 1);
 	}
 
@@ -559,8 +503,6 @@ public abstract class ItemWeapon extends ItemUsable {
 	public void draw(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.setCritTime(0);
 		cap.stopReload();
-		//if (!world.isRemote && living instanceof EntityPlayerMP)
-			//TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,ItemAmmo.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
 		if (TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
 			stack.setItemDamage(stack.getMaxDamage());
 		}
@@ -578,7 +520,6 @@ public abstract class ItemWeapon extends ItemUsable {
         {
 			if(entry.getValue().getID()==HEALTH_MODIFIER)
 				removeHealth+=entry.getValue().getAmount();
-            //IAttributeInstance iattributeinstance = livinggetAttributeInstanceByName((String)entry.getKey());
         }
 		if(removeHealth != 0)
 			living.setHealth((living.getMaxHealth()/(removeHealth+living.getMaxHealth())*living.getHealth()));
@@ -623,16 +564,14 @@ public abstract class ItemWeapon extends ItemUsable {
 		}
 		return true;
 	}
+	
+	
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0 && target != attacker)
 			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Hit", stack, 0, attacker)
 					, (int) TF2Attribute.getModifier("Burn Time", stack, 1f, attacker));
 		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
 			boolean enemy = TF2Util.isEnemy(attacker, (EntityLivingBase) target);
-			/*if (attacker instanceof EntityPlayerMP && !target.isEntityAlive() && 
-			if (attacker instanceof EntityPlayerMP && target instanceof EntitySniper && !target.isEntityAlive() && 
-					&& TF2weapons.isEnemy(attacker, (EntityLivingBase) target)){
-					*/
 			int metalhit = (int) TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
 			if (metalhit != 0) {
 				int restore=(int) (((TF2DamageSource) source).getAttackPower()*metalhit/TF2ConfigVars.damageMultiplier);
@@ -654,10 +593,17 @@ public abstract class ItemWeapon extends ItemUsable {
 			if (bleed > 0) {
 				((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
 			}
+			
 			int rage = (int) TF2Attribute.getModifier("Knockback Rage", stack, 0, attacker);
-			if (enemy && !WeaponsCapability.get(attacker).knockbackActive && rage > 0) {
-				WeaponsCapability.get(attacker).setKnockbackRage(Math.min(1, WeaponsCapability.get(attacker).getKnockbackRage()+amount*(0.025f+rage*0.017f)));
+			if (enemy && rage > 0 && !WeaponsCapability.get(attacker).isRageActive(RageType.KNOCKBACK)) {
+				this.addRage(stack, attacker,amount*(0.025f+rage*0.017f));
 			}
+			
+			int ragedamage = (int) TF2Attribute.getModifier("Build Rage Damage", stack, 0, attacker);
+			if (enemy && ragedamage > 0 &&!WeaponsCapability.get(attacker).isRageActive(this.getRageType(stack, attacker))) {
+				this.addRage(stack, attacker, amount);
+			}
+			
 			if (enemy && TF2Attribute.getModifier("Uber Hit", stack, 0, attacker) > 0)
 				if (attacker instanceof EntityPlayer)
 					for (ItemStack medigun : ((EntityPlayer) attacker).inventory.mainInventory)
@@ -672,8 +618,6 @@ public abstract class ItemWeapon extends ItemUsable {
 							break;
 						}
 			if (TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker) != 1 && !WeaponsCapability.get(attacker).fireCoolReduced) {
-				//System.out.println(this.getFiringSpeed(stack, attacker) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker))));
-				//WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 				stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool -= this.getFiringSpeed(stack, attacker) * (1-(1/TF2Attribute.getModifier("Fire Rate Hit", stack, 1, attacker)));
 				WeaponsCapability.get(attacker).fireCoolReduced = true;
 				if(attacker instanceof EntityPlayerMP)
@@ -805,6 +749,20 @@ public abstract class ItemWeapon extends ItemUsable {
 	
 	public float getAdditionalGravity(EntityLivingBase living, ItemStack stack, double initial) {
 		return TF2Attribute.getModifier("Gravity", stack, (float) initial, living);
+	}
+	
+	public RageType getRageType(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Knockback", stack, 0f, living) != 0f ? RageType.KNOCKBACK : TF2Attribute.getModifier("Minicrit Rage", stack, 0f, living) != 0f ? RageType.MINICRIT : null;
+	}
+	
+	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
+		RageType type = this.getRageType(stack, living);
+		if (type == null)
+			return 0f;
+		switch (type) {
+		case KNOCKBACK:return 1f;
+		default: return TF2Attribute.getModifier("Build Rage Damage", stack, 0f, living);
+		}
 	}
 	
 	public float getCharge(EntityLivingBase living, ItemStack stack) {

@@ -22,6 +22,9 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.client.CPacketInput;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovementInput;
@@ -114,16 +117,30 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public float damageArmorMin;
 	public int lastDayInvasion;
 	
+	public EntityDataManager dataManager;
+	private static final NBTTagCompound EMPTY = new NBTTagCompound();
+	public static final DataParameter<NBTTagCompound> SENTRY_VIEW = new DataParameter<NBTTagCompound>(0, DataSerializers.COMPOUND_TAG);
+	public static final DataParameter<NBTTagCompound> DISPENSER_VIEW = new DataParameter<NBTTagCompound>(1, DataSerializers.COMPOUND_TAG);
+	public static final DataParameter<NBTTagCompound> TELEPORTERA_VIEW = new DataParameter<NBTTagCompound>(2, DataSerializers.COMPOUND_TAG);
+	public static final DataParameter<NBTTagCompound> TELEPORTERB_VIEW = new DataParameter<NBTTagCompound>(3, DataSerializers.COMPOUND_TAG);
+	
 	@SuppressWarnings("unchecked")
-	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[4];
+	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[5];
 	
 	public TF2PlayerCapability(EntityPlayer entity) {
 		this.owner = entity;
 		this.lostItems=new ItemStackHandler(27);
 		this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
+		
 		this.highestBossLevel.put(EntityHHH.class, (short) 0);
 		this.highestBossLevel.put(EntityMonoculus.class, (short) 0);
 		this.highestBossLevel.put(EntityMerasmus.class, (short) 0);
+		
+		this.dataManager = new EntityDataManager(entity);
+		this.dataManager.register(SENTRY_VIEW, EMPTY);
+		this.dataManager.register(DISPENSER_VIEW, EMPTY);
+		this.dataManager.register(TELEPORTERA_VIEW, EMPTY);
+		this.dataManager.register(TELEPORTERB_VIEW, EMPTY);
 	}
 
 	public void tick() {
@@ -146,7 +163,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		if(this.dodgedDmg>0&&this.owner.getActivePotionEffect(TF2weapons.bonk)==null){
 			this.dodgedDmg=0;
 		}
+		
 		if(!this.owner.world.isRemote) {
+			if (this.owner.ticksExisted % 2 == 0)
+			this.updateBuildings();
 			
 			if (this.owner.ticksExisted % 20 == 0) {
 				if (medicCharge)
@@ -235,6 +255,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				//((EntityPlayerMP)this.owner).sendMessage(new TextComponentString("f"));
 				TF2weapons.network.sendTo(new TF2Message.ContractMessage(-1, contract), (EntityPlayerMP) this.owner);
 			}
+			if (this.dataManager.isDirty()) {
+				TF2weapons.network.sendTo(new TF2Message.PlayerCapabilityMessage(this.owner, false), (EntityPlayerMP) this.owner);
+			}
 		}
 		else if (this.owner == Minecraft.getMinecraft().player){
 			((EntityPlayerSP)this.owner).connection.sendPacket(new CPacketInput(owner.moveStrafing, owner.moveForward,
@@ -284,6 +307,64 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 	}
 
+	public NBTTagCompound getSentryView() {
+		return this.dataManager.get(SENTRY_VIEW);
+	}
+	
+	public NBTTagCompound getDispenserView() {
+		return this.dataManager.get(DISPENSER_VIEW);
+	}
+	
+	public NBTTagCompound getTeleporterAView() {
+		return this.dataManager.get(TELEPORTERA_VIEW);
+	}
+	
+	public NBTTagCompound getTeleporterBView() {
+		return this.dataManager.get(TELEPORTERB_VIEW);
+	}
+	public void updateBuildings() {
+		PlayerPersistStorage storage = PlayerPersistStorage.get(((EntityPlayer)this.owner));
+		if (storage.buildings[0] != null) {
+			this.dataManager.set(SENTRY_VIEW, storage.buildings[0].getSecond());
+			this.dataManager.setDirty(SENTRY_VIEW);
+		}
+		else
+			this.dataManager.set(SENTRY_VIEW, EMPTY);
+		
+		if (storage.buildings[1] != null) {
+			this.dataManager.set(DISPENSER_VIEW, storage.buildings[1].getSecond());
+			this.dataManager.setDirty(DISPENSER_VIEW);
+		}
+		else
+			this.dataManager.set(DISPENSER_VIEW, EMPTY);
+		
+		if (storage.buildings[2] != null) {
+			this.dataManager.set(TELEPORTERA_VIEW, storage.buildings[2].getSecond());
+			this.dataManager.setDirty(TELEPORTERA_VIEW);
+		}
+		else
+			this.dataManager.set(TELEPORTERA_VIEW, EMPTY);
+		
+		if (storage.buildings[3] != null) {
+			this.dataManager.set(TELEPORTERB_VIEW, storage.buildings[3].getSecond());
+			this.dataManager.setDirty(TELEPORTERB_VIEW);
+		}
+		else
+			this.dataManager.set(TELEPORTERB_VIEW, EMPTY);
+		/*if (storage.buildings[1] != null)
+			stack.getTagCompound().setTag("DispenserView", storage.buildings[1].getSecond());
+		else
+			stack.getTagCompound().removeTag("DispenserView");
+		if (storage.buildings[2] != null)
+			stack.getTagCompound().setTag("TeleporterAView", storage.buildings[2].getSecond());
+		else
+			stack.getTagCompound().removeTag("TeleporterAView");
+		if (storage.buildings[3] != null)
+			stack.getTagCompound().setTag("TeleporterBView", storage.buildings[3].getSecond());
+		else
+			stack.getTagCompound().removeTag("TeleporterBView");*/
+	}
+	
 	public int calculateMaxSentries() {
 		ItemStack wrench = TF2Util.getBestItem(this.owner.inventory, (stack1, stack2) -> {
 			float sentries1 = TF2Attribute.getModifier("Sentry Bonus", stack1, 1, this.owner);
@@ -385,5 +466,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 
 	public static TF2PlayerCapability get(EntityPlayer player) {
 		return player.getCapability(TF2weapons.PLAYER_CAP, null);
+	}
+
+	public void onChangeValue(DataParameter<?> key, Object value) {
+		
 	}
 }

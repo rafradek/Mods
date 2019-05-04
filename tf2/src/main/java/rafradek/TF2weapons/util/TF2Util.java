@@ -107,6 +107,7 @@ import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
@@ -122,6 +123,7 @@ import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
+import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
@@ -874,6 +876,8 @@ public class TF2Util {
 			thisCritical = 1;
 		if ( thisCritical == 0 && (cap.focusedShot(stack) || cap.focusShotRemaining>0))
 			thisCritical = 1;
+		if (thisCritical == 0 && !living.onGround && TF2Attribute.getModifier("Minicrit Airborne Self", stack, 0, living) == 1f)
+			thisCritical = 1;
 		if (TF2ConfigVars.randomCrits && !stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 			ItemWeapon item = (ItemWeapon) stack.getItem();
 			if ((!item.rapidFireCrits(stack) && item.hasRandomCrits(stack, living) && living.getRNG().nextFloat() <= item.critChance(stack, living))
@@ -1372,6 +1376,8 @@ public class TF2Util {
 	}
 	
 	public static String getWeaponUsedByClass(ItemStack stack) {
+		if (ItemFromData.getData(stack) == ItemFromData.BLANK_DATA)
+			return null;
 		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
 		WeaponData data;
 		if (!parent.isEmpty() && MapList.nameToData.get(parent).hasProperty(PropertyType.SLOT))

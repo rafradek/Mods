@@ -3,6 +3,8 @@ package rafradek.TF2weapons.common;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +59,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
+import rafradek.TF2weapons.entity.mercenary.EntityScout;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
@@ -65,6 +68,7 @@ import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.item.ItemParachute;
+import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSapper;
 import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemToken;
@@ -100,7 +104,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int invisTicks;
 	public int disguiseTicks;
 	public boolean pressedStart;
-	public boolean doubleJumped;
+	public int airJumps;
 	public EntitySentry controlledSentry;
 	public ResourceLocation skinDisguise;
 	public boolean skinRetrieved;
@@ -123,7 +127,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public int focusShotTicks;
 	public int focusShotRemaining;
 	public int fanCool;
-	public boolean knockbackActive;
 	public boolean appliedMouseSlow;
 	public int hitNoMiss;
 	public int sentryTargets = 5;
@@ -151,6 +154,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private boolean canExpJump = true;
 	
 	public double gravity = -0.08;
+	public float maxmetal = 1;
+	
+	public EnumMap<EnumHand, ItemStack> stackActive = new EnumMap<>(EnumHand.class);
+	
+	private float[] rageDrain = new float[RageType.values().length];
+	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
 	private static final DataParameter<String> DISGUISE_TYPE = new DataParameter<String>(7, DataSerializers.STRING);
@@ -161,10 +170,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Integer> HEADS= new DataParameter<Integer>(1, DataSerializers.VARINT);
 	private static final DataParameter<Integer> HEAL_TARGET= new DataParameter<Integer>(2, DataSerializers.VARINT);
 	private static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
-	private static final DataParameter<Float> PHLOG_RAGE= new DataParameter<Float>(4, DataSerializers.FLOAT);
-	private static final DataParameter<Float> KNOCKBACK_RAGE= new DataParameter<Float>(5, DataSerializers.FLOAT);
 	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
 	private static final DataParameter<Byte> CAN_FIRE = new DataParameter<Byte>(13, DataSerializers.BYTE);
+	private static final EnumMap<RageType, DataParameter<Float>> RAGE = new EnumMap<>(RageType.class);
+	private static final EnumMap<RageType, DataParameter<Boolean>> RAGE_ACTIVE = new EnumMap<>(RageType.class);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 	//public int killsSpinning;
 	
@@ -188,8 +197,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(CRIT_TIME, 0);
 		this.dataManager.register(HEADS, 0);
 		this.dataManager.register(HEAL_TARGET, -1);
-		this.dataManager.register(PHLOG_RAGE, 0f);
-		this.dataManager.register(KNOCKBACK_RAGE, 0f);
 		this.dataManager.register(METAL, MAX_METAL);
 		this.dataManager.register(FEIGN, false);
 		this.dataManager.register(INVIS, false);
@@ -199,6 +206,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(CHARGING, false);
 		this.dataManager.register(TOKEN_USED, -1);
 		this.dataManager.register(CAN_FIRE, (byte)0);
+		for (RageType type: RageType.values()) {
+			this.dataManager.register(RAGE.get(type), 0f);
+			this.dataManager.register(RAGE_ACTIVE.get(type), false);
+		}
 		//this.nextBossTicks = (int) (entity.world.getWorldTime() + entity.getRNG().nextInt(360000));
 	}
 
@@ -246,20 +257,44 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		}
 		return usedMetal;
 	}
-	
 	public void setMetal(int metal) {
-		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.owner instanceof EntityEngineer?TF2ConfigVars.maxMetalEngineer:MAX_METAL));
+		this.dataManager.set(METAL, MathHelper.clamp(metal,0,this.getMaxMetal()));
 	}
 	
 	public void giveMetal(int metal) {
-		this.dataManager.set(METAL, MathHelper.clamp(this.getMetal()+metal,0,this.owner instanceof EntityEngineer?TF2ConfigVars.maxMetalEngineer:MAX_METAL));
+		this.dataManager.set(METAL, MathHelper.clamp(this.getMetal()+metal,0,this.getMaxMetal()));
 	}
 	
 	public int getMaxMetal() {
-		return this.owner instanceof EntityEngineer ? TF2ConfigVars.maxMetalEngineer : WeaponsCapability.MAX_METAL;
+		return (int) ((this.owner instanceof EntityEngineer ? TF2ConfigVars.maxMetalEngineer : WeaponsCapability.MAX_METAL) * this.maxmetal);
 	}
 	
-	public float getPhlogRage() {
+	public float getRage(RageType type) {
+		if (type == null)
+			return 0;
+		return this.dataManager.get(RAGE.get(type));
+	}
+	
+	public void setRage(RageType type, float rage) {
+		this.dataManager.set(RAGE.get(type), rage);
+	}
+	
+	public boolean isRageActive(RageType type) {
+		if (type == null)
+			return false;
+		return this.dataManager.get(RAGE_ACTIVE.get(type));
+	}
+	
+	public void setRageActive(RageType type,boolean active, float drain) {
+		
+		this.dataManager.set(RAGE_ACTIVE.get(type), active);
+		if (active)
+			this.rageDrain[type.ordinal()] = drain * 0.1f;
+		else
+			this.rageDrain[type.ordinal()] = 0f;
+	}
+	
+	/*public float getPhlogRage() {
 		return this.dataManager.get(PHLOG_RAGE);
 	}
 	
@@ -273,7 +308,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setKnockbackRage(float rage) {
 		this.dataManager.set(KNOCKBACK_RAGE, rage);
-	}
+	}*/
 	public boolean isInvisible() {
 		return this.dataManager.get(INVIS);
 	}
@@ -428,8 +463,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.fanCool--;
 		this.ticksTotal++;
 		this.lastFire -= 50;
-		if(this.doubleJumped && this.owner.onGround){
-			this.doubleJumped=false;
+		if(this.airJumps > 0 && this.owner.onGround){
+			this.airJumps = 0;
 		}
 		
 		if (this.owner.isSprinting() && this.getUsedToken() >= 0){
@@ -462,20 +497,33 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				this.appliedMouseSlow = false;
 			}
 		}
-		if(this.knockbackActive && this.getKnockbackRage() >= 0f && this.owner.ticksExisted % 2 == 0) {
-			this.setKnockbackRage(this.getKnockbackRage() - 0.007f);
-			this.knockbackActive = this.getKnockbackRage() > 0f;
-		}
+		
+		if (this.owner.ticksExisted % 2 == 0)
+			for (RageType type : RageType.values()) {
+				if (this.isRageActive(type)) {
+					this.setRage(type, Math.max(this.getRage(type)-this.rageDrain[type.ordinal()],0f));
+					if (this.getRage(type) <= 0f)
+						this.setRageActive(type, false, 0f);
+				}
+			}
+		
 		if (this.reloadCool > 0)
 			this.reloadCool -= 50;
 		boolean hadItem = false;
 		boolean continueReload = false;
-		
+		 
+		if (!this.owner.world.isRemote && this.owner instanceof EntityPlayer && this.owner.ticksExisted % 20 == 0) {
+			this.maxmetal = TF2Attribute.getModifier("Max Metal", TF2Util.getBestItem(((EntityPlayer)this.owner).inventory, (stack1, stack2) -> 
+			(int)Math.signum(TF2Attribute.getModifier("Max Metal", stack1, 1, this.owner) - TF2Attribute.getModifier("Max Metal", stack2, 1, this.owner))
+			, stackl -> TF2Attribute.getModifier("Max Metal", stackl, 1, this.owner) != 1),1, this.owner);
+		}
 		for (EnumHand hand: EnumHand.values()) {
 			ItemStack stack = owner.getHeldItem(hand);
 			
-			if (!stack.isEmpty() && stack.getItem() instanceof ItemUsable && (hand == EnumHand.MAIN_HAND || (hand == EnumHand.OFF_HAND && !hadItem 
-					&& ((ItemUsable)stack.getItem()).getDoubleWieldBonus(stack, owner) != 1) || ItemUsable.isDoubleWielding(owner))) {
+			boolean isUseableWeapon = !stack.isEmpty() && stack.getItem() instanceof ItemUsable && (hand == EnumHand.MAIN_HAND || (hand == EnumHand.OFF_HAND && !hadItem 
+					&& ((ItemUsable)stack.getItem()).getDoubleWieldBonus(stack, owner) != 1) || ItemUsable.isDoubleWielding(owner));
+			
+			if (isUseableWeapon) {
 				
 				hadItem = true;
 				ItemUsable item = (ItemUsable) stack.getItem();
@@ -504,15 +552,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 						this.lastWeapon = ItemStack.EMPTY;
 					}
 					if (stackcap.fire1Cool <= 0) {
-						stackcap.active = 2;
-						item.draw(this, stack, owner, owner.world);
-		
-						if ((state & 3) > 0) {
-							state = state & 7;
-							if ((state & 3) > 0)
-								item.startUse(stack, owner, owner.world, 0, state & 3);
-						}
+						this.setActiveHand(hand, stack);
 					}
+				}
+				
+				if (stackcap.active == 2) {
+					this.stackActive.put(hand, stack);
 				}
 				if (owner.world.isRemote)
 					stack.setAnimationsToGo(0);
@@ -533,8 +578,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				
 				this.stateDo(owner, stack, hand, state);
 	
-				if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.knockbackActive && this.getKnockbackRage() >= 1f) {
-					this.knockbackActive = true;
+				if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.isRageActive(RageType.KNOCKBACK) && this.getRage(RageType.KNOCKBACK) >= 1f) {
+					this.setRageActive(RageType.KNOCKBACK, true, 0.07f);
 				}
 				boolean emptyMag = stack.getItemDamage() == stack.getMaxDamage() && TF2Attribute.getModifier("Auto Fire", stack, 0, owner) == 0;
 				if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
@@ -597,7 +642,20 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				} else if (this.reloadingHand == hand)
 					this.reloadingHand = null;
 			}
-			
+			if(this.stackActive.get(hand) != null && !(isUseableWeapon && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)) {
+				boolean revert = false;
+				ItemStack activestack = this.stackActive.get(hand);
+				if (activestack.getCount() == 0){
+					activestack.setCount(1);
+					revert = true;
+				}
+				if(activestack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2){
+					this.setInactiveHand(hand, activestack);
+				}
+				if (revert){
+					activestack.setCount(0);
+				}
+			}
 		}
 		if (!hadItem) {
 			owner.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(ItemMinigun.slowdown);
@@ -672,8 +730,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					Vec3d moveDir = TF2Util.getMovementVector(owner);
 					double combSpeed = owner.motionX * moveDir.x + owner.motionZ * moveDir.y;
 					
-					double maxSpeed = charging != null ? owner.getAIMoveSpeed() * 2.16 : 0.0287064;
-					double friction = charging != null ? 0.08 : 0.5;
+					double maxSpeed = charging != null ? owner.getAIMoveSpeed() * 2.16 : 0.026;
+					double friction = charging != null ? 0.08 : 0.4;
 					
 					combSpeed = (maxSpeed)-combSpeed;
 					double accel = Math.max(speed,maxSpeed) * friction;
@@ -745,11 +803,6 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					}
 				}
 			}
-		}
-		
-		
-		if (this.doubleJumped && owner.onGround) {
-			this.doubleJumped = false;
 		}
 		if (!owner.world.isRemote && this.disguiseTicks > 0){
 			// System.out.println("disguise progress:
@@ -1004,6 +1057,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (this.isDisguised() && !(item instanceof ItemSapper))
 				TF2EventsCommon.disguise(player, false);
 			
+			
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
 			float oldPitch = player.rotationPitch, oldYaw = player.rotationYawHead;
 
@@ -1119,8 +1173,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		tag.setInteger("FocusedShot", this.focusShotTicks);
 		tag.setInteger("KnockbackFANCool", this.fanCool);
 		tag.setInteger("Metal", this.getMetal());
-		tag.setFloat("Phlog", this.getPhlogRage());
-		tag.setFloat("Knockback", this.getKnockbackRage());
+		tag.setFloat("MaxMetal", this.maxmetal);
+		for (RageType rage: RageType.values()) {
+			tag.setFloat(rage.toString(), this.getRage(rage));
+			tag.setBoolean(rage.toString()+"active", this.isRageActive(rage));
+			if (this.isRageActive(rage))
+				tag.setFloat(rage.toString()+"drain", this.rageDrain[rage.ordinal()]);
+		}
 		tag.setLong("TicksTotal", this.ticksTotal);
 		if (this.forcedClass)
 			tag.setByte("Token", (byte) this.getUsedToken());
@@ -1150,15 +1209,30 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.focusShotTicks=nbt.getInteger("FocusedShot");
 		this.fanCool=nbt.getInteger("KnockbackFANCool");
 		//this.dodgedDmg=nbt.getFloat("DodgedDmg");
-		this.setPhlogRage(nbt.getFloat("Phlog"));
+		this.maxmetal = nbt.getFloat("MaxMetal");
 		this.setMetal(nbt.getInteger("Metal"));
 		this.ticksTotal = nbt.getLong("TicksTotal");
-		this.setKnockbackRage(nbt.getFloat("KnockbackRage"));
+		for (RageType rage: RageType.values()) {
+			this.setRage(rage, nbt.getFloat(rage.toString()));
+			this.setRageActive(rage, nbt.getBoolean(rage.toString()+"active"), nbt.getFloat(rage.toString()+"drain"));
+		}
 		if(nbt.hasKey("Token")) {
 			((ItemToken)TF2weapons.itemToken).updateAttributes(new ItemStack(TF2weapons.itemToken, 1, nbt.getByte("Token")), this.owner);
 			this.forcedClass = true;
 		}
 		//this.killsSpinning=nbt.getInteger("KillsSpinning");
+	}
+	
+	public int getMaxAirJumps() {
+		int amount=0;
+		if (this.owner instanceof EntityScout)
+			amount +=1;
+		else if (this.owner instanceof EntityPlayer && (this.getUsedToken() == 0 || (ItemToken.allowUse(owner, "scout") 
+				&& owner.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemScoutBoots))) {
+			amount +=1;
+		}
+		amount =(int) TF2Attribute.getModifier("Triple Jump", this.owner.getHeldItemMainhand(), amount, this.owner);
+		return amount;
 	}
 	
 	public static EntityDataManager getDataManager(Entity ent) {
@@ -1222,5 +1296,40 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	public void setCanExpJump(boolean canExpJump) {
 		this.canExpJump = canExpJump;
+	}
+	
+	public void setActiveHand(EnumHand hand, ItemStack stack) {
+		this.stackActive.put(hand, stack);
+		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active=2;
+		((ItemUsable) stack.getItem()).draw(this, stack, owner, owner.world);
+		
+		if ((state & 3) > 0) {
+			state = state & 7;
+			if ((state & 3) > 0)
+				((ItemUsable) stack.getItem()).startUse(stack, owner, owner.world, 0, state & 3);
+		}
+	}
+	
+	public void setInactiveHand(EnumHand hand, ItemStack stack) {
+		this.stackActive.remove(hand);
+		if (stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2 && (this.state & 3) > 0)
+			((ItemUsable) stack.getItem()).endUse(stack, this.owner, this.owner.world, this.state, 0);
+		
+		stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 0;
+		((ItemUsable) stack.getItem()).holster(this, stack, this.owner, this.owner.world);
+	}
+	
+	public static enum RageType {
+		PHLOG,
+		MINICRIT,
+		KNOCKBACK,
+		BANNER
+	}
+	static {
+
+		for (RageType type: RageType.values()) {
+			RAGE.put(type, new DataParameter<Float>(127-type.ordinal()*2, DataSerializers.FLOAT));
+			RAGE_ACTIVE.put(type, new DataParameter<Boolean>(126-type.ordinal()*2, DataSerializers.BOOLEAN));
+		}
 	}
 }

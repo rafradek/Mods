@@ -1,5 +1,5 @@
 {
-	"parent": "rafradek_tf2_weapons:item/flare_gun",
+	"parent": "rafradek_tf2_weapons:item/detonator",
 	"textures": {
 		"PistoletDetresse": "rafradek_tf2_weapons:items/detonator_blu"
 	}

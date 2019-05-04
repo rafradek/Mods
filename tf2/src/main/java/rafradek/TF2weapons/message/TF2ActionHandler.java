@@ -194,21 +194,15 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						});
 						//FMLNetworkHandler.openGui(player, TF2weapons.instance, 4, player.world,(int) player.posX,(int)  player.posY,(int)  player.posZ);
 					} 
-					else if (message.value == 23 && !player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped) {
+					else if (message.value == 23 && WeaponsCapability.get(player).airJumps < WeaponsCapability.get(player).getMaxAirJumps()) {
 						player.fallDistance = 0;
-						player.getCapability(TF2weapons.WEAPONS_CAP, null).doubleJumped=true;
+						WeaponsCapability.get(player).airJumps+=1;
 						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
 					} 
 					else if (message.value == 25) {
 						ItemStack stack = ItemBackpack.getBackpack(player);
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemParachute) {
 							stack.getTagCompound().setBoolean("Deployed", !stack.getTagCompound().getBoolean("Deployed"));
-						}
-					} 
-					else if (message.value == 26) {
-						ItemStack stack = player.getHeldItemMainhand();
-						if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && !WeaponsCapability.get(player).knockbackActive && WeaponsCapability.get(player).getKnockbackRage() >= 1f) {
-							WeaponsCapability.get(player).knockbackActive = true;
 						}
 					}
 					else if (message.value == 29) {
@@ -353,7 +347,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							}
 							else if (id == 3) {
 								for(EntitySoldier living : player.world.getEntitiesWithinAABB(EntitySoldier.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
-									return TF2Util.isOnSameTeam(player, test) && test.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ItemSoldierBackpack;
+									return TF2Util.isOnSameTeam(player, test) && ItemBackpack.getBackpack(test).getItem() instanceof ItemSoldierBackpack;
 								})){
 									living.activateBackpack();
 								}
@@ -362,12 +356,22 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 								RayTraceResult trace = player.world.rayTraceBlocks(player.getPositionEyes(1), player.getPositionEyes(1).add(player.getLook(1).scale(40)));
 								if (trace != null) {
 									BlockPos pos = trace.getBlockPos().offset(trace.sideHit);
-									for(EntityTF2Character living : player.world.getEntitiesWithinAABB(EntityTF2Character.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
-										return test.getOwner() == player && test.getOrder() == Order.FOLLOW;
-									})) {
-										living.setHomePosAndDistance(pos, 0);
-										living.getNavigator().tryMoveToXYZ(pos.getX(), pos.getY(), pos.getZ(), 1);
-										living.setOrder(Order.HOLD);
+									List<EntityTF2Character> list = player.world.getEntitiesWithinAABB(EntityTF2Character.class, player.getEntityBoundingBox().grow(20, 8, 20), (test) -> {
+										return test.getOwner() == player;
+									});
+									boolean hasFollow = false;
+									for(EntityTF2Character living : list) {
+										if (living.getOrder() == Order.FOLLOW) {
+											living.setHomePosAndDistance(pos, 0);
+											living.getNavigator().tryMoveToXYZ(pos.getX(), pos.getY(), pos.getZ(), 1);
+											living.setOrder(Order.HOLD);
+											hasFollow = true;
+										}
+									}
+									if (!hasFollow && !list.isEmpty()){
+										list.get(0).setHomePosAndDistance(pos, 0);
+										list.get(0).getNavigator().tryMoveToXYZ(pos.getX(), pos.getY(), pos.getZ(), 1);
+										list.get(0).setOrder(Order.HOLD);
 									}
 								}
 							}

@@ -767,8 +767,9 @@ public class ClientProxy extends CommonProxy {
 			return null;
 		
 		WeaponSound sound;
-		if (loop)
+		if (loop) {
 			sound = new WeaponLoopSound(playSound, living, type < 2, ItemFromData.getData(stack), type == 1, type);
+		}
 		else
 			sound = new WeaponSound(playSound, living, type, ItemFromData.getData(stack));
 		if (fireSounds.get(living) != null)

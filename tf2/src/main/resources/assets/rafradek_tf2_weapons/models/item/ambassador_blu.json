@@ -1,0 +1,6 @@
+{
+	"parent": "rafradek_tf2_weapons:item/ambassador",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/ambassador_blu"
+	}
+}

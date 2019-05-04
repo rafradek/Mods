@@ -46,28 +46,29 @@ public class ContainerMercenary extends ContainerMerchant {
 	public ContainerMercenary(EntityPlayer player, EntityTF2Character merc, World worldIn) {
 		super(player.inventory, merc, worldIn);
 		this.mercenary = merc;
-		for(int i=0;i<4;i++) {
-			if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
-				ItemStack buf= this.mercenary.loadout.getStackInSlot(i);
-        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
-        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
-        	}
-			/*if (!worldIn.isRemote)
-				TF2weapons.network.sendTo(new TF2Message.WearableChangeMessage(merc, i + 20, this.mercenary.loadout.getStackInSlot(i)), (EntityPlayerMP) player);*/
-        }
-		{
-			int i = 3;
-			for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
-				if(slot.getSlotType() == Type.ARMOR) {
-				 if(this.mercenary.loadoutHeld.getStackInSlot(4+i).isEmpty() && !this.mercenary.isEmpty[i]) {
-			        	this.mercenary.loadoutHeld.setStackInSlot(4+i, this.mercenary.getItemStackFromSlot(slot));
-			        	this.mercenary.setItemStackToSlot(slot, ItemStack.EMPTY);
-			        }
-				 i--;
+		if (this.mercenary.hasHeldInventory()) {
+			for(int i=0;i<4;i++) {
+				if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
+					ItemStack buf= this.mercenary.loadout.getStackInSlot(i);
+	        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
+	        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
+	        	}
+				/*if (!worldIn.isRemote)
+					TF2weapons.network.sendTo(new TF2Message.WearableChangeMessage(merc, i + 20, this.mercenary.loadout.getStackInSlot(i)), (EntityPlayerMP) player);*/
+	        }
+			{
+				int i = 3;
+				for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+					if(slot.getSlotType() == Type.ARMOR) {
+					 if(this.mercenary.loadoutHeld.getStackInSlot(4+i).isEmpty() && !this.mercenary.isEmpty[i]) {
+				        	this.mercenary.loadoutHeld.setStackInSlot(4+i, this.mercenary.getItemStackFromSlot(slot));
+				        	this.mercenary.setItemStackToSlot(slot, ItemStack.EMPTY);
+				        }
+					 i--;
+					}
 				}
 			}
 		}
-       
 		for (int k = 0; k < 4; ++k) {
 			final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
 			this.addSlotToContainer(new SlotItemHandler(merc.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH), 3-k, 184, 8 + k * 18) {
@@ -103,7 +104,7 @@ public class ContainerMercenary extends ContainerMerchant {
 				
 				@Override
 				public boolean isItemValid(@Nullable ItemStack stack) {
-					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
+					if (stack.isEmpty() || merc.isRobot() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
 						return false;
 					else
 						return stack.getItem().isValidArmor(stack, entityequipmentslot, merc);
@@ -119,40 +120,7 @@ public class ContainerMercenary extends ContainerMerchant {
 		}
 		for (int i = 0; i < 4; i++) {
 			final int index=i;
-			/*this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
-
-				@Override
-				public int getSlotStackLimit() {
-					return 64;
-				}
-
-				@Override
-			    public boolean canTakeStack(EntityPlayer playerIn)
-			    {
-			        return super.canTakeStack(playerIn);
-			    }
-				
-				@Override
-				public boolean isItemValid(@Nullable ItemStack stack) {
-					if (stack.isEmpty() || (merc.getOwner() != player && !player.capabilities.isCreativeMode))
-						return false;
-					else {
-						String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
-						if (!parent.isEmpty())
-							stack = ItemFromData.getNewStack(parent);
-						return ItemFromData.getData(stack).getInt(PropertyType.SLOT)==this.getSlotIndex()
-						&& ItemFromData.getData(stack).getString(PropertyType.MOB_TYPE).contains(ItemToken.CLASS_NAMES[merc.getClassIndex()]);
-					}
-				}
-
-				@Override
-				@Nullable
-				@SideOnly(Side.CLIENT)
-				public String getSlotTexture() {
-					return TF2weapons.MOD_ID + ":items/weapon_empty_"+index;
-				}
-			});*/
-			this.addSlotToContainer(new SlotItemHandler(merc.loadoutHeld, i, 206, 8 + i * 18) {
+			this.addSlotToContainer(new SlotItemHandler(merc.hasHeldInventory() ?merc.loadoutHeld : merc.loadout, i, 206, 8 + i * 18) {
 
 				@Override
 				public int getSlotStackLimit() {
@@ -291,16 +259,26 @@ public class ContainerMercenary extends ContainerMerchant {
     {
         super.onContainerClosed(playerIn);
         if(!this.mercenary.world.isRemote) {
-	        for(int i=0;i<4;i++) {
-	        	if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
-	        		ItemStack buf = this.mercenary.loadout.getStackInSlot(i);
-	        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
-	        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
-	        	}
-	        }
-	        
-	        this.mercenary.switchSlot(this.mercenary.preferredSlot, false, true);
-	        
+        	if (this.mercenary.hasHeldInventory()) {
+		        for(int i=0;i<4;i++) {
+		        	if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
+		        		ItemStack buf = this.mercenary.loadout.getStackInSlot(i);
+		        		this.mercenary.loadout.setStackInSlot(i, this.mercenary.loadoutHeld.getStackInSlot(i));
+		        		this.mercenary.loadoutHeld.setStackInSlot(i, buf);
+		        	}
+		        }
+		        
+	        	int i = 7;
+		        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+		        	if(slot.getSlotType() == Type.ARMOR) {
+			        	if(this.mercenary.getItemStackFromSlot(slot).isEmpty()/* && this.mercenary.loadoutHeld.getStackInSlot(3).getItem() instanceof ItemWearable*/) {
+				        	this.mercenary.setItemStackToSlot(slot, this.mercenary.loadoutHeld.getStackInSlot(i));
+				        	this.mercenary.loadoutHeld.setStackInSlot(i, ItemStack.EMPTY);
+				        }
+			        	i--;
+		        	}
+		        }
+        	}
 	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
 	        	if(slot.getSlotType() == Type.ARMOR) {
 	        		//System.out.println("Not empt:" + slot);
@@ -308,16 +286,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        	}
 	        }
 	        
-	        int i = 6;
-	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
-	        	if(slot.getSlotType() == Type.ARMOR) {
-		        	if(this.mercenary.getItemStackFromSlot(slot).isEmpty()/* && this.mercenary.loadoutHeld.getStackInSlot(3).getItem() instanceof ItemWearable*/) {
-			        	this.mercenary.setItemStackToSlot(slot, this.mercenary.loadoutHeld.getStackInSlot(i));
-			        	this.mercenary.loadoutHeld.setStackInSlot(i, ItemStack.EMPTY);
-			        }
-		        	i--;
-	        	}
-	        }
+	        this.mercenary.switchSlot(this.mercenary.preferredSlot, false, true);
 	        
         }
     }
@@ -344,7 +313,7 @@ public class ContainerMercenary extends ContainerMerchant {
             else if (index != 0 && index != 1 && index < 39)
             {
             	if (equip.getSlotType() == EntityEquipmentSlot.Type.ARMOR) {
-            		if(!this.mergeItemStack(itemstack1, 43-equip.getSlotIndex(), 44-equip.getSlotIndex(), false))
+            		if(!this.getSlot(43-equip.getSlotIndex()).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, 43-equip.getSlotIndex(), 44-equip.getSlotIndex(), false))
             			return ItemStack.EMPTY;
             	}
             	else if (itemstack1.getItem() instanceof ItemUsable ) {

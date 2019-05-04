@@ -228,17 +228,6 @@ public class ItemMinigun extends ItemBulletWeapon {
 		}
 	}
 	
-	@Override
-	public boolean showDurabilityBar(ItemStack stack) {
-		return super.showDurabilityBar(stack) || (TF2Attribute.getModifier("Knockback Rage", stack, 0, null) != 0 
-				&& Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getKnockbackRage() < 1f);
-	}
-
-	@Override
-	public double getDurabilityForDisplay(ItemStack stack) {
-		return TF2Attribute.getModifier("Knockback Rage", stack, 0, null)==1 ? (1D - Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).getKnockbackRage())/1D 
-				: super.getDurabilityForDisplay(stack);
-	}
 	
 	static {
 		slowdown.setSaved(false);

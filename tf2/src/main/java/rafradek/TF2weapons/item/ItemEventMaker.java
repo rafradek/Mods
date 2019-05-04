@@ -35,7 +35,7 @@ public class ItemEventMaker extends Item {
 				living.sendMessage(new TextComponentTranslation("item.eventmaker.noteam"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);
 			}
-			if (!world.getCapability(TF2weapons.WORLD_CAP, null).startInvasion(living, stack.getMetadata() % InvasionEvent.DIFFICULTY.length)) {
+			if (!world.getCapability(TF2weapons.WORLD_CAP, null).startInvasion(living, stack.getMetadata() % InvasionEvent.DIFFICULTY.length, living.capabilities.isCreativeMode)) {
 				living.sendMessage(new TextComponentTranslation("item.eventmaker.fail"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);
 			}
