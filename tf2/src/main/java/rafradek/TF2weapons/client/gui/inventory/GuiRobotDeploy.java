@@ -39,8 +39,8 @@ public class GuiRobotDeploy extends GuiContainer {
         float pr = (float)((ContainerRobotDeploy)this.inventorySlots).progress/((ContainerRobotDeploy)this.inventorySlots).maxprogress;
         
         if (this.tileEntity.produceGiant()) {
-            this.drawTexturedModalRect(i+142, j+22, 192, 31, 24, 48);
-            this.drawTexturedModalRect(i+142, j+22, 216, 31+(int)(48*(1-pr)), 24, (int)(48*pr));
+            this.drawTexturedModalRect(i+142, j+23, 192, 31, 24, 48);
+            this.drawTexturedModalRect(i+142, j+23+(int)(48*(1-pr)), 216, 31+(int)(48*(1-pr)), 24, (int)(48*pr));
         }
         else
         	this.drawTexturedModalRect(i+146, j+38+(int)(32*(1-pr)), 176, 31+(int)(32*(1-pr)), 16, (int)(32*pr));

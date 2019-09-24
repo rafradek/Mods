@@ -112,6 +112,7 @@ public abstract class TF2Message implements IMessage {
 			this.hand = hand;
 		}
 
+
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			this.value = buf.readShort();
@@ -328,20 +329,18 @@ public abstract class TF2Message implements IMessage {
 	}
 
 	public static class CapabilityMessage extends TF2Message {
-		int healTarget;
 		int entityID;
-		int heads;
-		int critTime;
+		long totalTime;
 		List < EntityDataManager.DataEntry<? >> entries;
 		boolean sendAll;
 		
 		public CapabilityMessage() {
 		}
-
+		
 		public CapabilityMessage(Entity entity,boolean sendAll) {
 			WeaponsCapability cap = entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			this.entityID = entity.getEntityId();
-			this.healTarget = cap.getHealTarget();
+			this.totalTime = cap.ticksTotal;
 			if(sendAll) {
 				this.entries=cap.dataManager.getAll();
 			}
@@ -353,7 +352,7 @@ public abstract class TF2Message implements IMessage {
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			entityID = buf.readInt();
-			healTarget = buf.readInt();
+			totalTime = buf.readLong();
 			try {
 				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -364,7 +363,7 @@ public abstract class TF2Message implements IMessage {
 		@Override
 		public void toBytes(ByteBuf buf) {
 			buf.writeInt(entityID);
-			buf.writeInt(healTarget);
+			buf.writeLong(totalTime);
 			try {
 				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
 			} catch (IOException e) {

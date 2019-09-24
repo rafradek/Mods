@@ -87,8 +87,8 @@ public class CommandExportModel extends CommandBase implements IClientCommand  {
     	}
     	
 		MapBuilder builder = new MapBuilder(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-		builder.buildModelCache(state, model, world, rand, pos, twidthsp, theightsp, new EnumMap<>(EnumFacing.class));
-		Model modelinst =builder.readModel(state, cbox, new Vector3f(offX, offY, offZ));
+		builder.modelReader.buildModelCache(state, model, world, rand, twidthsp, theightsp, new EnumMap<>(EnumFacing.class));
+		Model modelinst =builder.modelReader.readModel(state, cbox, new Vector3f(offX, offY, offZ),builder);
 		modelinst.name = args[3];
 		builder.addModel(state, modelinst);
 		

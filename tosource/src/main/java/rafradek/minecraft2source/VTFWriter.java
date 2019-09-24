@@ -10,12 +10,12 @@ import java.io.IOException;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.data.AnimationMetadataSection;
 import rafradek.minecraft2source.MapBuilder.SpriteCombined;
-import rafradek.minecraft2source.MapBuilder.SpriteProperties;
+import rafradek.minecraft2source.ModelExporter.SpriteProperties;
 
 public class VTFWriter {
 
 	private static final byte[] HEADER = {86,84,70,0,7,0,0,0,1,0,0,0,64,0,0,0,0,0,0,0,1,3,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,1,13,0,0,0,0,0,1};
-	public static void write(File file, String name, TextureAtlasSprite sprite, SpriteProperties property) throws IOException {
+	public static void write(File file, String name, TextureAtlasSprite sprite, ModelExporter.SpriteProperties property) throws IOException {
 		AnimationMetadataSection animation = null;
 		try {
 			if (sprite instanceof SpriteCombined) {

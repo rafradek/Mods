@@ -9,6 +9,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -46,7 +48,7 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 	    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
 	    {
 			String name = TF2Util.getWeaponUsedByClass(stack);
-			if (name == null || ItemFromData.getSlotForClass(ItemFromData.getData(stack), name)<4)
+			if (name == null || ItemFromData.getSlotForClass(ItemFromData.getData(stack), name)>4 || ItemFromData.getSlotForClass(ItemFromData.getData(stack), name)==-1)
 				return stack;
 			else {
 				return super.insertItem(slot, stack, simulate);
@@ -139,8 +141,10 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 					entity.setPosition(frontpos.getX(), frontpos.getY(), frontpos.getZ());
 					TF2CharacterAdditionalData data = new TF2CharacterAdditionalData();
 					data.team = 2;
-					data.isGiant = false;
+					data.isGiant = this.joined;
 	
+					entity.robotStrength = 0.25f;
+					entity.setSharing(true);
 					entity.setOwnerID(this.ownerName,this.owner);
 					entity.onInitialSpawn(this.world.getDifficultyForLocation(frontpos), data);
 					entity.playLivingSound();
@@ -222,9 +226,24 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 		this.ownerName = name;
 	}
 	
+	public void onLoad() {
+		this.joined = this.getWorld().getBlockState(pos).getValue(BlockRobotDeploy.JOINED);
+	}
+	
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate)
     {
-		this.joined = newSate.getValue(BlockRobotDeploy.JOINED);
+		if (newSate.getBlock() == oldState.getBlock())
+			this.joined = newSate.getValue(BlockRobotDeploy.JOINED);
         return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockRobotDeploy.HOLDER);
     }
+
+	public void dropInventory() {
+		for (int i = 0; i < this.parts.getSlots(); i++) {
+			InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.parts.extractItem(i, 64, false));
+		}
+		
+		for (int i = 0; i < this.weapon.getSlots(); i++) {
+			InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.weapon.extractItem(i, 64, false));
+		}
+	}
 }

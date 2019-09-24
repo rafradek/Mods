@@ -6,8 +6,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -18,9 +21,14 @@ import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.TF2Util;
 
-public class ItemBuildingBox extends ItemMonsterPlacerPlus {
+public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwitch{
 	public ItemBuildingBox() {
 		this.setCreativeTab(TF2weapons.tabspawnertf2);
 		this.setUnlocalizedName("buildingbox");
@@ -92,5 +100,16 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus {
 		if (Minecraft.getMinecraft().player != null && Minecraft.getMinecraft().player.isCreative()) {
 			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn natural building");
 		}
+	}
+
+	@Override
+	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		this.forceItemSlot(stack, worldIn, entityIn, itemSlot, isSelected);
+	}
+	
+	@Override
+	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
+		// TODO Auto-generated method stub
+		return stack.hasTagCompound() && stack.getTagCompound().getCompoundTag("SavedEntity") != null;
 	}
 }

@@ -20,6 +20,7 @@ import rafradek.TF2weapons.entity.ai.EntityAIAmbush;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.item.ItemCloak;
+import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -29,6 +30,7 @@ public class EntitySpy extends EntityTF2Character {
 	public int cloakCounter;
 
 	public float prevHealth;
+	public boolean isAmbushing;
 	public EntitySpy(World p_i1738_1_) {
 		super(p_i1738_1_);
 		this.experienceValue = 15;
@@ -44,7 +46,7 @@ public class EntitySpy extends EntityTF2Character {
 		}
 		this.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks = 20;
 		if(!this.world.isRemote) {
-			this.getWepCapability().setInvisible(true);
+			
 			this.getWepCapability().setDisguised(true);
 			this.getWepCapability().setDisguiseType("T:Engineer");
 		}
@@ -72,44 +74,43 @@ public class EntitySpy extends EntityTF2Character {
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 		if (!this.world.isRemote) {
-			if (this.ticksExisted == 0) {
+			if (this.ticksExisted == 0 && this.isRobot() && this.hasWatch()) {
+				((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);
 				this.getWepCapability().setInvisible(this.hasWatch());
 			}
 			this.prevHealth=this.getHealth();
 			
 			this.cloakCounter--;
 			EntityLivingBase target = this.getAttackTarget();
+			if (target == null && !this.getWepCapability().isDisguised()) {
+				ItemDisguiseKit.startDisguise(this, this.world, "M:"+TF2weapons.animals.get(this.getRNG().nextInt(TF2weapons.animals.size())));
+			}
 			if (this.hasWatch()) {
-				if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
+				this.loadout.getStackInSlot(3).getItem().onUpdate(this.loadout.getStackInSlot(3), this.world, this, 0, true);
+				/*if (target != null && this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")) {
 					boolean useKnife = false;
 					if ((this.getRevengeTarget() != null && this.ticksExisted - this.getRevengeTimer() < 45)
-							|| (useKnife = (this.getDistanceSq(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 40)))) {
+							|| (useKnife = (this.getDistanceSq(target) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 6 : 300)))) {
 	
 						((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(
 								!this.getWepCapability().isInvisible(), this.loadout.getStackInSlot(3), this,
 								this.world);
 						if (useKnife) {
-							this.weaponCounter = 19;
-							this.setCombatTask(false);
 							this.cloakCounter = 36;
 						} else
 							this.cloakCounter = 20 + (int) ((16 - this.getDistance(target)) * 10);
 					}
-					/*
-					 * float x = -MathHelper.sin(target.rotationYaw / 180.0F *
-					 * (float)Math.PI); float z = MathHelper.cos(target.rotationYaw
-					 * / 180.0F * (float)Math.PI);
-					 * this.setPosition(target.posX-x,target.posY,target.posZ-z);
-					 */
+					
 				}
 	
 				//System.out.println(this.loadout.getStackInSlot(3));
-				if (this.cloakCounter <= 0 && !this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
-					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);
+				if (target != null && this.loadout.getStackInSlot(3).getItemDamage() < this.loadout.getStackInSlot(3).getMaxDamage() - 72
+						&& this.cloakCounter <= 0 && !this.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
+					((ItemCloak) this.loadout.getStackInSlot(3).getItem()).setCloak(true, this.loadout.getStackInSlot(3), this, this.world);*/
 			}
 			this.weaponCounter--;
 			if (this.weaponCounter <= 0 && this.getAttackTarget() != null
-					&& this.getDistanceSq(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 25)) {
+					&& (this.isAmbushing || this.getDistanceSq(this.getAttackTarget()) < (TF2Util.lookingAtFast(target, 105, this.posX, this.posY, this.posZ) ? 4 : 600))) {
 				this.setCombatTask(false);
 				this.weaponCounter = 8;
 			} else if (this.weaponCounter <= 0 && this.getHeldItemMainhand() == this.loadout.getStackInSlot(2)) {
@@ -183,13 +184,10 @@ public class EntitySpy extends EntityTF2Character {
 		if (ranged) {
 
 			this.switchSlot(0);
-			this.attack.setRange(30);
 		} else if (this.getAttackTarget() instanceof EntityBuilding) {
 			this.switchSlot(1);
-			this.attack.setRange(1.9f);
 		} else {
 			this.switchSlot(2);
-			this.attack.setRange(2.2f);
 		}
 	}
 

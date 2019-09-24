@@ -6,9 +6,17 @@
     "overrides": [
         {
             "predicate": {
-                "bodyModel": 1
+                "bodyModel": 1,
+                "active": 0
             },
             "model": "rafradek_tf2_weapons:item/conch_body"
+        },
+        {
+            "predicate": {
+                "bodyModel": 1,
+                "active": 1
+            },
+            "model": "rafradek_tf2_weapons:item/conch_body_active"
         }
     ]
 }

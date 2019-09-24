@@ -50,6 +50,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2EventsCommon.TF2WorldStorage;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.building.EntitySentry;
@@ -159,7 +160,8 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 			Entry<EntityTF2Character,Integer> entry = it.next();
 			EntityTF2Character ent = entry.getKey();
 			if (ent.isDead) {
-				if (ent.getAttackingEntity() != null && TF2Util.getOwnerIfOwnable(ent.getAttackingEntity()) instanceof EntityPlayer)
+				if (ent.getAttackingEntity() != null && TF2Util.getOwnerIfOwnable(ent.getAttackingEntity()) instanceof EntityPlayer 
+						&& (ent.getAttackingEntity().getTeam() != null || !TF2ConfigVars.canJoin))
 					this.onKill(TF2Util.getOwnerIfOwnable(ent.getAttackingEntity()), ent.getLastDamageSource(), ent);
 				it.remove();
 				continue;
@@ -392,11 +394,11 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		List<ItemStack> items = new ArrayList<>();
 		float chance = this.difficulty;
 		chance = Math.min(40f,(float)Math.pow(this.robotKilledWave, 0.7)) * (this.world.rand.nextFloat()*0.7f + 0.9f);
-		if (this.wave == this.waves) {
+		/*if (this.wave == this.waves) {
 			if (this.diffTour >= 1)
 				items.add(new ItemStack(TF2weapons.blockRobotDeploy));
 			chance *=2;
-		}
+		}*/
 		
 		while (chance >= 4f) {
 			int itemtype = world.rand.nextInt(2);

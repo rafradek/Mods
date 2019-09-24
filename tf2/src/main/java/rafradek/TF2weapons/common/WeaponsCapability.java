@@ -63,6 +63,8 @@ import rafradek.TF2weapons.entity.mercenary.EntityScout;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.item.IItemNoSwitch;
+import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemHuntsman;
@@ -84,6 +86,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	public static final int MAX_METAL=200;
 	public static final int MAX_METAL_ENGINEER=500;
+	public static final int PLAYER_MINCOOL = -200;
 	
 	public EntityLivingBase owner;
 	public int state;
@@ -155,10 +158,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public double gravity = -0.08;
 	public float maxmetal = 1;
+	public float damageArmorMin;
 	
 	public EnumMap<EnumHand, ItemStack> stackActive = new EnumMap<>(EnumHand.class);
 	
 	private float[] rageDrain = new float[RageType.values().length];
+	
 	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
@@ -175,6 +180,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final EnumMap<RageType, DataParameter<Float>> RAGE = new EnumMap<>(RageType.class);
 	private static final EnumMap<RageType, DataParameter<Boolean>> RAGE_ACTIVE = new EnumMap<>(RageType.class);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+	
+	
 	//public int killsSpinning;
 	
 	/*public HashMap<Class<? extends Entity>, Short> highestBossLevel = new HashMap<>();
@@ -414,7 +421,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 
 	public boolean focusedShot(ItemStack stack){
 		int stackLevel=(int) TF2Attribute.getModifier("Focus", stack, 0, owner);
-		return stackLevel>0 && this.focusShotTicks>68-stackLevel*21+((ItemUsable)stack.getItem()).getFiringSpeed(stack, owner)/50;
+		return stackLevel>0 && this.focusShotTicks>this.focusShotTime(stack);
+	}
+	
+	public int focusShotTime(ItemStack stack) {
+		int stackLevel=(int) TF2Attribute.getModifier("Focus", stack, 0, owner);
+		return 68-stackLevel*21+((ItemUsable)stack.getItem()).getFiringSpeed(stack, owner)/50;
 	}
 	
 	public void onChangeValue(DataParameter<?> param, Object newValue) {
@@ -534,7 +546,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					this.fireCoolReduced = false;
 				}
 				
-				if (stack.getItemDamage() == stack.getMaxDamage())
+				if (!(item instanceof ItemWeapon) || ((ItemWeapon)item).getClip(stack) == 0)
 					this.autoFire = false;
 				
 				if (!(this.owner instanceof EntityPlayer) || (this.owner.world.isRemote && this.owner != ClientProxy.getLocalPlayer()))
@@ -578,39 +590,39 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				
 				this.stateDo(owner, stack, hand, state);
 	
-				if((state & 4) == 4 && stack.getItem() instanceof ItemWeapon && !this.isRageActive(RageType.KNOCKBACK) && this.getRage(RageType.KNOCKBACK) >= 1f) {
-					this.setRageActive(RageType.KNOCKBACK, true, 0.07f);
-				}
-				boolean emptyMag = stack.getItemDamage() == stack.getMaxDamage() && TF2Attribute.getModifier("Auto Fire", stack, 0, owner) == 0;
+				
+				
 				if ((!owner.world.isRemote || owner != Minecraft.getMinecraft().player)
 						&& stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)
 						&& (!item.searchForAmmo(owner, stack).isEmpty()
 								|| owner.world.isRemote)) {
-					if (((state & 4) != 0 || emptyMag || continueReload) && this.reloadingHand == null
-							&& stack.getItemDamage() != 0 && this.reloadCool <= 0
-							&& (this.getPrimaryCooldown() <= 0 || ((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack))
+					ItemWeapon weapon = (ItemWeapon)item;
+					boolean emptyMag = weapon.getClip(stack) == 0 && TF2Attribute.getModifier("Auto Fire", stack, 0, owner) == 0;
+					if (((state & 4) != 0 || emptyMag || continueReload) && stackcap.active == 2 && this.reloadingHand == null
+							&& weapon.getClip(stack) != weapon.getWeaponClipSize(stack, owner) && this.reloadCool <= 0
+							&& (this.getPrimaryCooldown() <= 0)
 							&& owner.getActivePotionEffect(TF2weapons.stun) == null) {
 						this.reloadingHand = hand;
 						this.reloadCool = ((ItemWeapon) stack.getItem()).getWeaponFirstReloadTime(stack, owner);
 	
 						if (!owner.world.isRemote && owner instanceof EntityPlayerMP)
 							TF2weapons.network.sendTo(
-									new TF2Message.UseMessage(stack.getItemDamage(), true, -1, hand),
+									new TF2Message.UseMessage(weapon.getClip(stack), true, -1, hand),
 									(EntityPlayerMP) owner);
 	
 						if (owner.world.isRemote && ((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack))
 							TF2weapons.proxy.playReloadSound(owner, stack);
 	
 					} else if (this.getPrimaryCooldown() <= 0 || ((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack))
-						while (this.reloadingHand == hand && this.reloadCool <= 0 && stack.getItemDamage() != 0) {
+						while (this.reloadingHand == hand && this.reloadCool <= 0 && weapon.getClip(stack) != weapon.getWeaponClipSize(stack, owner)) {
 							// System.out.println("On client:
 							// "+owner.world.isRemote);
 							int maxAmmoUse = item.getAmmoAmount(owner, stack);
 							int consumeAmount = 0;
 	
 							if (((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack)) {
-								consumeAmount += Math.min(stack.getItemDamage(), maxAmmoUse);
-								stack.setItemDamage(Math.max(0, stack.getItemDamage() - consumeAmount));
+								consumeAmount += Math.min(weapon.getWeaponClipSize(stack, owner)-weapon.getClip(stack), maxAmmoUse);
+								weapon.consumeClip(stack, -consumeAmount, owner, hand);
 								maxAmmoUse -= consumeAmount;
 	
 								/*if (maxAmmoUse > 0 && ItemUsable.isDoubleWielding(owner)) {
@@ -621,28 +633,29 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 							} else {
 								consumeAmount = 1;
-								stack.setItemDamage(stack.getItemDamage() - 1);
-								TF2weapons.proxy.playReloadSound(owner, stack);
+								weapon.consumeClip(stack, - 1, owner, hand);
+								//TF2weapons.proxy.playReloadSound(owner, stack);
 							}
 							
 							if (!owner.world.isRemote)
 								item.consumeAmmoGlobal(owner, stack, consumeAmount);
 							if (!owner.world.isRemote && owner instanceof EntityPlayerMP)
 								TF2weapons.network.sendTo(
-										new TF2Message.UseMessage(stack.getItemDamage(), true, -1,hand),
+										new TF2Message.UseMessage(weapon.getClip(stack), weapon.getClip(stack) != weapon.getWeaponClipSize(stack, owner), -1,hand),
 										(EntityPlayerMP) owner);
 	
 							this.reloadCool += ((ItemWeapon) stack.getItem()).getWeaponReloadTime(stack, owner);
 	
-							if (stack.getItemDamage() == 0) {
+							if (weapon.getClip(stack) == weapon.getWeaponClipSize(stack, owner)) {
 								this.stopReload();
 								continueReload =true;
 							}
 						}
-				} else if (this.reloadingHand == hand)
+				} else if (this.reloadingHand == hand && !(owner.world.isRemote && owner == Minecraft.getMinecraft().player))
 					this.reloadingHand = null;
 			}
-			if(this.stackActive.get(hand) != null && !(isUseableWeapon && stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)) {
+			if(this.stackActive.get(hand) != null && !(isUseableWeapon && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)
+					&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)) {
 				boolean revert = false;
 				ItemStack activestack = this.stackActive.get(hand);
 				if (activestack.getCount() == 0){
@@ -667,6 +680,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			TF2Util.sendTracking(new TF2Message.CapabilityMessage(this.owner, false), this.owner);
 		}
 		
+		
+			
 		PotionEffect charging = owner.getActivePotionEffect(TF2weapons.charging);
 		
 		/*if (owner instanceof EntityPlayer && owner.onGround && owner.motionY < 0) {
@@ -961,8 +976,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			}
 			if (feign)
 				this.invisTicks=20;
+			this.invisTicks += 2;
 			if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks < 20) {
-				this.invisTicks = Math.min(20, this.invisTicks + 2);
 			} else if (!owner.isInvisible() ) {
 				// System.out.println("full");
 				owner.setInvisible(true);
@@ -974,11 +989,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				// System.out.println("decloak");
 			}
 		} else if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks > 0) {
-			this.invisTicks--;
+			this.invisTicks= Math.min(20, this.invisTicks-1);
 			if (owner.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0) {
 				owner.setInvisible(false);
 			}
 		}
+		
 		this.lastPosX = owner.posX;
 		this.lastPosY = owner.posY;
 		this.lastPosZ = owner.posZ;
@@ -1193,7 +1209,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public void deserializeNBT(NBTTagCompound nbt) {
 		this.invisTicks = nbt.getByte("VisTicks");
 		this.disguiseTicks = nbt.getByte("DisguiseTicks");
-		this.setHealTarget(nbt.getInteger("HealTarget"));
+		//this.setHealTarget(nbt.getInteger("HealTarget"));
 		NBTTagCompound cld = nbt.getCompoundTag("Cooldowns");
 		for (String key : cld.getKeySet())
 			this.effectsCool.put(key, cld.getInteger(key));
@@ -1243,6 +1259,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		return ent.getCapability(TF2weapons.WEAPONS_CAP, null);
 	}
 
+	public int getMinimalCooldown() {
+		if (!this.owner.world.isRemote && this.owner instanceof EntityPlayer)
+			return PLAYER_MINCOOL;
+		else
+			return 0;
+	}
+	
 	public int getPrimaryCooldown() {
 		return Math.max(this.getPrimaryCooldown(EnumHand.MAIN_HAND),this.getPrimaryCooldown(EnumHand.OFF_HAND));
 	}
@@ -1254,14 +1277,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public int getPrimaryCooldown(EnumHand hand) {
 		if (this.owner.getHeldItem(hand).getItem() instanceof ItemUsable)
-			return this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool;
+			return this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool - getMinimalCooldown();
 		else 
 			return 0;
 	}
 
 	public void setPrimaryCooldown(EnumHand hand, int fire1Cool) {
 		if (this.owner.getHeldItem(hand).hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
-			this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool = fire1Cool;
+			this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire1Cool = fire1Cool + getMinimalCooldown();
 	}
 	
 	public int getSecondaryCooldown() {
@@ -1275,14 +1298,14 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public int getSecondaryCooldown(EnumHand hand) {
 		if (this.owner.getHeldItem(hand).getItem() instanceof ItemUsable)
-			return this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool;
+			return this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool - getMinimalCooldown();
 		else 
 			return 0;
 	}
 
 	public void setSecondaryCooldown(EnumHand hand, int fire1Cool) {
 		if (this.owner.getHeldItem(hand).hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
-			this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool = fire1Cool;
+			this.owner.getHeldItem(hand).getCapability(TF2weapons.WEAPONS_DATA_CAP, null).fire2Cool = fire1Cool + getMinimalCooldown();
 	}
 	
 	public void stopReload() {
@@ -1319,6 +1342,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		((ItemUsable) stack.getItem()).holster(this, stack, this.owner, this.owner.world);
 	}
 	
+	
 	public static enum RageType {
 		PHLOG,
 		MINICRIT,
@@ -1332,4 +1356,5 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			RAGE_ACTIVE.put(type, new DataParameter<Boolean>(126-type.ordinal()*2, DataSerializers.BOOLEAN));
 		}
 	}
+	
 }

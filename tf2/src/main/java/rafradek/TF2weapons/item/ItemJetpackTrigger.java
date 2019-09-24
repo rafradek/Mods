@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.item;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -11,13 +13,34 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 
-public class ItemJetpackTrigger extends ItemUsable {
+public class ItemJetpackTrigger extends ItemUsable implements IBackpackItem {
 
 	public ItemJetpackTrigger() {
 		super();
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
 	}
 
+	@Override
+	public boolean showDurabilityBar(ItemStack stack) {
+		if (!(ItemBackpack.getBackpack(Minecraft.getMinecraft().player).getItem() instanceof ItemJetpack))
+			return false;
+		return ItemBackpack.getBackpack(Minecraft.getMinecraft().player).getTagCompound().getShort("Charge") > 0;
+	}
+
+	@Override
+	public double getDurabilityForDisplay(ItemStack stack) {
+		ItemStack backpack = ItemBackpack.getBackpack(Minecraft.getMinecraft().player);
+		if (!(backpack.getItem() instanceof ItemJetpack))
+			return 0;
+		return (double)( backpack.getTagCompound().getShort("Charge"))/((ItemJetpack) backpack.getItem()).getCooldown(stack, null);
+	}
+	
+	@Override
+	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
+		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
+		this.checkItem(par1ItemStack, par2World, par3Entity, par4, par5);
+	}
+	
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand, PredictionMessage message) {
 		ItemStack jetpack = ItemBackpack.getBackpack(living);

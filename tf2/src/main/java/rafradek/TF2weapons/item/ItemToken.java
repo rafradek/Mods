@@ -53,7 +53,7 @@ public class ItemToken extends Item {
 		living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).removeModifier(HEALTH_MULT_UUID);
 		if (!stack.isEmpty() && stack.getMetadata() >= 0 && stack.getMetadata() < CLASS_NAMES.length) {
 			WeaponsCapability.get(living).setUsedToken(stack.getMetadata());
-			living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(new AttributeModifier(SPEED_UUID, "tokenspeed", SPEED_VALUES[stack.getMetadata()], 2)); 
+			living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(new AttributeModifier(SPEED_UUID, "tokenspeed", SPEED_VALUES[stack.getMetadata()], 1)); 
 			living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier(HEALTH_UUID, "tokenhealth", HEALTH_VALUES[stack.getMetadata()], 0)); 
 			living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier(HEALTH_MULT_UUID, "tokenhealthmult", TF2ConfigVars.damageMultiplier-1, 2)); 
 		}

@@ -21,9 +21,11 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntitySentry;
+import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import net.minecraft.block.Block;
@@ -49,6 +51,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ReportedException;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -198,6 +201,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(y, f3) * 180.0D / Math.PI);
 	}
 
+	
 	public void face(double x, double y, double z, float speedmult) {
 		float speed = (float) Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
 		x -= this.posX;
@@ -291,9 +295,11 @@ public abstract class EntityProjectileBase extends Entity
 		float size = this.getExplosionSize() * TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity);
 		if(TF2Attribute.getModifier("Airborne Bonus", this.usedWeapon, 0, this.shootingEntity) != 0) 
 			size *= 0.8f;
-		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult * this.damageModifier, this.getCritical(), 
-						(float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
-					.distanceTo(new Vec3d(x, y, z)));
+		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult * this.damageModifier, this.getCritical(), this.getDistanceToTarget(null, x, y, z));
+	}
+
+	public SoundEvent getExplosionSound() {
+		return ItemFromData.getSound(this.usedWeapon, PropertyType.EXPLOSION_SOUND);
 	}
 
 	public void addDamageTypes(DamageSource source) {
@@ -304,7 +310,7 @@ public abstract class EntityProjectileBase extends Entity
 		if (!this.world.isRemote) {
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
-				float distance = (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
+				float distance = this.getDistanceToTarget(target, hitPos.x, hitPos.y, hitPos.z);
 				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 
 						((ItemWeapon) this.usedWeapon.getItem()).getHeadshotCrit(shootingEntity, this.usedWeapon) : this.getCritical(),
 						this.usedWeapon);
@@ -322,8 +328,7 @@ public abstract class EntityProjectileBase extends Entity
 						this.setDead();
 					if(proceed) {
 						Vec3d pushvec=new Vec3d(target.posX - hitPos.x, target.posY + target.height/2 - hitPos.y, target.posZ - hitPos.z).normalize();
-						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
-								*  0.01625D*dmg);
+						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getKnockbackForDamage(usedWeapon, shootingEntity, dmg, src));
 						if(target instanceof EntityLivingBase) {
 							pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
 							.getAttributeValue());
@@ -338,6 +343,14 @@ public abstract class EntityProjectileBase extends Entity
 			}
 		}
 		return false;
+	}
+	
+	public float getDistanceToTarget(Entity target, double x, double y, double z) {
+		if (target == null)
+			return (float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
+			.distanceTo(new Vec3d(x, y, z));
+		else
+			return (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
 	}
 	
 	@Override

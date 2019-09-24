@@ -21,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -29,6 +30,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
@@ -45,7 +47,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 			@Override
 			@SideOnly(Side.CLIENT)
 			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
-				if (stack.getItemDamage() != stack.getMaxDamage())
+				if (ItemHuntsman.this.getClip(stack)>0)
 					return 1;
 				return 0;
 			}
@@ -68,7 +70,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 		});
 	}
 	public int holdingMode(ItemStack stack, EntityLivingBase shooter) {
-		return (int) (shooter instanceof EntityTF2Character ? ((EntityTF2Character) shooter).scaleWithDifficulty(60, 20) : 20);
+		return (int) ((shooter instanceof EntityTF2Character ? ((EntityTF2Character) shooter).scaleWithDifficulty(60, 20) : 20) * TF2Attribute.getModifier("Fire Rate", stack, 1f, shooter));
 	}
 	
 	public boolean shouldKeepCharged(ItemStack stack, EntityLivingBase shooter) {
@@ -80,12 +82,17 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 	}
 	
 	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
-		return living != null && WeaponsCapability.get(living).chargeTicks >= this.holdingMode(stack, living) * 5 ? super.getWeaponSpreadBase(stack, living) : 0;
+		float base = living != null && WeaponsCapability.get(living).chargeTicks >= this.holdingMode(stack, living) * 5 ? super.getWeaponSpreadBase(stack, living) : 0;
+		return base + this.getClip(stack) * 0.06f;
 	}
 	
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
 		// TODO Auto-generated method stub
 		return this.getCharge(living, stack) > 0;
+	}
+	
+	public boolean shootAllAtOnce(ItemStack stack, EntityLivingBase living) {
+		return true;
 	}
 	
 	@Override
@@ -136,6 +143,18 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 		return use;
 	}
 	
+	public void onProjectileShoot(ItemStack stack, EntityProjectileBase proj, EntityLivingBase living, World world, int thisCritical, EnumHand hand) {
+		if (this.getClip(stack) != 0) {
+			proj.damageModifier *= 0.66f;
+			/*proj.rotationYaw += (this.getClip(stack) % 2 == 0 ? 1 : -1 ) * this.getClip(stack)+1/2 * 8;
+			Vec3d rot = new Vec3d(proj.motionX, proj.motionY, proj.motionZ);
+			rot = rot.rotateYaw((this.getClip(stack) % 2 == 0 ? 1 : -1 ) * this.getClip(stack)+1/2 * 8);
+			proj.motionX = rot.x;
+			proj.motionY = rot.y;
+			proj.motionZ = rot.z;*/
+		}
+	}
+	
 	@Override
 	public void shoot(ItemStack stack, EntityLivingBase living, World world, int thisCritical, EnumHand hand) {
 		if (!world.isRemote) {
@@ -146,7 +165,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 				EntityArrow entityarrow = ((ItemArrow) arrow.getItem()).createArrow(world, arrow, living);
 				float motion = this.getProjectileSpeed(stack, living) * 2.6f - super.getProjectileSpeed(stack, living);
 				entityarrow.shoot(living, living.rotationPitch, living.rotationYaw, 0.0F, 
-						motion, this.getWeaponSpread(stack, living));
+						motion, this.getWeaponSpread(stack, living)*66);
 				entityarrow.pickupStatus = living instanceof EntityPlayer && !((ItemArrow) arrow.getItem()).isInfinite(arrow, stack, (EntityPlayer) living)
 						? PickupStatus.ALLOWED : PickupStatus.DISALLOWED;
 				entityarrow.setDamage(entityarrow.getDamage() - 2f + this.getWeaponDamage(stack, living, null) / motion * 0.975f);

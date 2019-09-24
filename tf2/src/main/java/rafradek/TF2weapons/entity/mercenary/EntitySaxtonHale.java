@@ -33,6 +33,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.BossInfo;
@@ -67,6 +68,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	public boolean endangered;
 	public int lastWeekCheck;
 
+	private int noPathTime = 0;
 	private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE,
 			BossInfo.Overlay.PROGRESS));
 
@@ -78,6 +80,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.tasks.addTask(7, new EntityAISeek(this));
 		this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, true));
 		this.experienceValue = 1500;
+		this.stepHeight=1f;
 	}
 
 	@Override
@@ -229,6 +232,11 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	}
 
+	public void travel(float m1, float m2, float m3) {
+		float move = this.getAIMoveSpeed();
+		super.travel(m1 / move, m2, m3 / move);
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
@@ -238,6 +246,9 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			if (this.getAttackTarget() == null)
 				this.heal(0.35f);
 
+			if (this.rand.nextInt(20) == 0) {
+				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12*TF2Util.lerp(1.5f, 1, this.getHealth()/this.getMaxHealth()));
+			}
 			this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
 			// System.out.println("Has path: "+this.getNavigator().noPath());
 			List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
@@ -253,6 +264,27 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			if (this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && obscuredView) {
 				this.superJump = true;
 				this.jump();
+			}
+			
+			if (this.ticksExisted % 3 == 0) {
+				if(this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && this.getNavigator().getPathToEntityLiving(this.getAttackTarget()) == null) {
+					this.noPathTime +=1;
+					Vec3d forward = this.getVectorForRotation(0, this.rotationYawHead);
+					if (this.noPathTime > 2) {
+						for(int x = (int) this.posX; x <= this.posX+forward.x; x++) {
+							for(int y = (int) Math.max(this.getAttackTarget().posY,this.posY-1); y <= this.posY+2; y++) {
+								for(int z = (int) this.posZ; z <= this.posZ+forward.z; z++) {
+									BlockPos pos = new BlockPos(x,y,z);
+									if (this.world.getBlockState(pos).getBlockHardness(world, pos) != -1)
+										this.world.destroyBlock(pos, true);
+								}
+							}
+						}
+						this.noPathTime = 1;
+					}
+				}
+				else
+					this.noPathTime = 0;
 			}
 			if (this.rage > 1) {
 				List<EntityLivingBase> list = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
@@ -357,7 +389,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(1000.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.8D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.364D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(20D);
 	}
 
@@ -448,9 +480,10 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 				&& player.getHeldItemMainhand().getItem() instanceof ItemMonsterPlacerPlus)
 				&& this.getAttackTarget() == null && this.isEntityAlive() && !this.isTrading() && !this.isChild()
 				&& !player.isSneaking()) {
-			if (this.world.isRemote && player.getTeam() == null && !player.capabilities.isCreativeMode)
+			boolean canTrade = player.getTeam() != null || player.capabilities.isCreativeMode || !TF2ConfigVars.canJoin;
+			if (this.world.isRemote && !canTrade)
 				ClientProxy.displayScreenJoinTeam();
-			else if (!this.world.isRemote && (player.getTeam() != null || player.capabilities.isCreativeMode)
+			else if (!this.world.isRemote && (canTrade)
 					&& (this.tradeOffers == null || !this.tradeOffers.isEmpty())) {
 				this.setCustomer(player);
 				player.displayVillagerTradeGui(this);

@@ -2,6 +2,8 @@ package rafradek.TF2weapons.item;
 
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Multimap;
 
 import net.minecraft.block.material.Material;
@@ -12,15 +14,27 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ISpecialArmor;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 
 public class ItemParachute extends ItemBackpack implements ISpecialArmor {
 
 	public ItemParachute() {
 		this.setMaxDamage(1000);
+		this.addPropertyOverride(new ResourceLocation("active"),new IItemPropertyGetter() {
+			@Override
+			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
+				if (entityIn != null && stack.getTagCompound().getBoolean("Deployed"))
+					return 1;
+				return 0;
+			}
+		});
 		// TODO Auto-generated constructor stub
 	}
 

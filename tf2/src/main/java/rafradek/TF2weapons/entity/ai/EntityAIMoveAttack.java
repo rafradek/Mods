@@ -9,6 +9,7 @@ import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntitySniper;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
@@ -37,7 +38,10 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	 */
 	private float attackRange;
 	protected float attackRangeSquared;
-
+	
+	private float attackRangeMin;
+	protected float attackRangeMinSquared;
+	
 	protected boolean inRange;
 	protected boolean dodge;
 	public boolean jump;
@@ -53,6 +57,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 	public boolean dodgeHeadFor;
 
 	private float attackRangeSSquared;
+	public boolean backpath;
 
 	public EntityAIMoveAttack(EntityTF2Character par1IRangedAttackMob, float par2, float par5) {
 		this.rangedAttackTime = -1;
@@ -61,14 +66,18 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		this.entityMoveSpeed = par2;
 		this.attackRange = par5;
 		this.attackRangeSquared = par5 * par5;
+		this.attackRangeMin = 3;
+		this.attackRangeMinSquared = 9;
 
 		this.setMutexBits(1);
 	}
 
-	public void setRange(float range) {
+	public void setRange(float range, float minrange) {
 		this.attackRange = range;
 		this.attackRangeSquared = range * range;
 		this.attackRangeSSquared = (range+5) * (range+5);
+		this.attackRangeMin = minrange;
+		this.attackRangeMinSquared = minrange * minrange;
 	}
 
 	/**
@@ -106,6 +115,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		this.attackTarget = null;
 		this.comeCloser = 0;
 		this.rangedAttackTime = -1;
+		this.backpath = false;
 	}
 
 	/**
@@ -121,7 +131,6 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		}
 		if (this.attackTarget == null)
 			return;
-		
 		ItemStack item = this.entityHost.getHeldItem(EnumHand.MAIN_HAND);
 		
 		if (!(item.getItem() instanceof ItemUsable))
@@ -137,7 +146,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 		float range = this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared;
 		if (stay) {
 			++this.comeCloser;
-			if (d0 <= (double) this.attackRangeSquared / (this.entityHost instanceof EntitySniper ? 2f : 4f))
+			if (d0 <= this.attackRangeMinSquared + 2 || d0 <= (double) this.attackRangeSquared / (this.entityHost instanceof EntitySniper ? 2f : 4f))
 				this.comeCloser = 20;
 		} else
 			this.comeCloser = 0;
@@ -146,6 +155,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 			if (!this.inRange) {
 				this.entityHost.getNavigator().clearPath();
 				this.inRange = true;
+				this.backpath = false;
 			}
 		} else {
 			this.inRange = false;
@@ -157,6 +167,7 @@ public class EntityAIMoveAttack extends EntityAIBase {
 			 * ((EntitySoldier)this.entityHost).rocketJump=true; }
 			 */
 			this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget, this.entityMoveSpeed);
+			this.backpath = false;
 		}
 		//this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		// this.entityHost.getLookHelper().onUpdateLook();
@@ -170,10 +181,28 @@ public class EntityAIMoveAttack extends EntityAIBase {
 			this.entityHost.jump = true;
 		else if (this.jump)
 			this.entityHost.jump = false;
-		if (this.dodge && (this.entityHost.getNavigator().noPath() || (this.entityHost.ticksExisted % 20) == 0)) {
-			Vec3d Vec3d = RandomPositionGenerator.findRandomTarget(this.entityHost, 4, 2);
+		boolean nopath = (this.entityHost.getNavigator().noPath() || (this.entityHost.ticksExisted % 20) == 0);
+		if (d0 < this.attackRangeMinSquared && (nopath || !backpath)) {
+			for (int i = 0; i < 10; i++) {
+				Vec3d Vec3d = RandomPositionGenerator.findRandomTarget(this.entityHost, 0, 0);
 
+				if (Vec3d != null) {
+					Vec3d off = this.entityHost.getPositionVector().subtract(this.attackTarget.getPositionVector()).normalize();
+					double offsetX =  off.x*3;
+					double offsetY =  0;
+					double offsetZ =  off.z*3;
+					this.entityHost.getNavigator().tryMoveToXYZ(Vec3d.x + offsetX, Vec3d.y + offsetY,
+							Vec3d.z + offsetZ, this.entityMoveSpeed * this.dodgeSpeed);
+					backpath = true;
+					break;
+				}
+			}
+		}
+		else if (this.dodge && nopath) {
+			Vec3d Vec3d = RandomPositionGenerator.findRandomTarget(this.entityHost, 4, 2);
+			
 			if (Vec3d != null) {
+				backpath = false;
 				double offsetX = this.dodgeHeadFor ? this.attackTarget.posX - this.entityHost.posX : 0;
 				double offsetY = this.dodgeHeadFor ? this.attackTarget.posY - this.entityHost.posY : 0;
 				double offsetZ = this.dodgeHeadFor ? this.attackTarget.posZ - this.entityHost.posZ : 0;

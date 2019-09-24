@@ -47,7 +47,8 @@ public class ItemBonk extends ItemFromData {
 		Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get(getData(stack).getName());
 		return (double) (value != null ? value : 0)
-				/ (double) (TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN) : 600);
+				/ (double) ((int) (getData(stack).getInt(PropertyType.COOLDOWN) * 
+						(TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 	}
 
 	@Override
@@ -67,10 +68,11 @@ public class ItemBonk extends ItemFromData {
 	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
 		
 		entityLiving.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put(getData(stack).getName(),
-				TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.COOLDOWN) : 600);
+				(int)(getData(stack).getInt(PropertyType.COOLDOWN) * 
+						(TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 		entityLiving.addPotionEffect(new PotionEffect(
 				Potion.getPotionFromResourceLocation(getData(stack).getString(PropertyType.EFFECT_TYPE)),
-				TF2ConfigVars.fastItemCooldown ? ItemFromData.getData(stack).getInt(PropertyType.DURATION) : 160));
+				TF2ConfigVars.longDurationBanner ? ItemFromData.getData(stack).getInt(PropertyType.DURATION) : 160));
 		if (!TF2ConfigVars.freeUseItems && !(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
 			stack.shrink(1);
 		return stack;

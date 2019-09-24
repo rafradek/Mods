@@ -189,6 +189,8 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.powerup.disciplinary"));
 	public static final SoundEvent DOUBLE_DONK = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
+	public static final SoundEvent GRENADE_EXPLODESPECIAL = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "weapon.explosion.airstrike"));
 	
 	public static void registerSounds() {
 		/*

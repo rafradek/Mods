@@ -172,7 +172,7 @@ public abstract class ItemFabricator extends Item {
 	@Override
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
-		tooltip.add("This item will produce");
+		tooltip.add("When used, this item will produce");
 		tooltip.addAll(this.getOutputNames(stack));
 		tooltip.add("");
 		tooltip.add("After consuming those items from inventory");

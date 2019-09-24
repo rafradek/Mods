@@ -28,6 +28,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.pathfinding.Path;
+import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -67,7 +68,8 @@ public class EntityHHH extends EntityTF2Boss {
 	private int targetInAir;
 	private Vec3d dashMotion;
 	private List<EntityLivingBase> possibleTargets = new ArrayList<>();
-	private UUID slowDash = UUID.fromString("03edb08b-0a2f-4040-9c9c-062d0c2e2a85");
+	private static UUID slowDash = UUID.fromString("03edb08b-0a2f-4040-9c9c-062d0c2e2a85");
+	private static UUID fasterSpeed = UUID.fromString("03edb08b-0a2f-4040-9c9c-062d0c2e2b85");
 	private Vec3d lastPos= Vec3d.ZERO;
 	
 	public EntityHHH(World worldIn) {
@@ -75,6 +77,7 @@ public class EntityHHH extends EntityTF2Boss {
 		this.setSize(0.9f, 2.85f);
 		this.stepHeight=1.05f;
 		this.setNoAI(true);
+		this.setPathPriority(PathNodeType.LAVA, 8.0F);
 		this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("headtaker"));
 		this.getHeldItemMainhand().addEnchantment(Enchantments.KNOCKBACK, 10);
 	}
@@ -123,6 +126,7 @@ public class EntityHHH extends EntityTF2Boss {
 		p_110161_1_=super.onInitialSpawn(diff, p_110161_1_);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(0.88+this.level*0.12));
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue()*(0.9+this.level*0.1));
+		
 		return p_110161_1_;
 	}
 	public void dropFewItems(boolean hit,int looting){
@@ -148,8 +152,13 @@ public class EntityHHH extends EntityTF2Boss {
 			}
 		
 		if(!world.isRemote && this.begin<=0){
+			if(this.rand.nextInt(20) == 0) {
+				TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, new AttributeModifier(fasterSpeed, "fastspeed", 
+						TF2Util.lerp(0.2f, 0.0f, this.getHealth()/this.getMaxHealth()), 2), false);
+			}
 			if(this.begin==0){
 				this.setNoAI(false);
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(BOSS_ARMOR_SPAWN);
 			}
 			if(this.getAttackTarget()!=null && !(this.getAttackTarget() instanceof EntitySentry) && this.getAttackTarget().getActivePotionEffect(TF2weapons.it)==null) {
 				EntityLivingBase lastTarget = this.getAttackTarget().getLastAttackedEntity();
@@ -202,7 +211,7 @@ public class EntityHHH extends EntityTF2Boss {
 			if (this.getAttackTarget() != null) {
 				if (!this.getAttackTarget().onGround)
 					this.targetInAir +=1;
-				if (this.level > 2) {
+				if (this.level > 1) {
 					if (this.dashCool-- <= 0) {
 						this.dashCool = 300;
 						this.dashTick = 35;

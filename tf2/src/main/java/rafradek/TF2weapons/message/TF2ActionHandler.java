@@ -31,6 +31,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.items.ItemHandlerHelper;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
@@ -45,6 +46,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntitySoldier;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -213,6 +215,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						if (stack.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", stack, 0f, player) != 0 && ((ItemJetpack)stack.getItem()).canActivate(stack, player) ) {
 							((ItemJetpack)stack.getItem()).activateJetpack(stack, player, true);
 						}
+					} 
+					else if (message.value == 26) {
+						TF2PlayerCapability.get(player).setEquipBackpackItem(true);
+					} 
+					else if (message.value == 27) {
+						TF2PlayerCapability.get(player).setEquipBackpackItem(false);
 					} 
 					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
@@ -431,6 +439,14 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						if (chest.getItem() instanceof ItemJetpack) {
 							((ItemJetpack)chest.getItem()).activateJetpack(chest, player, true);
 						}
+					}
+					else if (message.value == 31) {
+						if (player != null)
+							TF2PlayerCapability.get((EntityPlayer) player).setEquipBackpackItem(true);
+					}
+					else if (message.value == 32) {
+						if (player != null)
+							TF2PlayerCapability.get((EntityPlayer) player).setEquipBackpackItem(false);
 					}
 				}
 

@@ -13,6 +13,7 @@ import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
+import rafradek.TF2weapons.TF2ConfigVars;
 
 public class KilledByTeam implements LootCondition {
 
@@ -28,7 +29,7 @@ public class KilledByTeam implements LootCondition {
 		Entity player = this.team ? context.getKiller() : context.getKillerPlayer();
 		if(player instanceof IEntityOwnable && ((IEntityOwnable)player).getOwner() instanceof EntityPlayer)
 			player = ((IEntityOwnable)player).getOwner();
-		return player != null && player.getTeam() != null && !player.isOnSameTeam(context.getLootedEntity());
+		return player != null && (player.getTeam() != null || TF2ConfigVars.neutralAttack) && !player.isOnSameTeam(context.getLootedEntity());
 	}
 
 	public static class Serializer extends LootCondition.Serializer<KilledByTeam> {

@@ -27,6 +27,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -54,7 +55,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 		
-		if (par5 && par1ItemStack.getTagCompound() != null)
+		if (par5 && par1ItemStack.getTagCompound() != null) {
 			// System.out.println("EntityTicked" + cap.state+ par3Entity);
 			if ((cap.state == 0 || cap.state == 4) && cap.chargeTicks > 0) {
 			// System.out.println("Draining" + cap.chargeTicks);
@@ -62,6 +63,10 @@ public class ItemMinigun extends ItemBulletWeapon {
 				cap.chargeTicks -= 2;
 				((EntityLivingBase) par3Entity).getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
 			}
+			if((cap.state & 4) == 4 && this.getRageType(par1ItemStack, (EntityLivingBase) par3Entity) == RageType.KNOCKBACK && !cap.isRageActive(RageType.KNOCKBACK) && cap.getRage(RageType.KNOCKBACK) >= 1f) {
+				cap.setRageActive(RageType.KNOCKBACK, true, 0.07f);
+			}
+		}
 	}
 
 	/*
@@ -74,12 +79,32 @@ public class ItemMinigun extends ItemBulletWeapon {
 	 */
 	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
-		return super.getWeaponDamage(stack, living, target)*(living != null?TF2Util.lerp(0.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+		float base = super.getWeaponDamage(stack, living, target);
+		if (living != null && WeaponsCapability.get(living).isRageActive(RageType.KNOCKBACK))
+			base *= 0.6f;
+		return base*(living != null?TF2Util.lerp(0.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
 	}
 	
 	@Override
 	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
-		return super.getWeaponSpreadBase(stack, living)*(living != null?TF2Util.lerp(1.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+		float base = super.getWeaponSpreadBase(stack, living);
+		
+		if (TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 1f) {
+			return base * (living != null?TF2Util.lerp(1.5f,1f,living.getCapability(TF2weapons.WEAPONS_CAP, null).minigunTicks/20f):1f);
+		}
+		else {
+			return base * TF2Util.lerp(3f,0.5f,Math.min(1f, (this.getClip(stack)-this.getWeaponClipSize(stack, living)*0.2f)/(this.getWeaponClipSize(stack, living)*0.8f)));
+		}
+	}
+	
+	public int getFiringSpeed(ItemStack stack, EntityLivingBase living) {
+		if (TF2Attribute.getModifier("Weapon Mode", stack, 0, living) != 1f) {
+			return super.getFiringSpeed(stack, living);
+		}
+		else {
+			float mult = Math.max(0f, (this.getClip(stack)-this.getWeaponClipSize(stack, living)*0f)/(this.getWeaponClipSize(stack, living)*1f));
+			return (int) (super.getFiringSpeed(stack, living) * TF2Util.lerp(0.8f,3f,mult*mult*mult));
+		}
 	}
 	
 	@Override
@@ -228,6 +253,13 @@ public class ItemMinigun extends ItemBulletWeapon {
 		}
 	}
 	
+	public int getWeaponReloadTime(ItemStack stack, EntityLivingBase living) {
+		if (WeaponsCapability.get(living).chargeTicks < (int)TF2Attribute
+				.getModifier("Minigun Spinup", stack, 18, living) -10)
+			return super.getWeaponReloadTime(stack, living)/2;
+		else
+			return super.getWeaponReloadTime(stack, living);
+	}
 	
 	static {
 		slowdown.setSaved(false);

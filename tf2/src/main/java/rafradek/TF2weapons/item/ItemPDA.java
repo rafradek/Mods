@@ -54,7 +54,7 @@ import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 
-public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay {
+public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay, IItemNoSwitch  {
 
 	@SuppressWarnings("unchecked")
 	private static final DataParameter<NBTTagCompound>[] VIEWS = new DataParameter[] {TF2PlayerCapability.SENTRY_VIEW, TF2PlayerCapability.DISPENSER_VIEW, 
@@ -115,12 +115,16 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 	
 	@Override
 	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		this.forceItemSlot(stack, worldIn, entityIn, itemSlot, isSelected);
 		if (!worldIn.isRemote) {
+			
 			if (!stack.hasTagCompound())
 				stack.setTagCompound(new NBTTagCompound());
 			PlayerPersistStorage storage = PlayerPersistStorage.get(((EntityPlayer)entityIn));
-			if (TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null)
+			stack.getTagCompound().setBoolean("IsC", TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null);
+			if (TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null) {
 				stack.getTagCompound().setByte("Building", (byte) ((byte) TF2PlayerCapability.get((EntityPlayer) entityIn).carryingType + 1));
+			}
 			else if (stack.getTagCompound().getByte("Building") > 0) {
 				int metal = EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1, 
 						TF2Util.getFirstItem(((EntityPlayer) entityIn).inventory, stackL -> stackL.getItem() instanceof ItemWrench));
@@ -248,10 +252,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 		if (!stack.hasTagCompound() || (stack.getTagCompound().getByte("Building") == 0)) {
 			TF2PlayerCapability plcap = TF2PlayerCapability.get(player);
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blueprintTexture);
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 			GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
 			boolean hasTag = stack.hasTagCompound();
@@ -294,13 +295,15 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.build.exit"), resolution.getScaledWidth()/2+108, resolution.getScaledHeight()/2-40, 0xFFFFFFFF);*/
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.build"), resolution.getScaledWidth()/2, resolution.getScaledHeight()/2-40, 0xFFFFFFFF);
 			
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		}
 
+	}
+
+	@Override
+	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
+		// TODO Auto-generated method stub
+		return stack.getTagCompound().getBoolean("IsC");
 	}
 	
 }

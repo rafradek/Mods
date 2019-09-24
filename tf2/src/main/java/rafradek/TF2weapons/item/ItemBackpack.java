@@ -110,6 +110,10 @@ public class ItemBackpack extends ItemFromData {
     	return 1200;
     }
 
+    public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+    	return ItemStack.EMPTY;
+    }
+    
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {

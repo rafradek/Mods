@@ -65,6 +65,8 @@ import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.inventory.ContainerMercenary;
 import rafradek.TF2weapons.inventory.ContainerWearables;
 import rafradek.TF2weapons.inventory.InventoryWearables;
+import rafradek.TF2weapons.item.IBackpackItem;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemAmmoPackage;
 import rafradek.TF2weapons.item.ItemBackpack;
@@ -74,6 +76,7 @@ import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFoodThrowable;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemKillstreakKit;
@@ -110,6 +113,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockWorldState;
 import net.minecraft.block.state.IBlockState;
@@ -120,7 +124,6 @@ import net.minecraft.block.state.pattern.FactoryBlockPattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.SkinManager;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
@@ -272,18 +275,23 @@ public class TF2EventsCommon {
 
 	@SubscribeEvent
 	public void untargetable(LivingSetAttackTargetEvent event) {
-		if (event.getTarget() != null
-				&& ((event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20))) {
+		boolean notarget = event.getTarget() == null;
+		if (!(event.getEntityLiving() instanceof EntityLiving))
+			return;
+		if (notarget && event.getEntityLiving().getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getModifier(TF2Util.FOLLOW_MODIFIER) != null) {
+			event.getEntityLiving().getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).removeModifier(TF2Util.FOLLOW_MODIFIER);
+			event.getEntityLiving().getEntityData().removeTag("TF2AM");
+		}
+		if (!notarget
+				&& ((event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && event.getTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 45))) {
 			//event.getEntityLiving().setRevengeTarget(null);
-			if (event.getEntityLiving() instanceof EntityLiving) {
 				((EntityLiving) event.getEntity()).setAttackTarget(null);
-			}
 		}
 		if (event.getTarget() instanceof EntityTF2Character && event.getEntity() instanceof EntityGolem && ((IEntityOwnable) event.getTarget()).getOwner() != null) {
 			//event.getEntityLiving().setRevengeTarget(null);
 			((EntityLiving) event.getEntity()).setAttackTarget(null);
 		}
-		if (event.getTarget() != null && event.getEntityLiving().isNonBoss()
+		if (!notarget && event.getEntityLiving().isNonBoss()
 				&& (event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null) && 
 						ItemDisguiseKit.isDisguised(event.getTarget(),event.getEntityLiving()) && event.getEntityLiving().getAttackingEntity() != event.getTarget()))
 			if (event.getEntityLiving() instanceof EntityLiving) {
@@ -294,23 +302,7 @@ public class TF2EventsCommon {
 	@SubscribeEvent
 	public void serverTickEnd(TickEvent.ServerTickEvent event) {
 
-		if (event.phase == TickEvent.Phase.START)
-			if (tickleft <= 0) {
-				tickleft = 20;
-				Object[] entArray = ItemUsable.lastDamage.keySet().toArray();
-				for (int x = 0; x < entArray.length; x++) {
-					float[] dmg = ItemUsable.lastDamage.get(entArray[x]);
-					for (int i = 19; i >= 0; i--)
-						if (i > 0) {
-							dmg[i] = dmg[i - 1];
-						} else {
-							dmg[0] = 0;
-						}
-				}
-
-			} else {
-				tickleft--;
-			}
+		
 	}
 
 	public static double avg(long[] values) {
@@ -779,14 +771,14 @@ public class TF2EventsCommon {
 			crit = TF2Util.calculateCritPre(stack, attacker);
 				
 			ItemStack backpack = ItemBackpack.getBackpack(attacker);
-			if (backpack.getItem() instanceof ItemSoldierBackpack && !backpack.getTagCompound().getBoolean("Active")) {
+			if (backpack.getItem() instanceof ItemSoldierBackpack && !WeaponsCapability.get(attacker).isRageActive(RageType.BANNER)) {
 				((ItemSoldierBackpack) backpack.getItem()).addRage(backpack, event.getAmount(), target, attacker);
 			}
 			if (attacker.getActivePotionEffect(TF2weapons.conch) != null) {
-				attacker.heal(0.35f * getDamageReduction(event.getSource(), target, event.getAmount()));
+				attacker.heal(0.35f * TF2Util.getDamageReduction(event.getSource(), target, event.getAmount()));
 			}
 			if (target.getActivePotionEffect(TF2weapons.madmilk) != null) {
-				attacker.heal(0.6f * getDamageReduction(event.getSource(), target, event.getAmount()));
+				attacker.heal(0.6f * TF2Util.getDamageReduction(event.getSource(), target, event.getAmount()));
 			}
 		}
 		if (!(event.getSource() instanceof TF2DamageSource)) {
@@ -829,7 +821,7 @@ public class TF2EventsCommon {
 				float focus = TF2Attribute.getModifier("Focus", ((TF2DamageSource) event.getSource()).getWeapon(), 0, null);
 				//float pierce = TF2Util.lerp(protect, 1f, 0.12f * focus);
 				
-				float hpDamage = event.getAmount() + Math.min(30 * focus, (event.getAmount() *(living.getMaxHealth() - living.getHealth())* 0.01f * focus) / protect);
+				float hpDamage = event.getAmount() + Math.min(35*focus, (event.getAmount() *(living.getMaxHealth() - living.getHealth())/living.getMaxHealth() * focus * 0.6f));
 				//if (hpDamage > event.getAmount() / pierce)
 					event.setAmount(hpDamage);
 				//else
@@ -839,10 +831,12 @@ public class TF2EventsCommon {
 			if (orig != protect) {
 				TF2Util.addModifierSafe(living, SharedMonsterAttributes.ARMOR, new AttributeModifier(REMOVE_ARMOR, "remove_arm",
 						-event.getEntityLiving().getTotalArmorValue(), 0), false);
+				TF2Util.addModifierSafe(living, SharedMonsterAttributes.ARMOR_TOUGHNESS, new AttributeModifier(REMOVE_ARMOR, "remove_armt",
+						-event.getEntityLiving().getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue(), 0), false);
 				//vent.getSource().setDamageBypassesArmor();
 				event.setAmount(event.getAmount() * (protect));
-				if(event.getEntityLiving() instanceof EntityPlayer) {
-					TF2PlayerCapability cap = TF2PlayerCapability.get((EntityPlayer) event.getEntityLiving());
+				if(WeaponsCapability.get(event.getEntityLiving()) != null) {
+					WeaponsCapability cap = WeaponsCapability.get(event.getEntityLiving());
 					float armorDamage = event.getAmount();
 					armorDamage += cap.damageArmorMin;
 					cap.damageArmorMin = armorDamage % 4f;
@@ -865,17 +859,27 @@ public class TF2EventsCommon {
 		}
 	}
 	
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void reduceDamageArmor(LivingDamageEvent event) {
-		if(event.getSource() instanceof TF2DamageSource)
+		if(event.getSource() instanceof TF2DamageSource) {
 			event.getEntityLiving().getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(REMOVE_ARMOR);
+			event.getEntityLiving().getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).removeModifier(REMOVE_ARMOR);
+		}
 	}
-	
-	public static float getDamageReduction(DamageSource source, EntityLivingBase living, float damage) {
-		return CombatRules.getDamageAfterMagicAbsorb(
-				CombatRules.getDamageAfterAbsorb(damage, living.getTotalArmorValue(),
-						(float) living.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue()),
-				EnchantmentHelper.getEnchantmentModifierDamage(living.getArmorInventoryList(), source));
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void healFromAttack(LivingDamageEvent event) {
+		EntityLivingBase attacker = null;
+		if (event.getSource().getTrueSource() instanceof EntityLivingBase)
+			attacker = (EntityLivingBase) event.getSource().getTrueSource();
+		EntityLivingBase target = event.getEntityLiving();
+		if (attacker != null) {
+			if (attacker.getActivePotionEffect(TF2weapons.conch) != null) {
+				attacker.heal(TF2Util.getReducedHealing(attacker, target, 0.35f * event.getAmount()));
+			}
+			if (target.getActivePotionEffect(TF2weapons.madmilk) != null) {
+				attacker.heal(TF2Util.getReducedHealing(attacker, target, 0.6f * event.getAmount()));
+			}
+		}
 	}
 	
 	public static float getDamageReductionFromItem(ItemStack stack, DamageSource source, EntityLivingBase target, float damage) {
@@ -955,17 +959,29 @@ public class TF2EventsCommon {
 
 	@SubscribeEvent
 	public void onSpawn(EntityJoinWorldEvent event) {
-		if (TF2ConfigVars.targetSentries && event.getEntity() instanceof EntityCreature && TF2Util.isHostile((EntityLivingBase) event.getEntity()) && !(event.getEntity() instanceof IEntityTF2)
+		if (event.getEntity() instanceof EntityItem && ((EntityItem)event.getEntity()).getItem().getItem() instanceof IBackpackItem) {
+			event.getEntity().setDead();
+			event.setCanceled(true);
+		}
+		if (event.getEntity() instanceof EntityCreature && TF2Util.isHostile((EntityLivingBase) event.getEntity()) && !(event.getEntity() instanceof IEntityTF2)
 				&& event.getEntity().isNonBoss()) {
-			((EntityCreature)event.getEntity()).targetTasks.addTask(100, 
-					new EntityAINearestAttackableTarget<EntitySentry>((EntityCreature) event.getEntity(), EntitySentry.class, 10, true, false, sentry -> {
-				return sentry.getOwnerId() != null;
-			}) {
-				protected double getTargetDistance()
-			    {
-			        return super.getTargetDistance() * 0.45f;
-			    }
-			});
+			if (TF2ConfigVars.targetSentries) {
+				((EntityCreature)event.getEntity()).targetTasks.addTask(535, 
+						new EntityAINearestAttackableTarget<EntitySentry>((EntityCreature) event.getEntity(), EntitySentry.class, 10, true, false, sentry -> {
+					return sentry.getOwnerId() != null;
+				}) {
+					protected double getTargetDistance()
+				    {
+				        return super.getTargetDistance() * 0.45f;
+				    }
+				});
+			}
+			if (TF2ConfigVars.attackMobs) {
+				((EntityCreature)event.getEntity()).targetTasks.addTask(536, 
+						new EntityAINearestAttackableTarget<EntityTF2Character>((EntityCreature) event.getEntity(), EntityTF2Character.class, 10, true, false, (target)-> {
+							return !target.isRobot();
+						}));
+			}
 		}
 		if (event.getEntity() instanceof EntityPlayer){
 			if (event.getEntity().world.isRemote) {
@@ -1003,7 +1019,6 @@ public class TF2EventsCommon {
 	 */
 	@SubscribeEvent
 	public void cleanPlayer(PlayerLoggedOutEvent event) {
-		ItemUsable.lastDamage.remove(event.player);
 		if(TF2weapons.udpServer != null)
 			TF2weapons.udpServer.playerList.remove(event.player.getCapability(TF2weapons.PLAYER_CAP, null).udpServerId);
 	}
@@ -1185,14 +1200,19 @@ public class TF2EventsCommon {
 		}
 
 		if (living.getRevengeTarget() != null && living.getRevengeTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)
-				&& living.getRevengeTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20) {
+				&& living.getRevengeTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 45) {
 			living.setRevengeTarget(null);
 		}
 
-		if (living instanceof EntityLiving && ((EntityLiving) living).getAttackTarget() != null
-				&& ((EntityLiving) living).getAttackTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)
-				&& ((EntityLiving) living).getAttackTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20) {
-			((EntityLiving) living).setAttackTarget(null);
+		if (living instanceof EntityLiving && ((EntityLiving) living).getAttackTarget() != null) {
+			if (living.getEntityData().hasKey("TF2AM") && living.getEntityWorld().getTotalWorldTime() - living.getEntityData().getInteger("TF2AM") > 360) {
+				living.getEntityData().removeTag("TF2AM");
+				living.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).removeModifier(TF2Util.FOLLOW_MODIFIER);
+			}
+			else if (((EntityLiving) living).getAttackTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)
+					&& ((EntityLiving) living).getAttackTarget().getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 45) {
+				((EntityLiving) living).setAttackTarget(null);
+			}
 		}
 
 		if (living.getDataManager().get(ENTITY_OVERHEAL) == -1) {
@@ -1500,11 +1520,15 @@ public class TF2EventsCommon {
 				}
 				if (stack.hasTagCompound() && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB) && TF2Util.isEnemy(living, event.getEntityLiving())) {
 					stack.getTagCompound().setInteger(NBTLiterals.STREAK_KILLS, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) + 1);
-					stack.getTagCompound().setLong(NBTLiterals.STREAK_COOL, WeaponsCapability.get(living).ticksTotal
+					stack.getTagCompound().setLong(NBTLiterals.STREAK_COOL, WeaponsCapability.get(living).ticksTotal 
+							+ ItemKillstreakKit.getCooldown(stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
+							stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)));
+					/*stack.getTagCompound().setLong(NBTLiterals.STREAK_COOL, WeaponsCapability.get(living).ticksTotal
 							+ Math.max(100,ItemKillstreakKit.getCooldown(stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)) 
-									- MathHelper.log2(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS))*250));
-					//stack.getTagCompound().setLong(NBTLiterals.STREAK_LAST, WeaponsCapability.get(living).ticksTotal);
+									- MathHelper.log2(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS))*250));*/
+					stack.getTagCompound().setLong(NBTLiterals.STREAK_LAST, WeaponsCapability.get(living).ticksTotal);
 					stack.getTagCompound().setShort(NBTLiterals.STREAK_REDUCTION, (short)1);
+					
 					stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
 				}
 				if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium")&& TF2ConfigVars.australiumStatue) {
@@ -1594,7 +1618,7 @@ public class TF2EventsCommon {
 					event.setResult(Result.ALLOW);
 			}
 			else {
-				event.getEntityPlayer().getCooldownTracker().removeCooldown(stack.getItem());
+				event.getEntityPlayer().getCooldownTracker().setCooldown(stack.getItem(),0);
 			}
 			stack.setTagCompound(null);
 			return;
@@ -1706,7 +1730,7 @@ public class TF2EventsCommon {
 		}
 		
 		if (stack.getItem() instanceof ItemFoodThrowable && !event.getPlayer().getCooldownTracker().hasCooldown(stack.getItem())) {
-			event.getPlayer().getCooldownTracker().setCooldown(stack.getItem(), ((ItemFoodThrowable)stack.getItem()).waitTime);
+			event.getPlayer().getCooldownTracker().setCooldown(stack.getItem(),  ((ItemFoodThrowable)stack.getItem()).waitTime / (TF2ConfigVars.fastItemCooldown ? 2 : 1));
 			if (!stack.hasTagCompound())
 				stack.setTagCompound(new NBTTagCompound());
 			stack.getTagCompound().setBoolean("IsHealing", true);
@@ -1739,6 +1763,7 @@ public class TF2EventsCommon {
 	@SubscribeEvent
 	public void startTrack(PlayerEvent.StartTracking event) {
 		if(event.getTarget().hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+			TF2weapons.network.sendTo(new TF2Message.ActionMessage(WeaponsCapability.get(event.getTarget()).state, (EntityLivingBase) event.getTarget()), (EntityPlayerMP) event.getEntityPlayer());
 			TF2weapons.network.sendTo(new TF2Message.CapabilityMessage(event.getTarget(), true), (EntityPlayerMP) event.getEntityPlayer());
 		}
 		if(event.getTarget().hasCapability(TF2weapons.PLAYER_CAP, null) && event.getTarget() == event.getEntityPlayer()) {
@@ -1842,16 +1867,20 @@ public class TF2EventsCommon {
 	
 	@SubscribeEvent
 	public void arrowHeadshot(ProjectileImpactEvent.Arrow event) {
-		if (event.getRayTraceResult().entityHit != null && event.getArrow().getEntityData().getBoolean("TF2Arrow")) {
+		if (event.getRayTraceResult().entityHit instanceof EntityLivingBase && event.getArrow().getEntityData().getBoolean("TF2Arrow")) {
 			RayTraceResult trace = Iterables.getFirst(TF2Util.pierce(event.getEntity().world, event.getArrow().shootingEntity,
 					event.getArrow().posX, event.getArrow().posY, event.getArrow().posZ, event.getArrow().posX + event.getArrow().motionX, event.getArrow().posY + event.getArrow().motionY,
 					event.getArrow().posZ + event.getArrow().motionZ, true, 0.08f, false),null);
+			float armor = (float) ((EntityLivingBase)event.getRayTraceResult().entityHit).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue();
 			if (trace.hitInfo instanceof Boolean && ((Boolean)trace.hitInfo)) {
 				event.getArrow().getEntityData().setBoolean("CritHeadshot", true);
 				if (((EntityLivingBase)event.getRayTraceResult().entityHit).getItemStackFromSlot(EntityEquipmentSlot.HEAD).isEmpty())
 					event.getArrow().setDamage(event.getArrow().getDamage()*1.25f);
+				event.getArrow().setDamage(event.getArrow().getDamage()*(1-armor*0.0115));
 			}
+			event.getArrow().setDamage(event.getArrow().getDamage()*(1-armor*0.0152));
 		}
+		
 	}
 	
 	public static LootPool getLootPool(ResourceLocation res){
@@ -2052,7 +2081,7 @@ public class TF2EventsCommon {
 		@Override
 		public void sendSlotContents(Container containerToSend, int slotInd, ItemStack stack) {
 			if(player.getHeldItemMainhand() != null && player.getHeldItemMainhand().getItem() instanceof ItemWeapon)
-				TF2weapons.network.sendTo(new TF2Message.UseMessage(player.getHeldItemMainhand().getItemDamage(), false,
+				TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) player.getHeldItemMainhand().getItem()).getClip(player.getHeldItemMainhand()), false,
 						((ItemUsable) player.getHeldItemMainhand().getItem()).getAmmoAmount(player, player.getHeldItemMainhand()), EnumHand.MAIN_HAND),player);
 		}
 

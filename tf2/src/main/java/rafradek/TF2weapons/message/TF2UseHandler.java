@@ -8,6 +8,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemUsable;
@@ -28,26 +30,24 @@ public class TF2UseHandler implements IMessageHandler<TF2Message.UseMessage, IMe
 					player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[((ItemUsable) stack.getItem()).getAmmoType(stack)]=message.newAmmo;
 			}
 			
-			if (stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)) {
-				stack.setItemDamage(message.value);
+			if (message.value!= -1 && stack.getItem() instanceof ItemWeapon && ((ItemWeapon) stack.getItem()).hasClip(stack)) {
+				((ItemWeapon)stack.getItem()).setClip(stack,message.value);
 				final ItemStack fstack=stack;
-				if (message.reload && message.value != 0)
-				/*
-				 * if(stack.getItemDamage()==0&&TF2ActionHandler.playerAction.
-				 * get().get(player)!=null&&(TF2ActionHandler.playerAction.get()
-				 * .get(player)&8)==0){
-				 * TF2ActionHandler.playerAction.get().put(player, arg1) }
-				 */
+				if (message.reload) {
+					WeaponsCapability.get(player).reloadCool = ((ItemWeapon) stack.getItem()).getWeaponFirstReloadTime(stack, player);
+					WeaponsCapability.get(player).reloadingHand = message.hand;
 				Minecraft.getMinecraft().addScheduledTask(()->
 				{
 						TF2weapons.proxy.playReloadSound(player, fstack);
 				});
+				}
+				else {
+					WeaponsCapability.get(player).stopReload();
+				}
 					
 			}
 		}
 		}
-			// System.out.println("setting "+message.value);
-			// TF2weapons.proxy.playReloadSound(player,stack);
 		return null;
 	}
 }

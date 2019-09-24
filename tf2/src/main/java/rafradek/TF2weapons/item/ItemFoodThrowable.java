@@ -58,8 +58,8 @@ public class ItemFoodThrowable extends ItemFood {
 	protected void onFoodEaten(ItemStack stack, World worldIn, EntityPlayer player)
     {
 		super.onFoodEaten(stack, worldIn, player);
-		if (!worldIn.isRemote && !TF2ConfigVars.fastItemCooldown) {
-			player.getCooldownTracker().setCooldown(this, waitTime);
+		if (!worldIn.isRemote) {
+			player.getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? waitTime/2 : waitTime);
 		}
     }
 	

@@ -96,16 +96,20 @@ public class EntitySoldier extends EntityTF2Character {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
 			
-			if ((this.rocketJumper || this.hasBaseJumper()) && this.getHealth() > 7f
-					&& !this.airborne && this.onGround && this.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == 0)
-				this.rocketJump = true;
+			if(this.loadout.getStackInSlot(0).getItem() instanceof ItemWeapon){
+				if (this.usedSlot==0 && (this.rocketJumper || this.hasBaseJumper()) && this.getHealth() > 7f
+						&& !this.airborne && this.onGround && ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand()) == 0)
+					this.rocketJump = true;
+			}
 			
 			if(!this.isRobot() && this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
-				if(this.usedSlot==0 && this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() && this.loadout.getStackInSlot(1).getItemDamage()!=this.loadout.getStackInSlot(1).getMaxDamage() && this.getDistanceSq(this.getAttackTarget())<36){
+				
+				if(this.usedSlot==0 && ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand())==0 
+						&& ItemWeapon.getWeapon(this.loadout.getStackInSlot(1)).getClip(this.loadout.getStackInSlot(1))>0  && this.getDistanceSq(this.getAttackTarget())<36){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 				}
-				else if(this.usedSlot==1 && (this.getHeldItemMainhand().getItemDamage()==this.getHeldItemMainhand().getMaxDamage() || this.getDistanceSq(this.getAttackTarget())>40)){
+				else if(this.usedSlot==1 && (ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand())==0 || this.getDistanceSq(this.getAttackTarget())>40)){
 					this.switchSlot(0);
 				}
 			}

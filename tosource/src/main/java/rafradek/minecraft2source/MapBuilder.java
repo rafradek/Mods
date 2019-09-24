@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
@@ -91,7 +92,7 @@ import net.minecraftforge.client.IClientCommand;
 import net.minecraftforge.common.util.EnumHelper;
 import rafradek.minecraft2source.Mark.MarkType;
 
-public class MapBuilder
+public class MapBuilder extends ModelExporter
 {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -108,15 +109,14 @@ public class MapBuilder
     
     public List<Cube>[][][] cubes;
     public boolean[][][] occluders;
-    public Map<BakedQuad, Vector3f[]> vecCache = new HashMap<>();
-    public Map<BakedQuad, Vector2f[]> uvCache = new HashMap<>();
+    public ModelReader modelReader = new ModelReader();
     public Map<IBlockState, Model> models = new HashMap<>();
     public Map<IBlockState, List<CubeDef>> brushes = new HashMap<>();
     public static Map<Material, String> materialNames = new HashMap<>();
     public List<ModelInstance> modelList;
     public List<MapEntity> entityList;
     public List<BiConsumer<IBlockState,List<CubeDef>>> fixes;
-    public Map<TextureAtlasSprite, SpriteProperties> sprites;
+    
     public int entityid;
     public int solidid;
     public int sideid;
@@ -129,18 +129,13 @@ public class MapBuilder
    	public TextureAtlasSprite lavaFlow = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/lava_flow");
    	public TextureAtlasSprite waterStill = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/water_still");
    	public TextureAtlasSprite waterFlow = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/water_flow");
-    public ThreadPoolExecutor threads = 
-					new ThreadPoolExecutor(Minecraft2Source.threadCount, Minecraft2Source.threadCount,
-					        0L, TimeUnit.MILLISECONDS,
-					        new LinkedBlockingQueue<Runnable>());
-    public List<Future<?>> futures = new ArrayList<>();
-    public int threadCount =Minecraft2Source.threadCount;
+   
     public List<EntityMark> markParts[][];
     public static Field fieldLightmap;
     public Map<EntityMark, Integer> marks;
     public Set<Integer> marksUsed;
     
-    public boolean niceName;
+    
     public boolean modelsOnly;
     
     public int brushcount;
@@ -167,7 +162,6 @@ public class MapBuilder
 		cubes = new List[xsize][ysize][zsize];
     	occluders = new boolean[xsize][ysize][zsize];
     	lights = new byte[xsize][ysize][zsize];
-		vecCache = new HashMap<>();
     	brushes = new HashMap<>();
     	sprites = new HashMap<>();
     	models = new HashMap<>();
@@ -294,98 +288,7 @@ public class MapBuilder
     	}
     }
     
-    public boolean buildModelCache(IBlockState state, IBakedModel model, World world, long rand, BlockPos pos, float twidth, float theight,EnumMap<EnumFacing, List<BakedQuad>> quads) {
-    	
-    	vecCache.clear();
-    	uvCache.clear();
-		boolean diagonal = false;
-		
-    	//vecCache.clear();
-    	for (EnumFacing facing: EnumFacing.VALUES) {
-    		List<BakedQuad> quadsList=model.getQuads(state, facing, rand);
-    		quads.put(facing, new ArrayList<>(quadsList));
-    		//Minecraft.getMinecraft().player.sendMessage(new TextComponentString("Face: "+facing));
-        	for(int i =0; i < quadsList.size(); i++) {
-        		Vector3f[] cache = new Vector3f[4];
-        		Vector2f[] uvcache = new Vector2f[4];
-        		uvcache[0] = new Vector2f(1,1);
-        		uvcache[1] = new Vector2f();
-        		BakedQuad quad = quadsList.get(i);
-        		TextureAtlasSprite sprite = quad.getSprite();
-        		vecCache.put(quad, cache);
-        		uvCache.put(quad, uvcache);
-        		int[] vertexData=quad.getVertexData();
-        		/*if (cubeList.size() <= i)
-        			cubeList.add(new Cube());
-        		Cube cube = cubeList.get(i);
-        		cube.sidesEnabled.set(facing.ordinal(),shouldRender);
-        		cube.sprites.put(facing, quads.get(i).getSprite());*/
-        		float usize = sprite.getMaxU()-sprite.getMinU();
-        		float vsize = sprite.getMaxV()-sprite.getMinV();
-        		for (int j=0; j<28;j+=7) {
-	        		float x1 = Math.round(Float.intBitsToFloat(vertexData[0+j])*256f)/256f;
-	        		float y1 = Math.round(Float.intBitsToFloat(vertexData[1+j])*256f)/256f;
-	        		float z1 = Math.round(Float.intBitsToFloat(vertexData[2+j])*256f)/256f;
-	        		float u = Math.round(Float.intBitsToFloat(vertexData[4+j])*twidth)/twidth;
-	        		float v = Math.round(Float.intBitsToFloat(vertexData[5+j])*theight)/theight;
-	    			u -= sprite.getMinU();
-	    			v -= sprite.getMinV();
-	    			
-	    			u /= usize;
-	    			v /= vsize;
-	        		cache[j/7]=new Vector3f(x1,y1,z1);
-	        		if (j > 0 && !diagonal) {
-	        			Vector3f prev = cache[(j-1)/7];
-	        			if ((prev.x != x1 && prev.y != y1) || (prev.x != x1 && prev.z != z1) || (prev.y != y1 && prev.z != z1))
-	        				diagonal = true;
-	        		}
-	        		uvcache[j/7]= new Vector2f(u, v);
-	        		//Minecraft.getMinecraft().player.sendMessage(new TextComponentString(x1+" "+y1+" "+z1+" "+u+" "+v+" "+quadsList.get(i).getSprite().getMinV()+" "+vertexData.length));
-        		}
-        		
-        	}
-        		
-    	}
-    	if (!model.getQuads(state, null, rand).isEmpty()) {
-			
-    		//Minecraft.getMinecraft().player.sendMessage(new TextComponentString("Face: null"));
-    		for (int j=0;j<model.getQuads(state, null, rand).size();j++) {
-    			
-    			BakedQuad quad = model.getQuads(state, null, rand).get(j);
-    			TextureAtlasSprite sprite = quad.getSprite();
-	    		int[] vertexData=quad.getVertexData();
-	    		Vector3f[] cache = new Vector3f[4];
-        		Vector2f[] uvcache = new Vector2f[4];
-        		uvCache.put(quad, uvcache);
-        		vecCache.put(quad, cache);
-        		
-        		float usize = sprite.getMaxU()-sprite.getMinU();
-        		float vsize = sprite.getMaxV()-sprite.getMinV();
-		    	for (int i=0; i<28;i+=7) {
-	        		float x1 = Math.round(Float.intBitsToFloat(vertexData[0+i])*256f)/256f;
-	        		float y1 = Math.round(Float.intBitsToFloat(vertexData[1+i])*256f)/256f;
-	        		float z1 = Math.round(Float.intBitsToFloat(vertexData[2+i])*256f)/256f;
-	        		float u = Math.round(Float.intBitsToFloat(vertexData[4+i])*twidth)/twidth;
-	        		float v = Math.round(Float.intBitsToFloat(vertexData[5+i])*theight)/theight;
-	        		u -= sprite.getMinU();
-	    			v -= sprite.getMinV();
-	    			
-	    			u /= usize;
-	    			v /= vsize;
-	        		cache[i/7]=new Vector3f(x1,y1,z1);
-	        		if (i > 0 && !diagonal) {
-	        			Vector3f prev = cache[(i-1)/7];
-	        			if ((prev.x != x1 && prev.y != y1) || (prev.x != x1 && prev.z != z1) || (prev.y != y1 && prev.z != z1))
-	        				diagonal = true;
-	        		}
-	        		uvcache[i/7]= new Vector2f(u, v);
-	        		//Minecraft.getMinecraft().player.sendMessage(new TextComponentString( x1+" "+y1+" "+z1+" "+u+" "+v+" "+quad.getSprite().getMaxV()+" "+vertexData.length));
-	    		}
-	    		quads.get(model.getQuads(state, null, rand).get(j).getFace()).add(model.getQuads(state, null, rand).get(j));
-    		}
-		}
-    	return diagonal;
-    }
+    
     
     public void loadTileEntityModel(World world, IBlockState state, int x, int y, int z) {
     	
@@ -464,16 +367,16 @@ public class MapBuilder
 	    	        			IBakedModel model = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state);
 	    	        			List<BakedQuad> noFaceQuad=model.getQuads(state, null, rand);
 	    	        			EnumMap<EnumFacing, List<BakedQuad>> quads = new EnumMap<>(EnumFacing.class);
-	    	        			boolean diagonal = this.buildModelCache(state, model, world, rand, pos, twidthsp, theightsp, quads);
+	    	        			boolean diagonal = modelReader.buildModelCache(state, model, world, rand, twidthsp, theightsp, quads);
 		        	        	if (diagonal || this.modelsOnly) {
-		        	        		addModel(state, readModel(state, cbox, offset));
+		        	        		addModel(state, this.modelReader.readModel(state, cbox, offset, this));
 		        	        	}
 		        	        	else {
 		        	        		List<CubeDef> cubes= readCubes(quads, state, model, rand, noFaceQuad, cbox);
 		        	        		if (cubes != null)
 		        	        			brushes.put(state, cubes);
 		        	        		else
-		        	        			addModel(state, readModel(state, cbox, offset));
+		        	        			addModel(state, this.modelReader.readModel(state, cbox, offset, this));
 		        	        	}
 	    	        		}
 	    	        		else if (state.getRenderType() == EnumBlockRenderType.LIQUID) {
@@ -1504,7 +1407,7 @@ public class MapBuilder
     		writer.write("0 0 0 0 0 0 0\n");
     		writer.write("end\n");
     		writer.write("triangles\n");
-    		Set<SpriteProperties> spriteSet = new HashSet<>();
+    		Set<ModelExporter.SpriteProperties> spriteSet = new HashSet<>();
     		this.writeTriangles(writer, model.quads, spriteSet);
     		writer.write("end\n");
     		writer.flush();
@@ -1537,14 +1440,14 @@ public class MapBuilder
     		writer.write("$texturegroup gr \n");
     		writer.write("{\n");
     		writer.write("{ ");
-    		for (SpriteProperties sprite : spriteSet) {
+    		for (ModelExporter.SpriteProperties sprite : spriteSet) {
 				writer.write(sprite.name);
 				writer.write(" ");
 			}
     		writer.write("}\n");
     		for (int i = 0; i < model.skinCount; i++) {
     			writer.write("{ ");
-    			for (SpriteProperties sprite : spriteSet) {
+    			for (ModelExporter.SpriteProperties sprite : spriteSet) {
     				if (i >= sprite.colors.size())
     					writer.write(sprite.name);
     				else
@@ -1553,7 +1456,7 @@ public class MapBuilder
     			}
     			writer.write("}\n");
     		}
-    		writer.write("}");
+    		writer.write("}\n");
     		if (!model.collisionBox.isEmpty()) {
     			writer.write("$collisionmodel \""+model.name+"-p.smd"+"\"\n");
     			writer.write("{\n");
@@ -1581,7 +1484,7 @@ public class MapBuilder
     	}
     }
     
-    public void writeTriangles(Writer writer, List<ModelTriangle> tris, Set<SpriteProperties> spriteSet) throws IOException {
+    public void writeTriangles(Writer writer, List<ModelTriangle> tris, Set<ModelExporter.SpriteProperties> spriteSet) throws IOException {
     	
 		for (ModelTriangle tri : tris) {
 			if (tri.sprite != null) {
@@ -1599,11 +1502,11 @@ public class MapBuilder
     			writer.write(" ");
     			writer.write(Float.toString(tri.pos[i].y * Minecraft2Source.blockSize));
     			writer.write("  ");
-    			writer.write(Float.toString(tri.normal.x));
+    			writer.write(Float.toString(tri.normal[i].x));
     			writer.write(" ");
-    			writer.write(Float.toString(tri.normal.z));
+    			writer.write(Float.toString(tri.normal[i].z));
     			writer.write(" ");
-    			writer.write(Float.toString(tri.normal.y));
+    			writer.write(Float.toString(tri.normal[i].y));
     			writer.write("  ");
     			writer.write(Float.toString(tri.uv[i].x));
     			writer.write(" ");
@@ -1617,7 +1520,7 @@ public class MapBuilder
     	parent.mkdirs();
     	new File(parent,"minecraft").mkdirs();
     	new File(parent,"models/minecraft").mkdirs();
-    	for (Entry<TextureAtlasSprite, SpriteProperties> entry : this.sprites.entrySet()) {
+    	for (Entry<TextureAtlasSprite, ModelExporter.SpriteProperties> entry : this.sprites.entrySet()) {
     		TextureAtlasSprite sprite = entry.getKey();
     		//BufferedImage image = new BufferedImage(sprite.getIconWidth(),sprite.getIconHeight(),BufferedImage.TYPE_INT_ARGB);
     		//image.setRGB(0, 0, sprite.getIconWidth(), sprite.getIconHeight(), imagedata, 0, sprite.getIconWidth());
@@ -2055,7 +1958,7 @@ public class MapBuilder
 		    	}
 		    	else if (cube.def.sprites.get(facing) != null && cube.sidesEnabled.contains(facing)) {
 		    		TextureAtlasSprite sprite = cube.def.sprites.get(facing);
-		    		SpriteProperties properties = sprites.get(sprite);
+		    		ModelExporter.SpriteProperties properties = sprites.get(sprite);
 		    		if (cube.color[facing.ordinal()] == -1)
 		    			keywriter.keyValue("material", "MINECRAFT/"+properties.name);
 		    		else
@@ -2117,8 +2020,8 @@ public class MapBuilder
 		        		if (facing2 != facing1) {
 		        			for (int j = 0; j < entry2.getValue().size(); j++) {
 		        				BakedQuad quad2 = entry2.getValue().get(j);
-		        				Vector3f[] first = vecCache.get(quad1);
-		        				Vector3f[] second = vecCache.get(quad2);
+		        				Vector3f[] first = modelReader.vecCache.get(quad1);
+		        				Vector3f[] second = modelReader.vecCache.get(quad2);
 		        				if (canJoin(first, second, facing1, facing2)) {
 		        					boolean created = false;
 		        					if (cube == null) {
@@ -2332,139 +2235,7 @@ public class MapBuilder
     	return cubes;
     }
     
-    public Model readModel(IBlockState state, List<AxisAlignedBB> cbox, Vector3f offset){
-    	Model model = new Model();
-    	for (BakedQuad quad : vecCache.keySet()) {
-    		Vector3f[] vec = vecCache.get(quad);
-    		
-    		Vector3f.add(vec[0], offset, vec[0]);
-    		Vector3f.add(vec[1], offset, vec[1]);
-    		Vector3f.add(vec[2], offset, vec[2]);
-    		Vector3f.add(vec[3], offset, vec[3]);
-    		
-    		Vector2f[] uv = uvCache.get(quad);
-    		Vector3f sub1 = new Vector3f();
-    		Vector3f sub2 = new Vector3f();
-    		Vector3f normal = new Vector3f();
-    		Vector3f.sub(vec[0], vec[1], sub1);
-    		Vector3f.sub(vec[1], vec[2], sub2);
-    		Vector3f.cross(sub1, sub2, normal);
-    		TextureAtlasSprite sprite = quad.getSprite();
-    		ModelTriangle tri1 = new ModelTriangle();
-    		tri1.normal = normal;
-    		tri1.pos = new Vector3f[] {vec[1],vec[2],vec[0]};
-    		tri1.uv = new Vector2f[] {uv[1],uv[2],uv[0]};
-    		tri1.sprite = sprite;
-    		tri1.hasTint = quad.hasTintIndex();
-    		
-    		ModelTriangle tri2 = new ModelTriangle();
-    		tri2.normal = normal;
-    		tri2.pos = new Vector3f[] {vec[2],vec[3],vec[0]};
-    		tri2.uv = new Vector2f[] {uv[2],uv[3],uv[0]};
-    		tri2.sprite = quad.getSprite();
-    		tri2.hasTint = quad.hasTintIndex();
-    		model.quads.add(tri1);
-    		model.quads.add(tri2);
-    		if (quad.hasTintIndex())
-    			model.hasTint = true;
-    		this.addSprite(quad.getSprite(), true,state.getMaterial());
-    	}
-    	for (AxisAlignedBB box : cbox) {
-    		
-    		Vector3f mmm = new Vector3f((float)box.minX, (float)box.minY, (float)box.minZ);
-    		Vector3f xmm = new Vector3f((float)box.maxX, (float)box.minY, (float)box.minZ);
-    		Vector3f mxm = new Vector3f((float)box.minX, (float)box.maxY, (float)box.minZ);
-    		Vector3f mmx = new Vector3f((float)box.minX, (float)box.minY, (float)box.maxZ);
-    		Vector3f xxm = new Vector3f((float)box.maxX, (float)box.maxY, (float)box.minZ);
-    		Vector3f mxx = new Vector3f((float)box.minX, (float)box.maxY, (float)box.maxZ);
-    		Vector3f xmx = new Vector3f((float)box.maxX, (float)box.minY, (float)box.maxZ);
-    		Vector3f xxx = new Vector3f((float)box.maxX, (float)box.maxY, (float)box.maxZ);
-    		
-    		ModelTriangle tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,1,0);
-    		tri1.pos = new Vector3f[] {xxm,xxx,mxm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,1,0);
-    		tri1.pos = new Vector3f[] {xxx,mxx,mxm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,-1,0);
-    		tri1.pos = new Vector3f[] {mmm,xmx,xmm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,-1,0);
-    		tri1.pos = new Vector3f[] {mmm,mmx,xmx};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(1,0,0);
-    		tri1.pos = new Vector3f[] {xxm,xxx,xmm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(1,0,0);
-    		tri1.pos = new Vector3f[] {xxx,xmx,xmm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(-1,0,0);
-    		tri1.pos = new Vector3f[] {mmm,mxx,mxm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(-1,0,0);
-    		tri1.pos = new Vector3f[] {mmm,mmx,mxx};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,0,1);
-    		tri1.pos = new Vector3f[] {xmx,xxx,mmx};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,0,1);
-    		tri1.pos = new Vector3f[] {xxx,mxx,mmx};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,0,-1);
-    		tri1.pos = new Vector3f[] {mmm,xxm,xmm};
-    		model.collisionBox.add(tri1);
-    		
-    		tri1 = new ModelTriangle();
-    		tri1.normal = new Vector3f(0,0,-1);
-    		tri1.pos = new Vector3f[] {mmm,mxm,xxm};
-    		model.collisionBox.add(tri1);
-    	}
-    	
-    	Vector2f[] uvdef = new Vector2f[] {new Vector2f(1,0),new Vector2f(1,1),new Vector2f(0,0)};
-    	for (ModelTriangle tri: model.collisionBox) {
-    		tri.uv = uvdef;
-    	}
-    	
-    	StringBuilder modelname = new StringBuilder();
-    	if (this.niceName)
-    		modelname.append(state.getBlock().getRegistryName().getResourcePath());
-    	else
-    		modelname.append(encodeInt(Block.getIdFromBlock(state.getBlock())));
-    	for (IProperty<?> prop : state.getPropertyKeys()) {
-    		modelname.append("_");
-    		int i = 0;
-    		for (Object value : prop.getAllowedValues()) {
-    			if (state.getValue(prop).equals(value)) {
-    				modelname.append(Integer.toString(i, Character.MAX_RADIX));
-    				break;
-    			}
-    			i++;
-    		}
-    	}
-    	model.name=modelname.toString();
-    	return model;
-    }
+    
     private TextureAtlasSprite joinTexture(TextureAtlasSprite front, TextureAtlasSprite back) {
 		return new SpriteCombined(front,back);
 	}
@@ -2510,23 +2281,7 @@ public class MapBuilder
     public boolean isOutOfBounds(int x, int y, int z) {
     	return x >= xsize || y >= ysize || z >= zsize || x < 0 || y < 0 || z < 0;
     }
-    public void addSprite(TextureAtlasSprite sprite, boolean model, Material material) {
-		if (!sprites.containsKey(sprite)) {
-			SpriteProperties properties = new SpriteProperties(sprites.size(),sprite, this.niceName);
-			properties.material = material;
-			if (model)
-				properties.hasModel = true;
-			else
-				properties.hasBrush = true;
-			sprites.put(sprite, properties);
-		}
-		else {
-			if (model)
-				sprites.get(sprite).hasModel = true;
-			else
-				sprites.get(sprite).hasBrush = true;
-		}
-    }
+    
     
     public void waitForFutures() {
     	for (Future<?> future: futures) {
@@ -2619,10 +2374,12 @@ public class MapBuilder
     	public int skinCount;
     	public List<ModelTriangle> collisionBox = new ArrayList<>();
     	public List<ModelTriangle> quads = new ArrayList<>();
+    	public Vector3f min;
+    	public Vector3f max;
     }
     
     public static class ModelTriangle {
-    	public Vector3f normal;
+    	public Vector3f[] normal;
 		public TextureAtlasSprite sprite;
 		public boolean hasTint;
     	public Vector2f[] uv;
@@ -2692,11 +2449,11 @@ public class MapBuilder
 			this.tint[facing.ordinal()] = quad.getTintIndex();
     		if (cullface)
     			this.cullFace.add(facing);
-    		Vector2f[] uv = builder.uvCache.get(quad);
+    		Vector2f[] uv = builder.modelReader.uvCache.get(quad);
     		Vector2f[] uvnew = new Vector2f[2];
     		builder.addSprite(quad.getSprite(), false, state.getMaterial());
     		
-    		SpriteProperties prop = builder.sprites.get(quad.getSprite());
+    		ModelExporter.SpriteProperties prop = builder.sprites.get(quad.getSprite());
     		float minx = 0;
     		float miny = 0;
     		float sizex = 0;
@@ -2821,46 +2578,6 @@ public class MapBuilder
     	}
     }
     
-    public static class SpriteProperties {
-    	
-		public boolean isWater;
-		public boolean hasModel;
-    	public boolean hasBrush;
-    	public int selfillum;
-    	public Material material;
-    	public List<Integer> colors = new ArrayList<>();
-    	public int id;
-    	public String name;
-    	public TextureAtlasSprite detail;
-    	public SpriteProperties(int id, TextureAtlasSprite sprite, boolean nicename) {
-			this.id = id;
-			if (sprite instanceof SpriteCombined) {
-				if (nicename) {
-					String[] front=((SpriteCombined)sprite).front.getIconName().split("/");
-					String[] back=((SpriteCombined)sprite).back.getIconName().split("/");
-					this.name = front[front.length-1]
-							+"_"+back[front.length-1];
-				}
-				else {
-					this.name = /*encodeInt(((SpriteCombined)sprite).front.getOriginX()/16)
-							+"_"+encodeInt(((SpriteCombined)sprite).front.getOriginY()/16)
-							+"_"+*/encodeInt(((SpriteCombined)sprite).back.getOriginX()/16)
-							+"_"+encodeInt(((SpriteCombined)sprite).back.getOriginY()/16);
-				}
-			}
-			else {
-				if (nicename) {
-					String[] name = sprite.getIconName().split("/");
-					this.name = name[name.length-1];
-				}
-				else {
-					this.name = Integer.toString(sprite.getOriginX()/16, Character.MAX_RADIX)+"-"+Integer.toString(sprite.getOriginY()/16, Character.MAX_RADIX);
-				}
-			}
-			
-		}
-    }
-    
     public static class SpriteFragment {
     	TextureAtlasSprite sprite;
     	int minX;
@@ -2873,6 +2590,11 @@ public class MapBuilder
     		
     	}
     }
+    @Override
+	public Collection<Model> getModels() {
+		// TODO Auto-generated method stub
+		return this.models.values();
+	}
     
     static {
 
@@ -2900,4 +2622,6 @@ public class MapBuilder
     	
     	
     }
+
+	
 }

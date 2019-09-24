@@ -42,6 +42,9 @@ public class EntityAISetup extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 
+		if (this.engineer.getMainWeapon() != -1)
+			return false;
+		
 		if (this.engineer.getOwner() != null && this.engineer.getOrder() == Order.FOLLOW)
 			return false;
 		

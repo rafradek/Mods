@@ -183,6 +183,7 @@ public class WeaponData implements ICapabilityProvider {
 		public int usedClass = -1;
 		public int fire1Cool = 0;
 		public int fire2Cool = 0;
+		public int clip = 0;
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {

@@ -2,6 +2,7 @@ package rafradek.TF2weapons.entity.boss;
 
 import java.util.HashSet;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -14,12 +15,15 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.boss.EntityWither;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.DamageSource;
@@ -40,6 +44,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
+import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.util.TF2DamageSource;
@@ -52,13 +57,15 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	public int level = 1;
 	public int timeLeft = 2400;
 	public HashSet<EntityPlayer> attackers = new HashSet<EntityPlayer>();
+	public HashSet<UUID> participateUUID = new HashSet<UUID>();
 	public int playersAttacked = 0;
 	private int blockBreakCounter=27;
 	public BlockPos spawnPos;
 	protected float envDamage;
-
+	protected float healthForPlayer;
 	public boolean summoned;
-	public float damageMult=1;
+	public float desiredHealth=0;
+	protected static final UUID BOSS_ARMOR_SPAWN = UUID.fromString("2d4ac0f2-a8f5-4a13-b04d-67d97bd71320");
 	
 	public WeaponsCapability weaponCap;
 	public EntityTF2Boss(World worldIn) {
@@ -84,7 +91,13 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 					&& ((TF2DamageSource) source).getWeapon().getItem() instanceof ItemMinigun)
 				amount *= 0.36f;
 		}
-		if (super.attackEntityFrom(source, amount*damageMult)) {
+		if (source.getImmediateSource() instanceof EntitySentry && !((EntitySentry)source.getImmediateSource()).fromPDA) {
+			amount *= 0.3f;
+		}
+		if (source.getTrueSource() == null || WeaponsCapability.get(source.getTrueSource()) == null) {
+			amount *= 0.5f;
+		}
+		if (super.attackEntityFrom(source, amount * (this.getMaxHealth()/this.desiredHealth))) {
 			if (source.getTrueSource() != null && source.getTrueSource() instanceof EntityPlayer)
 				this.attackers.add((EntityPlayer) source.getTrueSource());
 			if (!(source.getTrueSource() instanceof EntityLivingBase))
@@ -134,6 +147,35 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		super.onLivingUpdate();
 		this.timeLeft--;
 		if (!this.world.isRemote) {
+			if (this.ticksExisted % 20 == 0) {
+				for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
+						this.getEntityBoundingBox().grow(100, 28, 100),new Predicate<EntityLivingBase>(){
+
+							@Override
+							public boolean apply(EntityLivingBase input) {
+								// TODO Auto-generated method stub
+								return input.hasCapability(TF2weapons.WEAPONS_CAP, null) && (TF2Util.getOwnerIfOwnable(input) instanceof EntityPlayer || input.getDistanceSq(EntityTF2Boss.this) < 900);
+							}
+					
+				})) {
+					
+					if (!this.participateUUID.contains(living.getUniqueID())) {
+						this.participateUUID.add(living.getUniqueID());
+						this.desiredHealth += this.healthForPlayer;
+						
+						if(living instanceof EntityPlayer){
+							this.desiredHealth += this.healthForPlayer * 3;
+						}
+						float per = this.getHealth()/this.getMaxHealth();
+						
+						this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
+						.setBaseValue(Math.min(1000,desiredHealth));
+						
+						this.setHealth(per*this.getMaxHealth());
+						
+					}
+				}
+			}
 			if (this.getAttackTarget() != null && !this.getAttackTarget().isEntityAlive()){
 				this.setAttackTarget(null);
 			}
@@ -296,9 +338,8 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		int highestLevel = 0;
 		int statmult=0;
 		this.spawnPos = this.getPosition();
-		this.setHomePosAndDistance(this.getPosition(), 40);
 		for (EntityLivingBase living : this.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				this.getEntityBoundingBox().grow(64, 28, 64),new Predicate<EntityLivingBase>(){
+				this.getEntityBoundingBox().grow(100, 28, 100),new Predicate<EntityLivingBase>(){
 
 					@Override
 					public boolean apply(EntityLivingBase input) {
@@ -309,6 +350,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		})) {
 			
 			statmult++;
+			this.participateUUID.add(living.getUniqueID());
 			if(living instanceof EntityPlayer){
 				players++;
 				statmult+=3;
@@ -327,16 +369,18 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		highestLevel++;
 		this.level = Math.min(30, highestLevel);
 		//System.out.println("Level: " + this.level + " player: " + players);
+		this.healthForPlayer = (float) (this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * 0.1f * (0.5f + highestLevel * 0.5f));
 		float desiredHealth=(float)this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * (0.6f + statmult * 0.1f) * (0.5f + highestLevel * 0.5f);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
 				.setBaseValue(Math.min(1000,desiredHealth));
-		this.damageMult=Math.min(1f, 1000f/desiredHealth);
+		this.desiredHealth=desiredHealth;
 		this.setHealth(this.getMaxHealth());
 		TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[19],
 				1 * (0.7f + highestLevel * 0.3f));
 		this.experienceValue = (int) (200 * (0.5f + players * 0.5f) * (0.35f + highestLevel * 0.65f));
 		this.playersAttacked=players;
 		this.playSound(this.getAppearSound(), 4F, 1);
+		this.getEntityAttribute(SharedMonsterAttributes.ARMOR).applyModifier(new AttributeModifier(EntityTF2Boss.BOSS_ARMOR_SPAWN, "armorspawn", 20, 0));
 		return p_110161_1_;
 	}
 
@@ -362,8 +406,28 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		nbt.setShort("Level", (short)this.level);
 		nbt.setShort("Players", (short) this.playersAttacked);
 		nbt.setShort("TimeLeft", (short)this.timeLeft);
-		nbt.setFloat("DamageMult", this.damageMult);
+		nbt.setFloat("DamageMult", this.desiredHealth);
 		nbt.setBoolean("Summoned", this.summoned);
+		nbt.setFloat("HealthForPlayer", this.healthForPlayer);
+		
+		NBTTagList playerleast = new NBTTagList();
+		NBTTagList playermost = new NBTTagList();
+		for (EntityPlayer player : this.attackers) {
+			playerleast.appendTag(new NBTTagLong(player.getUniqueID().getLeastSignificantBits()));
+			playermost.appendTag(new NBTTagLong(player.getUniqueID().getMostSignificantBits()));
+		}
+		nbt.setTag("PlayerLeast", playerleast);
+		nbt.setTag("PlayerMost", playermost);
+		
+		NBTTagList participateleast = new NBTTagList();
+		NBTTagList participatemost = new NBTTagList();
+		for (UUID participate : this.participateUUID) {
+			participateleast.appendTag(new NBTTagLong(participate.getLeastSignificantBits()));
+			participatemost.appendTag(new NBTTagLong(participate.getMostSignificantBits()));
+		}
+		nbt.setTag("ParticipateLeast", participateleast);
+		nbt.setTag("ParticipateMost", participatemost);
+		
 		if(this.spawnPos != null)
 			nbt.setIntArray("SpawnPos", new int[]{this.spawnPos.getX(), this.spawnPos.getY(), this.spawnPos.getZ()});
 	}
@@ -373,8 +437,21 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 		level=nbt.getShort("Level");
 		this.playersAttacked=nbt.getShort("Players");
 		this.timeLeft=nbt.getShort("TimeLeft");
-		this.damageMult=nbt.getFloat("DamageMult");
+		this.desiredHealth=nbt.getFloat("DamageMult");
 		this.summoned = nbt.getBoolean("Summoned");
+		this.healthForPlayer = nbt.getFloat("HealthForPlayer");
+		
+		NBTTagList playerleast = nbt.getTagList("PlayerLeast", 4);
+		NBTTagList playermost = nbt.getTagList("PlayerMost", 4);
+		for (int i = 0; i < playerleast.tagCount(); i++) {
+			this.attackers.add(this.world.getPlayerEntityByUUID(new UUID(((NBTTagLong) playermost.get(i)).getLong(), ((NBTTagLong) playerleast.get(i)).getLong())));
+		}
+		NBTTagList participateleast = nbt.getTagList("ParticipateLeast", 4);
+		NBTTagList participatemost = nbt.getTagList("ParticipateMost", 4);
+		for (int i = 0; i < participateleast.tagCount(); i++) {
+			this.participateUUID.add(new UUID(((NBTTagLong) participatemost.get(i)).getLong(),((NBTTagLong) participateleast.get(i)).getLong()));
+		}
+		
 		if(this.timeLeft<2250)
 			this.setGlowing(false);
 		if(nbt.hasKey("SpawnPos")) {

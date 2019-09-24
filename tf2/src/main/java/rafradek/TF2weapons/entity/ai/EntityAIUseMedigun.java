@@ -85,7 +85,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		double range = ItemFromData.getData(this.entityHost.getHeldItemMainhand()).getFloat(PropertyType.RANGE);
 		if (d0 <= range * range) {
 
-			if (!pressed) {
+			if (!pressed || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() == -1) {
 				pressed = true;
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(this.attackTarget.getEntityId());
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;

@@ -15,12 +15,14 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -40,6 +42,7 @@ import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.Contract.Objective;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.ReflectionAccess;
 
 public class ItemMedigun extends ItemUsable {
 
@@ -60,16 +63,6 @@ public class ItemMedigun extends ItemUsable {
 				trace.hitInfo = new float[] { 0, 0 };
 				list.add(trace);
 				message.target = list;
-				// System.out.println("healing:
-				// "+trace.entityHit.getEntityId());
-				// living.getCapability(TF2weapons.aaWEAPONS_CAP,
-				// null).healTarget=trace.entityHit.getEntityId();
-				// TF2weapons.network.sendToServer(new
-				// TF2Message.CapabilityMessage(living));
-
-				// ClientProxy.playWeaponSound(living,
-				// ItemFromData.getSound(stack,PropertyType.HEAL_START_SOUND),
-				// false, 0, stack);
 			}
 		} else if (!world.isRemote && message != null && message.readData != null) {
 			living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget((int) message.readData.get(0)[0]);
@@ -81,9 +74,20 @@ public class ItemMedigun extends ItemUsable {
 		
 		if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode) {
 			ItemStack stackAmmo = this.searchForAmmo(living, stack);
+			int use = 16;
+			if (target.getHealth() >= target.getMaxHealth())
+				use /= 2;
+			if (target.getAbsorptionAmount() >= target.getMaxHealth() *this.getMaxOverheal(stack, living, target) * 0.9f) {
+				use /= 2;
+				if (stack.getTagCompound().getFloat("ubercharge") >= 1)
+					use /= 4;
+			}
+			else if (stack.getTagCompound().getFloat("ubercharge") >= 1)
+				use = use * 2 / 3;
+			
 			if (!stackAmmo.isEmpty())
 				((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
-						this.getActualAmmoUse(stack, living, target.getHealth() >= target.getMaxHealth()?1:2));
+						this.getActualAmmoUse(stack, living, use));
 			else
 				return;
 		}
@@ -95,36 +99,42 @@ public class ItemMedigun extends ItemUsable {
 			heal *= 1 + Math.min(2, (lastHitTime - 200f) / 50f);
 		float overheal = heal + target.getMaxHealth() * 0.001666f;
 		float ubercharge = TF2Attribute.getModifier("Uber Rate", stack, 0.00125f, living);
-		if (target.getHealth() < target.getMaxHealth()) {
-			overheal = (target.getHealth() + heal) - target.getMaxHealth() + 0.04f;
-			target.heal(heal);
-			if(living instanceof EntityPlayerMP && (target instanceof EntityTF2Character || target instanceof EntityPlayer)) {
-				if((living.getCapability(TF2weapons.PLAYER_CAP, null).healed+=heal)>=20) {
-					living.getCapability(TF2weapons.PLAYER_CAP, null).healed-=20;
-					living.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.HEAL_20, stack);
+		if (TF2Attribute.getModifier("Life Steal", stack, 0, living) != 0 && !TF2Util.isOnSameTeam(living, target)) {
+			heal = heal * (0.8f+TF2Attribute.getModifier("Life Steal", stack, 0, living)*0.2f) * 
+					(1f-(float)target.getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue()*0.03f);
+			TF2Util.dealDamage(target, world, living, stack, 0, heal, TF2Util.causeDirectDamage(stack, living, 0).setDamageBypassesArmor());
+			float lifesteal = TF2Util.getReducedHealing(living, target, heal*TF2Attribute.getModifier("Life Steal", stack, 0, living)*0.15f);
+			if (!TF2Util.isEnemy(living, target))
+				lifesteal *= 0.25f;
+			if (target instanceof EntityPlayer) {
+				lifesteal *= 2f;
+			}
+			living.heal(lifesteal);
+			
+		}
+		else {
+			if (target.getHealth() < target.getMaxHealth()) {
+				overheal = (target.getHealth() + heal) - target.getMaxHealth() + 0.04f;
+				target.heal(heal);
+				if(living instanceof EntityPlayerMP && (target instanceof EntityTF2Character || target instanceof EntityPlayer)) {
+					if((living.getCapability(TF2weapons.PLAYER_CAP, null).healed+=heal)>=20) {
+						living.getCapability(TF2weapons.PLAYER_CAP, null).healed-=20;
+						living.getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.HEAL_20, stack);
+					}
 				}
 			}
+			if (target.getHealth() >= target.getMaxHealth()
+					&& target.getAbsorptionAmount() < target.getMaxHealth() * this.getMaxOverheal(stack, living, target)) {
+				target.setAbsorptionAmount(Math.min(target.getAbsorptionAmount() + overheal,
+						target.getMaxHealth() * this.getMaxOverheal(stack, living, null)));
+				target.getDataManager().set(TF2EventsCommon.ENTITY_OVERHEAL,
+						target.getAbsorptionAmount());
+			}
+			
+			if (target.getHealth() >= target.getMaxHealth()
+					&& target.getAbsorptionAmount() >= target.getMaxHealth() * (this.getMaxOverheal(stack, living, target) - 0.075))
+				ubercharge /= 2;
 		}
-		if (target.getHealth() >= target.getMaxHealth()
-				&& target.getAbsorptionAmount() < target.getMaxHealth() * this.getMaxOverheal(stack, living, target)) {
-			target.setAbsorptionAmount(Math.min(target.getAbsorptionAmount() + overheal,
-					target.getMaxHealth() * this.getMaxOverheal(stack, living, null)));
-			target.getDataManager().set(TF2EventsCommon.ENTITY_OVERHEAL,
-					target.getAbsorptionAmount()/*
-												 * Math.max(target.getEntityData
-												 * ().getFloat("overhealamount")
-												 * +overheal,target.getMaxHealth
-												 * ()*this.getMaxOverheal(stack,
-												 * living))
-												 */);
-			// TF2weapons.sendTracking(new
-			// TF2Message.PropertyMessage("overheal",
-			// target.getAbsorptionAmount(),target),target);
-		}
-		
-		if (target.getHealth() >= target.getMaxHealth()
-				&& target.getAbsorptionAmount() >= target.getMaxHealth() * (this.getMaxOverheal(stack, living, target) - 0.075))
-			ubercharge /= 2;
 		if (!stack.getTagCompound().getBoolean("Activated") && stack.getTagCompound().getFloat("ubercharge") < 1) {
 			stack.getTagCompound().setFloat("ubercharge",
 					Math.min(1, stack.getTagCompound().getFloat("ubercharge") + ubercharge));
@@ -187,18 +197,22 @@ public class ItemMedigun extends ItemUsable {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		if (par1ItemStack.isEmpty())
 			return;
-		if (par5 && !this.canFire(par2World, (EntityLivingBase) par3Entity, par1ItemStack)) {
+		if (!par2World.isRemote && par5 && !this.canFire(par2World, (EntityLivingBase) par3Entity, par1ItemStack)) {
 			par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
 		}
+		
 		Potion effect=Potion.getPotionFromResourceLocation(ItemFromData.getData(par1ItemStack).getString(PropertyType.EFFECT_TYPE));
 		if (!par2World.isRemote&&par1ItemStack.getTagCompound().getBoolean("Activated")) {
+			float uber = par1ItemStack.getTagCompound().getFloat("ubercharge") - 0.00625f;
 			par1ItemStack.getTagCompound().setFloat("ubercharge",
-					Math.max(0, par1ItemStack.getTagCompound().getFloat("ubercharge") - 0.00625f));
+					Math.max(0, uber));
+			
 			if(par5 && effect != null && par3Entity.ticksExisted%4==0)
 				TF2Util.addAndSendEffect(((EntityLivingBase)par3Entity),new PotionEffect(effect,15));
 			if (par1ItemStack.getTagCompound().getFloat("ubercharge") == 0) {
@@ -235,7 +249,15 @@ public class ItemMedigun extends ItemUsable {
 				}
 			}
 		}
-
+		if (!par2World.isRemote) {
+			if (par5 || par4 == 40) {
+				try {
+					((NonNullList<ItemStack>)ReflectionAccess.entityHandInv.get(par3Entity)).get(par5 ? 0 : 1).getTagCompound().setFloat(
+							"ubercharge", par1ItemStack.getTagCompound().getFloat("ubercharge"));
+				} catch (Exception e) {
+				}
+			}
+		}
 	}
 
 	@Override
@@ -302,18 +324,20 @@ public class ItemMedigun extends ItemUsable {
 
 	@Override
 	public boolean startUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
-		if (world.isRemote && ((newState & 1) - (oldState & 1)) == 1) {
-			RayTraceResult trace = this.trace(stack, living, world);
-			if (trace == null || trace.entityHit == null || !(trace.entityHit instanceof EntityLivingBase))
-				ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.NO_TARGET_SOUND), false,
-						1, stack);
-			// System.out.println("Stop heal");
-			
-			if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() != -1) {
-				living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
-				TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
+		if (((newState & 1) - (oldState & 1)) == 1) {
+			if (world.isRemote) {
+				RayTraceResult trace = this.trace(stack, living, world);
+				if (trace == null || trace.entityHit == null || !(trace.entityHit instanceof EntityLivingBase))
+					ClientProxy.playWeaponSound(living, ItemFromData.getSound(stack, PropertyType.NO_TARGET_SOUND), false,
+							1, stack);
 			}
-
+			else {
+				if (living.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() != -1) {
+					living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
+					//TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
+				}
+			}
+			// System.out.println("Stop heal");
 		}
 		if (!world.isRemote && ((newState & 2) - (oldState & 2)) == 2
 				&& stack.getTagCompound().getFloat("ubercharge") == 1f) {
@@ -337,9 +361,9 @@ public class ItemMedigun extends ItemUsable {
 
 	@Override
 	public boolean endUse(ItemStack stack, EntityLivingBase living, World world, int oldState, int newState) {
-		if (world.isRemote && !TF2ConfigVars.medigunLock && (oldState & 1 - newState & 1) == 1) {
+		if (!world.isRemote && !TF2ConfigVars.medigunLock && (oldState & 1 - newState & 1) == 1) {
 			living.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(-1);
-			TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
+			//TF2weapons.network.sendToServer(new TF2Message.CapabilityMessage(living, false));
 		}
 		return false;
 	}

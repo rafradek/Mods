@@ -39,7 +39,9 @@ public class EntityMedic extends EntityTF2Character {
 		this.targetTasks.taskEntries.clear();
 		this.targetTasks.addTask(1, this.findplayer = new EntityAINearestChecked(this, EntityLivingBase.class, true,
 				false, Predicates.and(this::isValidTarget, target -> {
-					return target.getHealth()<target.getMaxHealth() || (target instanceof EntityPlayer && target.getCapability(TF2weapons.PLAYER_CAP, null).medicCall > 0);
+					return target.getHealth()<target.getMaxHealth() 
+							|| (target == this.getOwner() && this.getAbsorptionAmount() == 0) 
+							|| (target instanceof EntityPlayer && target.getCapability(TF2weapons.PLAYER_CAP, null).medicCall > 0);
 				}), false, true) {
 			
 			@Override
@@ -62,7 +64,7 @@ public class EntityMedic extends EntityTF2Character {
 		this.experienceValue = 15;
 		this.rotation = 15;
 		//this.tasks.removeTask(attack);
-
+		this.stepHeight = 1f;
 		if (par1World != null) {
 			this.tasks.addTask(3, useMedigun);
 			this.friendly = true;

@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
@@ -43,8 +45,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import rafradek.minecraft2source.Mark.MarkType;
 
-@Mod(modid = "minecraft2source", name = "Minecraft map to Source", version = "1.0", guiFactory = "rafradek.minecraft2source.GuiFactory")
+@Mod(modid = "minecraft2source", name = "Minecraft map to Source", version = "1.0", guiFactory = "rafradek.minecraft2source.GuiFactory", clientSideOnly=true)
 public class Minecraft2Source {
+	
+	public static final Logger LOGGER = LogManager.getLogger("Minecraft2Source");
 	public static Configuration conf;
 	public static Map<String, String> gamePathNames;
 	public static String enginePath;
@@ -104,6 +108,7 @@ public class Minecraft2Source {
 		ClientCommandHandler.instance.registerCommand(new CommandMarkSpecial("ms"));
 		ClientCommandHandler.instance.registerCommand(new CommandMarkSpecial("markspecial"));
 		ClientCommandHandler.instance.registerCommand(new CommandExportModel());
+		ClientCommandHandler.instance.registerCommand(new CommandExportItem());
 	}
 	
 	public void syncConfig() {

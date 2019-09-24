@@ -506,5 +506,13 @@
 			"name": "trigger",
 			"children": [31, 32, 33]
 		}
+	],
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/dragon_fury_blu"
+		}
 	]
 }

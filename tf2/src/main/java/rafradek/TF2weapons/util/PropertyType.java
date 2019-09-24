@@ -108,6 +108,9 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	public static final PropertyType<ItemCrate.CrateContent> CONTENT = new ItemCrate.PropertyContent(82, "Content", ItemCrate.CrateContent.class);
 	public static final PropertyType<Integer> COLOR = new PropertyType<>(83, "Color", Integer.class);
 	public static final PropertyType<Boolean> F2P = new PropertyType<>(84, "F2P", Boolean.class);
+	public static final PropertyType<Float> KNOCKBACK_Z = new PropertyType<>(85, "Knockback Z", Float.class);
+	public static final PropertyType<Float> MINIMAL_RANGE = new PropertyType<>(86, "Minimal range", Float.class);
+	public static final PropertyType<Float> COOLDOWN_LONG = new PropertyType<>(87, "Long cooldown", Float.class);
 	public Class<T> type;
 	public int id;
 	public String name;

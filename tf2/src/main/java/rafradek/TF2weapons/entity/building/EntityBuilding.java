@@ -61,6 +61,7 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
+import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemSapper;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2Util;
@@ -189,14 +190,18 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				this.writeEntityToNBT(tag);
 				((EntityEngineer)this.owner).grabbed=tag;
 				((EntityEngineer)this.owner).grabbedid = this.getBuildingID();
-				((EntityEngineer)this.owner).switchSlot(0);
+				((EntityEngineer)this.owner).loadout.getStackInSlot(3).getTagCompound().setByte("Building", (byte) (this.getBuildingID()+1));
+				((EntityEngineer)this.owner).switchSlot(3);
 			}
 			else if (this.fromPDA) {
-				NBTTagCompound tag = new NBTTagCompound();
-				this.writeEntityToNBT(tag);
-				TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carrying = tag;
-				TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carryingType = this.getBuildingID();
-				this.clearReferences();
+				int slotpda = TF2Util.getFirstItemSlot(((EntityPlayer) this.getOwner()).inventory, stack -> stack.getItem() instanceof ItemPDA);
+				if (slotpda != -1) {
+					NBTTagCompound tag = new NBTTagCompound();
+					this.writeEntityToNBT(tag);
+					TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carrying = tag;
+					TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carryingType = this.getBuildingID();
+					this.clearReferences();
+				}
 			}
 			else {
 				ItemStack stack = this.getPickedResult(null);
@@ -636,9 +641,11 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		EntityLivingBase attacker=this.getAttackingEntity();
 		if (this.fromPDA || (TF2Util.isOnSameTeam(attacker, this) && this.getOwnerId() == null))
 			return;
-		if (this.getOwner() instanceof EntityEngineer && ((EntityEngineer)this.getOwner()).buildCount < 3)
-			for (int i = 0; i < this.getIronDrop(); i++)
+		if (!(this.getOwner() instanceof EntityEngineer && ((EntityEngineer)this.getOwner()).buildCount >= 3)) {
+			int count = this.getOwner() instanceof EntityPlayer ? this.getIronDrop() : MathHelper.ceil(this.getIronDrop()/2);
+			for (int i = 0; i < count; i++)
 				this.dropItem(Items.IRON_INGOT, 1);
+		}
 	}
 
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier)

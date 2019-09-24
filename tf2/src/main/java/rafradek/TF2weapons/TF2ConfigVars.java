@@ -43,7 +43,7 @@ public class TF2ConfigVars {
 	public static boolean disableGeneration;
 	public static int mannCoChance;
 	public static int baseChance;
-	public static boolean randomCrits;
+	public static int randomCrits;
 	public static boolean overworldOnly;
 	public static String spawnOres;
 	public static String naturalCheck;
@@ -96,6 +96,10 @@ public class TF2ConfigVars {
 	public static int allowTrimp;
 	public static boolean australiumStatue;
 	public static boolean doorBlockLight;
+	public static boolean neutralAttack;
+	public static boolean attackMobs;
+	public static boolean canJoin;
+	public static boolean mouseBackpackItemSwitch;
 	public static Multimap<ConfigCategory, Property> propertyNetworked;
 	
 	public static Map<Class<? extends EntityLiving>, Integer> spawnRate;
@@ -167,7 +171,9 @@ public class TF2ConfigVars {
 		
 		naturalCheck = conf.get("mercenary", "Natural mob detection", "Always").setValidValues(new String[] { "Always", "Fast", "Never" }).getString();
 		shootAttract = conf.getBoolean("Shooting attracts mobs", "gameplay", true, "Gunfire made by players attracts mobs");
-		randomCrits = conf.getBoolean("Random critical hits", "gameplay", true, "Enables randomly appearing critical hits that deal 3x more damage");
+		randomCrits = getIndexSelected(conf.get("gameplay", "Random critical hits", "Players only", "Enables randomly appearing critical hits that deal 3x more damage", new String[] {
+				"Always", "Players Only", "Never"
+		}),1);
 		
 		deadRingerTrigger = conf.getBoolean("Feign death events", "gameplay", true, "Does feign death trigger death events, set to false in case of mod conflicts");
 		australiumStatue = conf.getBoolean("Enable australium statues", "gameplay", true, "Disable in case of mod conflicts");
@@ -198,6 +204,8 @@ public class TF2ConfigVars {
 		
 		enchantedExplosion = conf.getBoolean("Enchanted blast jumping", "gameplay", true, "Strafing, no air resistance and reduced gravity when blast jumping");
 		dropAmmo = conf.getFloat("Ammo drop chance", "gameplay", 0.15f, 0f, 1f, "Chance of dropping ammo from non-TF2 hostile creature");
+		canJoin = conf.getBoolean("Allow team joining", "gameplay", true, "Allow players to join teams");
+		mouseBackpackItemSwitch = conf.getBoolean("Backpack activation in hotbar", "gameplay", true, "Activate backpack by switching slot in hotbar");
 		
 		speedMult = conf.getFloat("Mercenary speed multiplier", "mercenary", 0.8f, 0f, 2f, "Speed multiplier of mercenaries. Does not apply to owned mercenaries");
 		armorMult = conf.getFloat("Armored mercenary chance", "mercenary", 0.06f, 0f, 10f, "Base chance of armored mercenaries. Altered by difficulty level");
@@ -207,6 +215,8 @@ public class TF2ConfigVars {
 		scaleAttributes = conf.getBoolean("Reduce vs player damage", "mercenary", true, "Reduce weapon effectiveness versus players");
 		accurracyMult = conf.getFloat("Accurracy multiplier", "mercenary", 1f, 0f, 10f, "Mercenary accurracy multiplier");
 		updateDelay = conf.getInt("Update delay", "mercenary", 3, 1, 20, "Delay in sending position updates. Only for dedicated server");
+		neutralAttack = conf.getBoolean("Attack neutral players", "mercenary", false, "Should mercenaries attack neutral players");
+		attackMobs = conf.getBoolean("Attack mobs", "mercenary", false, "Should mercenaries attack mobs");
 		//conf.getCategory("mercenary").get("Update delay").setRequiresMcRestart(true);
 		old = conf.hasKey("gameplay", "Buildings use energy");
 		if (old) {

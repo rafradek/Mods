@@ -339,6 +339,14 @@
 			"scale": [0.8, 0.8, 0.8]
 		}
 	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/ubersaw_blu"
+		}
+	],
 	"groups": [
 		{
 			"name": "saw",

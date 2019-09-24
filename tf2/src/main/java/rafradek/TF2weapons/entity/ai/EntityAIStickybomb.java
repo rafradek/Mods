@@ -57,6 +57,8 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
+		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 1)
+			return false;
 		if (this.entityHost.isRobot() || this.entityHost.getAttackTarget() != null || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
 			return false;
 		ItemStack stickybomb = this.entityHost.loadout.getStackInSlot(1);

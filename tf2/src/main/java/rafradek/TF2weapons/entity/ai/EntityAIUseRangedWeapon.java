@@ -15,6 +15,7 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
@@ -213,17 +214,16 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				|| (this.projSpeed > 0 && this.attackTarget.motionY > 0);
 		
 		boolean fire = stay && this.entityHost.getActivePotionEffect(TF2weapons.stun) == null && shouldFireProj && !charged && TF2Util.lookingAt(this.entityHost,
-				(this.explosive && d0 < 16 ? 30 : 0) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist) + MathHelper.atan2(weapon.getWeaponSpreadBase(item, this.entityHost),1)),
+				(this.explosive && d0 < 16 ? 30 : 0) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist) ),
 				lookX, lookY, lookZ);
 		
 		if (!this.reloading && (this.entityHost.world.getDifficulty() != EnumDifficulty.HARD || !fire)
-				&& item.getItemDamage() == item.getMaxDamage() && weapon.hasClip(item))
+				&& weapon.getClip(item) == 0 && weapon.hasClip(item))
 			this.reloading = true;
-		else if (this.reloading && (item.getItemDamage() == 0 || this.entityHost.getAmmo() == 0 ))
+		else if (this.reloading && (weapon.getClip(item) == weapon.getWeaponClipSize(item, entityHost) || this.entityHost.getAmmo() == 0 ))
 			this.reloading = false;
 		
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
-		
 		if ((!reloading) && fire && d0 <= (this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared)
 				&& (((ItemUsable)item.getItem()).isAmmoSufficient(item, entityHost, true)) && (((ItemUsable)item.getItem()).shouldEntityFire(item, entityHost, attackTarget))) {
 			this.reloading = false;

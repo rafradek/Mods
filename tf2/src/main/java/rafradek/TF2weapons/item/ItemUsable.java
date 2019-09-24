@@ -52,7 +52,6 @@ public abstract class ItemUsable extends ItemFromData {
 	// public static boolean addedIcons;
 	// public static ThreadLocalMap<EntityLivingBase, NBTTagCompound>
 	// itemProperties=new ThreadLocalMap<EntityLivingBase, NBTTagCompound>();
-	public static HashMap<EntityLivingBase, float[]> lastDamage = new HashMap<EntityLivingBase, float[]>();
 	
 	public ItemUsable() {
 		super();
@@ -101,7 +100,7 @@ public abstract class ItemUsable extends ItemFromData {
 		int mincool = 0;
 		
 		if (living instanceof EntityPlayer && !par2World.isRemote)
-			mincool = -200;
+			mincool = WeaponsCapability.PLAYER_MINCOOL;
 		
 		if (stackcap.fire1Cool > mincool)
 			stackcap.fire1Cool -= 50;
@@ -137,7 +136,7 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public void draw(WeaponsCapability weaponsCapability, ItemStack stack, EntityLivingBase living, World world) {
 		if(living instanceof EntityPlayerMP)
-			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), 
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(-1, 
 					false,this.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
 	}
 
@@ -311,10 +310,6 @@ public abstract class ItemUsable extends ItemFromData {
 			//System.out.println("Act post: "+original);
 		}
 		return original;
-	}
-	
-	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
-		return false;
 	}
 
 	public boolean shouldEntityFire(ItemStack stack, EntityLivingBase living, EntityLivingBase target) {

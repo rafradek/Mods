@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.model.ModelBomb;
 import rafradek.TF2weapons.client.model.ModelGrenade;
+import rafradek.TF2weapons.client.model.ModelStickybomb;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -17,6 +18,7 @@ public class RenderGrenade extends Render<EntityGrenade> {
 	// if you want a model, be sure to add it here:
 	private ModelBase model;
 	private ModelBase modelBomb;
+	private ModelStickybomb modelBurst;
 	private static final ResourceLocation TEXTURE_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/projectile/grenadered.png");
 	private static final ResourceLocation TEXTURE_BLU = new ResourceLocation(TF2weapons.MOD_ID,
@@ -29,12 +31,13 @@ public class RenderGrenade extends Render<EntityGrenade> {
 		// we could have initialized it above, but here is fine as well:
 		model = new ModelGrenade();
 		modelBomb = new ModelBomb();
+		modelBurst = new ModelStickybomb();
 	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityGrenade entity) {
 
-		return entity.getBomb() > 0 ? TEXTURE_BOMB: TF2Util.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
+		return entity.getBomb() > 0 || entity.isBurst() ? TEXTURE_BOMB: TF2Util.getTeamForDisplay(entity.shootingEntity) == 0 ? TEXTURE_RED : TEXTURE_BLU;
 	}
 
 	@Override
@@ -49,9 +52,17 @@ public class RenderGrenade extends Render<EntityGrenade> {
 				0.0F, 0.0F);
 		if(entity.getBomb()==1)
 			GL11.glScalef(2, 2, 2);
+		if (entity.isBurst())
+			GL11.glScalef(0.6f, 0.6f, 0.6f);
 		bindEntityTexture(entity);
 
-		ModelBase model=entity.getBomb()>0?this.modelBomb:this.model;
+		ModelBase model=this.model;
+		if (entity.isBurst()) {
+			model = this.modelBurst;
+		}
+		else if(entity.getBomb()>0) {
+			model = this.modelBomb;
+		}
 		// GL11.glTranslatef((float)entity.posX, (float)entity.posY,
 		// entity.posZ);
 		if (entity.getCritical() == 2) {

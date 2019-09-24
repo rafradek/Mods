@@ -93,14 +93,7 @@ public class EntityEngineer extends EntityTF2Character {
 	}
 
 	public void switchSlot(int slot, boolean noAmmoSwitch, boolean forceRefresh) {
-		if (this.grabbed != null) {
-			int buildType = this.grabbedid + 1;
-			this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
-					new ItemStack(TF2weapons.itemBuildingBox, 1, 16 + buildType * 2 + this.getEntTeam()));
-			this.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());
-		}
-		else
-			super.switchSlot(slot, noAmmoSwitch, forceRefresh);
+		super.switchSlot(slot, noAmmoSwitch, forceRefresh);
 	}
 	
 	public void onLivingUpdate() {

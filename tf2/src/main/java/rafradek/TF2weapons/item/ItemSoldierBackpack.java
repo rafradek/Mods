@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.common.WeaponsCapability.RageType;
@@ -31,6 +32,20 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemSoldierBackpack extends ItemBackpack {
 
+	public static ItemStack horn = ItemStack.EMPTY;
+	
+	public ItemSoldierBackpack() {
+		super();
+		this.addPropertyOverride(new ResourceLocation("active"),new IItemPropertyGetter() {
+			@Override
+			public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
+				if (entityIn != null && WeaponsCapability.get(entityIn) != null && WeaponsCapability.get(entityIn).isRageActive(RageType.BANNER))
+					return 1;
+				return 0;
+			}
+		});
+		
+	}
 
 	public Potion getBuff(ItemStack stack) {
 		return Potion.getPotionFromResourceLocation(getData(stack).getString(PropertyType.EFFECT_TYPE));
@@ -43,6 +58,12 @@ public class ItemSoldierBackpack extends ItemBackpack {
 	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
 		return 1f;
 	}
+	
+	public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+		if (horn.isEmpty())
+			horn = new ItemStack(TF2weapons.itemHorn);
+    	return horn;
+    }
 	
 	public void addRage(ItemStack stack, float damage, EntityLivingBase target, EntityLivingBase attacker) {
 		if (target instanceof EntityTF2Character && !(attacker instanceof EntityPlayer))

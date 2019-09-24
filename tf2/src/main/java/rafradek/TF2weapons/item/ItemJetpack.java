@@ -20,6 +20,7 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemJetpack extends ItemBackpack {
 
+	public static ItemStack trigger = ItemStack.EMPTY;
 	public ItemJetpack() {
 		// TODO Auto-generated constructor stub
 	}
@@ -33,6 +34,12 @@ public class ItemJetpack extends ItemBackpack {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		return (double)( stack.getTagCompound().getShort("Charge"))/this.getCooldown(stack, null);
 	}
+	
+	public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+		if (trigger.isEmpty())
+			trigger = ItemFromData.getNewStack("trigger");
+    	return trigger;
+    }
 	
 	@Override
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
@@ -82,7 +89,8 @@ public class ItemJetpack extends ItemBackpack {
 	}
 	
 	public int getCooldown(ItemStack stack, EntityLivingBase living) {
-		return (int) ((TF2ConfigVars.fastItemCooldown ? getData(stack).getInt(PropertyType.COOLDOWN) : 300)/(TF2Attribute.getModifier("Charge", stack, 1, living)
+		return (int) (getData(stack).getInt(PropertyType.COOLDOWN) * (TF2ConfigVars.fastItemCooldown ? 1 : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))
+				/(TF2Attribute.getModifier("Charge", stack, 1, living)
 				+TF2Attribute.getModifier("Charges", stack, 0, living) * 0.12f));
 	}
 	

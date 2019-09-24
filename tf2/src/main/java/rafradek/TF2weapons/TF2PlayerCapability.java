@@ -27,6 +27,7 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.client.CPacketInput;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -51,8 +52,10 @@ import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
 import rafradek.TF2weapons.item.ItemAmmo;
+import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.Contract;
@@ -114,8 +117,11 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public long bossSpawnTicks;
 	public EntityTF2Boss bossToSpawn;
 	
-	public float damageArmorMin;
+	
 	public int lastDayInvasion;
+	private float[] lastDamage = new float[20];
+	private float totalLastDamage;
+	private boolean backpackItemEquipped;
 	
 	public EntityDataManager dataManager;
 	private static final NBTTagCompound EMPTY = new NBTTagCompound();
@@ -123,6 +129,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public static final DataParameter<NBTTagCompound> DISPENSER_VIEW = new DataParameter<NBTTagCompound>(1, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<NBTTagCompound> TELEPORTERA_VIEW = new DataParameter<NBTTagCompound>(2, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<NBTTagCompound> TELEPORTERB_VIEW = new DataParameter<NBTTagCompound>(3, DataSerializers.COMPOUND_TAG);
+	public static final DataParameter<ItemStack> BACKPACK_ITEM_HOLD = new DataParameter<ItemStack>(4, DataSerializers.ITEM_STACK);
 	
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[5];
@@ -141,6 +148,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.dataManager.register(DISPENSER_VIEW, EMPTY);
 		this.dataManager.register(TELEPORTERA_VIEW, EMPTY);
 		this.dataManager.register(TELEPORTERB_VIEW, EMPTY);
+		this.dataManager.register(BACKPACK_ITEM_HOLD, ItemStack.EMPTY);
 	}
 
 	public void tick() {
@@ -165,10 +173,38 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 		
 		if(!this.owner.world.isRemote) {
+			
+			if (this.backpackItemEquipped) {
+				ItemStack backpack = ItemBackpack.getBackpack(owner);
+				if (backpack.getItem() instanceof ItemBackpack && (this.owner.inventory.currentItem == 0 || this.owner.inventory.currentItem == 8)) {
+					ItemStack toUse= ((ItemBackpack)backpack.getItem()).getBackpackItemToUse(backpack, owner);
+					if (!toUse.isItemEqual(this.owner.getHeldItemMainhand())){
+						if (!this.owner.getHeldItemMainhand().isEmpty()) {
+							this.owner.dropItem(this.getBackpackItemHold(), false);
+							this.setBackpackItemHold(this.owner.getHeldItemMainhand());
+						}
+						this.owner.setHeldItem(EnumHand.MAIN_HAND, toUse.copy());
+					}
+					
+				}
+				else {
+					this.setEquipBackpackItem(false);
+				}
+			}
+			
 			if (this.owner.ticksExisted % 2 == 0)
 			this.updateBuildings();
 			
 			if (this.owner.ticksExisted % 20 == 0) {
+				this.totalLastDamage = 0;
+				for (int i = 19; i >= 0; i--)
+					if (i > 0) {
+						lastDamage[i] = lastDamage[i - 1];
+						totalLastDamage += lastDamage[i];
+					} else {
+						lastDamage[0] = 0;
+					}
+				
 				if (medicCharge)
 					this.medicCharge = false;
 				
@@ -307,6 +343,14 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 	}
 
+	public ItemStack getBackpackItemHold() {
+		return this.dataManager.get(BACKPACK_ITEM_HOLD);
+	}
+	
+	public void setBackpackItemHold(ItemStack stack) {
+		this.dataManager.set(BACKPACK_ITEM_HOLD, stack);
+	}
+	
 	public NBTTagCompound getSentryView() {
 		return this.dataManager.get(SENTRY_VIEW);
 	}
@@ -365,6 +409,20 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			stack.getTagCompound().removeTag("TeleporterBView");*/
 	}
 	
+	public void addLastDamage(float damage, boolean isPlayerTarget) {
+		if (!isPlayerTarget) {
+			damage *= 0.5f;
+			if (this.getTotalLastDamage() + damage > 60) {
+				damage = 60 - this.getTotalLastDamage();
+			}
+		}
+		this.lastDamage[0]+=damage;
+	}
+	
+	public float getTotalLastDamage() {
+		return this.totalLastDamage + this.lastDamage[0];
+	}
+	
 	public int calculateMaxSentries() {
 		ItemStack wrench = TF2Util.getBestItem(this.owner.inventory, (stack1, stack2) -> {
 			float sentries1 = TF2Attribute.getModifier("Sentry Bonus", stack1, 1, this.owner);
@@ -378,6 +436,46 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}, stack -> stack.getItem() instanceof ItemPDA);
 		return (int) (TF2Attribute.getModifier("Sentry Bonus", wrench, 1, this.owner) * TF2Attribute.getModifier("Extra Sentry", pda, 0, this.owner));
 	}
+	
+	public void setEquipBackpackItem(boolean equip) {
+		ItemStack backpack = ItemBackpack.getBackpack(this.owner);
+		if (backpack.isEmpty() || (this.owner.inventory.currentItem != 0 && this.owner.inventory.currentItem != 8))
+			equip = false;
+		
+		if (!this.owner.world.isRemote) {
+			ItemStack toUse= ItemStack.EMPTY;
+			if (!backpack.isEmpty())
+				toUse=((ItemBackpack)backpack.getItem()).getBackpackItemToUse(backpack, owner);
+			if (toUse.isEmpty())
+				equip = false;
+			if (equip) {
+				if (!toUse.isItemEqual(((EntityPlayer)this.owner).getHeldItemMainhand())){
+					((EntityPlayer)this.owner).dropItem(this.getBackpackItemHold(), false);
+					this.setBackpackItemHold(((EntityPlayer)this.owner).getHeldItemMainhand());
+				}
+				((EntityPlayer)this.owner).setHeldItem(EnumHand.MAIN_HAND, toUse.copy());
+			}
+			else {
+				if (toUse.isItemEqual(((EntityPlayer)this.owner).getHeldItemMainhand())){
+					
+					((EntityPlayer)this.owner).setHeldItem(EnumHand.MAIN_HAND, this.getBackpackItemHold());
+				}
+				else {
+					((EntityPlayer)this.owner).dropItem(this.getBackpackItemHold(), false);
+					
+				}
+				this.setBackpackItemHold(ItemStack.EMPTY);
+			}
+			if (this.owner instanceof EntityPlayerMP)
+				TF2weapons.network.sendTo(new TF2Message.ActionMessage(equip ? 31 : 32, this.owner), (EntityPlayerMP)this.owner);
+		}
+		this.backpackItemEquipped = equip;
+	}
+	
+	public boolean isBackpackItemEquipped() {
+		return this.backpackItemEquipped;
+	}
+	
 	
 	@Override
 	public NBTTagCompound serializeNBT() {
@@ -421,6 +519,8 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			tag.setTag("BossSpawn", bosstag);
 		}
 		tag.setInteger("LastDayInvasion", this.lastDayInvasion);
+		tag.setBoolean("BackpackEquip", this.backpackItemEquipped);
+		tag.setTag("BackpackEquipItem", this.getBackpackItemHold().serializeNBT());
 		return tag;
 	}
 
@@ -460,8 +560,12 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			this.monoculusSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
 		if (nbt.getBoolean("MerasmusSummonedDay"))
 			this.merasmusSummonedDay = (int) (this.owner.world.getWorldTime() / 24000);
-		this.bossToSpawn = (EntityTF2Boss) EntityList.createEntityFromNBT(nbt.getCompoundTag("BossSpawn"), this.owner.world);
+		Entity ent = EntityList.createEntityFromNBT(nbt.getCompoundTag("BossSpawn"), this.owner.world);
+		if (ent instanceof EntityTF2Boss)
+			this.bossToSpawn = (EntityTF2Boss) ent;
 		this.lastDayInvasion = nbt.getInteger("LastDayInvasion");
+		this.backpackItemEquipped = nbt.getBoolean("BackpackEquip");
+		this.setBackpackItemHold(new ItemStack(nbt.getCompoundTag("BackpackEquipItem")));
 	}
 
 	public static TF2PlayerCapability get(EntityPlayer player) {

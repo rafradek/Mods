@@ -46,8 +46,8 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityMonoculus extends EntityTF2Boss {
 
-	public static final int LASER_DURATION=110;
-	public static final int LASER_START=80;
+	public static final int LASER_DURATION=90;
+	public static final int LASER_START=60;
 	public int teleport = 200;
 	public int angryTicks = 0;
 	public int begin = 30;
@@ -264,6 +264,10 @@ public class EntityMonoculus extends EntityTF2Boss {
 		//System.out.println(" "+this.rotationPitch);
 		if (!this.world.isRemote) {
 			
+			if(this.begin==0){
+				this.setNoAI(false);
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(BOSS_ARMOR_SPAWN);
+			}
 			if (this.getAttackTarget() == null) {
 				double f = MathHelper.sqrt(this.motionX * this.motionX
 						+ this.motionZ * this.motionZ);
@@ -281,6 +285,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 					double d1 = entitylivingbase.posX - this.posX;
 					double d2 = entitylivingbase.posZ - this.posZ;
 					double d3 = entitylivingbase.posY - (this.posY + this.getEyeHeight());
+					if (this.isLaser())
+						d3+= entitylivingbase.getEyeHeight();
 					double f = MathHelper.sqrt(d1 * d1 + d2 * d2);
 					float clamp = this.isLaser() ? 1.35f: 10f;
 					float yaw = -((float) MathHelper.atan2(d1, d2)) * (180F / (float) Math.PI);
@@ -301,7 +307,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				this.setAngry(100);
 				
 			if (this.ticksExisted%5==0) {
-				if (this.getAttackTarget() != null && !this.getEntitySenses().canSee(this.getAttackTarget())) {
+				if (this.getAttackTarget() != null && this.world.rayTraceBlocks(this.getPositionEyes(1), this.getAttackTarget().getPositionVector()) != null) {
 					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39],
 							this.isAngry() ? 0.8f : 0.45f);
 					TF2Attribute.setAttribute(this.getHeldItemOffhand(), TF2Attribute.attributes[39], 0f);
@@ -338,7 +344,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(256.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(160);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.11D);
@@ -483,7 +489,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		 */
 		@Override
 		public void startExecuting() {
-			this.parentEntity.laserTime = LASER_DURATION;
+			this.parentEntity.laserTime = LASER_DURATION + this.parentEntity.level*10;
 		}
 
 		/**
@@ -507,10 +513,10 @@ public class EntityMonoculus extends EntityTF2Boss {
 			}
 			else
 				this.parentEntity.setLaser(true);
-			if (this.parentEntity.laserTime < LASER_START && --this.damageCooldown <= 0) {
+			if (this.parentEntity.laserTime < LASER_START + this.parentEntity.level*10 && --this.damageCooldown <= 0) {
 			((ItemWeapon) this.parentEntity.getHeldItemOffhand().getItem()).use(
 					this.parentEntity.getHeldItemOffhand(), this.parentEntity, this.parentEntity.world, EnumHand.OFF_HAND, null);
-			this.damageCooldown= 5;
+			this.damageCooldown= Math.max(20-this.parentEntity.level,10);
 			}
 			for (RayTraceResult trace : TF2Util.pierce(this.parentEntity.world, parentEntity, 120, false, 0.5f, true)) {
 				//if (trace.entityHit != null) {

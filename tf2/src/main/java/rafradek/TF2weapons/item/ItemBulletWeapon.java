@@ -79,8 +79,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 				double distY = (living.posY - entity.posY) * distance;
 				double distZ = (living.posZ - entity.posZ) * distance;*/
 				if (!stack.isEmpty()) {
-					double knockbackAmount = ((ItemBulletWeapon) stack.getItem()).getWeaponKnockback(stack, living)
-							* map.get(entity)[1] * 0.01625D;
+					double knockbackAmount = ((ItemBulletWeapon) stack.getItem()).getKnockbackForDamage(stack, living, map.get(entity)[1], var22);
 
 					if(entity instanceof EntityLivingBase)
 						knockbackAmount *= 1-((EntityLivingBase) entity).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
@@ -189,7 +188,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 	}
 	
 	public boolean showSpecialTracer(ItemStack stack) {
-		return false;
+		return TF2Attribute.getModifier("Trace Round", stack, 0, null) != 0;
 	}
 	
 	@Override

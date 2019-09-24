@@ -14,6 +14,8 @@ public class ReflectionAccess {
 	public static Field entityRecentlyHit;
 	public static Field entityAttackingPlayer;
 	public static Field entityLookHelper;
+	public static Field entityHandInv;
+	public static Field entityArmorInv;
 	
 	static {
 		for(Field field :EntityLivingBase.class.getDeclaredFields()) {
@@ -39,6 +41,20 @@ public class ReflectionAccess {
 			if(field.getName().equals("lookHelper") || field.getName().equals("field_70749_g")) {
 				field.setAccessible(true);
 				entityLookHelper = field;
+			}
+		}
+		
+		for(Field field:EntityLivingBase.class.getDeclaredFields()) {
+			if(field.getName().equals("handInventory") || field.getName().equals("figgf")) {
+				field.setAccessible(true);
+				entityHandInv = field;
+			}
+		}
+		
+		for(Field field:EntityLivingBase.class.getDeclaredFields()) {
+			if(field.getName().equals("armorArray") || field.getName().equals("figgf")) {
+				field.setAccessible(true);
+				entityArmorInv = field;
 			}
 		}
 	}

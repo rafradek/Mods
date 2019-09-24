@@ -29,6 +29,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -58,10 +59,12 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketEntityEffect;
+import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.network.play.server.SPacketExplosion;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
+import net.minecraft.util.CombatRules;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
@@ -96,6 +99,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.oredict.OreDictionary;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.TF2EventsCommon.DestroyBlockEntry;
 import rafradek.TF2weapons.TF2EventsCommon.InboundDamage;
@@ -132,7 +136,7 @@ import rafradek.TF2weapons.message.TF2Message;
 
 public class TF2Util {
 
-	protected static final UUID FOLLOW_MODIFIER = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE978AD348");
+	public static final UUID FOLLOW_MODIFIER = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE978AD348");
 	
 	public static final Block[] NATURAL_BLOCKS = new Block[] {Blocks.STONE};
 	public static final Predicate<Entity> TARGETABLE = target -> {
@@ -368,6 +372,7 @@ public class TF2Util {
 		if (target == TF2weapons.dummyEnt)
 			distance *= 0.5f;
 		float falloff=weapon.getWeaponDamageFalloff(stack);
+		float falloffmax=weapon.getWeaponDamageFalloffMaxRange(stack, living);
 		if (!(target instanceof IEntityTF2 && !((IEntityTF2)target).hasDamageFalloff()) &&  falloff> 0 && (critical < 2 || target == living))
 			if (distance <= falloff)
 				// calculateddamage *=weapon.maxDamage - ((distance /
@@ -382,7 +387,7 @@ public class TF2Util {
 				// ((float)weapon.getWeaponDamageFalloff(stack)*2)) *
 				// (weapon.getWeaponDamage(stack,living)-weapon.getWeaponMinDamage(stack,living))))/weapon.getWeaponDamage(stack,living));
 				calculateddamage *= TF2Util.lerp(1f, weapon.getWeaponMinDamage(stack, living), 
-						Math.min(1,(distance-falloff)/(TF2Attribute.getModifier("Accuracy", stack, falloff*2f, living)-falloff)));
+						Math.min(1,(distance-falloff)/(falloffmax-falloff)));
 						/*(Math.min(distance / weapon.getWeaponDamageFalloff(stack), TF2Attribute.getModifier("Accuracy", stack, 2, living)) - 1)
 								/ (TF2Attribute.getModifier("Accuracy", stack, 2, living) - 1));*/
 		// calculateddamage *= 1 -
@@ -581,13 +586,11 @@ public class TF2Util {
 			if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon)
 				((ItemWeapon) stack.getItem()).onDealDamage(stack, living, entity, source,
 						entity instanceof EntityLivingBase?prehealth-(((EntityLivingBase) entity).getHealth()+((EntityLivingBase)entity).getAbsorptionAmount()):0f);
-			if (living instanceof EntityPlayer) {
-				if (!ItemUsable.lastDamage.containsKey(living))
-					ItemUsable.lastDamage.put(living, new float[20]);
-				ItemUsable.lastDamage.get(living)[0] += damage;
-			}
+			
 			if (entity instanceof EntityLivingBase) {
-	
+				if (living instanceof EntityPlayer) {
+					TF2PlayerCapability.get((EntityPlayer) living).addLastDamage(damage, entity instanceof EntityPlayer);
+				}
 				EntityLivingBase livingTarget = (EntityLivingBase) entity;
 				
 				try {
@@ -762,7 +765,16 @@ public class TF2Util {
 	
 		if(blockDmg > 0 && TF2Attribute.getModifier("Onyx Projectile", weapon, 0, shooter) != 0)
 			blockDmg *= TF2Attribute.getModifier("Onyx Projectile", weapon, 0, shooter);
-		SoundEvent sound = ItemFromData.getSound(weapon, PropertyType.EXPLOSION_SOUND);
+		
+		SoundEvent sound;
+		
+		if (exploder instanceof EntityProjectileBase) {
+			sound = ((EntityProjectileBase)exploder).getExplosionSound();
+		}
+		else {
+			sound = ItemFromData.getSound(weapon, PropertyType.EXPLOSION_SOUND);
+		}
+		
 		TF2Explosion explosion = new TF2Explosion(world, exploder, x, y, z, size, direct, blockDmg,1, sound);
 	
 		// System.out.println("ticks: "+this.ticksExisted);
@@ -774,13 +786,19 @@ public class TF2Util {
 		
 		for(Entry<Entity, Float> entry : explosion.affectedEntities.entrySet()) {
 			Entity ent = entry.getKey();
-			distance = (float) getDistanceBox(shooter, ent.posX, ent.posY, ent.posZ, ent.width+0.1, ent.height+0.1);
+			
 			int criticalloc = critical;
-			if(exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).hitEntities.contains(ent)) {
-				criticalloc = Math.max(criticalloc, 1);
-				TF2Util.playSound(ent, TF2Sounds.DOUBLE_DONK, 3f, 1.0f);
-				entry.setValue(1f);
+			if (exploder instanceof EntityProjectileBase) {
+				if (((EntityProjectileBase)exploder).hitEntities.contains(ent)) {
+					criticalloc = Math.max(criticalloc, 1);
+					TF2Util.playSound(ent, TF2Sounds.DOUBLE_DONK, 3f, 1.0f);
+					entry.setValue(1f);
+				}
+				distance = ((EntityProjectileBase)exploder).getDistanceToTarget(ent, ent.posX, ent.posY, ent.posZ);
 			}
+			else
+				distance = (float) getDistanceBox(shooter, ent.posX, ent.posY, ent.posZ, ent.width+0.1, ent.height+0.1);
+			
 			criticalloc = calculateCritPost(ent, shooter, criticalloc, weapon);
 			float dmg = calculateDamage(ent, world, shooter, weapon, criticalloc, distance) * damageMult;
 			
@@ -878,7 +896,7 @@ public class TF2Util {
 			thisCritical = 1;
 		if (thisCritical == 0 && !living.onGround && TF2Attribute.getModifier("Minicrit Airborne Self", stack, 0, living) == 1f)
 			thisCritical = 1;
-		if (TF2ConfigVars.randomCrits && !stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon) {
 			ItemWeapon item = (ItemWeapon) stack.getItem();
 			if ((!item.rapidFireCrits(stack) && item.hasRandomCrits(stack, living) && living.getRNG().nextFloat() <= item.critChance(stack, living))
 					|| cap.getCritTime() > 0)
@@ -1052,6 +1070,26 @@ public class TF2Util {
 		return ItemStack.EMPTY;
 	}
 	
+	public static int getFirstItemSlot(IInventory inventory, Predicate<ItemStack> pred) {
+		
+		for (int i = 0; i<inventory.getSizeInventory(); i++) {
+			ItemStack stack=inventory.getStackInSlot(i);
+			if (!stack.isEmpty() && pred.apply(stack))
+				return i;
+		}
+		return -1;
+	}
+	
+	public static int getFirstItemSlot(IItemHandler inventory, Predicate<ItemStack> pred) {
+		
+		for (int i = 0; i<inventory.getSlots(); i++) {
+			ItemStack stack=inventory.getStackInSlot(i);
+			if (!stack.isEmpty() && pred.apply(stack))
+				return i;
+		}
+		return -1;
+	}
+
 	public static ItemStack getBestItem(IInventory inventory, Comparator<ItemStack> comp, Predicate<ItemStack> pred) {
 		ItemStack greater = ItemStack.EMPTY;
 		for (int i = 0; i<inventory.getSizeInventory(); i++) {
@@ -1145,16 +1183,18 @@ public class TF2Util {
 						}
 
 					})) {
-				mob.getLookHelper().setLookPositionWithEntity(mob, 60, 30);
+				mob.getLookHelper().setLookPositionWithEntity(living, 60, 30);
 				if (!TF2Util.isOnSameTeam(living, mob)) {
 					if (mob.getEntitySenses().canSee(living) || mob.getDistanceSq(living)<150){
 						mob.setAttackTarget(living);
-						if(mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getModifier(FOLLOW_MODIFIER)==null)
+						if(mob.getAttackTarget() != null && mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getModifier(FOLLOW_MODIFIER)==null) {
 							mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE)
 						.applyModifier(new AttributeModifier(FOLLOW_MODIFIER, "Follow Check", 65-mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue(), 0));
+							mob.getEntityData().setInteger("TF2AM", (int) world.getTotalWorldTime());
+						}
 						//mob.getNavigator().tryMoveToEntityLiving(living, 1.1f);
 						
-						mob.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).removeModifier(FOLLOW_MODIFIER);
+						
 					}
 					
 					// CoroUtilPath.tryMoveToEntityLivingLongDist((EntityCreature)mob,
@@ -1424,6 +1464,17 @@ public class TF2Util {
 		//vec = vec.normalize();
 		return vec;
 	}
+	
+	public static void setVelocity(Entity entity, double motionX, double motionY, double motionZ) {
+		entity.motionX = motionX;
+		entity.motionY = motionY;
+		entity.motionZ = motionZ;
+		entity.velocityChanged = true;
+		if (entity instanceof EntityPlayerMP) {
+			((EntityPlayerMP)entity).connection.sendPacket(new SPacketEntityVelocity(entity));
+		}
+	}
+	
 	public static ItemStack pickAmmo(ItemStack stack, EntityPlayer player, boolean addNormalInventory) {
 		if (stack.getItem() instanceof ItemFireAmmo && stack.getCount() == 1) {
 			stack = TF2Util.mergeStackByDamage(player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
@@ -1445,7 +1496,7 @@ public class TF2Util {
 				}*/
 				ItemStack weapon = player.getHeldItemMainhand();
 				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
-					TF2weapons.network.sendTo(new TF2Message.UseMessage(weapon.getItemDamage(), false,
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(stack), false,
 							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
 			}
 			if (!stack.isEmpty() && addNormalInventory) {
@@ -1453,7 +1504,7 @@ public class TF2Util {
 				stack=ItemHandlerHelper.insertItemStacked(inv, stack, false);
 				ItemStack weapon = player.getHeldItemMainhand();
 				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
-					TF2weapons.network.sendTo(new TF2Message.UseMessage(weapon.getItemDamage(), false,
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(stack), false,
 							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
 			}
 			if (stack.isEmpty()) {
@@ -1480,6 +1531,17 @@ public class TF2Util {
 		default: return new BlockPos(vec);
 		}
 	}
+	
+	public static float getReducedHealing(EntityLivingBase attacker, EntityLivingBase target, float damage) {
+		return getDamageReduction(new DamageSource("").setProjectile(), attacker, 15f)/15f*damage;
+	}
+	public static float getDamageReduction(DamageSource source, EntityLivingBase living, float damage) {
+		return CombatRules.getDamageAfterMagicAbsorb(
+				CombatRules.getDamageAfterAbsorb(damage, living.getTotalArmorValue(),
+						(float) living.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue()),
+				EnchantmentHelper.getEnchantmentModifierDamage(living.getArmorInventoryList(), source));
+	}
+	
 	static {
 		for (int i = 0; i < 512; i++) {
 			ASIN_VALUES[i] = (float) Math.asin(i/511D);

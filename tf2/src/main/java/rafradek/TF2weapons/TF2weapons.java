@@ -53,6 +53,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
@@ -85,6 +86,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatBasic;
 import net.minecraft.tileentity.BannerPattern;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
@@ -282,12 +284,13 @@ import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
 import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.10", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.12", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -369,6 +372,8 @@ public class TF2weapons {
 	public static Potion bleeding;
 	public static Potion noKnockback;
 	public static Potion sapped;
+	public static Potion regen;
+	public static Potion viralfire;
 	
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
@@ -609,7 +614,7 @@ public class TF2weapons {
 		ForgeRegistries.ITEMS.register(itemAmmo = new ItemAmmo().setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo"));
 		ForgeRegistries.ITEMS.register(itemAmmoPackage = new ItemAmmoPackage().setUnlocalizedName("tf2ammobox").setRegistryName(TF2weapons.MOD_ID + ":ammo_box"));
 		ForgeRegistries.ITEMS.register(itemAmmoFire = new ItemFireAmmo(10, 350, 1).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_fire"));
-		ForgeRegistries.ITEMS.register(itemAmmoMedigun = new ItemFireAmmo(12, 1400, 1).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_medigun"));
+		ForgeRegistries.ITEMS.register(itemAmmoMedigun = new ItemFireAmmo(12, 11200, 1).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_medigun"));
 		ForgeRegistries.ITEMS.register(itemAmmoPistol = new ItemFireAmmo(3, 12, 12).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_pistol"));
 		ForgeRegistries.ITEMS.register(itemAmmoMinigun = new ItemFireAmmo(2, 100, 2).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_minigun"));
 		ForgeRegistries.ITEMS.register(itemAmmoSMG = new ItemFireAmmo(5, 25, 8).setUnlocalizedName("tf2ammo").setRegistryName(TF2weapons.MOD_ID + ":ammo_smg"));
@@ -700,14 +705,14 @@ public class TF2weapons {
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354F0D8BA", -0.5D, 2));
 		ForgeRegistries.POTIONS.register(crit = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/critacola.png")).setPotionName("effect.crit")
 				.setRegistryName(TF2weapons.MOD_ID + ":critEff")
-				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354E56B59", 0.25D, 2));
+				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B354E56B59", 0.35D, 1));
 		ForgeRegistries.POTIONS.register(buffbanner = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/buffbanner.png")).setPotionName("effect.banner")
 				.setRegistryName(TF2weapons.MOD_ID + ":bannerEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(backup = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/backup.png")).setPotionName("effect.backup")
 				.setRegistryName(TF2weapons.MOD_ID + ":backupEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(conch = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/conch.png")).setPotionName("effect.conch")
 				.setRegistryName(TF2weapons.MOD_ID + ":conchEff").setBeneficial()
-				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E2", 0.25D, 2));
+				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E2", 0.35D, 1));
 		ForgeRegistries.POTIONS.register(markDeath = new PotionTF2(true, 0, 1, 2).setPotionName("effect.markDeath").setRegistryName(TF2weapons.MOD_ID + ":markDeathEff"));
 		ForgeRegistries.POTIONS.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff").setBeneficial());
 		ForgeRegistries.POTIONS.register(jarate = new PotionTF2Item(true, 0xFFD500, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/jarate.png")).setPotionName("effect.jarate")
@@ -772,6 +777,51 @@ public class TF2weapons {
 		}.setPotionName("effect.sapped")
 				.setRegistryName(TF2weapons.MOD_ID + ":sapped")
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE6F-7CE8-4030-940E-14B354F0D4AB", -0.5D, 2));
+		
+		ForgeRegistries.POTIONS.register(regen= new PotionTF2(false, 0, 0, 0) {
+			
+			public boolean isReady(int duration, int amplifier) {
+				return duration % 5 == 0;
+			}
+			
+			public void performEffect(EntityLivingBase entityLivingBaseIn, int amplifier) {
+				entityLivingBaseIn.heal((amplifier+1)*0.5f * Math.min(1, TF2Util.getReducedHealing(entityLivingBaseIn, entityLivingBaseIn, 1.5f)));
+			}
+			
+		}.setPotionName("effect.regenHit").setRegistryName(TF2weapons.MOD_ID + ":regenHit"));
+		
+		ForgeRegistries.POTIONS.register(viralfire= new PotionTF2(true, 0, 0, 0) {
+			
+			public boolean isReady(int duration, int amplifier) {
+				return amplifier != 0 && duration % 2 == 0;
+			}
+			
+			public void performEffect(EntityLivingBase entityLivingBaseIn, int amplifier) {
+				float range = 0.75f + 0.75f * amplifier;
+				for (EntityLivingBase target : entityLivingBaseIn.world.getEntitiesWithinAABB(EntityLivingBase.class, entityLivingBaseIn.getEntityBoundingBox().grow(range, range, range))) {
+					if (!(TF2Util.getOwnerIfOwnable(target) instanceof EntityPlayer) && target.getActivePotionEffect(viralfire) == null) {
+						try {
+							int firetime = ReflectionAccess.entityFire.getInt(entityLivingBaseIn);
+							target.setFire(firetime/20+1);
+							target.attackEntityFrom(DamageSource.ON_FIRE, amplifier * 2);
+							target.addPotionEffect(new PotionEffect(viralfire, firetime,amplifier));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
+				}
+			}
+			public void removeAttributesModifiersFromEntity(EntityLivingBase entityLivingBaseIn, AbstractAttributeMap attributeMapIn, int amplifier)
+		    {
+				super.removeAttributesModifiersFromEntity(entityLivingBaseIn, attributeMapIn, amplifier);
+				if (amplifier > 0 && entityLivingBaseIn.getActivePotionEffect(viralfire) == null) {
+					entityLivingBaseIn.addPotionEffect(new PotionEffect(viralfire, 40, 0));
+				}
+		    }
+			
+		}.setPotionName("effect.viralFire").setRegistryName(TF2weapons.MOD_ID + ":viralFire"));
+
 		// conf.save();
 		ItemKillstreakFabricator.initKillstreaks();
 		PropertyType.init();
@@ -943,7 +993,7 @@ public class TF2weapons {
 	            World world = source.getWorld();
 	            IPosition iposition = BlockDispenser.getDispensePosition(source);
 	            EnumFacing enumfacing = (EnumFacing)source.getBlockState().getValue(BlockDispenser.FACING);
-	            dummyEnt.setPosition(iposition.getX(), iposition.getY(), iposition.getZ());
+	            dummyEnt.setPosition(iposition.getX(), iposition.getY()+0.1, iposition.getZ());
 	            Vec2f rot = TF2Util.getAngleFromFacing(enumfacing);
 	            dummyEnt.rotationYawHead = rot.x;
 	            dummyEnt.rotationPitch = rot.y;

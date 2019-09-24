@@ -79,6 +79,9 @@ public class EntityAIRepair extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 		this.searchTimer--;
+		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 2)
+			return false;
+		
 		if (this.entityHost.grabbed != null || this.entityHost.loadout.getStackInSlot(2).isEmpty())
 			return false;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){

@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityStickybomb extends EntityProjectileBase {
@@ -118,6 +119,10 @@ public class EntityStickybomb extends EntityProjectileBase {
 		return 72000;
 	}
 
+	public float getExplosionSize() {
+		return 3.05f;
+	}
+	
 	@Override
 	public void onHitBlockX() {
 		this.motionX = 0;
@@ -143,4 +148,12 @@ public class EntityStickybomb extends EntityProjectileBase {
     {
         return super.isGlowing() || (this.getType() == 1 && this.world.isRemote && this.shootingEntity==ClientProxy.getLocalPlayer() && this.ticksExisted >= this.getArmTime()&& TF2Util.lookingAt(this.shootingEntity, 30, this.posX, this.posY, this.posZ));
     }
+	
+	public float getDistanceToTarget(Entity target, double x, double y, double z) {
+		if (this.ticksExisted >= 100) {
+			return ((ItemWeapon) this.usedWeapon.getItem()).getWeaponDamageFalloff(this.usedWeapon);
+		}
+		else
+			return super.getDistanceToTarget(target, x, y, z);
+	}
 }

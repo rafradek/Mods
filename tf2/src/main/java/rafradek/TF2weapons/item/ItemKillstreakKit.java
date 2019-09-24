@@ -82,20 +82,26 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 	public static float getLevelDrain(int level, TF2Attribute attrib) {
 		float base=0.7f;
 		switch (level) {
-		case 1: base = 0.7f; break;
-		case 2: base = 0.75f; break;
-		case 3: base = 0.8f; break;
+		case 1: base = 0.83f; break;
+		case 2: base = 0.88f; break;
+		case 3: base = 0.93f; break;
 		}
 		return base;
 	}
 	
-	public static int getCooldown(int level) {
-		switch (level) {
-		case 1: return 1600;
-		case 2: return 1800;
-		case 3: return 2000;
-		default: return 1500;
+	public static int getCooldown(int level, int kills) {
+		float drain = 1f;
+		for (int i = 1; i < kills; i++) {
+			drain *= getLevelDrain(level, null);
 		}
+		int cooldown;
+		switch (level) {
+		case 1: cooldown = 900; break;
+		case 2: cooldown = 1050; break;
+		case 3: cooldown = 1200; break;
+		default: return 1200;
+		}
+		return (int) (cooldown * drain);
 	}
 	
 	public static float getKillstreakBonus(TF2Attribute attrib, int level, int kills, WeaponData weapon) {

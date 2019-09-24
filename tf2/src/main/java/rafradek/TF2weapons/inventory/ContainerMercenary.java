@@ -26,6 +26,7 @@ import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemToken;
@@ -207,7 +208,7 @@ public class ContainerMercenary extends ContainerMerchant {
 
         for(IContainerListener listener : this.listeners) {
         	ItemStack weapon = this.mercenary.loadout.getStackInSlot(0);
-        	int loaded = weapon.getItem() instanceof ItemWeapon ? weapon.getMaxDamage() - weapon.getItemDamage() : 0;
+        	int loaded = weapon.getItem() instanceof ItemWeapon ? ItemWeapon.getWeapon(weapon).getClip(weapon) : 0;
 	        if(this.primaryAmmo != this.mercenary.getAmmo(0)) {
 	        	this.primaryAmmo = this.mercenary.getAmmo(0);
 	        	//System.out.println("ammo in:");
@@ -215,7 +216,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        	listener.sendWindowProperty(this, 0, this.primaryAmmo);
 	        }
 	        weapon = this.mercenary.loadout.getStackInSlot(0);
-        	loaded = weapon.getItem() instanceof ItemWeapon ? weapon.getMaxDamage() - weapon.getItemDamage() : 0;
+        	loaded = weapon.getItem() instanceof ItemWeapon ? ItemWeapon.getWeapon(weapon).getClip(weapon) : 0;
 	        if(this.secondaryAmmo != this.mercenary.getAmmo(1) + loaded) {
 	        	this.secondaryAmmo = this.mercenary.getAmmo(1) + loaded;
 	        	listener.sendWindowProperty(this, 1, this.secondaryAmmo);
@@ -232,7 +233,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	
 	@Override
 	public boolean enchantItem(EntityPlayer playerIn, int id) {
-		if(id == -128) {
+		if(id == 0 && !mercenary.isRobot()) {
 			if(mercenary.getOwner() == playerIn) {
 				ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack(TF2weapons.itemTF2, 1, 2));
 				this.mercenary.setOwner(null);
@@ -243,15 +244,24 @@ public class ContainerMercenary extends ContainerMerchant {
 			}
 			this.mercenary.applySpeed();
 		}
-		else if(id == -127) {
+		else if(id == 1 && !mercenary.isRobot()) {
 			if(mercenary.getOwner() == playerIn) {
 				playerIn.inventory.clearMatchingItems(TF2weapons.itemTF2, 2, 1, null);
 				this.mercenary.setSharing(true);
 			}
 		}
-		else if(id < 70 && mercenary.getOwner() == playerIn) {
+		else if(id >= 10 && id < 20 && mercenary.getOwner() == playerIn) {
 			int index = (id + 100) % EntityTF2Character.Order.values().length;
 			this.mercenary.setOrder(Order.values()[index]);
+		}
+		else if(id >= 50 && id < 53) {
+			if (this.mercenary.getMainWeapon() == id - 50) {
+				this.mercenary.setMainWeapon(-1);
+			}
+			else {
+				this.mercenary.setMainWeapon(id - 50);
+				this.mercenary.switchSlot(id - 50);
+			}
 		}
 		return true;
 	}
@@ -286,7 +296,7 @@ public class ContainerMercenary extends ContainerMerchant {
 	        	}
 	        }
 	        
-	        this.mercenary.switchSlot(this.mercenary.preferredSlot, false, true);
+	        this.mercenary.switchSlot(this.mercenary.getMainWeapon() != -1 ? this.mercenary.getMainWeapon() :this.mercenary.preferredSlot, false, true);
 	        
         }
     }

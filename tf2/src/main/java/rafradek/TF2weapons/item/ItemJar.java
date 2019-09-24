@@ -79,7 +79,8 @@ public class ItemJar extends ItemProjectileWeapon {
 			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
 			if (living instanceof EntityPlayer)
-				((EntityPlayer) living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? this.getFiringSpeed(stack, living)/50 : getData(stack).getInt(PropertyType.COOLDOWN));
+				((EntityPlayer) living).getCooldownTracker().setCooldown(this, (int) (this.getFiringSpeed(stack, living)/50 * 
+						(TF2ConfigVars.fastItemCooldown ? 1f: getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 		}
 		return true;
 	}

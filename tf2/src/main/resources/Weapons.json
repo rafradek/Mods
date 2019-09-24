@@ -35,6 +35,7 @@
 		"Efficient range": 14,
 		"Drop chance": 0.12,
 		"Stock": true,
+		"Minimal range": 2,
 		"Cost": 12
 	},
 
@@ -71,6 +72,7 @@
 		"Efficient range": 14,
 		"Drop chance": 0.1,
 		"Stock": true,
+		"Minimal range": 1,
 		"Cost": 15
 	},
 
@@ -107,6 +109,7 @@
 		"Efficient range": 27,
 		"Drop chance": 0.1,
 		"Stock": true,
+		"Minimal range": 1,
 		"Cost": 9
 	},
 
@@ -145,6 +148,7 @@
 		"Efficient range": 19,
 		"Drop chance": 0.045,
 		"Stock": true,
+		"Minimal range": 3,
 		"Cost": 36
 	},
 
@@ -182,6 +186,7 @@
 		"Efficient range": 27,
 		"Drop chance": 0.12,
 		"Stock": true,
+		"Minimal range": 6,
 		"Cost": 9
 	},
 
@@ -218,6 +223,7 @@
 		"Efficient range": 27,
 		"Drop chance": 0.12,
 		"Stock": true,
+		"Minimal range": 6,
 		"Cost": 9
 	},
 
@@ -254,6 +260,7 @@
 		"Efficient range": 50,
 		"Drop chance": 0.045,
 		"Stock": true,
+		"Minimal range": 16,
 		"Cost": 36
 	},
 
@@ -292,6 +299,7 @@
 		"Efficient range": 35,
 		"Drop chance": 0.05,
 		"Stock": true,
+		"Minimal range": 4,
 		"Cost": 27
 	},
 
@@ -333,6 +341,7 @@
 		"Efficient range": 6.29,
 		"Drop chance": 0.062,
 		"Stock": true,
+		"Minimal range": 3,
 		"Cost": 18
 	},
 
@@ -371,6 +380,7 @@
 		"Efficient range": 20,
 		"Drop chance": 0.065,
 		"Stock": true,
+		"Minimal range": 6,
 		"Cost": 25
 	},
 
@@ -394,7 +404,7 @@
 		"Projectile speed": 0.7667625,
 		"Damage": 12,
 		"Max damage": 1.2,
-		"Min damage": 1,
+		"Min damage": 0.5,
 		"Random crits": true,
 		"Rapidfire crits": false,
 		"Damage falloff": 9.75,
@@ -410,6 +420,7 @@
 		"Efficient range": 20,
 		"Drop chance": 0.065,
 		"Stock": true,
+		"Minimal range": 6,
 		"Cost": 27
 	},
 
@@ -448,6 +459,7 @@
 		"Efficient range": 16,
 		"Drop chance": 0.12,
 		"Stock": true,
+		"Minimal range": 3,
 		"Cost": 9
 	},
 
@@ -471,8 +483,9 @@
 		"Range": 9.1,
 		"Efficient range": 6.7,
 		"Ammo type": 12,
-		"Max ammo": 700,
+		"Max ammo": 11200,
 		"Drop chance": 0.07,
+		"Minimal range": 2,
 		"Stock": true,
 		"Effect type": "rafradek_tf2_weapons:uberEff",
 		"Cost": 18
@@ -507,6 +520,7 @@
 		"Efficient range": 2.2,
 		"Spread recovery": false,
 		"Drop chance": 0.08,
+		"Minimal range": 0,
 		"Stock": true,
 		"Cost": 18
 	},
@@ -648,9 +662,10 @@
 		"Knockback": 4,
 		"Spread recovery": false,
 		"Efficient range": 2.2,
+		"Minimal range": 0,
 		"Drop chance": 0.08,
 		"Stock": true,
-		"Cost": 18
+		"Cost": 19
 	},
 
 	"bonk": 
@@ -665,6 +680,7 @@
 		"Render": "rafradek_tf2_weapons:bonk",
 		"Duration": 160,
 		"Cooldown": 600,
+		"Long cooldown": 1,
 		"Roll hidden": 1,
 		"Cost": 3,
 		"Description": "Makes you invulnerable for 8 seconds, but cannot attack"
@@ -682,6 +698,7 @@
 		"Render": "rafradek_tf2_weapons:critacola",
 		"Duration": 300,
 		"Cooldown": 600,
+		"Long cooldown": 1,
 		"Roll hidden": 1,
 		"Cost": 3,
 		"Description": "Increases speed by 25% and damage by 35% for 15 seconds"
@@ -829,6 +846,7 @@
 		"Ammo type": 13,
 		"Drop chance": 0.12,
 		"Efficient range": 33,
+		"Minimal range": 5,
 		"Cost": 9,
 		"Attributes": 
 		{
@@ -860,6 +878,7 @@
 		"Clip size": 1,
 		"Knockback": 4,
 		"Efficient range": 2.2,
+		"Minimal range": 0,
 		"Spread recovery": false,
 		"Cost": 18
 	},
@@ -927,7 +946,7 @@
 
 	"ubersaw": 
 	{
-		"Name": "Ãœbersaw",
+		"Name": "Übersaw",
 		"Class": "melee",
 		"Based on": "fryingpan",
 		"Slot": 
@@ -987,7 +1006,8 @@
 		"Attributes": 
 		{
 			"CritOnKill": 5,
-			"FireRatePenalty": 1.2
+			"FireRatePenalty": 1.2,
+			"NoRandomCrit": 1
 		}
 	},
 
@@ -1051,7 +1071,7 @@
 		"Projectile": "jar",
 		"Render": "rafradek_tf2_weapons:jarate",
 		"Firing speed": 1250,
-		"Cooldown": 400,
+		"Long cooldown": 16,
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 0.96,
@@ -1094,6 +1114,7 @@
 		"Render": "rafradek_tf2_weapons:sandman",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.ball",
 		"Firing speed": 8000,
+		"Long cooldown": 1.25,
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 3,
@@ -1230,6 +1251,10 @@
 		"Hit sound": "rafradek_tf2_weapons:mob.hhh.hit",
 		"Hit world sound": "rafradek_tf2_weapons:mob.hhh.miss",
 		"Roll hidden": 1,
+		"Damage": 12,
+		"Firing speed": 1500,
+		"Knockback": 8,
+		"Knockback Z": 1,
 		"Attributes": 
 		{
 			"RangeIncrease": 1.5,
@@ -1483,6 +1508,7 @@
 		"Drop chance": 0.09,
 		"Stock": false,
 		"Cost": 18,
+		"Minimal range": 4,
 		"Attributes": 
 		{
 			"PickBuilding": 100,
@@ -1525,7 +1551,8 @@
 		{
 			"DamageBonusCharged": 1.15,
 			"Penetration": 1,
-			"NeedScope": 1
+			"NeedScope": 1,
+			"TraceRound": 1
 		}
 	},
 	
@@ -1541,7 +1568,7 @@
 		"Render": "rafradek_tf2_weapons:crossbow",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.crossbow",
 		"Reload sound": "rafradek_tf2_weapons:weapon.reload.syringegun",
-		"Firing speed": 1000,
+		"Firing speed": 400,
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 2.2848,
@@ -1553,8 +1580,8 @@
 		"Damage falloff": 9.75,
 		"Reloads clip": true,
 		"Reloads full clip": false,
-		"Reload time first": 600,
-		"Reload time": 600,
+		"Reload time first": 1200,
+		"Reload time": 1200,
 		"Clip size": 1,
 		"Max ammo": 150,
 		"Knockback": 4,
@@ -1563,6 +1590,7 @@
 		"Ammo type": 9,
 		"Efficient range": 30,
 		"Drop chance": 0.09,
+		"Minimal range": 10,
 		"Stock": false,
 		"Cost": 18,
 		"Attributes":
@@ -1692,6 +1720,7 @@
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.cleaver",
 		"Hit world sound": "rafradek_tf2_weapons:weapon.hit.cleaver.world",
 		"Firing speed": 3200,
+		"Long cooldown": 1.875,
 		"Pellets": 1,
 		"Spread": 0,
 		"Projectile speed": 2.6,
@@ -1708,6 +1737,7 @@
 		"Ammo type": 0,
 		"Efficient range": 25,
 		"Drop chance": 0.09,
+		"Minimal range": 2,
 		"Stock": false,
 		"Cost": 2,
 		"Attributes":
@@ -1771,7 +1801,7 @@
 		"Reloads full clip": true,
 		"Reload time first": 2100,
 		"Reload time": 2100,
-		"Spread": 0.02,
+		"Spread": 0.018,
 		
 		"Attributes": 
 		{
@@ -1815,14 +1845,19 @@
 		"Damage": 2,
 		"Drop chance": 0,
 		"Roll hidden": 2,
-		"Spread": 0.02,
+		"Spread": 0.04,
 		"Hidden": true,
 		"Cost": 80,
 		"Ammo type": 0,
 		"Armor penetration scale": 6,
+		"Clip size": 52,
+		"Reloads clip": true,
+		"Reloads full clip": false,
+		"Reload time first": 200,
+		"Reload time": 150,
 		"Attributes": 
 		{
-			"FireRatePenalty": 1.2
+			"WeaponMode": 1
 		}
 	},
 	"bigone": 
@@ -1921,6 +1956,7 @@
 		"Pellets": 1,
 		"Spread": 6,
 		"Projectile speed": 2.4765,
+		"Armor penetration scale": 0.65,
 		"Damage": 5,
 		"Max damage": 1,
 		"Min damage": 1,
@@ -1938,6 +1974,7 @@
 		"Dual wield speed": 1,
 		"Ammo type": 1000,
 		"Efficient range": 40,
+		"Minimal range": 8,
 		"Drop chance": 0.09,
 		"Stock": false,
 		"Cost": 36
@@ -1958,12 +1995,13 @@
 		"Firing speed": 20,
 		"Drop chance": 0.07,
 		"Cooldown": 240,
+		"Long cooldown": 1.25,
 		"Ammo type": 10,
 		"Cost": 27,
 		"Armor": 5,
 		"Wear flags": 2,
 		"Stock": false,
-		"Description": "Use the jetpack trigger to activate\nRecharging consumes fuel"
+		"Description": "Use the jetpack trigger to activate\nRecharging consumes fuel from gas tank"
 	},
 	"trigger": 
 	{
@@ -1973,6 +2011,7 @@
 		"Firing speed": 900,
 		"Description": "To use with the Thermal Thruster equipped",
 		"Roll hidden": 1,
+		"Hidden": true,
 		"Attributes": 
 		{
 			"HolsterTimePenalty": 1.75
@@ -2048,6 +2087,7 @@
 		"Ammo type": 0,
 		"Recoil": 7,
 		"Efficient range": 30,
+		"Minimal range": 6,
 		"Drop chance": 0.09,
 		"Stock": false,
 		"Cost": 13,
@@ -2135,6 +2175,7 @@
 		"Ammo type": 10,
 		"Efficient range": 10,
 		"Drop chance": 0.05,
+		"Minimal range": 3,
 		"Stock": false,
 		"Cost": 33,
 		"Description": "OwO",
@@ -2215,6 +2256,7 @@
 		"Ammo type": 1,
 		"Recoil": 0,
 		"Efficient range": 20,
+		"Minimal range": 3,
 		"Drop chance": 0.1,
 		"Stock": false,
 		"Cost": 18
@@ -2342,10 +2384,11 @@
 		"Name": "Laser eye",
 		"Class": "bullet",
 		"Render": "rafradek_tf2_weapons:rocketlauncher",
-		"Firing speed": 250,
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.bison",
+		"Firing speed": 900,
 		"Pellets": 1,
 		"Spread": 0,
-		"Damage": 6,
+		"Damage": 16,
 		"Max damage": 1,
 		"Min damage": 1,
 		"Random crits": false,
@@ -2355,7 +2398,7 @@
 		"Hidden": true,
 		"Attributes": 
 		{
-			"DestroyBlock":3.5
+			"DestroyBlock":5
 		}
 	},
 	"hhhaxe": 
@@ -2411,10 +2454,6 @@
 	{
 		"Class": "bullet",
 		"Based on": "smg",
-		"Slot": 
-		{
-			"sniper": 1
-		},
 		"Render": "rafradek_tf2_weapons:cleaners_carbine",
 		"Fire sound": "rafradek_tf2_weapons:weapon.fire.cleanerscarbine",
 		"Stock": false,
@@ -2437,5 +2476,100 @@
 		"Stock": false,
 		"Cost": 13,
 		"Roll hidden": 2
+	},
+	"monoculuseye": 
+	{
+		"Class": "projectile",
+		"Projectile": "rocket",
+		"Render": "rafradek_tf2_weapons:monoculus_head",
+		"Fire sound": "rafradek_tf2_weapons:mob.monoculus.shoot.mad",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion",
+		"Firing speed": 300,
+		"Pellets": 1,
+		"Spread": 0,
+		"Projectile speed": 1.04,
+		"Damage": 5,
+		"Max damage": 1,
+		"Min damage": 0.8,
+		"Random crits": true,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": true,
+		"Reloads full clip": true,
+		"Reload time first": 1100,
+		"Reload time": 1100,
+		"Clip size": 3,
+		"Max ammo": 20,
+		"Knockback": 5,
+		"Spread recovery": false,
+		"Ammo type": 7,
+		"Efficient range": 35,
+		"Drop chance": 0.05,
+		"Stock": false,
+		"Cost": 34,
+		"Roll hidden": 1,
+		"Attributes":
+		{
+			"AmmoEfficiencyBonus": 0.7
+		}
+	},
+	"monoculuslaser": 
+	{
+		"Class": "bullet",
+		"Render": "rafradek_tf2_weapons:monoculus_head",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.bison",
+		"Firing speed": 900,
+		"Pellets": 1,
+		"Spread": 0,
+		"Damage": 11,
+		"Max damage": 1,
+		"Min damage": 0.8,
+		"Random crits": true,
+		"Rapidfire crits": false,
+		"Damage falloff": 9.75,
+		"Reloads clip": true,
+		"Reloads full clip": true,
+		"Reload time first": 3000,
+		"Reload time": 3000,
+		"Clip size": 4,
+		"Max ammo": 20,
+		"Knockback": 10,
+		"Spread recovery": false,
+		"Ammo type": 6,
+		"Efficient range": 35,
+		"Drop chance": 0.05,
+		"Stock": false,
+		"Cost": 48,
+		"Roll hidden": 1,
+		"Attributes": {
+			"TraceRound": 1
+		}
+	},
+	"rocketshotgun":
+	{
+		"Class": "projectile",
+		"Based on": "shotgun",
+		"Render": "rafradek_tf2_weapons:rocketshotgun",
+		"Fire sound": "rafradek_tf2_weapons:weapon.fire.shotgun",
+		"Explosion sound": "rafradek_tf2_weapons:weapon.explosion.airstrike",
+		"Projectile": "rocket",
+		"Stock": false,
+		"Drop chance": 0.11,
+		"Cost": 13,
+		"Hidden": true,
+		"Roll hidden": 2,
+		"Firing speed": 910,
+		"Clip size": 3,
+		"Damage": 2,
+		"Max damage": 1.25,
+		"Min damage": 0.53,
+		"Pellets": 6,
+		"Projectile speed": 1.65,
+		"Spread": 0.128,
+		"Ammo type":7,
+		"Attributes": 
+		{
+			"SelfDamageReduced": 0.6
+		}
 	}
 }

@@ -80,21 +80,12 @@ public class ItemBossSpawner extends Item {
 		
 		if (stack.getItemDamage() == 0 && cap.hhhSummonedDay < time / 24000) {
 			BlockPattern.PatternHelper pattern = patternHHH.match(world, pos);
-			if (pattern != null) {
-				for (int j = 0; j < patternHHH.getPalmLength(); ++j)
-                {
-                    for (int k = 0; k < patternHHH.getThumbLength(); ++k)
-                    {
-                        world.setBlockState(pattern.translateOffset(j, k, 0).getPos(), Blocks.AIR.getDefaultState(), 2);
-                    }
-                }
-				pos = pattern.translateOffset(1, 2, 0).getPos();
+			if (world.getBlockState(pos).getBlock() == Blocks.PORTAL) {
 				boss = new EntityHHH(world);
-                
                 cap.hhhSummonedDay = (int) (time / 24000);
 			}
 			else {
-				player.sendMessage(new TextComponentTranslation("gui.boss.statue"));
+				player.sendMessage(new TextComponentTranslation("gui.boss.portal"));
 				return EnumActionResult.SUCCESS;
 			}
 		}

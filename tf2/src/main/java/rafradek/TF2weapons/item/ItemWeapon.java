@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import com.google.common.collect.Multimap;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
+import mezz.jei.util.MathUtil;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.NBTLiterals;
@@ -31,6 +32,7 @@ import rafradek.TF2weapons.lightsource.MuzzleFlashLightSource;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -61,15 +63,17 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.GuiScreenEvent.PotionShiftEvent;
 import net.minecraftforge.fml.common.Optional;
 
-public abstract class ItemWeapon extends ItemUsable {
+public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 	/*
 	 * public float damage; public float scatter; public int pellets; public
 	 * float maxDamage; public int damageFalloff; public float minDamage; public
@@ -111,7 +115,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		if (par5 && ((EntityLivingBase)par3Entity).getHeldItemMainhand() == par1ItemStack) {
 			WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			NBTTagCompound tag = par1ItemStack.getTagCompound();
-			if (TF2ConfigVars.randomCrits && !par2World.isRemote && cap.critTimeCool <= 0) {
+			if ( !par2World.isRemote && cap.critTimeCool <= 0) {
 				cap.critTimeCool = 20;
 				if (this.rapidFireCrits(par1ItemStack) && this.hasRandomCrits(par1ItemStack, par3Entity)
 						&& ((EntityLivingBase) par3Entity).getRNG().nextFloat() <= this.critChance(par1ItemStack,
@@ -128,9 +132,12 @@ public abstract class ItemWeapon extends ItemUsable {
 				tag.setInteger(NBTLiterals.STREAK_KILLS, tag.getInteger(NBTLiterals.STREAK_KILLS) - 1);
 				int red = tag.getShort(NBTLiterals.STREAK_REDUCTION) * 2 + 1;
 				tag.setShort(NBTLiterals.STREAK_REDUCTION, red > Short.MAX_VALUE ? Short.MAX_VALUE : (short)red);
-				tag.setLong(NBTLiterals.STREAK_COOL, tag.getLong(NBTLiterals.STREAK_COOL)
+				tag.setLong(NBTLiterals.STREAK_COOL, tag.getLong(NBTLiterals.STREAK_LAST)
+						+ ItemKillstreakKit.getCooldown(tag.getByte(NBTLiterals.STREAK_LEVEL),
+						tag.getInteger(NBTLiterals.STREAK_KILLS)));
+				/*tag.setLong(NBTLiterals.STREAK_COOL, tag.getLong(NBTLiterals.STREAK_COOL)
 						+ Math.max(20,(ItemKillstreakKit.getCooldown(tag.getByte(NBTLiterals.STREAK_LEVEL))-250
-								- MathHelper.log2(tag.getInteger(NBTLiterals.STREAK_KILLS))*250) / red));
+								- MathHelper.log2(tag.getInteger(NBTLiterals.STREAK_KILLS))*250) / red));*/
 				par1ItemStack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
 			}
 			if (cap.getCritTime() > 0)
@@ -171,10 +178,9 @@ public abstract class ItemWeapon extends ItemUsable {
 			return true;
 		}
 		cap.autoFire = TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0;
-		if (stack.getItemDamage() != stack.getMaxDamage())
-			if (this.hasClip(stack) && (TF2ConfigVars.mustReload || !(living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode))) {
-				stack.setItemDamage(stack.getItemDamage()+1);
-			}
+		if (this.hasClip(stack))
+			this.consumeClip(stack, 1, living, hand);
+		
 		if (living instanceof EntityPlayer && hand == EnumHand.MAIN_HAND)
 			((EntityPlayer) living).resetCooldown();
 		else if (world.isRemote && Minecraft.getMinecraft().player == living)
@@ -196,7 +202,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			this.consumeAmmoGlobal(living, stack, 1);
 		}
 		if (!world.isRemote && living instanceof EntityPlayerMP)
-			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(), false,!this.hasClip(stack)?this.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(this.getClip(stack), false,!this.hasClip(stack)?this.getAmmoAmount(living, stack):-1, hand),(EntityPlayerMP) living);
 
 		this.doFireSound(stack, living, world, thisCritical);
 		
@@ -218,6 +224,12 @@ public abstract class ItemWeapon extends ItemUsable {
 			
 			this.shoot(stack, living, world, thisCritical, hand);
 		
+		if (this.shootAllAtOnce(stack, living)) {
+			while (this.getClip(stack) > 0) {
+				this.consumeClip(stack, 1, living, hand);
+				this.shoot(stack, living, world, thisCritical, hand);
+			}
+		}
 		return true;
 	}
 
@@ -230,6 +242,32 @@ public abstract class ItemWeapon extends ItemUsable {
 	
 	public abstract void shoot(ItemStack stack, EntityLivingBase living, World world, int thisCritical, EnumHand hand);
 
+	
+	public int getClip(ItemStack stack) {
+		if (!this.hasClip(stack))
+			return 0;
+		if (!stack.getTagCompound().hasKey("Clip"))
+			this.setClip(stack, this.getWeaponClipSize(stack, null));
+		return stack.getTagCompound().getInteger("Clip");
+	}
+	
+	public void setClip(ItemStack stack, int value) {
+		if (this.hasClip(stack))
+			stack.getTagCompound().setInteger("Clip", MathUtil.clamp(value,0,this.getWeaponClipSize(stack, null)));
+		
+		//stack.setItemDamage(MathUtil.clamp(stack.getMaxDamage()-value,0,stack.getMaxDamage()));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void consumeClip(ItemStack stack, int value, EntityLivingBase living, EnumHand hand) {
+		if (!(value > 0 && !TF2ConfigVars.mustReload && living instanceof EntityPlayer && ((EntityPlayer)living).capabilities.isCreativeMode)) {
+			this.setClip(stack, this.getClip(stack)-value);
+			try {
+				((NonNullList<ItemStack>)ReflectionAccess.entityHandInv.get(living)).get(hand.ordinal()).getTagCompound().setInteger("Clip", this.getClip(stack));
+			} catch (Exception e) {
+			}
+		}
+	}
 	public void doFireSound(ItemStack stack, EntityLivingBase living, World world, int critical) {
 		if (ItemFromData.getData(stack).hasProperty(PropertyType.FIRE_SOUND)) {
 			SoundEvent soundToPlay = SoundEvent.REGISTRY
@@ -280,7 +318,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		
 		if (this.hasClip(stack))
 			tooltip.add(
-					"Clip: " + (this.getWeaponClipSize(stack, null) - stack.getItemDamage())
+					"Clip: " + (this.getClip(stack))
 							+ "/" + this.getWeaponClipSize(stack, null));
 	}
 
@@ -316,9 +354,8 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 	public float critChance(ItemStack stack, Entity entity) {
 		float chance = 0.025f;
-		if (ItemUsable.lastDamage.containsKey(entity))
-			for (int i = 0; i < 20; i++)
-				chance += ItemUsable.lastDamage.get(entity)[i] / 800;
+		if (entity instanceof EntityPlayer)
+				chance += TF2PlayerCapability.get((EntityPlayer) entity).getTotalLastDamage() / 800;
 		return Math.min(chance, 0.125f);
 	}
 
@@ -358,6 +395,10 @@ public abstract class ItemWeapon extends ItemUsable {
 		return false;
 	}
 
+	public boolean shootAllAtOnce(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Shoot Once", stack, 0f, living) != 0f;
+	}
+	
 	@Override
 	public int getMaxDamage(ItemStack stack) {
 		return stack.hasTagCompound() ? this.getWeaponClipSize(stack, null) : 0;
@@ -402,7 +443,8 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 
 	public float getWeaponMinDamage(ItemStack stack, EntityLivingBase living) {
-		return ItemFromData.getData(stack).getFloat(PropertyType.MIN_DAMAGE);
+		return TF2Util.lerp(ItemFromData.getData(stack).getFloat(PropertyType.MIN_DAMAGE),
+				1,(TF2Attribute.getModifier("Accuracy", stack, 1f, living)-1f)*0.4f);
 	}
 
 	public float getWeaponSpread(ItemStack stack, EntityLivingBase living) {
@@ -439,6 +481,10 @@ public abstract class ItemWeapon extends ItemUsable {
 		return ItemFromData.getData(stack).getFloat(PropertyType.DAMAGE_FALOFF);
 	}
 	
+	public float getWeaponDamageFalloffMaxRange(ItemStack stack, EntityLivingBase living) {
+		return TF2Attribute.getModifier("Accuracy", stack, this.getWeaponDamageFalloff(stack) * 2, living);
+	}
+	
 	public float getWeaponDamageFalloffSq(ItemStack stack) {
 		float falloff = this.getWeaponDamageFalloff(stack);
 		return falloff * falloff;
@@ -470,7 +516,8 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 
 	public boolean hasRandomCrits(ItemStack stack, Entity par3Entity) {
-		return par3Entity instanceof EntityPlayer && !par3Entity.world.isRemote && ItemFromData.getData(stack).getBoolean(PropertyType.RANDOM_CRITS)
+		return (TF2ConfigVars.randomCrits == 0 || (TF2ConfigVars.randomCrits == 1 && par3Entity instanceof EntityPlayer) )
+				&& !par3Entity.world.isRemote && ItemFromData.getData(stack).getBoolean(PropertyType.RANDOM_CRITS)
 				&& TF2Attribute.getModifier("Random Crit", stack, 0, null) == 0;
 	}
 
@@ -480,6 +527,14 @@ public abstract class ItemWeapon extends ItemUsable {
 						&& TF2Attribute.getModifier("Knockback Rage", stack, 0, living) != 0? 4.5 : 1);
 	}
 
+	public double getKnockbackForDamage(ItemStack stack, EntityLivingBase living, float damage, DamageSource src) {
+		return this.getWeaponKnockback(stack, living) * damage * 0.01625D;
+	}
+	
+	public double getZKnockback(ItemStack stack, EntityLivingBase living, float damage, DamageSource src) {
+		return ItemFromData.getData(stack).getFloat(PropertyType.KNOCKBACK_Z);
+	}
+	
 	public boolean rapidFireCrits(ItemStack stack) {
 		return ItemFromData.getData(stack).getBoolean(PropertyType.RAPIDFIRE_CRITS);
 	}
@@ -503,15 +558,18 @@ public abstract class ItemWeapon extends ItemUsable {
 	public void draw(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		cap.setCritTime(0);
 		cap.stopReload();
+		if(living instanceof EntityPlayerMP)
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(this.getClip(stack), 
+					false,this.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
 		if (TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
-			stack.setItemDamage(stack.getMaxDamage());
+			this.setClip(stack,0);
 		}
 		super.draw(cap, stack, living, world);
 	}
 	
 	public void holster(WeaponsCapability cap, ItemStack stack, EntityLivingBase living, World world) {
 		
-		
+		cap.stopReload();
 		cap.focusShotRemaining=0;
 		cap.focusShotTicks=0;
 		cap.setCharging(false);
@@ -528,7 +586,7 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 	
 	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
-		return TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0 && stack.getItemDamage() < stack.getMaxDamage();
+		return TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0 && this.getClip(stack) > 0;
 	}
 	
 	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
@@ -570,6 +628,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		if (TF2Attribute.getModifier("Burn Hit", stack, 0, attacker) > 0 && target != attacker)
 			TF2Util.igniteAndAchievement(target, attacker, (int) TF2Attribute.getModifier("Burn Hit", stack, 0, attacker)
 					, (int) TF2Attribute.getModifier("Burn Time", stack, 1f, attacker));
+		
 		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
 			boolean enemy = TF2Util.isEnemy(attacker, (EntityLivingBase) target);
 			int metalhit = (int) TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
@@ -588,7 +647,7 @@ public abstract class ItemWeapon extends ItemUsable {
 			}
 			float healthHit=TF2Attribute.getModifier("Health Hit", stack, 0, attacker);
 			if (healthHit > 0)
-				attacker.heal(enemy ? healthHit : healthHit/2f);
+				attacker.heal(TF2Util.getReducedHealing(attacker, (EntityLivingBase) target, enemy ? healthHit : healthHit/2f));
 			float bleed=TF2Attribute.getModifier("Bleed", stack, 0, attacker);
 			if (bleed > 0) {
 				((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
@@ -602,6 +661,25 @@ public abstract class ItemWeapon extends ItemUsable {
 			int ragedamage = (int) TF2Attribute.getModifier("Build Rage Damage", stack, 0, attacker);
 			if (enemy && ragedamage > 0 &&!WeaponsCapability.get(attacker).isRageActive(this.getRageType(stack, attacker))) {
 				this.addRage(stack, attacker, amount);
+			}
+			
+			if (enemy && TF2Attribute.getModifier("Regen On Hit", stack, 0f, attacker) > 0f) {
+				attacker.addPotionEffect(new PotionEffect(TF2weapons.regen,10,(int) TF2Attribute.getModifier("Regen On Hit", stack, 0f, attacker)-1));
+			}
+			
+			if (TF2Attribute.getModifier("Rocket Specialist", stack, 0f, attacker) > 0f) {
+				((EntityLivingBase) target).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS,(int) TF2Attribute.getModifier("Rocket Specialist", stack, 0f, attacker) * 8, 4));
+				TF2Util.setVelocity(target, 0, 0, 0);
+			}
+			
+			if (TF2Attribute.getModifier("Fire Specialist", stack, 0f, attacker) > 0f) {
+				try {
+					((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.viralfire,
+							ReflectionAccess.entityFire.getInt(target),(int) TF2Attribute.getModifier("Fire Specialist", stack, 0f, attacker)));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			if (enemy && TF2Attribute.getModifier("Uber Hit", stack, 0, attacker) > 0)
@@ -644,9 +722,9 @@ public abstract class ItemWeapon extends ItemUsable {
 		boolean metalammo=TF2Attribute.getModifier("Metal Ammo", stack, 0, player)!=0;
 		
 		int holdTickMax=holdingMode(stack, player);
-		
-		if(holdTickMax > 0 && player.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()) {
-			int chargeTicks=player.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks;
+		WeaponsCapability cap = player.getCapability(TF2weapons.WEAPONS_CAP, null);
+		if(holdTickMax > 0 && cap.isCharging()) {
+			int chargeTicks=cap.chargeTicks;
 			int progress= (int) ((float)chargeTicks/(float)holdTickMax*20);
 			result[0]="";
 			if(progress>0) {
@@ -667,15 +745,19 @@ public abstract class ItemWeapon extends ItemUsable {
 			int focus=(int) TF2Attribute.getModifier("Focus", stack, 0, player);
 			int progress=0;
 			if(focus!=0){
-				progress=(int) (((float)player.getCapability(TF2weapons.WEAPONS_CAP, null).focusShotTicks/(float)(70-focus*23+((ItemUsable)stack.getItem()).getFiringSpeed(stack, player)/50))*3f);
+				progress=(int) (((float)cap.focusShotTicks/(float)cap.focusShotTime(stack))*8f);
 			}
 			else if(TF2Attribute.getModifier("Headshot", stack, 0, player)>0) {
-				progress=(1250-player.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire)/416;
+				progress=(1250-player.getCapability(TF2weapons.WEAPONS_CAP, null).lastFire)/156;
 			}
 			if(progress>0) {
 				result[0]=result[0]+" ";
-				for(int i=0;i<progress && i<3;i++){
-					result[0]=result[0]+"\u2588";
+				for(int i=0;i<8;i++){
+					if(i<progress)
+						result[0]=result[0]+"|";
+					else
+						result[0]=result[0]+".";
+					//result[0]=result[0]+"\u2588";
 				}
 			}
 		}
@@ -688,10 +770,10 @@ public abstract class ItemWeapon extends ItemUsable {
 			ammoLeft=player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 		
 		if(hasClip(stack)){
-			int inClip=stack.getMaxDamage()-stack.getItemDamage();
+			int inClip=this.getClip(stack);
 			
 			if(isDoubleWielding(player)){
-				inClip+=player.getHeldItemOffhand().getMaxDamage()-player.getHeldItemOffhand().getItemDamage();
+				inClip+=((ItemWeapon) player.getHeldItemOffhand().getItem()).getClip(player.getHeldItemOffhand());
 			}
 			result[1]=inClip+"/"+ammoLeft;
 			
@@ -702,7 +784,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		return result;
 	}
 	public int holdingMode(ItemStack stack, EntityLivingBase shooter) {
-		return (int) TF2Attribute.getModifier("Charged Grenades", stack, 0, shooter);
+		return (int) (TF2Attribute.getModifier("Charged Grenades", stack, 0, shooter) * TF2Attribute.getModifier("Fire Rate", stack, 1f, shooter));
 	}
 	
 	public boolean shouldKeepCharged(ItemStack stack, EntityLivingBase shooter) {
@@ -718,7 +800,7 @@ public abstract class ItemWeapon extends ItemUsable {
 		
 		//System.out.println((living.world.isRemote && living != ClientProxy.getLocalPlayer())+" "+ ((!this.hasClip(stack) || all) && !ItemAmmo.searchForAmmo(living, stack).isEmpty()) +" "+ (this.hasClip(stack) && stack.getItemDamage() < stack.getMaxDamage()));
 		return (living.world.isRemote && living != ClientProxy.getLocalPlayer()) || (((!this.hasClip(stack) || all) && !this.searchForAmmo(living, stack).isEmpty())
-				|| (this.hasClip(stack) && (stack.getItemDamage() < stack.getMaxDamage() 
+				|| (this.hasClip(stack) && (this.getClip(stack) > 0 
 						|| (!TF2ConfigVars.mustReload && (living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode)))));
 	}
 	
@@ -752,7 +834,7 @@ public abstract class ItemWeapon extends ItemUsable {
 	}
 	
 	public RageType getRageType(ItemStack stack, EntityLivingBase living) {
-		return TF2Attribute.getModifier("Knockback", stack, 0f, living) != 0f ? RageType.KNOCKBACK : TF2Attribute.getModifier("Minicrit Rage", stack, 0f, living) != 0f ? RageType.MINICRIT : null;
+		return TF2Attribute.getModifier("Knockback Rage", stack, 0f, living) != 0f ? RageType.KNOCKBACK : TF2Attribute.getModifier("Minicrit Rage", stack, 0f, living) != 0f ? RageType.MINICRIT : null;
 	}
 	
 	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
@@ -787,6 +869,27 @@ public abstract class ItemWeapon extends ItemUsable {
 		TF2Util.playSound(target, sound, ItemFromData.getData(stack).getName().equals("fryingpan") ? 2F : 0.7F, 1F);
 	}
 	
+	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean showDurabilityBar(ItemStack stack) {
+		return (this.hasClip(stack) && this.getClip(stack) != this.getWeaponClipSize(stack, Minecraft.getMinecraft().player)) || super.showDurabilityBar(stack);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public double getDurabilityForDisplay(ItemStack stack) {
+		if (super.showDurabilityBar(stack))
+			return super.getDurabilityForDisplay(stack);
+		else if (stack == Minecraft.getMinecraft().player.getHeldItemMainhand() && this.IsReloadingFullClip(stack)){
+			WeaponsCapability cap = WeaponsCapability.get(Minecraft.getMinecraft().player);
+			if (cap.reloadingHand != null && cap.reloadCool > 0) {
+				double ready= (double)this.getClip(stack)/this.getWeaponClipSize(stack, Minecraft.getMinecraft().player);
+				return (cap.reloadCool/(double)this.getWeaponReloadTime(stack, Minecraft.getMinecraft().player))*(1d-ready);
+			}
+		}
+		return (1D - (double)this.getClip(stack)/this.getWeaponClipSize(stack, Minecraft.getMinecraft().player));
+	}
+	
 	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution) {
 		if (this.hasKillstreak(stack, 1)) {
@@ -806,12 +909,25 @@ public abstract class ItemWeapon extends ItemUsable {
 				buffer.pos(30, resolution.getScaledHeight() - 46, 0.0D).tex(0.0D, 0.99D).endVertex();
 				tessellator.draw();
 				
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+				long timestart=stack.getTagCompound().getInteger(NBTLiterals.STREAK_LAST);
+				long timeend=stack.getTagCompound().getInteger(NBTLiterals.STREAK_COOL);
+				float progress = MathHelper.clamp(1f-(WeaponsCapability.get(player).ticksTotal-timestart)/(float)(timeend-timestart),0f,1f);
+				buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+				buffer.pos(30, resolution.getScaledHeight() - 20, 0.0D).tex(0.0D, 1D).endVertex();
+				buffer.pos(30+progress*41f, resolution.getScaledHeight() - 20, 0.0D).tex(0.01D, 1D).endVertex();
+				buffer.pos(30+progress*41f, resolution.getScaledHeight() - 21, 0.0D).tex(0.01D, 0.99D).endVertex();
+				buffer.pos(30, resolution.getScaledHeight() - 21, 0.0D).tex(0.0D, 0.99D).endVertex();
+				tessellator.draw();
+				
 				Gui.drawModalRectWithCustomSizedTexture(28, resolution.getScaledHeight() - 18, 83, 68, 45, 40, 128, 128);
 				
 				gui.drawCenteredString(gui.getFontRenderer(), Integer.toString(stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS)),
 						50, resolution.getScaledHeight() - 44, 16777215);
 				gui.drawCenteredString(gui.getFontRenderer(), "STREAK",
 						50, resolution.getScaledHeight() - 31, 16777215);
+				
+				
 				GL11.glDepthMask(true);
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
 				GL11.glEnable(GL11.GL_ALPHA_TEST);
@@ -826,5 +942,9 @@ public abstract class ItemWeapon extends ItemUsable {
 				target.world.getGameRules().setOrCreateGameRule("showDeathMessages", Boolean.toString(target.world.getCapability(TF2weapons.WORLD_CAP, null).silent));
 			}
 		}
+	}
+	
+	public static ItemWeapon getWeapon(ItemStack stack) {
+		return stack.getItem() instanceof ItemWeapon ? (ItemWeapon)stack.getItem() : null;
 	}
 }

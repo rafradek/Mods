@@ -481,11 +481,13 @@ public class ItemFromData extends Item implements IItemOverlay{
 		
 	}
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		return this.getMaxRage(stack, null) > 0f ? (this.getRage(stack, Minecraft.getMinecraft().player) < this.getMaxRage(stack, Minecraft.getMinecraft().player)) : super.showDurabilityBar(stack);
 	}
 
+	@SideOnly(Side.CLIENT)
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
 		return this.getMaxRage(stack, null) > 0f ? (1 - this.getRage(stack, Minecraft.getMinecraft().player)/this.getMaxRage(stack, Minecraft.getMinecraft().player))

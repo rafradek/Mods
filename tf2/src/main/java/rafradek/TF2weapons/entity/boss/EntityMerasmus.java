@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -17,9 +20,13 @@ import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITarget;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.EntityMoveHelper;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -46,6 +53,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockProp;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -109,14 +117,20 @@ public class EntityMerasmus extends EntityTF2Boss {
 				return super.shouldExecute();
 		    }
         });
-        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
+        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer) {
+        	public boolean shouldExecute()
+            {
+        		boolean ex = super.shouldExecute();
+        		return ex;
+            }
+        });
     }
 	
 	
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(256.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(200);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.098D);
@@ -167,6 +181,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		if(!world.isRemote){
 			if(this.begin==0){
 				this.setNoAI(false);
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(BOSS_ARMOR_SPAWN);
 			}
 			this.bombDuration--;
 			for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(1.5, 1, 1.5), new Predicate<EntityLivingBase>(){
@@ -555,6 +570,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 						}
 						
 					})){
+						TF2Util.sendParticle(EnumTF2Particles.BULLET_TRACER, this.host, this.host.posX, this.host.posY + this.host.height/2, this.host.posZ, 
+								living.posX, living.posY+living.height/2, living.posZ, 1,0, 0x60FF60, 10000);
 						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 4.4f + this.host.level * 0.7f);
 						living.addVelocity(0, 0.7, 0);
 						if (living instanceof EntityPlayerMP)

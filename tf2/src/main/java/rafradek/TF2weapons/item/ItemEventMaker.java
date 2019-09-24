@@ -31,7 +31,7 @@ public class ItemEventMaker extends Item {
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		ItemStack stack = living.getHeldItem(hand);
 		if (!world.isRemote && !TF2ConfigVars.disableInvasionItems) {
-			if (TF2Util.getTeam(living) == null) {
+			if (TF2Util.getTeam(living) == null && TF2ConfigVars.canJoin) {
 				living.sendMessage(new TextComponentTranslation("item.eventmaker.noteam"));
 				return new ActionResult<ItemStack>(EnumActionResult.FAIL, stack);
 			}

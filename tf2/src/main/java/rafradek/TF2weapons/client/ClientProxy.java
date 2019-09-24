@@ -138,6 +138,7 @@ import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityRocketEffect;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemKillstreakFabricator;
@@ -160,6 +161,7 @@ public class ClientProxy extends CommonProxy {
 	public static RenderLivingBase disguiseRenderPlayerSmall;
 	public static TextureMap particleMap;
 	public static KeyBinding reload = new KeyBinding("key.reload", Keyboard.KEY_R, "TF2");
+	public static KeyBinding backpackitem = new KeyBinding("key.activatebackpack", Keyboard.KEY_0, "TF2");
 	public static ResourceLocation scopeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/scope.png");
 	// public static Map<MinigunLoopSound, EntityLivingBase > spinSounds;
 	public static BiMap<EntityLivingBase, WeaponSound> fireSounds;
@@ -167,12 +169,14 @@ public class ClientProxy extends CommonProxy {
 	public static Map<String, ModelResourceLocation> nameToModel;
 	public static ConcurrentMap<EntityLivingBase, ItemStack> soundsToStart;
 	public static ResourceLocation blackTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/black.png");
+	public static ResourceLocation circleTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/circle.png");
 	public static ResourceLocation healingTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/gui/healing.png");
 	public static ResourceLocation buildingTexture = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/buildings.png");
 	public static ResourceLocation blueprintTexture = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/blueprints.png");
 	public static ResourceLocation chargeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/charge.png");
+	public static final ResourceLocation WIDGETS_TEXTURE_MC = new ResourceLocation("textures/gui/widgets.png");
 	public static final ResourceLocation VIGNETTE = new ResourceLocation("textures/misc/vignette.png");
 	public static List<WeaponSound> weaponSoundsToStart;
 	public static int renderCritGlow;
@@ -263,6 +267,7 @@ public class ClientProxy extends CommonProxy {
 		weaponSoundsToStart = new ArrayList<WeaponSound>();
 		fireSounds = HashBiMap.create();
 		ClientRegistry.registerKeyBinding(ClientProxy.reload);
+		ClientRegistry.registerKeyBinding(ClientProxy.backpackitem);
 		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);

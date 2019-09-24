@@ -15,6 +15,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -81,15 +82,104 @@ public class BlockRobotDeploy extends BlockContainer {
 	}
 	
 	@Override
+	public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state) {
+		
+		
+	}
+	
+	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer,
 			ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+		worldIn.setBlockState(pos, state = state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+		
 		if (placer instanceof EntityPlayer) {
 			TileEntity ent = worldIn.getTileEntity(pos);
+			for (EnumFacing facing: EnumFacing.HORIZONTALS) {
+				BlockPos offpos = pos.offset(facing);
+				TileEntity entoff = worldIn.getTileEntity(offpos);
+				if (entoff instanceof TileEntityRobotDeploy && !worldIn.getBlockState(offpos).getValue(JOINED) && worldIn.getBlockState(offpos).getValue(HOLDER)) {
+					EnumFacing placefacing = facing.rotateY();
+					if (placefacing == placer.getHorizontalFacing()) {
+						NBTTagCompound tag=new NBTTagCompound();
+						entoff.writeToNBT(tag);
+						tag.setInteger("x", pos.getX());
+						tag.setInteger("y", pos.getY());
+						tag.setInteger("z", pos.getZ());
+						((TileEntityRobotDeploy)ent).readFromNBT(tag);
+						worldIn.setBlockState(offpos, worldIn.getBlockState(offpos).withProperty(HOLDER, false));
+						worldIn.setTileEntity(offpos, null);
+						placefacing = placefacing.getOpposite();
+					}
+					else {
+						state = state.withProperty(HOLDER, false);
+					}
+					state = state.withProperty(FACING, placefacing).withProperty(JOINED, true);
+					worldIn.setBlockState(pos, state);
+					worldIn.setBlockState(offpos, worldIn.getBlockState(offpos).withProperty(FACING, placefacing).withProperty(JOINED, true));
+					if (worldIn.getBlockState(offpos.up()).getBlock() == this)
+						worldIn.setBlockState(offpos.up(), worldIn.getBlockState(offpos.up()).withProperty(FACING, placefacing).withProperty(JOINED, true));
+					break;
+				}
+			}
+			
+			/*TileEntity entbelow = worldIn.getTileEntity(pos.down());
+			TileEntity entup = worldIn.getTileEntity(pos.up());
+			IBlockState statebelow = worldIn.getBlockState(pos.down());
+			IBlockState stateup = worldIn.getBlockState(pos.up());
+			if (entbelow instanceof TileEntityRobotDeploy && !worldIn.getBlockState(pos.down()).getValue(JOINED)) {
+				worldIn.setBlockState(pos, state = state.withProperty(JOINED, true));
+				worldIn.setBlockState(pos, state = state.withProperty(HOLDER, false));
+				worldIn.setTileEntity(pos, null);
+				worldIn.setBlockState(pos.down(), statebelow = statebelow.withProperty(JOINED, true));
+			}
+			if (entup instanceof TileEntityRobotDeploy && !worldIn.getBlockState(pos.up()).getValue(JOINED)) {
+				worldIn.setBlockState(pos, state.withProperty(JOINED, true));
+				NBTTagCompound tag=new NBTTagCompound();
+				((TileEntityRobotDeploy)ent).readFromNBT(entup.writeToNBT(tag));
+				worldIn.setBlockState(pos.up(), stateup = stateup.withProperty(HOLDER, false));
+				worldIn.setTileEntity(pos.up(), null);
+				worldIn.setBlockState(pos.up(), stateup = stateup.withProperty(JOINED, true));
+			}*/
 			if (ent instanceof TileEntityRobotDeploy)
 				((TileEntityRobotDeploy)ent).setOwner(placer.getName(),placer.getUniqueID());
 		}
+		if (worldIn.isAirBlock(pos.up()))
+			worldIn.setBlockState(pos.up(), state.withProperty(HOLDER, false), 2);
 	}
+	
+	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+		
+		if (state.getValue(HOLDER)) {
+			if (worldIn.getBlockState(pos.up()).getBlock() == this) {
+				worldIn.setBlockToAir(pos.up());
+			}
+		}
+		else {
+			if (worldIn.getBlockState(pos.down()).getBlock() == this) {
+				worldIn.setBlockToAir(pos.down());
+			}
+			if (worldIn.getBlockState(pos.up()).getBlock() == this && !worldIn.getBlockState(pos.up()).getValue(HOLDER)) {
+				worldIn.setBlockToAir(pos.up());
+			}
+		}
+		
+		if (state.getValue(JOINED)) {
+			if (state.getValue(HOLDER) || (worldIn.getBlockState(pos.down()).getBlock() == this && worldIn.getBlockState(pos.down()).getValue(HOLDER)))
+				worldIn.destroyBlock(pos.offset(state.getValue(FACING).rotateY()), true);
+			else
+				worldIn.destroyBlock(pos.offset(state.getValue(FACING).rotateYCCW()), true);
+		}
+		
+		TileEntity ent = worldIn.getTileEntity(pos);
+		if (ent instanceof TileEntityRobotDeploy) {
+			((TileEntityRobotDeploy) ent).dropInventory();
+		}
+    }
+	
+	public boolean canPlaceBlockAt(World worldIn, BlockPos pos)
+    {
+		return super.canPlaceBlockAt(worldIn, pos) && worldIn.getBlockState(pos.up()).getBlock().isReplaceable(worldIn, pos.up());
+    }
 	
 	@Override
 	public IBlockState withRotation(IBlockState state, Rotation rot) {
