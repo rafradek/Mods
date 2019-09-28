@@ -2,6 +2,7 @@ package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAvoidEntity;
@@ -48,7 +49,7 @@ public class EntitySpy extends EntityTF2Character {
 		if(!this.world.isRemote) {
 			
 			this.getWepCapability().setDisguised(true);
-			this.getWepCapability().setDisguiseType("T:Engineer");
+			this.getWepCapability().setDisguiseType("M:"+TF2weapons.animalsDisguise.get(this.getRNG().nextInt(TF2weapons.animalsDisguise.size())));
 		}
 	}
 
@@ -83,7 +84,7 @@ public class EntitySpy extends EntityTF2Character {
 			this.cloakCounter--;
 			EntityLivingBase target = this.getAttackTarget();
 			if (target == null && !this.getWepCapability().isDisguised()) {
-				ItemDisguiseKit.startDisguise(this, this.world, "M:"+TF2weapons.animals.get(this.getRNG().nextInt(TF2weapons.animals.size())));
+				ItemDisguiseKit.startDisguise(this, this.world, "M:"+TF2weapons.animalsDisguise.get(this.getRNG().nextInt(TF2weapons.animalsDisguise.size())));
 			}
 			if (this.hasWatch()) {
 				this.loadout.getStackInSlot(3).getItem().onUpdate(this.loadout.getStackInSlot(3), this.world, this, 0, true);
@@ -132,7 +133,7 @@ public class EntitySpy extends EntityTF2Character {
 	@Override
 	protected void addWeapons() {
 		super.addWeapons();
-		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, true, this.noEquipment));
+		this.loadout.setStackInSlot(1,ItemFromData.getRandomWeaponOfSlotMob("spy", 1, this.rand, true, this.getStockWeight(1), this.noEquipment));
 		this.loadout.getStackInSlot(1).setCount( 64);
 	}
 
@@ -145,7 +146,7 @@ public class EntitySpy extends EntityTF2Character {
 			}
 			else {
 				if(this.getWepCapability().getDisguiseType().startsWith("M:")) {
-					return TextFormatting.RESET+I18n.format("entity."+username+".name");
+					return TextFormatting.RESET+I18n.format(EntityList.getTranslationName(new ResourceLocation(username)));
 				}
 				else
 					return ScorePlayerTeam.formatPlayerName(Minecraft.getMinecraft().world.getScoreboard().getPlayersTeam(username), username);

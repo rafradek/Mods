@@ -26,6 +26,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiButtonImage;
 import net.minecraft.client.gui.GuiGameOver;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiIngameMenu;
@@ -45,6 +46,7 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
@@ -54,6 +56,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -106,6 +109,7 @@ import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.mercenary.EntitySpy;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.inventory.ContainerWearables;
 import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.IItemOverlay;
@@ -180,6 +184,10 @@ public class TF2EventsClient {
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_2_2_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_3_2_empty"));
 		event.getMap().registerSprite(new ResourceLocation(TF2weapons.MOD_ID, "items/robot_part_1_3_empty"));
+		
+		for (int i=0;i < ContainerWearables.CURRENCY_EMPTY.length;i++) {
+			event.getMap().registerSprite(new ResourceLocation(ContainerWearables.CURRENCY_EMPTY[i]));
+		}
 		
 		
 		// }
@@ -592,7 +600,7 @@ public class TF2EventsClient {
 			if ((event.getGui() instanceof GuiInventory || event.getGui() instanceof GuiContainerCreative || event.getGui() instanceof GuiWearables)
 					&& !Minecraft.getMinecraft().player.getCapability(TF2weapons.INVENTORY_CAP, null).isEmpty()) {
 				// GuiContainer gui = (GuiContainer) event.getGui();
-				event.getButtonList().add(new GuiButton(97535627, event.getGui().width / 2 - 10, event.getGui().height / 2 + 95, 20, 20, "W"));
+				event.getButtonList().add(new GuiButtonImage(97535627, event.getGui().width / 2 - 10, event.getGui().height / 2 + 95, 18, 18, 238, 220, 18, GuiWearables.WEARABLES_TEXTURE));
 			}
 
 			if (event.getGui() instanceof GuiMerchant)
@@ -717,6 +725,7 @@ public class TF2EventsClient {
 			}
 		}
 		if (event.getType() == ElementType.HOTBAR) {
+			GlStateManager.enableBlend();
 			ItemStack backpack = ItemBackpack.getBackpack(player);
 			if (!backpack.isEmpty() && !((ItemBackpack)backpack.getItem()).getBackpackItemToUse(backpack, player).isEmpty()) {
 				ItemStack toUse;
@@ -1125,6 +1134,12 @@ public class TF2EventsClient {
 	@SubscribeEvent
 	public void renderWorld(RenderWorldLastEvent event) {
 		if (Minecraft.getMinecraft().player != null) {
+			float attackdir = TF2PlayerCapability.get(Minecraft.getMinecraft().player).getInvasionDir();
+			if (attackdir != Float.MIN_VALUE) {
+				ClientRender.renderAttackDirection(attackdir);
+				ClientRender.renderAttackDirection(attackdir-0.5f);
+				ClientRender.renderAttackDirection(attackdir+0.5f);
+			}
 			renderBeam(Minecraft.getMinecraft().player, event.getPartialTicks(), 0.04f);
 		}
 	}

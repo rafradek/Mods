@@ -216,7 +216,7 @@ public class TF2ConfigVars {
 		accurracyMult = conf.getFloat("Accurracy multiplier", "mercenary", 1f, 0f, 10f, "Mercenary accurracy multiplier");
 		updateDelay = conf.getInt("Update delay", "mercenary", 3, 1, 20, "Delay in sending position updates. Only for dedicated server");
 		neutralAttack = conf.getBoolean("Attack neutral players", "mercenary", false, "Should mercenaries attack neutral players");
-		attackMobs = conf.getBoolean("Attack mobs", "mercenary", false, "Should mercenaries attack mobs");
+		attackMobs = conf.getBoolean("Attack mobs", "mercenary", true, "Should mercenaries attack mobs");
 		//conf.getCategory("mercenary").get("Update delay").setRequiresMcRestart(true);
 		old = conf.hasKey("gameplay", "Buildings use energy");
 		if (old) {

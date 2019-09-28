@@ -13,8 +13,10 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -30,7 +32,9 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.TF2CharacterAdditionalData;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemRobotPart;
+import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
@@ -39,8 +43,11 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 
 	public static final int[] NORMAL_REQUIRE= {2,2,1};
 	public static final int[] GIANT_REQUIRE= {4,5,3};
+	public static final int MONEY_NORMAL_REQUIRE = 20;
+	public static final int MONEY_GIANT_REQUIRE = 100;
+	
 	boolean filled;
-	boolean joined;
+	private boolean joined;
 	UUID owner;
 	public ItemStackHandler weapon = new ItemStackHandler(9) {
 		@Override
@@ -79,17 +86,44 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 			calculateHasInput();
 	    }
 	};
+	
+	public ItemStackHandler money = new ItemStackHandler(3) {
+		@Override
+	    @Nonnull
+	    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate)
+	    {
+			if (!(stack.getItem() instanceof ItemMoney) || stack.getItemDamage() != slot)
+				return stack;
+			else
+				return super.insertItem(slot, stack, simulate);
+	    }
+		
+		@Override
+		protected void onContentsChanged(int slot)
+	    {
+			calculateHasInput();
+	    }
+	};
 	private String ownerName;
 	public int progress;
 	public int maxprogress;
 	int hasWeapon;
 	String weaponName;
+	public int progressClient;
+	public int classType;
 
 	public int getRequirement(int level) {
 		if (joined)
 			return GIANT_REQUIRE[level];
 		else
 			return NORMAL_REQUIRE[level];
+	}
+	
+	public int getCurrencyRequirement() {
+		if (joined)
+			return MONEY_GIANT_REQUIRE;
+		else
+			return MONEY_NORMAL_REQUIRE;
 	}
 	
 	public boolean produceGiant() {
@@ -122,6 +156,11 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 				break;
 			}
 		}
+		int money = TF2Util.getTotalCurrency(this.money);
+		
+		if (money < this.getCurrencyRequirement()) {
+			filled = false;
+		}
 	}
 	
 	@Override
@@ -129,8 +168,10 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 		if (!this.world.isRemote) {
 			if (hasWeapon>=0 && filled) {
 				if (progress == 0) {
-					this.maxprogress = 500;
+					this.maxprogress = this.joined ? 800 : 500;
 				}
+				if (progress % 20 == 0)
+					this.world.notifyBlockUpdate(getPos(), world.getBlockState(pos), world.getBlockState(pos), 0);
 				if (++progress >= this.maxprogress) {
 					ItemStack stack = this.weapon.extractItem(hasWeapon,64,false);
 					String weaponName = TF2Util.getWeaponUsedByClass(stack);
@@ -143,7 +184,7 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 					data.team = 2;
 					data.isGiant = this.joined;
 	
-					entity.robotStrength = 0.25f;
+					entity.robotStrength = 1f;
 					entity.setSharing(true);
 					entity.setOwnerID(this.ownerName,this.owner);
 					entity.onInitialSpawn(this.world.getDifficultyForLocation(frontpos), data);
@@ -154,15 +195,23 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 					entity.loadout.setStackInSlot(ItemFromData.getSlotForClass(ItemFromData.getData(stack), entity),stack);
 					entity.switchSlot(ItemFromData.getSlotForClass(ItemFromData.getData(stack), entity));
 					entity.setOrder(Order.HOLD);
+					entity.setMoneyDrop(this.getCurrencyRequirement());
 					this.getWorld().spawnEntity(entity);
 					for (int i = 0;i < this.parts.getSlots(); i++) {
 						this.parts.extractItem(i, ItemRobotPart.LEVEL[i] == 2 ? 1:2, false);
 					}
+					TF2Util.setTotalCurrency(money, 0, TF2Util.getTotalCurrency(money)-this.getCurrencyRequirement());
 					this.progress = 0;
+					this.world.notifyBlockUpdate(getPos(), world.getBlockState(pos), world.getBlockState(pos), 0);
 				}
 			}
-			else
-				this.progress = 0;
+			else {
+				if (this.progress > 0) {
+					this.progress = 0;
+					this.world.notifyBlockUpdate(getPos(), world.getBlockState(pos), world.getBlockState(pos), 0);
+				}
+				
+			}
 		}
 	}
 
@@ -175,6 +224,7 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 		}
 		compound.setTag("Weapons", this.weapon.serializeNBT());
 		compound.setTag("Parts", this.parts.serializeNBT());
+		compound.setTag("Money", this.money.serializeNBT());
 		compound.setShort("Progress", (short) this.progress);
 		compound.setShort("MaxProgress", (short) this.maxprogress);
 		return compound;
@@ -193,9 +243,28 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 		}
 		this.weapon.deserializeNBT(compound.getCompoundTag("Weapons"));
 		this.parts.deserializeNBT(compound.getCompoundTag("Parts"));
+		this.money.deserializeNBT(compound.getCompoundTag("Money"));
 		this.progress = compound.getShort("Progress");
 		this.maxprogress = compound.getShort("MaxProgress");
 		this.calculateHasInput();
+    }
+	
+	@Nullable
+    public SPacketUpdateTileEntity getUpdatePacket()
+    {
+		NBTTagCompound tag = new NBTTagCompound();
+		if (this.maxprogress > 0) {
+			tag.setByte("P", (byte) ((float)this.progress/(float)this.maxprogress*7f));
+			if (this.progress > 0)
+				tag.setByte("C", (byte) ItemToken.getClassID(TF2Util.getWeaponUsedByClass(this.weapon.extractItem(hasWeapon,64,true))));
+		}
+        return new SPacketUpdateTileEntity(this.pos, 9999, tag);
+    }
+	
+	public void onDataPacket(net.minecraft.network.NetworkManager net, net.minecraft.network.play.server.SPacketUpdateTileEntity pkt)
+    {
+		this.progressClient = pkt.getNbtCompound().getByte("P");
+		this.classType = pkt.getNbtCompound().getByte("C");
     }
 	
 	@Override
@@ -212,10 +281,12 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
     public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable net.minecraft.util.EnumFacing facing)
     {
     	if (facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-    		if (facing == EnumFacing.UP)
+    		if (facing.getAxis() == Axis.Y)
     			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(this.weapon);
-    		else
+    		else if (facing.getAxis() == Axis.X)
     			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(this.parts);
+    		else 
+    			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(this.money);
     	}
     	else
     		return super.getCapability(capability, facing);
@@ -245,5 +316,10 @@ public class TileEntityRobotDeploy extends TileEntity implements ITickable {
 		for (int i = 0; i < this.weapon.getSlots(); i++) {
 			InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.weapon.extractItem(i, 64, false));
 		}
+		
+		for (int i = 0; i < this.money.getSlots(); i++) {
+			InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.money.extractItem(i, 64, false));
+		}
 	}
+
 }

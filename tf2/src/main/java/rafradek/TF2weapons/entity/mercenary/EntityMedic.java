@@ -59,7 +59,6 @@ public class EntityMedic extends EntityTF2Character {
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true));
 		this.targetTasks.addTask(4,
 				new EntityAINearestChecked(this, EntityLivingBase.class, true, false, super::isValidTarget, true, false));
-		this.unlimitedAmmo = true;
 		//this.ammoLeft = 1;
 		this.experienceValue = 15;
 		this.rotation = 15;
@@ -80,8 +79,14 @@ public class EntityMedic extends EntityTF2Character {
 	protected void addWeapons() {
 		super.addWeapons();
 		if (this.isGiant()) {
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("HealRateBonus"), 10000f);
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("OverHealBonus"), 0f);
+			if (this.getOwnerId() == null) {
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("HealRateBonus"), 10000f);
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("OverHealBonus"), 0f);
+			}
+			else {
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("HealRateBonus"), 2.25f);
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("OverHealBonus"), 0f);
+			}
 		}
 	}
 	
@@ -110,20 +115,20 @@ public class EntityMedic extends EntityTF2Character {
 			this.ignoreFrustumCheck = false;
 		if (!this.world.isRemote) {
 			IAttributeInstance speed = this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
-			for(AttributeModifier modifier : playerAttributes) {
-				speed.removeModifier(modifier);
-			}
-			if (this.ticksExisted % 4 == 0 && this.getAttackTarget() != null && this.friendly && this.getAttackTarget() instanceof EntityPlayer) {
-				
-				
-				playerAttributes.clear();
-				for(AttributeModifier modifier : this.getAttackTarget().getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifiers()) {
-					if (modifier.getAmount() > 0) {
-						TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, modifier, true);
-						this.playerAttributes.add(modifier);
-					}
+			if (this.ticksExisted % 4 == 0 ) {
+				for(AttributeModifier modifier : playerAttributes) {
+					speed.removeModifier(modifier);
 				}
-				//System.out.println("modyfikatory: "+playerAttributes.size()+" "+speed.getModifiers().size());
+				playerAttributes.clear();
+				if(this.getAttackTarget() != null && this.friendly && this.getAttackTarget() instanceof EntityPlayer) {
+					for(AttributeModifier modifier : this.getAttackTarget().getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifiers()) {
+						if (modifier.getAmount() > 0) {
+							TF2Util.addModifierSafe(this, SharedMonsterAttributes.MOVEMENT_SPEED, modifier, true);
+							this.playerAttributes.add(modifier);
+						}
+					}
+					//System.out.println("modyfikatory: "+playerAttributes.size()+" "+speed.getModifiers().size());
+				}
 			}
 		}
 		

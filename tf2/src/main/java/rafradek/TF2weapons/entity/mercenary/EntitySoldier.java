@@ -91,6 +91,12 @@ public class EntitySoldier extends EntityTF2Character {
 		super.setRobot(robot);
 	}
 	
+	public float getStockWeight(int slot) {
+		if (slot != 1)
+			super.getStockWeight(slot);
+		return this.isRobot() ? 5.5f - Math.min(3.5f, this.robotStrength/2f) : 2f;
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 

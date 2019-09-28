@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.Mirror;
@@ -45,6 +46,11 @@ public class BlockRobotDeploy extends BlockContainer {
 		// TODO Auto-generated constructor stub
 	}
 
+	public EnumBlockRenderType getRenderType(IBlockState state)
+    {
+        return EnumBlockRenderType.MODEL;
+    }
+	
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
 		if ((meta & 4) == 4) {

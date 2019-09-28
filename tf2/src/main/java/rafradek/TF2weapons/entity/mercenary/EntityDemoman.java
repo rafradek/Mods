@@ -15,6 +15,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DifficultyInstance;
@@ -207,6 +208,11 @@ public class EntityDemoman extends EntityTF2Character {
 		return TF2Sounds.MOB_DEMOMAN_DEATH;
 	}
 
+	@Override
+	protected ResourceLocation getLootTable() {
+		return TF2weapons.lootDemoman;
+	}
+	
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */

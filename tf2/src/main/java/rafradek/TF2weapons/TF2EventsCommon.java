@@ -83,6 +83,7 @@ import rafradek.TF2weapons.item.ItemKillstreakKit;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
 import rafradek.TF2weapons.item.ItemMinigun;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
@@ -613,6 +614,8 @@ public class TF2EventsCommon {
 				newInv.setInventorySlotContents(i, oldInv.getStackInSlot(i));
 			}
 			newInv.setInventorySlotContents(4, oldInv.getStackInSlot(4));
+			for (int i = 5; i < 8; i++)
+				newInv.setInventorySlotContents(i, oldInv.getStackInSlot(i));
 		}
 		WeaponsCapability cap = WeaponsCapability.get(event.getEntityPlayer());
 		cap.forcedClass = WeaponsCapability.get(event.getOriginal()).forcedClass;
@@ -1426,6 +1429,7 @@ public class TF2EventsCommon {
 				&& event.getSource().getTrueSource() instanceof EntityLivingBase) {
 			ItemStack stack = ItemStack.EMPTY;
 			final EntityLivingBase living = (EntityLivingBase) event.getSource().getTrueSource();
+			boolean isEnemy = TF2Util.isEnemy(living, event.getEntityLiving());
 			if (event.getSource() instanceof TF2DamageSource) {
 				
 				stack = ((TF2DamageSource) event.getSource()).getWeaponOrig();
@@ -1433,7 +1437,7 @@ public class TF2EventsCommon {
 			} else {
 				stack = living.getHeldItemMainhand();
 			}
-			if(living instanceof EntityPlayerMP && TF2Util.isEnemy(living, event.getEntityLiving())){
+			if(living instanceof EntityPlayerMP && isEnemy){
 				EntityPlayerMP player=(EntityPlayerMP)living;
 				TF2PlayerCapability plcap = player.getCapability(TF2weapons.PLAYER_CAP, null);
 				if(event.getEntity() instanceof EntityTF2Character) {
@@ -1518,7 +1522,7 @@ public class TF2EventsCommon {
 					onStrangeUpdate(stack, living);
 					
 				}
-				if (stack.hasTagCompound() && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB) && TF2Util.isEnemy(living, event.getEntityLiving())) {
+				if (stack.hasTagCompound() && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB) && isEnemy) {
 					stack.getTagCompound().setInteger(NBTLiterals.STREAK_KILLS, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS) + 1);
 					stack.getTagCompound().setLong(NBTLiterals.STREAK_COOL, WeaponsCapability.get(living).ticksTotal 
 							+ ItemKillstreakKit.getCooldown(stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
@@ -1541,12 +1545,12 @@ public class TF2EventsCommon {
 						event.getEntity().setSilent(true);
 					}
 				}
-				if (TF2Util.isEnemy(living, event.getEntityLiving()) && living.hasCapability(TF2weapons.WEAPONS_CAP, null) && TF2Attribute.getModifier("Kill Count", stack, 0, living) != 0) {
+				if (isEnemy && living.hasCapability(TF2weapons.WEAPONS_CAP, null) && TF2Attribute.getModifier("Kill Count", stack, 0, living) != 0) {
 					living.getCapability(TF2weapons.WEAPONS_CAP, null).addHead(stack);
 				}
 				float toHeal = TF2Attribute.getModifier("Health Kill", stack, 0, living);
 				if (toHeal != 0) {
-					living.heal(toHeal);
+					living.heal(TF2Util.getReducedHealing(living, event.getEntityLiving(), isEnemy ? toHeal : toHeal*0.35f));
 				}
 				if (TF2Attribute.getModifier("Crit Kill", stack, 0, living) > 0) {
 					living.addPotionEffect(new PotionEffect(TF2weapons.critBoost, (int) TF2Attribute.getModifier("Crit Kill", stack, -1, living) * 20, 1));
@@ -1651,6 +1655,11 @@ public class TF2EventsCommon {
 			event.setCanceled(true);
 			return;
 		}
+		
+		if (stack.getItem() instanceof ItemMoney) {
+			ItemMoney.collect(stack, event.getEntityPlayer());
+			event.setResult(Result.ALLOW);
+		}
 		/*if (!(stack.getItem() instanceof ItemCrate) && stack.hasTagCompound() && stack.getTagCompound().getBoolean("DropFrom")) {
 			event.getEntityPlayer().addStat(TF2Achievements.SPOILS_WAR);
 		}*/
@@ -1688,8 +1697,9 @@ public class TF2EventsCommon {
 		if (calculatedLevel > stack.getTagCompound().getInteger("StrangeLevel")) {
 			stack.getTagCompound().setInteger("StrangeLevel", calculatedLevel);
 			if(player instanceof EntityPlayer) {
-				((EntityPlayer) player).addExperience(40 * calculatedLevel);
-				ItemHandlerHelper.giveItemToPlayer((EntityPlayer) player, new ItemStack(TF2weapons.itemTF2, calculatedLevel<10?MathHelper.ceil(calculatedLevel/2f) : calculatedLevel - 5, 6));
+				int rewardLevel = calculatedLevel<10? calculatedLevel : calculatedLevel * 2 - 10;
+				TF2Util.setExperiencePoints((EntityPlayer) player, TF2Util.getExperiencePoints((EntityPlayer) player)+35 * rewardLevel);
+				ItemHandlerHelper.giveItemToPlayer((EntityPlayer) player, new ItemStack(TF2weapons.itemTF2, MathHelper.ceil(rewardLevel/2f), 6));
 				if(calculatedLevel == 20)
 					ItemHandlerHelper.giveItemToPlayer((EntityPlayer) player, new ItemStack(TF2weapons.itemTF2, 2, 7));
 			}
@@ -1801,6 +1811,9 @@ public class TF2EventsCommon {
 			if (inv.getStackInSlot(i) != null) {
 				event.getEntityPlayer().dropItem(inv.getStackInSlot(i), true, false);
 			}
+		for (int i = 5; i < 8; i++)
+			if (inv.getStackInSlot(i) != null)
+				event.getEntityPlayer().dropItem(inv.getStackInSlot(i).splitStack(MathHelper.floor(inv.getStackInSlot(i).getCount()*0.25f)), true, false);
 	}
 	@SuppressWarnings("unchecked")
 	@SubscribeEvent

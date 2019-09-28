@@ -33,60 +33,30 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
-	private static final ResourceLocation HEAVY_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Heavy.png");
-	private static final ResourceLocation HEAVY_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Heavy.png");
-	private static final ResourceLocation HEAVY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Heavy.png");
-	private static final ResourceLocation SCOUT_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Scout.png");
-	private static final ResourceLocation SCOUT_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Scout.png");
-	private static final ResourceLocation SCOUT_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Scout.png");
-	private static final ResourceLocation SNIPER_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Sniper.png");
-	private static final ResourceLocation SNIPER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Sniper.png");
-	private static final ResourceLocation SNIPER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Sniper.png");
-	private static final ResourceLocation SOLDIER_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Soldier.png");
-	private static final ResourceLocation SOLDIER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Soldier.png");
-	private static final ResourceLocation SOLDIER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Soldier.png");
-	private static final ResourceLocation DEMOMAN_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Demoman.png");
-	private static final ResourceLocation DEMOMAN_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Demoman.png");
-	private static final ResourceLocation DEMOMAN_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Demoman.png");
-	private static final ResourceLocation PYRO_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Pyro.png");
-	private static final ResourceLocation PYRO_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Pyro.png");
-	private static final ResourceLocation PYRO_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Pyro.png");
-	private static final ResourceLocation MEDIC_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Medic.png");
-	private static final ResourceLocation MEDIC_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Medic.png");
-	private static final ResourceLocation MEDIC_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Medic.png");
-	private static final ResourceLocation SPY_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Spy.png");
-	private static final ResourceLocation SPY_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Spy.png");
-	private static final ResourceLocation SPY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Spy.png");
-	private static final ResourceLocation ENGINEER_RED = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/red/Engineer.png");
-	private static final ResourceLocation ENGINEER_BLU = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/blu/Engineer.png");
-	private static final ResourceLocation ENGINEER_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
-			"textures/entity/tf2/robot/Engineer.png");
+	private static final String TEXTURE_PATH_BASE = TF2weapons.MOD_ID+":textures/entity/tf2/";
+	
+	private static final ResourceLocation[] RED_TEXTURES;
+	private static final ResourceLocation[] BLU_TEXTURES;
+	public static final ResourceLocation[] ROBOT_TEXTURES;
+	private static final ResourceLocation[] ROBOT_BLU_TEXTURES;
+	private static final ResourceLocation[] ROBOT_RED_TEXTURES;
+	
+	static {
+		RED_TEXTURES = putResourcesFor("red");
+		BLU_TEXTURES = putResourcesFor("blu");
+		ROBOT_TEXTURES = putResourcesFor("robot");
+		ROBOT_RED_TEXTURES = putResourcesFor("robot_red");
+		ROBOT_BLU_TEXTURES = putResourcesFor("robot_blu");
+	}
+	
+	private static ResourceLocation[] putResourcesFor(String name) {
+		ResourceLocation[] location = new ResourceLocation[9];
+		for (int i = 0; i < 9; i++) {
+			location[i] = new ResourceLocation(TEXTURE_PATH_BASE+name+"/"+ItemToken.CLASS_NAMES[i]+".png");
+		}
+		
+		return location;
+	}
 
 	public ModelBiped modelHeavy = new ModelHeavy();
 	public ModelBiped modelMain;
@@ -112,71 +82,19 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 			clazz = par1EntityLiving.getClassIndex();
 		// System.out.println("class: "+clazz);
 		if (par1EntityLiving.getEntTeam() == 2 && !WeaponsCapability.get(par1EntityLiving).isDisguised()) {
-			switch (clazz) {
-			case 0:
-				return SCOUT_ROBOT;
-			case 1:
-				return SOLDIER_ROBOT;
-			case 2:
-				return PYRO_ROBOT;
-			case 3:
-				return DEMOMAN_ROBOT;
-			case 4:
-				return HEAVY_ROBOT;
-			case 5:
-				return ENGINEER_ROBOT;
-			case 6:
-				return MEDIC_ROBOT;
-			case 7:
-				return SNIPER_ROBOT;
-			case 8:
-				return SPY_ROBOT;
+			if (par1EntityLiving.getOwnerId() != null) {
+				if (par1EntityLiving.getTeam() == par1EntityLiving.getWorld().getScoreboard().getTeam("BLU"))
+					return  ROBOT_BLU_TEXTURES[clazz];
+				else
+					return  ROBOT_RED_TEXTURES[clazz];
 			}
+			return ROBOT_TEXTURES[clazz];
 		}
 		else if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
 				&& WeaponsCapability.get(par1EntityLiving).isDisguised()))
-			switch (clazz) {
-			case 0:
-				return SCOUT_RED;
-			case 1:
-				return SOLDIER_RED;
-			case 2:
-				return PYRO_RED;
-			case 3:
-				return DEMOMAN_RED;
-			case 4:
-				return HEAVY_RED;
-			case 5:
-				return ENGINEER_RED;
-			case 6:
-				return MEDIC_RED;
-			case 7:
-				return SNIPER_RED;
-			case 8:
-				return SPY_RED;
-			}
+			return RED_TEXTURES[clazz];
 		else
-			switch (clazz) {
-			case 0:
-				return SCOUT_BLU;
-			case 1:
-				return SOLDIER_BLU;
-			case 2:
-				return PYRO_BLU;
-			case 3:
-				return DEMOMAN_BLU;
-			case 4:
-				return HEAVY_BLU;
-			case 5:
-				return ENGINEER_BLU;
-			case 6:
-				return MEDIC_BLU;
-			case 7:
-				return SNIPER_BLU;
-			case 8:
-				return SPY_BLU;
-			}
-		return HEAVY_BLU;
+			return BLU_TEXTURES[clazz];
 	}
 
 	@Override

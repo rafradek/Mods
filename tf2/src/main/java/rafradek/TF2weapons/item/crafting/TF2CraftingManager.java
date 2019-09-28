@@ -1,9 +1,15 @@
 package rafradek.TF2weapons.item.crafting;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
@@ -31,6 +37,7 @@ public class TF2CraftingManager {
 	public static final ShapelessOreRecipe[] AMMO_RECIPES = new ShapelessOreRecipe[14];
 	public static final TF2CraftingManager INSTANCE = new TF2CraftingManager();
 	private final List<IRecipe> recipes = Lists.<IRecipe>newArrayList();
+	private final Map<IRecipe, Predicate<EntityPlayer>> recipeConditions = new HashMap<>();
 
 	public TF2CraftingManager() {
 		ItemStack bonk = ItemFromData.getNewStack("bonk");
@@ -55,7 +62,7 @@ public class TF2CraftingManager {
 				new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
 		addRecipe(TF2CraftingManager.AMMO_RECIPES[11] = new ShapelessOreRecipe(
 				null, new ItemStack(TF2weapons.itemAmmo, 18, 11), new Object[] { "ingotIron", "ingotIron", Blocks.TNT }));
-		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 12, 13),
+		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 11, 13),
 				new Object[] { " R ", "RIR", " R ", 'I', "ingotIron", 'R', "dustRedstone" }));
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmo, 8, 14),
 				new Object[] { " S ","SLS"," S ", 'S', "string", 'L',"leather" }));
@@ -168,6 +175,8 @@ public class TF2CraftingManager {
 		}
 		addRecipe(new ShapelessOreRecipe(null,new ItemStack(TF2weapons.blockUpgradeStation), new Object[] { new IngredientWeapon("headtaker"), new IngredientWeapon("monoculus"),
 				new IngredientWeapon("merasmushat")}));
+		//addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockRobotDeploy), new Object[] { "LLL", "G G", "AIA", 'L', new ItemStack(TF2weapons.itemTF2, 1, 11), 'G', "blockGlass", 'I',
+		//		"blockIron","A",new ItemStack(TF2weapons.itemTF2, 1, 2)}));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 4), new ItemStack(TF2weapons.itemTF2, 1, 3),
 				new ItemStack(TF2weapons.itemTF2, 1, 3), new ItemStack(TF2weapons.itemTF2, 1, 3));
 		addShapelessRecipe(new ItemStack(TF2weapons.itemTF2, 1, 5), new ItemStack(TF2weapons.itemTF2, 1, 4),
@@ -198,7 +207,7 @@ public class TF2CraftingManager {
 	/**
 	 * Adds a shapeless crafting recipe to the the game.
 	 */
-	public void addShapelessRecipe(ItemStack stack, Object... recipeComponents) {
+	public IRecipe addShapelessRecipe(ItemStack stack, Object... recipeComponents) {
 		NonNullList<Ingredient> list = NonNullList.create();
 
 		for (Object object : recipeComponents)
@@ -207,22 +216,28 @@ public class TF2CraftingManager {
 		ShapelessRecipes recipe;
         recipe= (ShapelessRecipes) new ShapelessRecipes("", stack, list);
 		this.recipes.add(recipe);
+		return recipe;
 	}
 
 	/**
 	 * Adds an IRecipe to the list of crafting recipes.
 	 */
-	public void addRecipe(IRecipe recipe) {
+	public IRecipe addRecipe(IRecipe recipe) {
 		this.recipes.add(recipe);
+		return recipe;
+	}
+	
+	public void addRecipeCondition(IRecipe recipe, Predicate<EntityPlayer> predicate) {
+		this.recipeConditions.put(recipe, predicate);
 	}
 
 	/**
 	 * Retrieves an ItemStack that has multiple recipes for it.
 	 */
 	@Nullable
-	public ItemStack findMatchingRecipe(InventoryCrafting craftMatrix, World worldIn) {
+	public ItemStack findMatchingRecipe(InventoryCrafting craftMatrix, World worldIn, EntityPlayer player) {
 		for (IRecipe irecipe : this.recipes)
-			if (irecipe.matches(craftMatrix, worldIn))
+			if (!(this.recipeConditions.containsKey(irecipe) && !this.recipeConditions.get(irecipe).apply(player)) && irecipe.matches(craftMatrix, worldIn))
 				return irecipe.getCraftingResult(craftMatrix);
 
 		return ItemStack.EMPTY;

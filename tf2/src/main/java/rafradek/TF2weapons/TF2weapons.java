@@ -236,6 +236,7 @@ import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemKillstreakFabricator;
 import rafradek.TF2weapons.item.ItemKillstreakKit;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemMonsterPlacerPlus;
 import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemRobotPart;
@@ -290,7 +291,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.5.12", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.6.0", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -404,6 +405,7 @@ public class TF2weapons {
 	public static Item itemRobotPart;
 	public static Item itemBossSpawn;
 	public static Item itemDoorController;
+	public static Item itemMoney;
 	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
@@ -430,7 +432,7 @@ public class TF2weapons {
 	public static BannerPattern bluPattern;
 	public static BannerPattern neutralPattern;
 	public static BannerPattern fastSpawn;
-	public static ArrayList<ResourceLocation> animals;
+	public static ArrayList<ResourceLocation> animalsDisguise;
 	
 	public static Fluid refinedFuel;
 	public static boolean squakeLoaded;
@@ -646,6 +648,8 @@ public class TF2weapons {
 		ForgeRegistries.ITEMS.register(itemBossSpawn = new ItemBossSpawner().setCreativeTab(tabspawnertf2).setUnlocalizedName("boss").setRegistryName(TF2weapons.MOD_ID + ":boss_spawner"));
 		ForgeRegistries.ITEMS.register(itemDoorController = new ItemDoorController().setCreativeTab(tabutilitytf2).setUnlocalizedName("doorcontroller")
 				.setRegistryName(TF2weapons.MOD_ID + ":door_controller"));
+		ForgeRegistries.ITEMS.register(itemMoney = new ItemMoney().setRegistryName(TF2weapons.MOD_ID + ":money"));
+		
 		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
 		while (iterator.hasNext()) {
 			String name = iterator.next();
@@ -799,7 +803,7 @@ public class TF2weapons {
 			public void performEffect(EntityLivingBase entityLivingBaseIn, int amplifier) {
 				float range = 0.75f + 0.75f * amplifier;
 				for (EntityLivingBase target : entityLivingBaseIn.world.getEntitiesWithinAABB(EntityLivingBase.class, entityLivingBaseIn.getEntityBoundingBox().grow(range, range, range))) {
-					if (!(TF2Util.getOwnerIfOwnable(target) instanceof EntityPlayer) && target.getActivePotionEffect(viralfire) == null) {
+					if (!(TF2Util.getOwnerIfOwnable(target) instanceof EntityPlayer && TF2Util.isEnemy(entityLivingBaseIn, target)) && target.getActivePotionEffect(viralfire) == null) {
 						try {
 							int firetime = ReflectionAccess.entityFire.getInt(entityLivingBaseIn);
 							target.setFire(firetime/20+1);
@@ -904,6 +908,14 @@ public class TF2weapons {
 		.setRegistryName(TF2weapons.MOD_ID,"doorcontroller3"));
 		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemDoorController,1,3), new Object[] { "RIR", "IOI", "RIR", 'R', "dyeBlue", 'I',"ingotIron", 'O', Blocks.OBSERVER })
 		.setRegistryName(TF2weapons.MOD_ID,"doorcontroller4"));
+		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemMoney,1,1), new Object[] { "AAA", "AAA", "AAA", 'A', new ItemStack(TF2weapons.itemMoney,1,0)})
+				.setRegistryName(TF2weapons.MOD_ID,"money1"));
+		ForgeRegistries.RECIPES.register(new ShapedOreRecipe(null,new ItemStack(TF2weapons.itemMoney,1,2), new Object[] { "AAA", "AAA", "AAA", 'A', new ItemStack(TF2weapons.itemMoney,1,1)})
+				.setRegistryName(TF2weapons.MOD_ID,"money2"));
+		ForgeRegistries.RECIPES.register(new ShapelessOreRecipe(null,new ItemStack(TF2weapons.itemMoney,9,0), new ItemStack(TF2weapons.itemMoney,1,1))
+				.setRegistryName(TF2weapons.MOD_ID,"money3"));
+		ForgeRegistries.RECIPES.register(new ShapelessOreRecipe(null,new ItemStack(TF2weapons.itemMoney,9,1), new ItemStack(TF2weapons.itemMoney,1,2))
+				.setRegistryName(TF2weapons.MOD_ID,"money4"));
 
 		LootFunctionManager.registerFunction(new EntityBuildingFunction.Serializer());
 		LootFunctionManager.registerFunction(new EntityOfClassFunction.Serializer());
@@ -1160,12 +1172,12 @@ public class TF2weapons {
 		
 		squakeLoaded = Loader.isModLoaded("squake");
 		
-		animals = new ArrayList<>();
-		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
-			if(EntityAnimal.class.isAssignableFrom(EntityList.getClass(entry))) {
-				animals.add(entry);
-			}
-		}
+		animalsDisguise = new ArrayList<>();
+		animalsDisguise.add(new ResourceLocation("pig"));
+		animalsDisguise.add(new ResourceLocation("sheep"));
+		animalsDisguise.add(new ResourceLocation("cow"));
+		animalsDisguise.add(new ResourceLocation("chicken"));
+		animalsDisguise.add(new ResourceLocation("horse"));
 	}
 
 	@Mod.EventHandler

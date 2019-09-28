@@ -5,6 +5,7 @@
     	"rafradek_tf2_weapons:misc/pain"
     ]
   },
+  
   "misc.crit": {
     "category": "neutral",
     "sounds": [
@@ -1812,6 +1813,28 @@
     	"rafradek_tf2_weapons:mob/hhh/knight_laugh01",
     	"rafradek_tf2_weapons:mob/hhh/knight_laugh02",
     	"rafradek_tf2_weapons:mob/hhh/knight_laugh03"
+    ]
+  },
+  "mvm.wave.start": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/mvm_general_wav_start01",
+    	"rafradek_tf2_weapons:misc/mvm_general_wav_start02",
+    	"rafradek_tf2_weapons:misc/mvm_general_wav_start03"
+    ]
+  },
+  "mvm.wave.end": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/mvm_wave_end02",
+    	"rafradek_tf2_weapons:misc/mvm_wave_end03"
+    ]
+  },
+  "mvm.sentrybuster": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:misc/mvm_sentry_buster_alerts01",
+    	"rafradek_tf2_weapons:misc/mvm_sentry_buster_alerts02"
     ]
   }
 }

@@ -54,6 +54,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWrench;
@@ -130,6 +131,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public static final DataParameter<NBTTagCompound> TELEPORTERA_VIEW = new DataParameter<NBTTagCompound>(2, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<NBTTagCompound> TELEPORTERB_VIEW = new DataParameter<NBTTagCompound>(3, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<ItemStack> BACKPACK_ITEM_HOLD = new DataParameter<ItemStack>(4, DataSerializers.ITEM_STACK);
+	public static final DataParameter<Float> INVASION_ATTACK_DIR = new DataParameter<Float>(5, DataSerializers.FLOAT);
 	
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[5];
@@ -149,6 +151,7 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.dataManager.register(TELEPORTERA_VIEW, EMPTY);
 		this.dataManager.register(TELEPORTERB_VIEW, EMPTY);
 		this.dataManager.register(BACKPACK_ITEM_HOLD, ItemStack.EMPTY);
+		this.dataManager.register(INVASION_ATTACK_DIR, Float.MIN_VALUE);
 	}
 
 	public void tick() {
@@ -262,8 +265,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				text.getStyle().setColor(TextFormatting.GOLD);
 				this.owner.sendMessage(text);
 				for (ItemStack stack : PlayerPersistStorage.get(this.owner).itemsToGive) {
-					ItemHandlerHelper.giveItemToPlayer(owner, stack);
 					this.owner.sendMessage(new TextComponentString(stack.getDisplayName()));
+					if (stack.getItem() instanceof ItemMoney)
+						ItemMoney.collect(stack, owner);
+					ItemHandlerHelper.giveItemToPlayer(owner, stack);
 				}
 				PlayerPersistStorage.get(this.owner).itemsToGive.clear();
 				
@@ -349,6 +354,14 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	
 	public void setBackpackItemHold(ItemStack stack) {
 		this.dataManager.set(BACKPACK_ITEM_HOLD, stack);
+	}
+	
+	public float getInvasionDir() {
+		return this.dataManager.get(INVASION_ATTACK_DIR);
+	}
+	
+	public void setInvasionDir(float dir) {
+		this.dataManager.set(INVASION_ATTACK_DIR, dir);
 	}
 	
 	public NBTTagCompound getSentryView() {

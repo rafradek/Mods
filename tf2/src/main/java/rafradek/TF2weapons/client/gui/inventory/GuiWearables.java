@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.inventory.ContainerWearables;
 
 public class GuiWearables extends InventoryEffectRenderer {
@@ -19,9 +21,11 @@ public class GuiWearables extends InventoryEffectRenderer {
 	/** The old y position of the mouse pointer */
 	private float oldMouseY;
 
+	public static final ResourceLocation WEARABLES_TEXTURE = new ResourceLocation(TF2weapons.MOD_ID, "textures/gui/container/wearables.png");
 	public GuiWearables(ContainerWearables container) {
 		super(container);
 		this.allowUserInput = true;
+		this.xSize=199;
 	}
 
 	/**
@@ -70,12 +74,10 @@ public class GuiWearables extends InventoryEffectRenderer {
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
+		this.mc.getTextureManager().bindTexture(WEARABLES_TEXTURE);
 		int i = this.guiLeft;
 		int j = this.guiTop;
 		this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
-		this.drawTexturedModalRect(i + 76, j + 7, 7, 7, 18, 54);
-		this.drawTexturedModalRect(i + 97, j + 17, 7, 83, 54, 54);
 		drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
 				this.mc.player);
 	}

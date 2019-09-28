@@ -72,7 +72,6 @@ public class EntityAIAmbush extends EntityAIBase {
 		 * this.host.cloak, this.host, this.host.world); }
 		 */
 		ItemStack cloak = this.host.loadout.getStackInSlot(3);
-		System.out.print("mov"+this.host.getWepCapability().isDisguised());
 		double dist = target.getDistanceSq(this.host);
 		boolean enemyLooking = !cloak.getTagCompound().getBoolean("Active") &&
 				this.host.getEntitySenses().canSee(target) && TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ);
@@ -82,7 +81,7 @@ public class EntityAIAmbush extends EntityAIBase {
 		
 		if (!this.host.getWepCapability().isDisguised()) {
 			if (this.host.getAttackTarget() != null && this.host.getAttackTarget() instanceof EntityPlayer)
-				ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:"+TF2weapons.animals.get(this.host.getRNG().nextInt(TF2weapons.animals.size())));
+				ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:"+TF2weapons.animalsDisguise.get(this.host.getRNG().nextInt(TF2weapons.animalsDisguise.size())));
 			else
 				ItemDisguiseKit.startDisguise(this.host, this.host.world, "T:Engineer");
 		}

@@ -84,6 +84,13 @@
         {
         	"name": "ammo",	
             "rolls": 1,
+            "conditions": [
+                {
+                    "condition": "rafradek_tf2_weapons:nbt_test",
+                    "test": "{Robot:0b}",
+                    "negate": false
+                }
+            ],
             "entries": [
                 {
                     "type": "loot_table",

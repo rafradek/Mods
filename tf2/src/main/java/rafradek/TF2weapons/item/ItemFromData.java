@@ -283,7 +283,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 	}
 
 	public static ItemStack getRandomWeaponOfSlotMob(final String mob, final int slot, Random random,
-			final boolean showHidden, boolean weighted, boolean stockOnly) {
+			final boolean showHidden, float stockWeight, boolean stockOnly) {
 		Predicate<WeaponData> base=new Predicate<WeaponData>() {
 
 			@Override
@@ -295,7 +295,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 
 		};
 		
-		if(!weighted && !stockOnly)
+		if(stockWeight == 1f && !stockOnly)
 			return getRandomWeapon(random, base);
 		
 		ItemStack stock=getRandomWeapon(random, Predicates.and(base,new Predicate<WeaponData>(){
@@ -328,7 +328,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 		else if(stock.isEmpty()){
 			return uni;
 		}
-		else if(random.nextFloat()<unicount/(unicount+2f)){
+		else if(random.nextFloat()<unicount/(unicount+stockWeight)){
 			return uni;
 		}
 		else{
@@ -515,7 +515,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 	}
 	
 	public boolean isAmmoSufficient(ItemStack stack, EntityLivingBase living, boolean all) {
-		return true;
+		return !this.searchForAmmo(living, stack).isEmpty();
 	}
 	
 	public void consumeAmmoGlobal(EntityLivingBase living, ItemStack stack, int amount) {

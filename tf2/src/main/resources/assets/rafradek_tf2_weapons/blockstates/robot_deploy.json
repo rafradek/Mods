@@ -1,0 +1,28 @@
+{
+    "multipart": [
+        {   "when": { "facing": "north", "holder": "true", "joined": "false" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy"}
+        },
+        {   "when": { "facing": "south", "holder": "true", "joined": "false" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy", "y": 180}
+        },
+        {   "when": { "facing": "west", "holder": "true", "joined": "false" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy", "y": 270}
+        },
+        {   "when": { "facing": "east", "holder": "true", "joined": "false" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy", "y": 90}
+        },
+        {   "when": { "facing": "north", "holder": "true", "joined": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy_big"}
+        },
+        {   "when": { "facing": "south", "holder": "true", "joined": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy_big", "y": 180}
+        },
+        {   "when": { "facing": "west", "holder": "true", "joined": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy_big", "y": 270}
+        },
+        {   "when": { "facing": "east", "holder": "true", "joined": "true" },
+            "apply": { "model": "rafradek_tf2_weapons:robot_deploy_big", "y": 90}
+        }
+    ]
+}

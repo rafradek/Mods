@@ -37,6 +37,8 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 			"textures/entity/tf2/blu/Sentrymini.png");
 	private static final ResourceLocation SENTRY_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/robot/Sentry.png");
+	private static final ResourceLocation SENTRY_MINI_ROBOT = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/entity/tf2/robot/Sentrymini.png");
 	private static final ResourceLocation BOX_RED = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/red/box.png");
 	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
@@ -60,7 +62,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 		switch (par1EntityLiving.getEntTeam()) {
 		case 0: return constr ? BOX_RED : par1EntityLiving.isMini() ? SENTRY_MINI_RED : SENTRY_RED;
 		case 1: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
-		case 2: return constr ? BOX_BLU : SENTRY_ROBOT;
+		case 2: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_ROBOT : SENTRY_ROBOT;
 		default: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
 		}
 	}

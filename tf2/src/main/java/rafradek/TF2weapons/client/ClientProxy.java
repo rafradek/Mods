@@ -114,6 +114,7 @@ import rafradek.TF2weapons.client.renderer.entity.RenderSyringe;
 import rafradek.TF2weapons.client.renderer.entity.RenderTF2Character;
 import rafradek.TF2weapons.client.renderer.entity.RenderTeleporter;
 import rafradek.TF2weapons.client.renderer.tileentity.RenderDoor;
+import rafradek.TF2weapons.client.renderer.tileentity.RenderRobotDeploy;
 import rafradek.TF2weapons.common.CommonProxy;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.entity.EntityStatue;
@@ -148,6 +149,7 @@ import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
+import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -383,6 +385,7 @@ public class ClientProxy extends CommonProxy {
 		final ModelResourceLocation killstreakPro = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit_professional",
 				"inventory");
 		final ModelResourceLocation ammoBox = new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box", "inventory");
+		final ModelResourceLocation ammoBoxSmall = new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box_small", "inventory");
 		
 		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
 				teleporterRed, teleporterBlu);
@@ -418,8 +421,8 @@ public class ClientProxy extends CommonProxy {
 					}
 				});
 		
-		ModelBakery.registerItemVariants(TF2weapons.itemAmmoPackage, ammoBox);
-		ModelLoader.setCustomMeshDefinition(TF2weapons.itemAmmoPackage, stack -> ammoBox);
+		ModelBakery.registerItemVariants(TF2weapons.itemAmmoPackage, ammoBox, ammoBoxSmall);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemAmmoPackage, stack -> stack.getMetadata() /16 == 0 ? ammoBoxSmall : ammoBox);
 		
 		final ModelResourceLocation killstreakFab = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator",
 				"inventory");
@@ -498,6 +501,10 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_hat", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 11,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":logic_board", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 12,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_pack", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 13,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_pack", "inventory"));
 		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_scout", "inventory"));
@@ -533,7 +540,16 @@ public class ClientProxy extends CommonProxy {
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemBossSpawn, 2,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_merasmus", "inventory"));
 		
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_small", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 1,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_normal", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 2,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_big", "inventory"));
+		
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityOverheadDoor.class, new RenderDoor());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRobotDeploy.class, new RenderRobotDeploy());
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityTF2Character.class,
 				new IRenderFactory<EntityTF2Character>() {
 					@Override

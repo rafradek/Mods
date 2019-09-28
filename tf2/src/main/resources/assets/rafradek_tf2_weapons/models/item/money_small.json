@@ -1,0 +1,50 @@
+{
+	"__comment": "Designed by Rafał with Cubik Studio - https://cubik.studio",
+	"textures": {
+		"money": "rafradek_tf2_weapons:items/money"
+	},
+	"elements": [ 	 
+		{
+			"__comment": "Box1",
+			"from": [ 4, 6.5, 1 ],
+			"to": [ 12, 10.5, 15 ],
+			"faces": {
+				"down": { "uv": [ 0, 9, 4, 16 ], "texture": "#money" },
+				"up": { "uv": [ 4, 9, 8, 16 ], "texture": "#money" },
+				"north": { "uv": [ 8, 10, 12, 12 ], "texture": "#money" },
+				"south": { "uv": [ 8, 8, 12, 10 ], "texture": "#money" },
+				"west": { "uv": [ 8, 14, 15, 16 ], "texture": "#money" },
+				"east": { "uv": [ 8, 12, 15, 14 ], "texture": "#money" }
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"scale":  [ 0.3, 0.3, 0.3 ]
+		},
+		"thirdperson_lefthand": {
+			"scale":  [ 0.3, 0.3, 0.3 ]
+		},
+		"firstperson_righthand": {
+			"rotation":  [ 38, 15, 54 ],
+			"translation":  [ 0, 2.0869, 1.3913 ],
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		},
+		"firstperson_lefthand": {
+			"rotation":  [ 38, 15, 54 ],
+			"translation":  [ 0, 2.0869, 1.3913 ],
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		},
+		"gui": {
+			"rotation":  [ 25, -33, 0 ],
+			"scale":  [ 0.7, 0.7, 0.7 ]
+		},
+		"ground": {
+			"scale":  [ 0.5, 0.5, 0.5 ]
+		},
+		"fixed": {
+			"rotation":  [ -90, 135, 0 ],
+			"scale":  [ 0.6, 0.6, 0.6 ]
+		}
+	}
+}

@@ -20,7 +20,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 public class InventoryWearables extends InventoryBasic implements ICapabilityProvider, INBTSerializable<NBTTagList> {
 
 	public EntityLivingBase owner;
-	public static final int USED_SLOTS = 5;
+	public static final int USED_SLOTS = 8;
 	private final NonNullList<ItemStack> inventoryContentsOld;
 	public ItemStack origHead = ItemStack.EMPTY;
 	public InventoryWearables(EntityLivingBase ply) {

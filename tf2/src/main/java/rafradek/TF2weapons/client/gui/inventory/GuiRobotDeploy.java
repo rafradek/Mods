@@ -18,7 +18,7 @@ public class GuiRobotDeploy extends GuiContainer {
 		super(new ContainerRobotDeploy(player, tileEntity));
 		this.tileEntity=tileEntity;
 		this.player = player;
-		this.ySize = 172;
+		this.ySize = 193;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -58,6 +58,8 @@ public class GuiRobotDeploy extends GuiContainer {
 				39, 4210752);
 		this.fontRenderer.drawString("x"+this.tileEntity.getRequirement(2), 46,
 				60, 4210752);
+		this.fontRenderer.drawString("x"+this.tileEntity.getCurrencyRequirement(), 64,
+				81, 4210752);
 		/*if (this.tileEntity.produceGiant())
 			this.fontRenderer.drawString("x2"+this.tileEntity.getRequirement(2), 135,
 					18, 4210752);*/

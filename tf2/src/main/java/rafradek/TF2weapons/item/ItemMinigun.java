@@ -64,7 +64,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 				((EntityLivingBase) par3Entity).getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
 			}
 			if((cap.state & 4) == 4 && this.getRageType(par1ItemStack, (EntityLivingBase) par3Entity) == RageType.KNOCKBACK && !cap.isRageActive(RageType.KNOCKBACK) && cap.getRage(RageType.KNOCKBACK) >= 1f) {
-				cap.setRageActive(RageType.KNOCKBACK, true, 0.07f);
+				cap.setRageActive(RageType.KNOCKBACK, true, 0.15f - 0.03f * TF2Attribute.getModifier("Knockback Rage", par1ItemStack, 0, null));
 			}
 		}
 	}

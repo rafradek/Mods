@@ -72,24 +72,27 @@ public class ItemMedigun extends ItemUsable {
 
 	public void heal(ItemStack stack, EntityLivingBase living, World world, EntityLivingBase target) {
 		
-		if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode) {
-			ItemStack stackAmmo = this.searchForAmmo(living, stack);
+		if (!(living instanceof EntityPlayer && ((EntityPlayer) living).capabilities.isCreativeMode)) {
+			//ItemStack stackAmmo = this.searchForAmmo(living, stack);
+			if (!this.isAmmoSufficient(stack, living, true))
+				return;
 			int use = 16;
 			if (target.getHealth() >= target.getMaxHealth())
 				use /= 2;
 			if (target.getAbsorptionAmount() >= target.getMaxHealth() *this.getMaxOverheal(stack, living, target) * 0.9f) {
 				use /= 2;
 				if (stack.getTagCompound().getFloat("ubercharge") >= 1)
-					use /= 4;
+					if (living instanceof EntityPlayer)
+						use /= 4;
+					else
+						use = 0;
 			}
 			else if (stack.getTagCompound().getFloat("ubercharge") >= 1)
 				use = use * 2 / 3;
-			
-			if (!stackAmmo.isEmpty())
-				((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
-						this.getActualAmmoUse(stack, living, use));
-			else
-				return;
+			if (use != 0)
+				this.consumeAmmoGlobal(living, stack, use);
+				//((ItemAmmo) stackAmmo.getItem()).consumeAmmo(living, stackAmmo,
+				//		this.getActualAmmoUse(stack, living, use));
 		}
 		int lastHitTime = target.ticksExisted - target.getEntityData().getInteger("lasthit");
 		float heal = this.getHealAmount(stack, living);

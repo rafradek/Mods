@@ -210,9 +210,7 @@ public class TF2Explosion extends Explosion {
 					// * d8);
 					// entity.addVelocity(2, 2, 2);
 					d11 = d11 * 0.5 + 0.5;
-					if (entity.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
-						entity.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
-					}
+					
 					if (entity instanceof EntityPlayerMP) {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),

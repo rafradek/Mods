@@ -61,6 +61,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketEntityEffect;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.network.play.server.SPacketExplosion;
+import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
@@ -70,6 +71,7 @@ import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -96,6 +98,7 @@ import net.minecraftforge.fml.common.registry.IThrowableEntity;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.oredict.OreDictionary;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
@@ -122,11 +125,13 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
+import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemToken;
@@ -320,8 +325,10 @@ public class TF2Util {
 				|| ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.jarate) != null)))
 			initial = 1;
 		
-		if (initial == 0 && !stack.isEmpty() && !target.onGround && !target.isInWater() && TF2Attribute.getModifier("Minicrit Airborne", stack, 0, shooter) != 0)
-			initial = 1;
+		if (initial == 0 && !stack.isEmpty() && !target.onGround && !target.isInWater() && TF2Attribute.getModifier("Minicrit Airborne", stack, 0, shooter) != 0) {
+			if (!(WeaponsCapability.get(target) != null && !WeaponsCapability.get(target).isExpJump()))
+				initial = 1;
+		}
 		
 		if (initial == 0 && !stack.isEmpty() && shooter != null) {
 			float mindist=TF2Attribute.getModifier("Minicrit Distance", stack, 0, shooter);
@@ -707,7 +714,17 @@ public class TF2Util {
 	}
 
 	public static int getExperiencePoints(EntityPlayer player) {
-		int playerLevel = player.experienceLevel;
+		InventoryWearables wearables= player.getCapability(TF2weapons.INVENTORY_CAP, null);
+		
+		int totalMoney=0;
+		for (int i = 5; i < 8; i++) {
+			ItemStack stack = wearables.getStackInSlot(i);
+			if (stack.getItem() instanceof ItemMoney) {
+				totalMoney += ((ItemMoney)stack.getItem()).getValue(wearables.getStackInSlot(i));
+			}
+		}
+		return totalMoney;
+		/*int playerLevel = player.experienceLevel;
 		player.experienceLevel = 0;
 		int totalExp = 0;
 		for (int i = 0; i < playerLevel; i++) {
@@ -716,13 +733,22 @@ public class TF2Util {
 		}
 		player.experienceLevel = playerLevel;
 		totalExp += Math.round(player.experience * player.xpBarCap());
-		return totalExp;
+		return totalExp;*/
 	}
 
 	public static void setExperiencePoints(EntityPlayer player, int amount) {
-		player.experienceLevel = 0;
-		player.experience = 0;
-		player.addExperience(amount);
+		InventoryWearables wearables= player.getCapability(TF2weapons.INVENTORY_CAP, null);
+		
+		int big = amount / 81;
+		if (big > 64) {
+			ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(TF2weapons.itemMoney,big-64,2));
+		}
+		int medium = (amount % 81) / 9;
+		int small = amount % 9;
+		
+		wearables.setInventorySlotContents(5, new ItemStack(TF2weapons.itemMoney,small,0));
+		wearables.setInventorySlotContents(6, new ItemStack(TF2weapons.itemMoney,medium,1));
+		wearables.setInventorySlotContents(7, new ItemStack(TF2weapons.itemMoney,big,2));
 	}
 
 	public static double getDistanceSqBox(Entity target, double x, double y,double z,double widthO,double heightO){
@@ -859,6 +885,10 @@ public class TF2Util {
 			}
 			dealDamage(ent, world, shooter, weapon, criticalloc, entry.getValue() * dmg,
 					source.setExplosion());
+			
+			if (ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+				ent.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
+			}
 			/*if (critical == 2 && !ent.isEntityAlive() && ent instanceof EntityLivingBase) {
 				killedInRow++;
 				if (killedInRow > 2 && exploder instanceof EntityRocket && shooter instanceof EntityPlayerMP && TF2weapons.isEnemy(shooter, (EntityLivingBase) ent)) {
@@ -1540,6 +1570,37 @@ public class TF2Util {
 				CombatRules.getDamageAfterAbsorb(damage, living.getTotalArmorValue(),
 						(float) living.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue()),
 				EnchantmentHelper.getEnchantmentModifierDamage(living.getArmorInventoryList(), source));
+	}
+	
+	public static int getTotalCurrency(IItemHandler handler) {
+		int money = 0;
+		for (int i = 0;i < handler.getSlots(); i++) {
+			ItemStack stack = handler.getStackInSlot(i);
+			if (stack.getItem() instanceof ItemMoney) {
+				money+=((ItemMoney)stack.getItem()).getValue(stack);
+			}
+		}
+		return money;
+	}
+	
+	public static void setTotalCurrency(IItemHandler handler,int fromSlot, int amount) {
+		int big = amount / 81;
+		int medium = (amount % 81) / 9;
+		int small = amount % 9;
+		
+		handler.extractItem(fromSlot, 64, false);
+		handler.insertItem(fromSlot, new ItemStack(TF2weapons.itemMoney,small,0), false);
+		handler.extractItem(fromSlot+1, 64, false);
+		handler.insertItem(fromSlot+1, new ItemStack(TF2weapons.itemMoney,medium,1), false);
+		handler.extractItem(fromSlot+2, 64, false);
+		handler.insertItem(fromSlot+2, new ItemStack(TF2weapons.itemMoney,big,2), false);
+	}
+	
+	public static void playSoundToPlayer(EntityPlayer player, SoundEvent event, SoundCategory category, double x, double y, double z, float volume, float pitch) {
+		if (player instanceof EntityPlayerMP)
+			((EntityPlayerMP)player).connection.sendPacket(new SPacketSoundEffect(event, category, x, y, z, volume, pitch));
+		else if (player.getEntityWorld().isRemote && player == Minecraft.getMinecraft().player)
+			player.getEntityWorld().playSound(x, y, z, event, category, volume, pitch, false);
 	}
 	
 	static {

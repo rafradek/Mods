@@ -2025,7 +2025,7 @@
 		"Render": "rafradek_tf2_weapons:gunslinger",
 		"Hit sound": "rafradek_tf2_weapons:weapon.hit.gunslinger",
 		"Special 1 sound": "rafradek_tf2_weapons:weapon.hit.gunslinger.special",
-		"Description": "Allows the user to construct Mini-Setries",
+		"Description": "Allows the user to construct Mini-Sentries",
 		"Drop chance": 0.11,
 		"Cost": 22,
 		"Stock": false,
@@ -2259,7 +2259,11 @@
 		"Minimal range": 3,
 		"Drop chance": 0.1,
 		"Stock": false,
-		"Cost": 18
+		"Cost": 18,
+		"Attributes":
+		{
+			"AmmoEfficiencyBonus": 0.8
+		}
 	},
 	"supernailgun": 
 	{
@@ -2508,6 +2512,7 @@
 		"Stock": false,
 		"Cost": 34,
 		"Roll hidden": 1,
+		"Hidden": true,
 		"Attributes":
 		{
 			"AmmoEfficiencyBonus": 0.7
@@ -2541,6 +2546,7 @@
 		"Stock": false,
 		"Cost": 48,
 		"Roll hidden": 1,
+		"Hidden": true,
 		"Attributes": {
 			"TraceRound": 1
 		}

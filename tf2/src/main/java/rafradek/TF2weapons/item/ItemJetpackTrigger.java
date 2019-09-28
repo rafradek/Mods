@@ -8,6 +8,8 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.message.TF2Message;
@@ -21,6 +23,7 @@ public class ItemJetpackTrigger extends ItemUsable implements IBackpackItem {
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public boolean showDurabilityBar(ItemStack stack) {
 		if (!(ItemBackpack.getBackpack(Minecraft.getMinecraft().player).getItem() instanceof ItemJetpack))
 			return false;
@@ -28,6 +31,7 @@ public class ItemJetpackTrigger extends ItemUsable implements IBackpackItem {
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public double getDurabilityForDisplay(ItemStack stack) {
 		ItemStack backpack = ItemBackpack.getBackpack(Minecraft.getMinecraft().player);
 		if (!(backpack.getItem() instanceof ItemJetpack))

@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL11;
 import com.google.common.collect.Multimap;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
-import mezz.jei.util.MathUtil;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.NBTLiterals;
@@ -253,7 +252,7 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 	
 	public void setClip(ItemStack stack, int value) {
 		if (this.hasClip(stack))
-			stack.getTagCompound().setInteger("Clip", MathUtil.clamp(value,0,this.getWeaponClipSize(stack, null)));
+			stack.getTagCompound().setInteger("Clip", MathHelper.clamp(value,0,this.getWeaponClipSize(stack, null)));
 		
 		//stack.setItemDamage(MathUtil.clamp(stack.getMaxDamage()-value,0,stack.getMaxDamage()));
 	}
@@ -655,7 +654,7 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 			
 			int rage = (int) TF2Attribute.getModifier("Knockback Rage", stack, 0, attacker);
 			if (enemy && rage > 0 && !WeaponsCapability.get(attacker).isRageActive(RageType.KNOCKBACK)) {
-				this.addRage(stack, attacker,amount*(0.025f+rage*0.017f));
+				this.addRage(stack, attacker,amount*(0.012f+rage*0.008f));
 			}
 			
 			int ragedamage = (int) TF2Attribute.getModifier("Build Rage Damage", stack, 0, attacker);

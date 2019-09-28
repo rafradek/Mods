@@ -77,7 +77,7 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 		// ?TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe)TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix,
 		// this.world);
 		else
-			stack = getReplacement(player, TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world));
+			stack = getReplacement(player, TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world, this.player));
 		this.craftResult.setInventorySlotContents(0, stack);
 	}
 

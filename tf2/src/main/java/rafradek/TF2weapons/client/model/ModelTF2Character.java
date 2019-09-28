@@ -39,7 +39,7 @@ public class ModelTF2Character extends ModelBiped {
             {
                 GlStateManager.translate(0.0F, 0.2F, 0.0F);
             }
-            if (((EntityTF2Character) entityIn).isGiant()) {
+            if (entityIn instanceof EntityTF2Character && ((EntityTF2Character) entityIn).isGiant()) {
             	GlStateManager.scale(0.75F, 0.75F, 0.75F);
                 GlStateManager.translate(0.0F, 0, 0.0F);
                 this.bipedHead.render(scale);

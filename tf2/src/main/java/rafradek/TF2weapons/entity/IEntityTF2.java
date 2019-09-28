@@ -4,13 +4,27 @@ import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IEntityTF2 {
 
-	boolean hasHead();
+	default boolean hasHead() {
+		return false;
+	}
 	
-	AxisAlignedBB getHeadBox();
+	default AxisAlignedBB getHeadBox() {
+		return null;
+	};
 
-	boolean hasDamageFalloff();
+	default boolean hasDamageFalloff() {
+		return true;
+	}
 	
-	boolean isBuilding();
+	default boolean isBuilding() {
+		return false;
+	}
 	
-	boolean isBackStabbable();
+	default boolean isBackStabbable() {
+		return true;
+	}
+	
+	default float getBackstabDamageReduction() {
+		return 0;
+	}
 }

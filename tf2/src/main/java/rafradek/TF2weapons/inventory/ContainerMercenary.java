@@ -269,6 +269,11 @@ public class ContainerMercenary extends ContainerMerchant {
     {
         super.onContainerClosed(playerIn);
         if(!this.mercenary.world.isRemote) {
+        	for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+	        	if(slot.getSlotType() == Type.ARMOR) {
+	        		this.mercenary.setDropChance(slot, !this.mercenary.getItemStackFromSlot(slot).isEmpty() ? 2.0f : 0.25f);
+	        	}
+	        }
         	if (this.mercenary.hasHeldInventory()) {
 		        for(int i=0;i<4;i++) {
 		        	if(!this.mercenary.loadoutHeld.getStackInSlot(i).isEmpty()) {
@@ -289,12 +294,7 @@ public class ContainerMercenary extends ContainerMerchant {
 		        	}
 		        }
         	}
-	        for(EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
-	        	if(slot.getSlotType() == Type.ARMOR) {
-	        		//System.out.println("Not empt:" + slot);
-	        		this.mercenary.setDropChance(slot, !this.mercenary.getItemStackFromSlot(slot).isEmpty() ? 2.0f : 0.25f);
-	        	}
-	        }
+	        
 	        
 	        this.mercenary.switchSlot(this.mercenary.getMainWeapon() != -1 ? this.mercenary.getMainWeapon() :this.mercenary.preferredSlot, false, true);
 	        

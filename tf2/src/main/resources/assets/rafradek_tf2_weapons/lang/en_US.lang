@@ -99,6 +99,9 @@ weapon.head_prize=Head Prize
 weapon.cleanerscarbine=Cleaner's Carbine
 weapon.atomizer=Atomizer
 weapon.capper=C.A.P.P.E.R.
+weapon.rocketshotgun=Rocket Shotgun
+weapon.monoculuslaser=Monoculus Laser
+weapon.monoculuseye=Monoculus Launcher
 
 weapon.crate1=Mann Co. Supply Crate #1
 weapon.crate2=Mann Co. Supply Crate #2
@@ -257,6 +260,12 @@ weaponAttribute.MinicritAirborneSelf=Deals minicrit damage while airborne
 weaponAttribute.GrantsTripleJump=Grants the user triple jump when deployed
 weaponAttribute.DealDamageRage=Deal damage to fill rage meter
 weaponAttribute.MinicritRage=Alt-fire: Grants %1$ss of minicrits when charged
+weaponAttribute.RocketSpecialist=Rocket specialist
+weaponAttribute.GrenadeSpecialist=Cluster grenade
+weaponAttribute.FireSpecialist=Fire spreads between enemies
+weaponAttribute.RegenOnHit=On hit: Regenerate up to %1$s health
+weaponAttribute.TraceRound=Fires trace round
+weaponAttribute.LifeSteal=Drain health from enemies. Each point grant 33% lifesteal
 
 
 container.upgrades=Upgrades station
@@ -264,6 +273,7 @@ container.currency=Experiece: %1$s
 container.currencyLeft=Spent: %1$s / %2$s
 container.upgrades.info=Austrialium and strange weapons have higher upgrade limit
 container.upgrades.refund=Refund Upgrades
+container.robotdeploy=Robot builder
 
 itemGroup.tf2misc=TF2 Utility
 itemGroup.tf2util=TF2 Misc
@@ -345,6 +355,12 @@ effect.critBoost=Critical Boost
 effect.markDeath=Mark For Death
 effect.uber=Ubercharge
 effect.charging=Charging
+effect.it=It
+effect.bombmrs=Bomb
+effect.bleeding=Bleeding
+effect.noKnockback=No knockback
+effect.regenHit=On hit regeneration
+effect.viralFire=Viral fire
 
 item.scoutBoots.name=Scout Shoes
 item.mantreads.name=Mantreads
@@ -360,6 +376,8 @@ item.randomWeapon.name=Random Weapon
 item.randomHat.name=Random Hat
 item.nuggetAustralium.name=Australium Nugget
 item.logicBoard.name=Logic Board
+item.robotPartsMedium.name=Robot Parts
+item.robotPartsGiant.name=Robot Parts
 item.horn.name=Horn
 item.attackTarget.name=Target
 item.key.name=Mann Co. Supply Crate Key
@@ -409,6 +427,10 @@ item.doorcontroller.players.name=Door controller - allow players
 item.doorcontroller.mobs.name=Door controller - allow mobs
 item.doorcontroller.RED.name=Door controller - allow RED team
 item.doorcontroller.BLU.name=Door controller - allow BLU team
+item.tf2money.0.name=Small credits pack
+item.tf2money.1.name=Medium credits pack
+item.tf2money.2.name=Large credits pack
+item.tf2money.desc=Total credits: %s
 
 item.wearable.effect=Effect - 
 item.wearable.effect.0=Burning Flames
@@ -431,6 +453,7 @@ tile.blockAustralium.name=Australium Block
 tile.upgradeStation.name=Upgrade Station
 tile.ammoFurnace.name=Ammo Furnace
 tile.blockOverhead.name=Overhead door
+tile.blockRobotDeploy.name=Robot builder
 achievement.strangeUp=Reached new strange level: 
 
 item.banner.blu_base.white=Only BLU team can spawn in 35 blocks range

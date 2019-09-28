@@ -3,6 +3,11 @@ package rafradek.TF2weapons.util;
 import java.util.ArrayList;
 import java.util.Random;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.item.ItemFromData;
+
 public class Contract {
 
 	public String className;
@@ -53,6 +58,25 @@ public class Contract {
 		this.expireDay=expireDay;
 		this.objectives=objectives;
 	}
+	
+	public void completeContract(EntityPlayer player) {
+		if((this.rewards&1)==1) {
+			ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,1,2):ItemFromData.getRandomWeapon(player.getRNG(), ItemFromData.VISIBLE_WEAPON);
+			if(!player.inventory.addItemStackToInventory(reward))
+				player.dropItem(reward, true);
+			player.addExperience(120);
+			TF2Util.setExperiencePoints(player, TF2Util.getExperiencePoints(player)+240);
+		}
+		if((this.rewards&2)==2) {
+			ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,4,2):new ItemStack(TF2weapons.itemTF2,1,7);
+			if(!player.inventory.addItemStackToInventory(reward))
+				player.dropItem(reward, true);
+			player.addExperience(600);
+			TF2Util.setExperiencePoints(player, TF2Util.getExperiencePoints(player)+1200);
+		}
+		this.rewards=0;
+	}
+	
 	public enum Objective{
 		KILL(false,1,(String[])null),
 		HEAL_20(false,1,"medic"),

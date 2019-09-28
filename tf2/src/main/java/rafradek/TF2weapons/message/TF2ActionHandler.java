@@ -232,19 +232,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						int id=message.value-48;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							Contract contract=player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id);
-							if((contract.rewards&1)==1) {
-								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,1,2):ItemFromData.getRandomWeapon(player.getRNG(), ItemFromData.VISIBLE_WEAPON);
-								if(!player.inventory.addItemStackToInventory(reward))
-									player.dropItem(reward, true);
-								player.addExperience(240);
-							}
-							if((contract.rewards&2)==2) {
-								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,4,2):new ItemStack(TF2weapons.itemTF2,1,7);
-								if(!player.inventory.addItemStackToInventory(reward))
-									player.dropItem(reward, true);
-								player.addExperience(1200);
-							}
-							contract.rewards=0;
+							contract.completeContract(player);
 							if(contract.progress>=Contract.REWARD_HIGH)
 								player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
 						}
