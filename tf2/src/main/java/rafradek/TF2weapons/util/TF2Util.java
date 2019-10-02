@@ -423,9 +423,9 @@ public class TF2Util {
 	}
 	
 	public static boolean isOnSameTeam(Entity entity1, Entity entity2) {
-		return (TF2Util.getTeam(entity1) == TF2Util.getTeam(entity2) && TF2Util.getTeam(entity1) != null)
+		return entity2 != null && ((TF2Util.getTeam(entity1) == TF2Util.getTeam(entity2) && TF2Util.getTeam(entity1) != null)
 				|| (entity1 instanceof IEntityOwnable && ((IEntityOwnable) entity1).getOwner() == entity2) 
-				|| (entity2 instanceof IEntityOwnable && ((IEntityOwnable) entity2).getOwner() == entity1) || entity1 == entity2;
+				|| (entity2 instanceof IEntityOwnable && ((IEntityOwnable) entity2).getOwner() == entity1) || entity1 == entity2);
 	
 	}
 
@@ -847,9 +847,10 @@ public class TF2Util {
 				if (expJump)
 					scale = TF2Attribute.getModifier("Self Push Force", weapon, (float) scale, shooter);
 				vec=vec.scale(scale * TF2ConfigVars.explosionKnockback);	
-				if(ent.motionY!=0)
+				if(ent.motionY!=0) 
 					ent.fallDistance=(float) Math.max(0f, ent.fallDistance*((ent.motionY+vec.y)/ent.motionY));
 				if(vec.y>0) {
+					ent.onGround=false;
 					if(expJump) {
 						//ent.fallDistance -= vec.y * 8 - 1;
 					}

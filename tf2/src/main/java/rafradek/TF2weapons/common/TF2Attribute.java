@@ -29,6 +29,7 @@ import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemFlameThrower;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemJetpack;
+import rafradek.TF2weapons.item.ItemKnife;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.item.ItemPDA;
@@ -137,6 +138,7 @@ public class TF2Attribute {
 	public static final Predicate<ItemStack> JUMPER = input -> getModifier("Self Damage", input, 1, null) <= 0;
 	public static final Predicate<ItemStack> ROCKET = input -> ItemFromData.isSameType(input, "rocketlauncher");
 	public static final Predicate<ItemStack> GRENADE = input -> ItemFromData.isSameType(input, "grenadelauncher");
+	public static final Predicate<ItemStack> KNIFE = input -> input.getItem() instanceof ItemKnife;
 	
 	public static enum Type {
 		PERCENTAGE, INVERTED_PERCENTAGE, ADDITIVE;
@@ -183,7 +185,7 @@ public class TF2Attribute {
 	
 	public static void initAttributes() {
 		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE)
-			.setUpgrade(ITEM_WEAPON, 0.20f, 5, 160,8).setKillstreak(0.04f).setAustralium(1f).setNoCostReduce();
+			.setUpgrade(Predicates.and(ITEM_WEAPON, Predicates.not(KNIFE)), 0.20f, 5, 160,8).setKillstreak(0.04f).setAustralium(1f).setNoCostReduce();
 		new TF2Attribute(1, "DamagePenalty", "Damage", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(2, "ClipSizeBonus", "Clip Size", Type.PERCENTAGE, 1f, State.POSITIVE)
 			.setUpgrade(WITH_CLIP, 0.5f, 4, 120, 6).setKillstreak(0.09f).setAustralium( 1f);
@@ -376,6 +378,7 @@ public class TF2Attribute {
 		new TF2Attribute(154, "RegenOnHit", "Regen On Hit", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON, 1f, 4, 80,5).setAustralium(1.75f);
 		new TF2Attribute(155, "TraceRound", "Trace Round", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(156, "LifeSteal", "Life Steal", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(MEDIGUN, 1f, 3, 120,2);
+		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(KNIFE, 0.25f, 4, 240,6).setAustralium(1f);
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);

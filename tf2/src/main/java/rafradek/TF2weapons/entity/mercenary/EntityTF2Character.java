@@ -1084,9 +1084,18 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public boolean isValidTarget(EntityLivingBase living) {
-		return ((living.getTeam() != null || (TF2ConfigVars.neutralAttack && living instanceof EntityPlayer) 
-				|| (TF2ConfigVars.attackMobs && !this.isRobot() && TF2Util.isHostile(living))) && !TF2Util.isOnSameTeam(EntityTF2Character.this, living))
-				&& (!(living instanceof EntityTF2Character && TF2ConfigVars.naturalCheck.equals("Never")) || (!((EntityTF2Character) living).natural || !natural));
+		boolean hostilemob = false;
+		if (TF2ConfigVars.attackMobs && !this.isRobot() && TF2Util.isHostile(living)) {
+			double rangesq = living.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue()+1;
+			rangesq *= rangesq;
+			hostilemob = living.getDistanceSq(EntityTF2Character.this) < rangesq;
+		}
+		if (living.getTeam() != null || 
+				(TF2ConfigVars.neutralAttack && living instanceof EntityPlayer) || hostilemob) {
+			return !TF2Util.isOnSameTeam(EntityTF2Character.this, living) && 
+					(!(living instanceof EntityTF2Character && TF2ConfigVars.naturalCheck.equals("Never")) || (!((EntityTF2Character) living).natural || !natural));
+		}
+		return false;
 	}
 
 	@Override

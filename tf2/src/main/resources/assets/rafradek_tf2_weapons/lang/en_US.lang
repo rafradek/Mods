@@ -266,6 +266,7 @@ weaponAttribute.FireSpecialist=Fire spreads between enemies
 weaponAttribute.RegenOnHit=On hit: Regenerate up to %1$s health
 weaponAttribute.TraceRound=Fires trace round
 weaponAttribute.LifeSteal=Drain health from enemies. Each point grant 33% lifesteal
+weaponAttribute.BackstabDamageBonus=+%1$s armor penetration
 
 
 container.upgrades=Upgrades station

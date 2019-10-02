@@ -483,8 +483,14 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		else if(this.getOwnerId() != null){
 			return this.world.getScoreboard().getPlayersTeam(this.ownerName);
 		}
-		return this.getEntTeam() == 0 ? this.world.getScoreboard().getTeam("RED")
-						: this.world.getScoreboard().getTeam("BLU");
+		else {
+			switch(this.getEntTeam()) {
+			case 0: return this.world.getScoreboard().getTeam("RED");
+			case 1: this.world.getScoreboard().getTeam("BLU");
+			case 2: this.world.getScoreboard().getTeam("Robots");
+			default: return this.world.getScoreboard().getTeam("RED");
+			}
+		}
 	}
 
 	public int getProgress() {

@@ -103,6 +103,8 @@ import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.gui.GuiContracts;
 import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
+import rafradek.TF2weapons.client.model.ModelBomb;
+import rafradek.TF2weapons.client.renderer.entity.RenderGrenade;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -987,6 +989,20 @@ public class TF2EventsClient {
 
 	@SubscribeEvent
 	public void renderPlayer(RenderPlayerEvent.Pre event) {
+		if (event.getEntityPlayer().getActivePotionEffect(TF2weapons.bombmrs) != null) {
+			ModelBomb modelBomb = new ModelBomb();
+			GlStateManager.pushMatrix();
+			GL11.glTranslatef(0,event.getEntityPlayer().eyeHeight, 0);
+			GL11.glRotatef(event.getEntityPlayer().prevRotationYaw + (event.getEntityPlayer().rotationYaw - event.getEntityPlayer().prevRotationYaw) * event.getPartialRenderTick(), 0.0F, 1.0F,
+					0.0F);
+			GL11.glRotatef(
+					event.getEntityPlayer().prevRotationPitch + (event.getEntityPlayer().rotationPitch - event.getEntityPlayer().prevRotationPitch) * event.getPartialRenderTick(), 1.0F,
+					0.0F, 0.0F);
+			GL11.glScalef(1.1f, 1.1f, 1.1f);
+			Minecraft.getMinecraft().getTextureManager().bindTexture(RenderGrenade.TEXTURE_BOMB);
+			modelBomb.render(event.getEntity(), 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+			GlStateManager.popMatrix();
+		}
 		if (event.getEntityPlayer() != Minecraft.getMinecraft().player) {
 			renderBeam(event.getEntityPlayer(), event.getPartialRenderTick(), 0.04f);
 		}

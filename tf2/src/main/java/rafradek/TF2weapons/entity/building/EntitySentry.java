@@ -66,7 +66,7 @@ import rafradek.TF2weapons.util.PropertyType;
 public class EntitySentry extends EntityBuilding {
 
 	public ItemStack sentryBullet = ItemFromData.getNewStack("sentrybullet");
-	public ItemStack sentryHeat = ItemFromData.getNewStack("sentryheat");
+	public ItemStack sentryHeat = ItemFromData.getNewStack("sentrybullet");
 	public ItemStack sentryRocket = ItemFromData.getNewStack("sentryrocket");
 	public float rotationDefault = 0;
 	public float attackDelay;
@@ -166,7 +166,8 @@ public class EntitySentry extends EntityBuilding {
 					public boolean apply(EntityLivingBase target) {
 						return (((((getAttackFlags() & 2) == 2 && getOwnerId() != null) && target instanceof EntityPlayer) 
 								|| target.getTeam() != null
-								|| ((getAttackFlags() & 1) == 1 && (getRevengeTarget()==target || (getOwner() != null && getOwner().getRevengeTarget()==target)))
+								|| ((getAttackFlags() & 1) == 1 && (getRevengeTarget()==target || (getOwner() != null && 
+								(getOwner().getRevengeTarget()==target || getOwner().getLastAttackedEntity()== target))))
 								|| ((getAttackFlags() & 4) == 4 && TF2Util.isHostile(target) && getOwnerId() != null)
 								|| ((getAttackFlags() & 4) == 4 && target instanceof EntityLiving && TF2Util.isOnSameTeam(EntitySentry.this, ((EntityLiving) target).getAttackTarget())))
 								|| ((getAttackFlags() & 8) == 8 && !(target instanceof EntityPlayer) && !(TF2Util.isHostile(target)) && getOwnerId() != null))
@@ -326,7 +327,7 @@ public class EntitySentry extends EntityBuilding {
 				}
 				if (bullet.entityHit != null) {
 
-					DamageSource src = TF2Util.causeBulletDamage(this.getHeldItemOffhand(), owner, 0, this).setProjectile();
+					DamageSource src = TF2Util.causeBulletDamage(this.getHeldItem(EnumHand.OFF_HAND), owner, 0, this).setProjectile();
 					if (this.fromPDA)
 						((TF2DamageSource)src).addAttackFlag(TF2DamageSource.SENTRY_PDA);
 					
@@ -335,7 +336,7 @@ public class EntitySentry extends EntityBuilding {
 						range =  Math.max(0.5f,(float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() / range);
 					else
 						range = 1;
-					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.getHeldItemOffhand(),
+					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.getHeldItem(EnumHand.OFF_HAND),
 							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), range * damage, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();

@@ -831,7 +831,6 @@ public class TF2EventsCommon {
 				//	protect = pierce;
 			}
 			
-			if (orig != protect) {
 				TF2Util.addModifierSafe(living, SharedMonsterAttributes.ARMOR, new AttributeModifier(REMOVE_ARMOR, "remove_arm",
 						-event.getEntityLiving().getTotalArmorValue(), 0), false);
 				TF2Util.addModifierSafe(living, SharedMonsterAttributes.ARMOR_TOUGHNESS, new AttributeModifier(REMOVE_ARMOR, "remove_armt",
@@ -855,7 +854,6 @@ public class TF2EventsCommon {
 		                }
 					}
 				}
-			}
 			//System.out.println("Health2: "+event.getAmount() + " "+protect);
 
 			//System.out.println("Health3: "+event.getAmount());

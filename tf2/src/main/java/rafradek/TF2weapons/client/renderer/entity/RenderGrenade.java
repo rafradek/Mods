@@ -23,7 +23,7 @@ public class RenderGrenade extends Render<EntityGrenade> {
 			"textures/entity/projectile/grenadered.png");
 	private static final ResourceLocation TEXTURE_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/projectile/grenadeblu.png");
-	private static final ResourceLocation TEXTURE_BOMB= new ResourceLocation(TF2weapons.MOD_ID,
+	public static final ResourceLocation TEXTURE_BOMB= new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/projectile/bomb.png");
 
 	public RenderGrenade(RenderManager manager) {

@@ -45,14 +45,14 @@ public class ReflectionAccess {
 		}
 		
 		for(Field field:EntityLivingBase.class.getDeclaredFields()) {
-			if(field.getName().equals("handInventory") || field.getName().equals("figgf")) {
+			if(field.getName().equals("handInventory") || field.getName().equals("field_184630_bs")) {
 				field.setAccessible(true);
 				entityHandInv = field;
 			}
 		}
 		
 		for(Field field:EntityLivingBase.class.getDeclaredFields()) {
-			if(field.getName().equals("armorArray") || field.getName().equals("figgf")) {
+			if(field.getName().equals("armorArray") || field.getName().equals("field_184631_bt")) {
 				field.setAccessible(true);
 				entityArmorInv = field;
 			}

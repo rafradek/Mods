@@ -228,7 +228,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						((EntityPlayerMP)living).connection.sendPacket(new SPacketSoundEffect(TF2Sounds.MOB_MERASMUS_HEADBOMB, this.getSoundCategory(), living.posX, living.posY, living.posZ, 4F, 1f));
 						//this.teleportCooldown=90;
 					}
-					this.bombCooldown=Math.max(600-this.playersAttacked*60,260);
+					this.bombCooldown=Math.max(680-this.playersAttacked*60,480);
 				}
 				
 				if(this.teleportCooldown--<=0 && !this.isBombSpell()){
@@ -574,6 +574,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 								living.posX, living.posY+living.height/2, living.posZ, 1,0, 0x60FF60, 10000);
 						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 4.4f + this.host.level * 0.7f);
 						living.addVelocity(0, 0.7, 0);
+						living.onGround=false;
 						if (living instanceof EntityPlayerMP)
 							TF2Util.sendTracking(new TF2Message.VelocityAddMessage(new Vec3d(0,0.7,0), true),living);
 						if (living.hasCapability(TF2weapons.WEAPONS_CAP, null))

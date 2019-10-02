@@ -164,7 +164,6 @@ public class EntityAISpotTarget extends EntityAIBase {
 	public boolean shouldContinueExecuting() {
 		
 		EntityLivingBase entitylivingbase = this.taskOwner.getAttackTarget();
-
 		if (entitylivingbase == null)
 			return false;
 		else if (!entitylivingbase.isEntityAlive())

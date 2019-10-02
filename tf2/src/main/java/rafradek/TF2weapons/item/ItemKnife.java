@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -78,9 +79,21 @@ public class ItemKnife extends ItemMeleeWeapon {
 		return false;
 	}
 
+	public float getBackstabBonusDamage(ItemStack stack, EntityLivingBase living, Entity target) {
+		float base = 4f;
+		base *= Math.pow(TF2Attribute.getModifier("Backstab Damage", stack, 1, living),2.0f);
+		int backstabs = target.getEntityData().getByte("TF2Backstab");
+		switch (backstabs) {
+		case 0: return base;
+		case 1: return base*0.75f;
+		case 2: return base*0.6f;
+		default: return base*0.5f;
+		}
+	}
+	
 	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
-		return super.getWeaponDamage(stack, living, target) * (this.isBackstab(living, target) ? 10 : 1);
+		return super.getWeaponDamage(stack, living, target) * (this.isBackstab(living, target) ? this.getBackstabBonusDamage(stack, living, target) : 1);
 	}
 
 	@Override
@@ -102,6 +115,8 @@ public class ItemKnife extends ItemMeleeWeapon {
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if(attacker instanceof EntityPlayer && isBackstab(attacker,target) && target.isEntityAlive()) {
+			if (target instanceof EntityLiving)
+				target.getEntityData().setByte("TF2Backstab", (byte) (target.getEntityData().getByte("TF2Backstab")+1));
 			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/20);
 		}
 		boolean isBackstab = isBackstab(attacker,target);

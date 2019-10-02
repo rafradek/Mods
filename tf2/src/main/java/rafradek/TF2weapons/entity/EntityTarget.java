@@ -2,18 +2,22 @@ package rafradek.TF2weapons.entity;
 
 import java.text.DecimalFormat;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ISpecialArmor.ArmorProperties;
+import rafradek.TF2weapons.TF2weapons;
 
 public class EntityTarget extends EntityArmorStand {
 
@@ -68,13 +72,16 @@ public class EntityTarget extends EntityArmorStand {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0);
 	}
+	
 	public boolean attackEntityFrom(DamageSource source, float amount)
     {
         if (!this.world.isRemote && !this.isDead)
         {
             if (DamageSource.OUT_OF_WORLD.equals(source) || (source.getTrueSource() instanceof EntityLivingBase && source.getDamageType().equals("player") && source.getTrueSource().isSneaking()))
             {
-                this.setDead();
+            	source.setExplosion();
+                Block.spawnAsEntity(world, getPosition().up(), new ItemStack(TF2weapons.itemTarget));
+                super.attackEntityFrom(source, amount);
                 return false;
             }
             else

@@ -99,12 +99,17 @@ public class EntityGrenade extends EntityProjectileBase {
 			return;
 		if (!this.isBurst()) {
 			int grenadeSpecialist = (int) TF2Attribute.getModifier("Grenade Specialist", this.usedWeapon, 0f, shootingEntity);
-			for (int i = 0; i < grenadeSpecialist * 2; i++) {
+			int grenadeMult = (int) (2 * (direct == null ? 1.5f : 1));
+			double rndSpread = direct == null ? 0.4f : 0.1f;
+			for (int i = 0; i < grenadeSpecialist * grenadeMult; i++) {
 				EntityGrenade burst=new EntityGrenade(world);
 				burst.initProjectile(this.shootingEntity, EnumHand.MAIN_HAND, usedWeaponOrig);
 				burst.setPosition(x, y, z);
 				double motionmult = 1D + (this.rand.nextDouble() * 0.3 * grenadeSpecialist)- 0.15 * grenadeSpecialist;
-				burst.shoot(-this.motionX*motionmult*0.07+this.rand.nextDouble()*0.2-0.1, 0.2, -this.motionZ*motionmult*0.07+this.rand.nextDouble()*0.2-0.1, (float)motionmult*0.3f,0f);
+				if (direct == null)
+					motionmult += 0.25D+(this.rand.nextDouble() * 0.1 * grenadeSpecialist);
+				burst.shoot(-this.motionX*motionmult*0.07+this.rand.nextDouble()*rndSpread*2-rndSpread, 0.2,
+						-this.motionZ*motionmult*0.07+this.rand.nextDouble()*rndSpread*2-rndSpread, (float)motionmult*0.3f,0f);
 				burst.setBurst(true);
 				burst.damageModifier = this.damageModifier * 0.5f;
 				this.world.spawnEntity(burst);
