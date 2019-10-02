@@ -1331,10 +1331,10 @@ public class TF2EventsClient {
 					entToRender = event.getEntity().getCapability(TF2weapons.WEAPONS_CAP, null).entityDisguise =
 						(EntityLivingBase) EntityList.createEntityByIDFromName(new ResourceLocation(mobType), event.getEntity().world);
 					if(entToRender instanceof EntityTF2Character) {
-						((EntityTF2Character)entToRender).setEntTeam(1-TF2Util.getTeamColor(event.getEntity()));
+						((EntityTF2Character)entToRender).setEntTeam(1-TF2Util.getTeamForDisplay(event.getEntity()));
 					}
 					if(entToRender instanceof EntityBuilding)
-						((EntityBuilding)entToRender).setEntTeam(1-TF2Util.getTeamColor(event.getEntity()));
+						((EntityBuilding)entToRender).setEntTeam(1-TF2Util.getTeamForDisplay(event.getEntity()));
 					if(entToRender instanceof EntitySpy)
 						entToRender.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
 				}

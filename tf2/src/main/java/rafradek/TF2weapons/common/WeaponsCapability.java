@@ -326,6 +326,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public void setDisguised(boolean val) {
 		this.dataManager.set(DISGUISED, val);
+		this.disguiseTicks = 0;
 		if (!val) {
 			this.stabbedDisguise = false;
 		}
@@ -654,19 +655,25 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				} else if (this.reloadingHand == hand && !(owner.world.isRemote && owner == Minecraft.getMinecraft().player))
 					this.reloadingHand = null;
 			}
-			if(this.stackActive.get(hand) != null && !(isUseableWeapon && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)
+			if(this.stackActive.get(hand) != null) {
+				if (owner.world.isRemote && !(owner instanceof EntityPlayer) && isUseableWeapon && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)
+						&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active != 2 && stack.getItem().shouldCauseReequipAnimation(this.stackActive.get(hand), stack, false)) {
+					stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active = 2;
+				}
+				if(!(isUseableWeapon && stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null)
 					&& stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2)) {
-				boolean revert = false;
-				ItemStack activestack = this.stackActive.get(hand);
-				if (activestack.getCount() == 0){
-					activestack.setCount(1);
-					revert = true;
-				}
-				if(activestack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2){
-					this.setInactiveHand(hand, activestack);
-				}
-				if (revert){
-					activestack.setCount(0);
+					boolean revert = false;
+					ItemStack activestack = this.stackActive.get(hand);
+					if (activestack.getCount() == 0){
+						activestack.setCount(1);
+						revert = true;
+					}
+					if(activestack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active == 2){
+						this.setInactiveHand(hand, activestack);
+					}
+					if (revert){
+						activestack.setCount(0);
+					}
 				}
 			}
 		}
@@ -820,12 +827,12 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			}
 		}
 		if (!owner.world.isRemote && this.disguiseTicks > 0){
-			// System.out.println("disguise progress:
-			// "+owner.getEntityData().getByte("DisguiseTicks"));
-			if(this.invisTicks < 20)
-				((WorldServer)owner.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, owner.posX, owner.posY, owner.posZ, 2, 0.2, 1, 0.2, 0.04f, new int[0]);
+			
 			if (++this.disguiseTicks >= 40) {
-			TF2EventsCommon.disguise(owner, true);
+			this.disguise();
+			}
+			else if(this.invisTicks < 20){
+				((WorldServer)owner.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, owner.posX, owner.posY, owner.posZ, 2, 0.2, 1, 0.2, 0.04f, new int[0]);
 			}
 		}
 
@@ -1070,8 +1077,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (player instanceof EntityTF2Character)
 				((EntityTF2Character) player).onShot();
 
-			if (this.isDisguised() && !(item instanceof ItemSapper))
-				TF2EventsCommon.disguise(player, false);
+			if (!(item instanceof ItemSapper))
+				this.setDisguised(false);
 			
 			
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
@@ -1123,8 +1130,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 				break;
 			stackcap.fire2Cool += item.getAltFiringSpeed(stack, player);
 
-			if (this.isDisguised())
-				TF2EventsCommon.disguise(player, false);
+			this.setDisguised(false);
 
 			double oldX = player.posX, oldY = player.posY, oldZ = player.posZ;
 			float oldPitch = player.rotationPitch, oldYaw = player.rotationYawHead;
@@ -1220,7 +1226,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		//this.owner.getDataManager().set(TF2EventBusListener.ENTITY_UBER, nbt.getBoolean("Uber"));
 		this.setDisguiseType(nbt.getString("DisguiseType"));
 		if (this.isDisguised())
-			TF2EventsCommon.disguise(this.owner, true);
+			this.disguise();
 		this.killsSpinning=nbt.getInteger("KillsSpinning");
 		this.focusShotTicks=nbt.getInteger("FocusedShot");
 		this.fanCool=nbt.getInteger("KnockbackFANCool");
@@ -1342,7 +1348,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		((ItemUsable) stack.getItem()).holster(this, stack, this.owner, this.owner.world);
 	}
 	
-	
+	public void disguise() {
+		this.setDisguised(true);
+		if(this.invisTicks < 20 && this.owner.world instanceof WorldServer)
+			((WorldServer)this.owner.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.owner.posX, this.owner.posY, this.owner.posZ, 20, 0.2, 1, 0.2, 0.04f, new int[0]);
+	}
 	public static enum RageType {
 		PHLOG,
 		MINICRIT,

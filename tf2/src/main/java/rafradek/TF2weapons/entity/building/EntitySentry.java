@@ -374,8 +374,10 @@ public class EntitySentry extends EntityBuilding {
 
 	public void scoreKill(EntityLivingBase target) {
 		this.setKills(this.getKills() + 1);
-		if(this.getOwner() instanceof EntityPlayer && target instanceof EntityTF2Character && ++this.mercsKilled%5==0) {
-			this.getOwner().getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
+		if(this.getOwner() instanceof EntityPlayer && target instanceof EntityTF2Character && !((EntityTF2Character)target).isRobot()) {
+			if (++this.mercsKilled%5==0)
+				this.getOwner().getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILLS_SENTRY, this.getHeldItemOffhand());
+			this.getOwner().getCapability(TF2weapons.PLAYER_CAP, null).completeObjective(Objective.KILL_W_SENTRY, this.getHeldItemOffhand());
 		}
 		if (this.getOwner() instanceof EntityPlayer && TF2Util.isEnemy(this.getOwner(), target)) {
 			ItemStack stack = TF2Util.getFirstItem(((EntityPlayer)this.getOwner()).inventory, stackl -> stackl.getItem() instanceof ItemPDA);

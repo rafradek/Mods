@@ -109,7 +109,7 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 		super.onUpdate(par1ItemStack, par2World, par3Entity, par4, par5);
 		if (!par2World.isRemote && TF2Attribute.getModifier("No Disguise Kit", par1ItemStack, 0, (EntityLivingBase) par3Entity) != 0) {
 			if (par3Entity.hasCapability(TF2weapons.WEAPONS_CAP, null) && !WeaponsCapability.get(par3Entity).stabbedDisguise )
-				TF2EventsCommon.disguise((EntityLivingBase) par3Entity, false);
+				WeaponsCapability.get(par3Entity).setDisguised(false);
 		}
 		if (par5 && ((EntityLivingBase)par3Entity).getHeldItemMainhand() == par1ItemStack) {
 			WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);

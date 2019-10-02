@@ -93,7 +93,6 @@ public class ItemSniperRifle extends ItemBulletWeapon {
 	}
 	public void disableZoom(ItemStack stack, EntityLivingBase living) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-		
 		cap.setCharging(false);
 		living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(slowdown);
 	}

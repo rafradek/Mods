@@ -20,7 +20,7 @@ public class ItemDisguiseKit extends Item {
 	public ItemDisguiseKit() {
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
 		this.setMaxStackSize(1);
-		this.setMaxDamage(50);
+		this.setMaxDamage(80);
 	}
 
 	public static void startDisguise(EntityLivingBase living, World world, String type) {

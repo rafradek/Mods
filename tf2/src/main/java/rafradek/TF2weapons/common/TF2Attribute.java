@@ -378,7 +378,7 @@ public class TF2Attribute {
 		new TF2Attribute(154, "RegenOnHit", "Regen On Hit", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON, 1f, 4, 80,5).setAustralium(1.75f);
 		new TF2Attribute(155, "TraceRound", "Trace Round", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(156, "LifeSteal", "Life Steal", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(MEDIGUN, 1f, 3, 120,2);
-		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(KNIFE, 0.25f, 4, 240,6).setAustralium(1f);
+		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(KNIFE, 0.25f, 4, 240,6).setAustralium(1f).setNoCostReduce();
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);

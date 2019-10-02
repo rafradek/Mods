@@ -87,6 +87,7 @@ public class EntitySniper extends EntityTF2Character {
 		}
 		
 		if (this.getAttackTarget() != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon) {
+			
 			if (this.usedSlot == 0 && this.getAttackTarget().getDistanceSq(this) < 42) {
 				this.switchSlot(1);
 			}
@@ -94,6 +95,7 @@ public class EntitySniper extends EntityTF2Character {
 				this.switchSlot(0);
 			}
 		}
+		
 		// System.out.println("state:
 		// "+this.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().getBoolean("Zoomed")+"
 		// "+this.world.isRemote);

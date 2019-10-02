@@ -270,7 +270,7 @@ weaponAttribute.BackstabDamageBonus=+%1$s armor penetration
 
 
 container.upgrades=Upgrades station
-container.currency=Experiece: %1$s
+container.currency=Credits: %1$s
 container.currencyLeft=Spent: %1$s / %2$s
 container.upgrades.info=Austrialium and strange weapons have higher upgrade limit
 container.upgrades.refund=Refund Upgrades
@@ -512,7 +512,9 @@ gui.contracts.objectives=Objectives:
 gui.contracts.objectives_t=(requires %1$s weaponry)
 gui.contracts.rewards=Awards:
 gui.contracts.reward1=40 CP: 1 Australium bar or a random weapon
+gui.contracts.reward1m=240 Credits
 gui.contracts.reward2=135 CP: 4 Australium bars or a key
+gui.contracts.reward2m=1200 Credits
 gui.contracts.require=To access contracts, join a team and kill at least 5 mercenaries
 gui.contracts.contractDay=Days to a new contract: %1$s
 gui.contracts.progress=%1$s contract progress: %2$s CP

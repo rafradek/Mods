@@ -1512,6 +1512,7 @@ public class TF2Util {
 			if (!player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty())
 			stack = TF2Util.mergeStackByDamage(player.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
 					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null), stack);
+			
 			if (stack.isEmpty()) {
 				return stack;
 			}
@@ -1527,7 +1528,7 @@ public class TF2Util {
 				}*/
 				ItemStack weapon = player.getHeldItemMainhand();
 				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
-					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(stack), false,
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(weapon), false,
 							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
 			}
 			if (!stack.isEmpty() && addNormalInventory) {
@@ -1535,7 +1536,7 @@ public class TF2Util {
 				stack=ItemHandlerHelper.insertItemStacked(inv, stack, false);
 				ItemStack weapon = player.getHeldItemMainhand();
 				if(!weapon.isEmpty() && weapon.getItem() instanceof ItemWeapon)
-					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(stack), false,
+					TF2weapons.network.sendTo(new TF2Message.UseMessage(((ItemWeapon) weapon.getItem()).getClip(weapon), false,
 							((ItemUsable) weapon.getItem()).getAmmoAmount(player, weapon), EnumHand.MAIN_HAND),(EntityPlayerMP) player);
 			}
 			if (stack.isEmpty()) {

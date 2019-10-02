@@ -25,6 +25,7 @@ import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityZombie;
@@ -64,7 +65,7 @@ public class GuiDisguiseKit extends GuiScreen {
 		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(mc.player.getUniqueID(), "name"));
 		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
 			Entity entity=EntityList.createEntityByIDFromName(entry, this.mc.world);
-			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss())||this.mc.player.capabilities.isCreativeMode)) {
+			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss() && entity instanceof EntityCreature)||this.mc.player.capabilities.isCreativeMode)) {
 				mobList.add((EntityLivingBase) entity);
 				if(entity instanceof EntitySpy) {
 					entity.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
