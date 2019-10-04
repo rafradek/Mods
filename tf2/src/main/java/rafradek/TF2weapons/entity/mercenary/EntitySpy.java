@@ -23,6 +23,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemMeleeWeapon;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntitySpy extends EntityTF2Character {
@@ -192,6 +193,13 @@ public class EntitySpy extends EntityTF2Character {
 		}
 	}
 
+	public float getAttributeModifier(String attribute) {
+		float base = super.getAttributeModifier(attribute);
+		if (attribute.equals("Damage") && this.getHeldItemMainhand().getItem() instanceof ItemMeleeWeapon)
+				base *= 0.9f;
+		return base;
+	}
+	
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */

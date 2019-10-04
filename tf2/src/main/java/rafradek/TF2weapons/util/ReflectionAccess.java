@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayerMP;
 import rafradek.TF2weapons.entity.building.SentryLookHelper;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 
@@ -16,6 +17,7 @@ public class ReflectionAccess {
 	public static Field entityLookHelper;
 	public static Field entityHandInv;
 	public static Field entityArmorInv;
+	public static Field playerAdvancements;
 	
 	static {
 		for(Field field :EntityLivingBase.class.getDeclaredFields()) {
@@ -55,6 +57,13 @@ public class ReflectionAccess {
 			if(field.getName().equals("armorArray") || field.getName().equals("field_184631_bt")) {
 				field.setAccessible(true);
 				entityArmorInv = field;
+			}
+		}
+		
+		for(Field field:EntityPlayerMP.class.getDeclaredFields()) {
+			if(field.getName().equals("advancements") || field.getName().equals("field_18463f1_bt")) {
+				field.setAccessible(true);
+				playerAdvancements = field;
 			}
 		}
 	}

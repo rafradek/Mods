@@ -129,6 +129,8 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public void setAttackPower(float power) {
 		this.power = power;
 	}
+	
+	
 	/*@Override
 	public void onShieldBlock(EntityLivingBase living) {
 		// TODO Auto-generated method stub

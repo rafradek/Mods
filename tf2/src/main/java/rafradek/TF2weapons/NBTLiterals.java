@@ -8,4 +8,5 @@ public class NBTLiterals {
 	public static final String STREAK_LAST = "StrLst";
 	public static final String STREAK_ATTRIB = "StrAtt";
 	public static final String AUSTR_UPGRADED = "AusUpg";
+	public static final String BACKSTAB_MULT = "TF2BD";
 }

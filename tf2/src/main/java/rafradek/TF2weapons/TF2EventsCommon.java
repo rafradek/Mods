@@ -101,6 +101,7 @@ import rafradek.TF2weapons.potion.PotionTF2Item;
 import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.ReflectionAccess;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
@@ -115,6 +116,7 @@ import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.common.WeaponsCapability.RageType;
+import rafradek.TF2weapons.contract.PlayerContracts;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockWorldState;
 import net.minecraft.block.state.IBlockState;
@@ -548,7 +550,7 @@ public class TF2EventsCommon {
 				event.setCanceled(true);
 			}
 			if (damageSource.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
-				WeaponsCapability.get(event.getEntityLiving()).setDisguised(false);
+				WeaponsCapability.get(damageSource).setDisguised(false);
 			}
 		}
 		if (event.getSource().getTrueSource() instanceof EntityLivingBase && event.getSource() instanceof TF2DamageSource 
@@ -991,6 +993,7 @@ public class TF2EventsCommon {
 			if (event.getEntity().world != null && !event.getEntity().world.isRemote && event.getEntity() instanceof EntityPlayerMP){
 				EntityPlayerMP player=((EntityPlayerMP)event.getEntity());
 				player.inventoryContainer.addListener(new TF2ContainerListener(player));
+				ReflectionAccess.playerAdvancements.set(player,new PlayerContracts(ReflectionAccess.playerAdvancements.get(player)));
 			}
 		}
 	}

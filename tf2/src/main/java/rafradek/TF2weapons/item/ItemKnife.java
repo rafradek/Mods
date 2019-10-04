@@ -19,6 +19,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
@@ -58,8 +59,7 @@ public class ItemKnife extends ItemMeleeWeapon {
 		super.handleShoot(living, stack, world, map, critical, flags);
 	}
 	public boolean isBackstab(EntityLivingBase living, Entity target) {
-		if (!(living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this)) 
-				&& target != null && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).isBackStabbable())) {
+		if (target != null && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).isBackStabbable())) {
 			float ourAngle = 180 + MathHelper.wrapDegrees(living.rotationYawHead);
 			float angle2 = (float) (MathHelper.atan2(living.posX - target.posX, living.posZ - target.posZ) * 180.0D
 					/ Math.PI);
@@ -81,14 +81,13 @@ public class ItemKnife extends ItemMeleeWeapon {
 
 	public float getBackstabBonusDamage(ItemStack stack, EntityLivingBase living, Entity target) {
 		float base = 4f;
-		base *= Math.pow(TF2Attribute.getModifier("Backstab Damage", stack, 1, living),2.0f);
-		int backstabs = target.getEntityData().getByte("TF2Backstab");
-		switch (backstabs) {
-		case 0: return base;
-		case 1: return base*0.75f;
-		case 2: return base*0.6f;
-		default: return base*0.5f;
+		if (living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this) ) {
+			base -=3*(((EntityPlayer)living).getCooldownTracker().getCooldown(this, 0));
 		}
+		base *= Math.pow(TF2Attribute.getModifier("Backstab Damage", stack, 1, living),2.0f);
+		if(target.getEntityData().hasKey(NBTLiterals.BACKSTAB_MULT))
+			base *= target.getEntityData().getFloat(NBTLiterals.BACKSTAB_MULT);
+		return Math.max(1f,base);
 	}
 	
 	@Override
@@ -115,9 +114,14 @@ public class ItemKnife extends ItemMeleeWeapon {
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if(attacker instanceof EntityPlayer && isBackstab(attacker,target) && target.isEntityAlive()) {
-			if (target instanceof EntityLiving)
-				target.getEntityData().setByte("TF2Backstab", (byte) (target.getEntityData().getByte("TF2Backstab")+1));
-			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/20);
+			if (target instanceof EntityLiving) {
+				if (target.getEntityData().hasKey(NBTLiterals.BACKSTAB_MULT)) {
+					target.getEntityData().setFloat(NBTLiterals.BACKSTAB_MULT, Math.max(0.5f, target.getEntityData().getFloat(NBTLiterals.BACKSTAB_MULT)*0.9f));
+				}
+				else
+					target.getEntityData().setFloat(NBTLiterals.BACKSTAB_MULT, 0.9f);
+			}
+			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/12);
 		}
 		boolean isBackstab = isBackstab(attacker,target);
 		

@@ -520,7 +520,7 @@
 		"Efficient range": 2.2,
 		"Spread recovery": false,
 		"Drop chance": 0.08,
-		"Minimal range": 0,
+		"Minimal range": 0.1,
 		"Stock": true,
 		"Cost": 18
 	},
@@ -662,7 +662,7 @@
 		"Knockback": 4,
 		"Spread recovery": false,
 		"Efficient range": 2.2,
-		"Minimal range": 0,
+		"Minimal range": 0.1,
 		"Drop chance": 0.08,
 		"Stock": true,
 		"Cost": 19
@@ -878,7 +878,7 @@
 		"Clip size": 1,
 		"Knockback": 4,
 		"Efficient range": 2.2,
-		"Minimal range": 0,
+		"Minimal range": 0.1,
 		"Spread recovery": false,
 		"Cost": 18
 	},

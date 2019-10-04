@@ -2,6 +2,7 @@ package rafradek.TF2weapons.util;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.math.Vec3d;
@@ -116,7 +117,8 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	public void setAttackPower(float power) {
 		this.power = power;
 	}
-
+	
+	
 	/*@Override
 	public void onShieldBlock(EntityLivingBase living) {
 		if(!this.getWeapon().isEmpty() && this.getWeapon().getItem() instanceof ItemBulletWeapon && !(this.getWeapon().getItem() instanceof ItemMeleeWeapon))

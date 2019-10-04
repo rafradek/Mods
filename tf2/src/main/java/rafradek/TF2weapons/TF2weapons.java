@@ -442,7 +442,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 47;
+		return 48;
 	}
 
 	@Mod.EventHandler

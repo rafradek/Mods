@@ -14,8 +14,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.play.server.SPacketAdvancementInfo;
+import net.minecraft.network.play.server.SPacketSelectAdvancementsTab;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -1009,6 +1012,48 @@ public abstract class TF2Message implements IMessage {
 			buf.writeBoolean(this.teleporterPlayer);
 			buf.writeBoolean(this.teleporterEntity);
 			buf.writeBoolean(this.breakBlocks);
+		}
+	}
+	
+	public static class ContractNewMessage extends TF2Message {
+		Packet<?> packet;
+		int type;
+		public ContractNewMessage() {
+
+		}
+
+		public ContractNewMessage(Packet<?> packet) {
+			if (packet instanceof SPacketAdvancementInfo)
+				type = 0;
+			else if (packet instanceof SPacketSelectAdvancementsTab)
+				type = 1;
+			this.packet = packet;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.type = buf.readByte();
+			if (type == 0)
+				this.packet = new SPacketAdvancementInfo();
+			else
+				this.packet = new SPacketSelectAdvancementsTab();
+			try {
+				this.packet.readPacketData(new PacketBuffer(buf));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeByte(type);
+			try {
+				this.packet.writePacketData(new PacketBuffer(buf));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

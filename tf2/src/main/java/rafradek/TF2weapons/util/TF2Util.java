@@ -535,7 +535,7 @@ public class TF2Util {
 				((Entity)(((MultiPartEntityPart)entity).parent)).hurtResistantTime = 0;
 		}
 		
-		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer)) {
+		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer) && !source.isDifficultyScaled()) {
 			if(world.getDifficulty() == EnumDifficulty.NORMAL) {
 				damage *= 0.7f;
 			}
@@ -1437,13 +1437,16 @@ public class TF2Util {
 	}
 	
 	public static boolean isWeaponOfClass(ItemStack stack, int slot, String name) {
-		String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
-		WeaponData data;
-		if (!parent.isEmpty())
-			data = MapList.nameToData.get(parent);
-		else
-			data = ItemFromData.getData(stack);
-		return ItemFromData.isItemOfClassSlot(data, slot, name);
+		if (ItemFromData.getData(stack).hasProperty(PropertyType.SLOT))
+			return ItemFromData.isItemOfClassSlot(ItemFromData.getData(stack), slot, name);
+		else {
+			String parent = ItemFromData.getData(stack).getString(PropertyType.BASED_ON);
+			if (!parent.isEmpty())
+				return ItemFromData.isItemOfClassSlot(MapList.nameToData.get(parent), slot, name);
+			else
+				return false;
+			
+		}
 	}
 	
 	public static String getWeaponUsedByClass(ItemStack stack) {
