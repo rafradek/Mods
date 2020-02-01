@@ -34,6 +34,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import rafradek.TF2weapons.NBTLiterals;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
@@ -155,11 +156,10 @@ public class WeaponData implements ICapabilityProvider {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public static ArrayList<WeaponData> parseFile(File file) {
+	public static ArrayList<WeaponData> parseFile(String fileData, String filename) {
 		ArrayList<WeaponData> list = new ArrayList<>();
 		try {
-			String s = Files.toString(file, Charsets.UTF_8);
+			String s = fileData;
 			JsonObject tree = new JsonParser().parse(s).getAsJsonObject();
 			for (Entry<String, JsonElement> entry : tree.getAsJsonObject().entrySet()) {
 				nameItemLoaded = entry.getKey();
@@ -168,7 +168,7 @@ public class WeaponData implements ICapabilityProvider {
 				list.add(data);
 			}
 		} catch (Exception e) {
-			TF2weapons.LOGGER.error("Skipped reading weapon data from file: {}", file.getName());
+			TF2weapons.LOGGER.error("Skipped reading weapon data from file: {}", filename);
 			TF2weapons.LOGGER.catching(Level.ERROR, e);
 		}
 		return list;
@@ -229,7 +229,7 @@ public class WeaponData implements ICapabilityProvider {
 								
 						}
 					}
-					if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
+					if (TF2ConfigVars.killstreakDrop && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
 						TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
 						float value = ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
 								stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS), this.inst);

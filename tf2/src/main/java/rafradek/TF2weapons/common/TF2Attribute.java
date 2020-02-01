@@ -379,6 +379,16 @@ public class TF2Attribute {
 		new TF2Attribute(155, "TraceRound", "Trace Round", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(156, "LifeSteal", "Life Steal", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(MEDIGUN, 1f, 3, 120,2);
 		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(KNIFE, 0.25f, 4, 240,6).setAustralium(1f).setNoCostReduce();
+		new TF2Attribute(158, "StunOnHit", "Stun On Hit", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(159, "FuseTimeBonus", "Fuse Time", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(160, "OverHealRatePenalty", "Overheal Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(161, "UberRateOverhealPenalty", "Uber Overheal Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(162, "UberShield", "Uber Shield", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(163, "PassiveShield", "Passive Shield", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(164, "CanOverload", "Overload", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(165, "UberTimeBonus", "Uber Time", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(166, "UberOnHitRemove", "Uber Hit Remove", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(167, "CloakOnHitRemove", "Cloak Hit Remove", Type.ADDITIVE, 0f, State.POSITIVE);
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);

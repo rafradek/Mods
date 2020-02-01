@@ -380,6 +380,11 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							}
 						}
 					}
+					else if (message.value >= 120 && message.value < 130) {
+						if (TF2PlayerCapability.get(player).getGameArena() != null) {
+							TF2PlayerCapability.get(player).getGameArena().tryPlayerJoinTeam(player, message.value-110);
+						}
+					} 
 				}
 
 			});

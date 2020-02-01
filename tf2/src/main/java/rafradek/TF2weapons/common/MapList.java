@@ -136,5 +136,6 @@ public class MapList {
 		projectileClasses.put("hhhaxe", EntityProjectileSimple.class);
 		projectileClasses.put("energy", EntityProjectileEnergy.class);
 		projectileClasses.put("onyx", EntityOnyx.class);
+		projectileClasses.put("pomson", EntityProjectileSimple.class);
 	}
 }

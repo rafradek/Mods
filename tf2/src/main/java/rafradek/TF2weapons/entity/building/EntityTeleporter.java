@@ -238,7 +238,10 @@ public class EntityTeleporter extends EntityBuilding {
 		}
 		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
 			if (!this.world.isRemote)
-			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+				if (TF2ConfigVars.disableBuildingGui)
+					this.grab();
+				else
+					FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
 		return false;

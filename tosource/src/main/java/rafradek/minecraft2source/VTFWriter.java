@@ -140,6 +140,10 @@ public class VTFWriter {
 			keywriter.keyValue("%compilewater", 1);
 			keywriter.keyValue("$abovewater", waterunder ? 0 : 1);
 			keywriter.keyValue("$surfaceprop", "water");
+			keywriter.keyValue("$fogenable", 1);
+			keywriter.keyValue("$fogstart", 0);
+			keywriter.keyValue("$fogend", 512);
+			keywriter.keyValue("$fogcolor", "{0 0 25}");
 			if (!waterunder)
 				keywriter.keyValue("$bottommaterial", texturename+"-u");
 		}

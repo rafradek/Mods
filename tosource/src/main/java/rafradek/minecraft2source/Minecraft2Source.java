@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -32,17 +33,22 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.CloudRenderer;
+import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.Mod.Metadata;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import rafradek.minecraft2source.Mark.MarkType;
 
 @Mod(modid = "minecraft2source", name = "Minecraft map to Source", version = "1.0", guiFactory = "rafradek.minecraft2source.GuiFactory", clientSideOnly=true)
@@ -75,6 +81,7 @@ public class Minecraft2Source {
 	public static int blockBrightness=20;
 	public static float maxHeightRamp = 0.5f;
 	public static boolean rampTriangle = false;
+	public static boolean staticCloud = false;
 	public static int boundaries = 0;
 	
 	public static List<EntityMark> entities;
@@ -82,6 +89,7 @@ public class Minecraft2Source {
 	
 	public static Field vboField;
     public static Field animationField;
+	private CloudRenderer cloudrenderer;
     
 	@Mod.EventHandler
 	public void init(FMLPreInitializationEvent event) {
@@ -141,6 +149,7 @@ public class Minecraft2Source {
 		sunBrightness = conf.getInt("Sun brightness", "general", 300, 0, 8000, "Maximal sun brightness");
 		blockBrightness = conf.getInt("Block brightness", "general", 300, 0, 8000, "Maximal brightness from block sources")/15;
 		rampTriangle = conf.getBoolean("Sloped ramp", "general", false, "Should use sloped ramps rather than steps");
+		staticCloud = conf.getBoolean("Static cloud", "general", false, "Cloud does not move");
 		boundaries = getIndexSelected(conf.get("general", "Boundaries", "skybox").setValidValues(new String[] {"skybox","cordon","none"}),0);
 		gamePathFile = new File(enginePath);
 		enginePathFile = new File(gamePathFile.getParentFile(), "bin");
@@ -225,8 +234,19 @@ public class Minecraft2Source {
 	
 	@SubscribeEvent
 	public void loadWorld(WorldEvent.Load event) {
-		
 		if (event.getWorld().isRemote) {
+			if (staticCloud) {
+				cloudrenderer = new CloudRenderer();
+				cloudrenderer.checkSettings();
+				event.getWorld().provider.setCloudRenderer(new IRenderHandler() {
+	
+					@Override
+					public void render(float partialTicks, WorldClient world, Minecraft mc) {
+						cloudrenderer.render((int) world.getWorldTime(), 0);
+					}
+					
+				});
+			}
 			if (entities != null) {
 				saveMarks(event.getWorld());
 			}
@@ -281,6 +301,13 @@ public class Minecraft2Source {
 		}
 	}
 	
+	 @SubscribeEvent
+    public void checkSettings(ClientTickEvent event)
+    {
+        if (event.phase == Phase.END && cloudrenderer != null)
+        	cloudrenderer.checkSettings();
+    }
+	 
 	public static String getWorldName(World world) {
 		String worldname;
     	if (Minecraft.getMinecraft().getIntegratedServer() != null) {

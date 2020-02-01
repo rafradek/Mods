@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.inventory.Slot;
@@ -14,6 +15,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
@@ -33,6 +36,7 @@ public class ContainerUpgrades extends Container {
 	public int currentRecipe = -1;
 	public TileEntityUpgrades station;
 	public ArrayList<TF2Attribute> applicable;// = new boolean[TileEntityUpgrades.UPGRADES_COUNT];
+	public int playerCredits;
 	public int[] transactions;// = new int[TileEntityUpgrades.UPGRADES_COUNT];
 	public int[] transactionsCost;// = new int[TileEntityUpgrades.UPGRADES_COUNT];
 	//public ArrayList<Integer> guiShowId = new ArrayList<>();
@@ -89,6 +93,22 @@ public class ContainerUpgrades extends Container {
 		}
 	}
 
+	public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+        int exp=TF2Util.getExperiencePoints(this.player);
+        if (this.playerCredits != exp) {
+        	this.playerCredits = exp;
+            for(IContainerListener listener : this.listeners) {
+            	listener.sendWindowProperty(this, 0, exp);
+            }
+        }
+	}
+	@SideOnly(Side.CLIENT)
+    public void updateProgressBar(int id, int data) {
+        if(id == 0)
+        	this.playerCredits = data;
+    }
+	
 	@Override
 	public void onContainerClosed(EntityPlayer playerIn) {
 		super.onContainerClosed(playerIn);

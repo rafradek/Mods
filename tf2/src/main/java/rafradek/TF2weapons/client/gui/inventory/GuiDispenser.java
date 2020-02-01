@@ -50,7 +50,7 @@ public class GuiDispenser extends GuiContainer {
 			if (button.id == 0) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-						.sendToServer(new TF2Message.GuiConfigMessage(this.dispenser.getEntityId(), (byte) 127, 1));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.dispenser.getEntityId(), (byte) 127, 1));
 			}
 	}
 

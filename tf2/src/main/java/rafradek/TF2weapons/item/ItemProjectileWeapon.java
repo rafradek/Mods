@@ -99,4 +99,8 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				 * isRemote
 				 */super.canFire(world, living, stack) && !(living instanceof EntityScout && ((EntityScout)living).usedSlot == 2 && ((EntityScout)living).ballCooldown > 0);
 	}
+	
+	public void onOverload(ItemStack stack, EntityLivingBase owner, EnumHand hand) {
+		this.shoot(stack, owner, owner.world, -1, hand);
+	}
 }

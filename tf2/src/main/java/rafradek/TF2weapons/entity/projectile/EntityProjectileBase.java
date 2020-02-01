@@ -25,6 +25,7 @@ import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.DamageSourceProjectile;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
@@ -111,7 +112,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.usedWeaponOrig = weapon;
 		this.setLocationAndAngles(shooter.posX, shooter.posY + shooter.getEyeHeight(), shooter.posZ,
 				shooter.rotationYawHead, shooter.rotationPitch + this.getPitchAddition());
-		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch, shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
+		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch+ this.getPitchAddition(), shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
 		Vec3d trace;
 		if (shooter instanceof EntityPlayer) {
 			RayTraceResult ray = Iterables.getFirst(TF2Util.pierce(world, shooter, this.posX, this.posY, this.posZ, look.x, look.y, look.z, false, 0, false), null);
@@ -311,12 +312,13 @@ public abstract class EntityProjectileBase extends Entity
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
 				float distance = this.getDistanceToTarget(target, hitPos.x, hitPos.y, hitPos.z);
+				DamageSourceProjectile src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, this);
 				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 
 						((ItemWeapon) this.usedWeapon.getItem()).getHeadshotCrit(shootingEntity, this.usedWeapon) : this.getCritical(),
-						this.usedWeapon);
+						this.usedWeapon, src);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
 						distance) * this.damageModifier;
-				DamageSource src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this);
+				src.setCritical(critical);
 				this.addDamageTypes(src);
 				
 				if (headshot)
@@ -425,8 +427,14 @@ public abstract class EntityProjectileBase extends Entity
 			return;
 		}
 
+		if (this.getCritical() == -1) {
+			this.setCritical(0);
+			this.explode(posX, posY, posZ, null, 1f);
+			return;
+		}
+		
 		super.onUpdate();
-
+		
 		if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
 			float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
 			this.prevRotationYaw = this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D

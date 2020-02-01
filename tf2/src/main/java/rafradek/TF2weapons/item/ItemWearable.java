@@ -173,7 +173,7 @@ public class ItemWearable extends ItemFromData {
 			while (affectedIterator.hasNext()) {
 				Entity ent = affectedIterator.next();
 				TF2Util.dealDamage(ent, living.world, living, ItemStack.EMPTY, 2, explosion.affectedEntities.get(ent) * 26,
-						TF2Util.causeDirectDamage(stack, living, 2).setExplosion());
+						TF2Util.causeDirectDamage(stack, living).setCritical(2).setExplosion());
 			}
 			Iterator<EntityPlayer> iterator = living.world.playerEntities.iterator();
 

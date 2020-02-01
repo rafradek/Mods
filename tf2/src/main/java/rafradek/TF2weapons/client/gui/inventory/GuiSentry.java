@@ -72,11 +72,11 @@ public class GuiSentry extends GuiContainer {
 				else
 					button.displayString = "yes";
 				TF2weapons.network.sendToServer(
-						new TF2Message.GuiConfigMessage(this.sentry.getEntityId(), (byte) 0, attackFlags));
+						new TF2Message.BuildingConfigMessage(this.sentry.getEntityId(), (byte) 0, attackFlags));
 			} else if (button.id == 5) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-						.sendToServer(new TF2Message.GuiConfigMessage(this.sentry.getEntityId(), (byte) 127, 1));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.sentry.getEntityId(), (byte) 127, 1));
 			}
 	}
 

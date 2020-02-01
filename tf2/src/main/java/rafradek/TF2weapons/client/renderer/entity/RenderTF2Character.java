@@ -35,8 +35,8 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
 	private static final String TEXTURE_PATH_BASE = TF2weapons.MOD_ID+":textures/entity/tf2/";
 	
-	private static final ResourceLocation[] RED_TEXTURES;
-	private static final ResourceLocation[] BLU_TEXTURES;
+	public static final ResourceLocation[] RED_TEXTURES;
+	public static final ResourceLocation[] BLU_TEXTURES;
 	public static final ResourceLocation[] ROBOT_TEXTURES;
 	private static final ResourceLocation[] ROBOT_BLU_TEXTURES;
 	private static final ResourceLocation[] ROBOT_RED_TEXTURES;

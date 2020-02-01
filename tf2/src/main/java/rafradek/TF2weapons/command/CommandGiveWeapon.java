@@ -19,6 +19,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
@@ -98,8 +99,7 @@ public class CommandGiveWeapon extends CommandBase {
 					
 			}
 			if (giveNew) {
-				EntityItem entityitem = entityplayermp.dropItem(item, false);
-				entityitem.setPickupDelay(0);
+				ItemHandlerHelper.giveItemToPlayer(entityplayermp, item);
 			}
 			else
 				item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;

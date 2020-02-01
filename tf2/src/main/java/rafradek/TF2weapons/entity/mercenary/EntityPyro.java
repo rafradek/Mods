@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
@@ -85,8 +86,10 @@ public class EntityPyro extends EntityTF2Character {
 	public void onLivingUpdate() {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
-			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon){
-				if(this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64)){
+			if(this.getDiff()>1 ){
+				boolean isFlareGun=this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon;
+				if((isFlareGun && (this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64))) || 
+						(!isFlareGun && this.getAttackTarget().isPotionActive(MobEffects.FIRE_RESISTANCE)) ){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 					//this.ammoLeft++;

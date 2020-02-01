@@ -36,6 +36,8 @@ public class TF2ConfigVars {
 	public static boolean disableBossSpawn;
 	public static boolean disableBossSpawnItems;
 	public static float invasionChance;
+	public static int invasionMinDay;
+	public static int invasionMaxWaves;
 	public static boolean disableInvasionItems;
 	public static boolean disableLoot;
 	public static int bossReappear;
@@ -83,6 +85,11 @@ public class TF2ConfigVars {
 	public static int maxMetalEngineer;
 	public static boolean fastBuildEngineer;
 	public static boolean longDurationBanner;
+	public static boolean headCountDrop;
+	public static boolean killstreakDrop;
+	public static boolean disableBuildingGui;
+	public static boolean limitedDisguise;
+	
 	public static boolean oldDispenser;
 	public static boolean scaleAttributes;
 	public static boolean mustReload;
@@ -138,6 +145,12 @@ public class TF2ConfigVars {
 		explosiveJumpGravity = conf.getFloat("Blast jump gravity", "adaption", 0.046f, 0f, Float.MAX_VALUE, "Gravity applied when rocket jumping. 0.0381 is original TF2 gravity");
 		allowTrimp = getIndexSelected(conf.get("adaption", "Simulate ramps", "Horizontal only", "Simulate ramps when rocket jumping or charging",
 				new String[] {"Always", "Horizontal only", "Never"}), 0);
+		headCountDrop = conf.getBoolean("Head count drop", "adaption", true, "If enabled, head count on eyelander will drop over time");
+		killstreakDrop = conf.getBoolean("Killstreak count drop", "adaption", true, "If enabled, killstreak count will drop over time. When disabled, bonuses from killstreak weapons are no longer applied");
+		disableBuildingGui = conf.getBoolean("Disable building gui", "adaption", false, "When disabled, right click will always pick up the building");
+		limitedDisguise= conf.getBoolean("Limited disguise", "adaption", false, "Disguise is limited to class selection");
+		setNetworked(conf.getCategory("adaption"), conf.getCategory("adaption").get("Limited disguise"));
+		
 		boolean old = conf.hasKey("gameplay", "Fast metal production");
 		if (old) {
 			conf.moveProperty("gameplay", "TF2 - Minecraft health translation", "adaption");
@@ -150,6 +163,8 @@ public class TF2ConfigVars {
 		disableBossSpawn = conf.getBoolean("Disable boss spawn", "spawn rate", false, "Disable random tf2 boss spawn");
 		disableBossSpawnItems = conf.getBoolean("Disable boss spawn items", "spawn rate", false, "Disable boss spawning items");
 		invasionChance =conf.getFloat("Invasion chance", "spawn rate", 0.06f,0f,1f, "Chance of robot invasion occuring at the beginning of each day.");
+		invasionMinDay =conf.getInt("Invasion minimum delay", "spawn rate", 10,0,Integer.MAX_VALUE, "Minimal delay between invasions, in days");
+		invasionMaxWaves =conf.getInt("Invasion max waves", "spawn rate", 6,1,Integer.MAX_VALUE, "Maximum amount of waves");
 		disableInvasionItems =conf.getBoolean("Disable invasion event items", "spawn rate", false, "Disable invasion items");
 		disableContracts =conf.getBoolean("Disable contracts", "gameplay", false, "Stop new contracts from appearing");
 		disableGeneration = conf.getBoolean("Disable structures", "world gen", false, "Disable structures generation, such as Mann Co. building");

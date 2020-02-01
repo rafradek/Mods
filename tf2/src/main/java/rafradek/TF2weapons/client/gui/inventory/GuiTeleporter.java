@@ -87,16 +87,16 @@ public class GuiTeleporter extends GuiContainer {
 			else if (button.id == 4) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-						.sendToServer(new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 127, 0));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 127, 0));
 			}
 	}
 	
 	public void onGuiClosed()
     {
 		TF2weapons.network.sendToServer(
-				new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 0, channel));
+				new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 0, channel));
 		TF2weapons.network.sendToServer(
-				new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 1, exit ? 1 : 0));
+				new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 1, exit ? 1 : 0));
 		super.onGuiClosed();
     }
 	

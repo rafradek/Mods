@@ -111,6 +111,8 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	public static final PropertyType<Float> KNOCKBACK_Z = new PropertyType<>(85, "Knockback Z", Float.class);
 	public static final PropertyType<Float> MINIMAL_RANGE = new PropertyType<>(86, "Minimal range", Float.class);
 	public static final PropertyType<Float> COOLDOWN_LONG = new PropertyType<>(87, "Long cooldown", Float.class);
+	public static final PropertyType<Boolean> TEMPLATE = new PropertyType<>(88,"Template", Boolean.class);
+	public static final PropertyType<Float> UBER_TIME = new PropertyType<>(89,"Uber time", Float.class);
 	public Class<T> type;
 	public int id;
 	public String name;

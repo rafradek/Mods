@@ -27,22 +27,25 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 	}
 	
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
+			this.setType(0);
+		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("syringe"))
+			this.setType(1);
+		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
+			this.setType(2);
+		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("arrow"))
+			this.setType(3);
+		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("pomson"))
+			this.setType(4);
+		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("hhhaxe"))
+			this.setType(8);
+		
 		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3F, 0.3F);
 		if (this.usedWeapon.getTagCompound().getBoolean("ArrowLit")) {
 			this.usedWeaponOrig.getTagCompound().setBoolean("ArrowLit", false);
 			this.setFire(1000);
 		}
-		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
-			this.setType(0);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
-			this.setType(1);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
-			this.setType(2);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
-			this.setType(3);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("hhhaxe"))
-			this.setType(8);
 	}
 
 	@Override
@@ -84,10 +87,17 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void spawnParticles(double x, double y, double z) {
-		
+		if (this.getType() == 4) {
+			ClientProxy.spawnBisonParticle(world, x, y, z, TF2Util.getTeamColor(this.shootingEntity));
+		}
 	}
 
 	public boolean isPushable() {
 		return this.getType()!=1;
+	}
+	
+	@Override
+	public double getGravity() {
+		return this.getType() == 4 ? 0 : super.getGravity();
 	}
 }

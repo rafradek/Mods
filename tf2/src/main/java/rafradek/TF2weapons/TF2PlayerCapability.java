@@ -42,6 +42,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.arena.GameArena;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
@@ -124,7 +125,9 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	private float totalLastDamage;
 	private boolean backpackItemEquipped;
 	
+	private GameArena gameArena;
 	public EntityDataManager dataManager;
+	public EntityDataManager dataManagerGlobal;
 	private static final NBTTagCompound EMPTY = new NBTTagCompound();
 	public static final DataParameter<NBTTagCompound> SENTRY_VIEW = new DataParameter<NBTTagCompound>(0, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<NBTTagCompound> DISPENSER_VIEW = new DataParameter<NBTTagCompound>(1, DataSerializers.COMPOUND_TAG);
@@ -132,6 +135,8 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	public static final DataParameter<NBTTagCompound> TELEPORTERB_VIEW = new DataParameter<NBTTagCompound>(3, DataSerializers.COMPOUND_TAG);
 	public static final DataParameter<ItemStack> BACKPACK_ITEM_HOLD = new DataParameter<ItemStack>(4, DataSerializers.ITEM_STACK);
 	public static final DataParameter<Float> INVASION_ATTACK_DIR = new DataParameter<Float>(5, DataSerializers.FLOAT);
+	public static final DataParameter<Boolean> USE_CLASS_TEXTURE = new DataParameter<Boolean>(0, DataSerializers.BOOLEAN);
+	public static final DataParameter<Integer> RESPAWN_TIME = new DataParameter<Integer>(1, DataSerializers.VARINT);
 	
 	@SuppressWarnings("unchecked")
 	public Multimap<String, AttributeModifier>[] wearablesAttrib= (Multimap<String, AttributeModifier>[]) new Multimap[5];
@@ -146,14 +151,45 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		this.highestBossLevel.put(EntityMerasmus.class, (short) 0);
 		
 		this.dataManager = new EntityDataManager(entity);
+		this.dataManagerGlobal = new EntityDataManager(entity);
 		this.dataManager.register(SENTRY_VIEW, EMPTY);
 		this.dataManager.register(DISPENSER_VIEW, EMPTY);
 		this.dataManager.register(TELEPORTERA_VIEW, EMPTY);
 		this.dataManager.register(TELEPORTERB_VIEW, EMPTY);
 		this.dataManager.register(BACKPACK_ITEM_HOLD, ItemStack.EMPTY);
 		this.dataManager.register(INVASION_ATTACK_DIR, Float.MIN_VALUE);
+		this.dataManagerGlobal.register(USE_CLASS_TEXTURE, false);
+		this.dataManagerGlobal.register(RESPAWN_TIME, 0);
 	}
 
+	public void clone(TF2PlayerCapability cap) {
+		for (Entry<Class<? extends Entity>, Short> entry : cap.highestBossLevel.entrySet()) {
+			this.highestBossLevel.put(entry.getKey(), entry.getValue());
+		}
+
+		this.udpServerId = cap.udpServerId;
+		
+		if (this.owner instanceof EntityPlayerMP && TF2weapons.udpServer != null)
+			TF2weapons.udpServer.playerList.put(cap.udpServerId, (EntityPlayerMP) this.owner);
+		
+		this.contracts=cap.contracts;
+		this.newContracts=cap.newContracts;
+		this.nextContractDay=cap.nextContractDay;
+		if(this.owner != null)
+			if(this.owner instanceof EntityPlayerMP) {
+				this.sendContractsNextTick=true;
+			}
+		this.setForceClassTexture(cap.isForceClassTexture());
+		this.setRespawnTime(cap.getRespawnTime());
+		this.lostItems = cap.lostItems;
+		this.gameArena = cap.gameArena;
+		this.lastDayInvasion = cap.lastDayInvasion;
+		this.hhhSummonedDay = cap.hhhSummonedDay;
+		this.merasmusSummonedDay = cap.merasmusSummonedDay;
+		this.monoculusSummonedDay = cap.monoculusSummonedDay;
+		this.maxInvasionBeaten = cap.maxInvasionBeaten;
+	}
+	
 	public void tick() {
 		if(Float.isNaN(this.owner.getHealth())) {
 			this.owner.setHealth(this.owner.getMaxHealth());
@@ -229,7 +265,6 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 			}
 			this.medicCall--;
 				
-
 			if(this.sendContractsNextTick)
 				for(int i=0;i<this.contracts.size();i++) {
 					TF2weapons.network.sendTo(new TF2Message.ContractMessage(i, this.contracts.get(i)),(EntityPlayerMP) this.owner);
@@ -297,7 +332,10 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 				TF2weapons.network.sendTo(new TF2Message.ContractMessage(-1, contract), (EntityPlayerMP) this.owner);
 			}
 			if (this.dataManager.isDirty()) {
-				TF2weapons.network.sendTo(new TF2Message.PlayerCapabilityMessage(this.owner, false), (EntityPlayerMP) this.owner);
+				TF2weapons.network.sendTo(new TF2Message.PlayerCapabilityMessage(this.owner, false, false), (EntityPlayerMP) this.owner);
+			}
+			if (this.dataManagerGlobal.isDirty()) {
+				TF2Util.sendTracking(new TF2Message.PlayerCapabilityMessage(this.owner, false, true), (EntityPlayerMP) this.owner);
 			}
 		}
 		else if (this.owner == Minecraft.getMinecraft().player){
@@ -306,7 +344,6 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 		}
 	}
 
-	
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
@@ -362,6 +399,22 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 	
 	public void setInvasionDir(float dir) {
 		this.dataManager.set(INVASION_ATTACK_DIR, dir);
+	}
+	
+	public boolean isForceClassTexture() {
+		return this.dataManagerGlobal.get(USE_CLASS_TEXTURE);
+	}
+	
+	public void setForceClassTexture(boolean force) {
+		this.dataManagerGlobal.set(USE_CLASS_TEXTURE, force);
+	}
+	
+	public int getRespawnTime() {
+		return this.dataManagerGlobal.get(RESPAWN_TIME);
+	}
+	
+	public void setRespawnTime(int time) {
+		this.dataManagerGlobal.set(RESPAWN_TIME, time);
 	}
 	
 	public NBTTagCompound getSentryView() {
@@ -587,5 +640,13 @@ public class TF2PlayerCapability implements ICapabilityProvider, INBTSerializabl
 
 	public void onChangeValue(DataParameter<?> key, Object value) {
 		
+	}
+
+	public GameArena getGameArena() {
+		return gameArena;
+	}
+
+	public void setGameArena(GameArena gameArena) {
+		this.gameArena = gameArena;
 	}
 }

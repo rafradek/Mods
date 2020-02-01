@@ -521,7 +521,7 @@ public abstract class EntityTF2Boss extends EntityMob implements IEntityTF2 {
 	}
 	
 	@Override
-	public boolean isBackStabbable() {
+	public boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
 		// TODO Auto-generated method stub
 		return true;
 	}

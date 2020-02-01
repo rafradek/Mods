@@ -25,6 +25,7 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
@@ -41,7 +42,7 @@ public class ItemKnife extends ItemMeleeWeapon {
 						&& Minecraft.getMinecraft().objectMouseOver.entityHit != null
 						&& TF2Util.getDistanceSqBox(Minecraft.getMinecraft().objectMouseOver.entityHit, entityIn.posX, entityIn.posY, entityIn.posZ, entityIn.width, entityIn.height) 
 						<= getMaxRange(stack) * getMaxRange(stack)
-						&& isBackstab(entityIn, Minecraft.getMinecraft().objectMouseOver.entityHit))
+						&& isBackstab(entityIn, Minecraft.getMinecraft().objectMouseOver.entityHit, stack))
 					return 1;
 				return 0;
 			}
@@ -51,15 +52,15 @@ public class ItemKnife extends ItemMeleeWeapon {
 	public void handleShoot(EntityLivingBase living, ItemStack stack, World world, HashMap<Entity, float[]> map,
 			int critical, int flags) {
 		for(Entity target: map.keySet()) {
-			if(this.isBackstab(living, target)) {
+			if(this.isBackstab(living, target, stack)) {
 				flags+=TF2DamageSource.BACKSTAB;
 				break;
 			}
 		}
 		super.handleShoot(living, stack, world, map, critical, flags);
 	}
-	public boolean isBackstab(EntityLivingBase living, Entity target) {
-		if (target != null && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).isBackStabbable())) {
+	public boolean isBackstab(EntityLivingBase living, Entity target, ItemStack stack) {
+		if (target != null && target instanceof EntityLivingBase && !(target instanceof IEntityTF2 && !((IEntityTF2)target).isBackStabbable(living, stack))) {
 			float ourAngle = 180 + MathHelper.wrapDegrees(living.rotationYawHead);
 			float angle2 = (float) (MathHelper.atan2(living.posX - target.posX, living.posZ - target.posZ) * 180.0D
 					/ Math.PI);
@@ -82,9 +83,12 @@ public class ItemKnife extends ItemMeleeWeapon {
 	public float getBackstabBonusDamage(ItemStack stack, EntityLivingBase living, Entity target) {
 		float base = 4f;
 		if (living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this) ) {
-			base -=3*(((EntityPlayer)living).getCooldownTracker().getCooldown(this, 0));
+			base -=(base-1)*(((EntityPlayer)living).getCooldownTracker().getCooldown(this, 0));
 		}
 		base *= Math.pow(TF2Attribute.getModifier("Backstab Damage", stack, 1, living),2.0f);
+		if (target instanceof IEntityTF2) {
+			base = ((IEntityTF2)target).getBackstabDamageReduction(living,stack,base);
+		}
 		if(target.getEntityData().hasKey(NBTLiterals.BACKSTAB_MULT))
 			base *= target.getEntityData().getFloat(NBTLiterals.BACKSTAB_MULT);
 		return Math.max(1f,base);
@@ -92,12 +96,12 @@ public class ItemKnife extends ItemMeleeWeapon {
 	
 	@Override
 	public float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target) {
-		return super.getWeaponDamage(stack, living, target) * (this.isBackstab(living, target) ? this.getBackstabBonusDamage(stack, living, target) : 1);
+		return super.getWeaponDamage(stack, living, target) * (this.isBackstab(living, target, stack) ? this.getBackstabBonusDamage(stack, living, target) : 1);
 	}
 
 	@Override
-	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old) {
-		return super.setCritical(stack, shooter, target, this.isBackstab(shooter, target) ? 2 : old);
+	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old, DamageSource source) {
+		return super.setCritical(stack, shooter, target, this.isBackstab(shooter, target, stack) ? 2 : old, source);
 	}
 
 	/*@SideOnly(Side.CLIENT)
@@ -113,7 +117,7 @@ public class ItemKnife extends ItemMeleeWeapon {
 	}*/
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
-		if(attacker instanceof EntityPlayer && isBackstab(attacker,target) && target.isEntityAlive()) {
+		if(attacker instanceof EntityPlayer && isBackstab(attacker,target, stack) && target.isEntityAlive() && !(target instanceof EntityTF2Character && ((EntityTF2Character) target).isGiant())) {
 			if (target instanceof EntityLiving) {
 				if (target.getEntityData().hasKey(NBTLiterals.BACKSTAB_MULT)) {
 					target.getEntityData().setFloat(NBTLiterals.BACKSTAB_MULT, Math.max(0.5f, target.getEntityData().getFloat(NBTLiterals.BACKSTAB_MULT)*0.9f));
@@ -123,9 +127,9 @@ public class ItemKnife extends ItemMeleeWeapon {
 			}
 			((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, this.getFiringSpeed(stack, attacker)/12);
 		}
-		boolean isBackstab = isBackstab(attacker,target);
+		boolean isBackstab = isBackstab(attacker,target, stack);
 		
-		if(attacker instanceof EntityPlayerMP&& isBackstab(attacker,target)&& target instanceof EntityLivingBase 
+		if(attacker instanceof EntityPlayerMP&& isBackstab && target instanceof EntityLivingBase 
 				&& !target.isEntityAlive() && TF2Util.isEnemy(attacker, (EntityLivingBase) target)){
 			((EntityPlayerMP) attacker).addStat(TF2Achievements.KILLED_BACKSTAB);
 			if (TF2Attribute.getModifier("Disguise Backstab", stack, 0, attacker) != 0) {

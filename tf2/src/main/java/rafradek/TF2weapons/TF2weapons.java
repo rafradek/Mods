@@ -11,10 +11,13 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -28,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -42,6 +46,7 @@ import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.BehaviorProjectileDispense;
@@ -143,14 +148,19 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import net.minecraftforge.registries.IForgeRegistryModifiable;
+import rafradek.TF2weapons.arena.GameArena;
 import rafradek.TF2weapons.block.BlockAmmoFurnace;
 import rafradek.TF2weapons.block.BlockCabinet;
+import rafradek.TF2weapons.block.BlockCapturePoint;
+import rafradek.TF2weapons.block.BlockGameConfigure;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.block.BlockProp;
+import rafradek.TF2weapons.block.BlockResupplyCabinet;
 import rafradek.TF2weapons.block.BlockRobotDeploy;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.gui.inventory.GuiAmmoFurnace;
+import rafradek.TF2weapons.client.gui.inventory.GuiConfigurable;
 import rafradek.TF2weapons.client.gui.inventory.GuiDispenser;
 import rafradek.TF2weapons.client.gui.inventory.GuiMercenary;
 import rafradek.TF2weapons.client.gui.inventory.GuiRobotDeploy;
@@ -162,6 +172,7 @@ import rafradek.TF2weapons.client.gui.inventory.GuiWearables;
 import rafradek.TF2weapons.command.CommandChangeConfig;
 import rafradek.TF2weapons.command.CommandClientDebug;
 import rafradek.TF2weapons.command.CommandForceClass;
+import rafradek.TF2weapons.command.CommandGameArena;
 import rafradek.TF2weapons.command.CommandGenerateReferences;
 import rafradek.TF2weapons.command.CommandGiveWeapon;
 import rafradek.TF2weapons.command.CommandInvasion;
@@ -174,6 +185,7 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityDummy;
 import rafradek.TF2weapons.entity.EntityLightDynamic;
+import rafradek.TF2weapons.entity.EntityPickup;
 import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.EntityTarget;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
@@ -211,6 +223,7 @@ import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.inventory.ContainerAmmoFurnace;
+import rafradek.TF2weapons.inventory.ContainerConfigurable;
 import rafradek.TF2weapons.inventory.ContainerDispenser;
 import rafradek.TF2weapons.inventory.ContainerEnergy;
 import rafradek.TF2weapons.inventory.ContainerMercenary;
@@ -226,6 +239,7 @@ import rafradek.TF2weapons.item.ItemAmmoPackage;
 import rafradek.TF2weapons.item.ItemArmorTF2;
 import rafradek.TF2weapons.item.ItemBossSpawner;
 import rafradek.TF2weapons.item.ItemBuildingBox;
+import rafradek.TF2weapons.item.ItemConfigure;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.item.ItemDoorController;
@@ -239,6 +253,7 @@ import rafradek.TF2weapons.item.ItemKillstreakKit;
 import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemMonsterPlacerPlus;
 import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemPickup;
 import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemStatue;
 import rafradek.TF2weapons.item.ItemStrangifier;
@@ -262,6 +277,7 @@ import rafradek.TF2weapons.message.TF2ContractHandler;
 import rafradek.TF2weapons.message.TF2DisguiseHandler;
 import rafradek.TF2weapons.message.TF2EffectCooldownHandler;
 import rafradek.TF2weapons.message.TF2GuiConfigHandler;
+import rafradek.TF2weapons.message.TF2BuildingConfigHandler;
 import rafradek.TF2weapons.message.TF2InitClientHandler;
 import rafradek.TF2weapons.message.TF2InitHandler;
 import rafradek.TF2weapons.message.TF2Message;
@@ -280,8 +296,12 @@ import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.message.udp.TF2UdpServer;
 import rafradek.TF2weapons.potion.PotionTF2;
 import rafradek.TF2weapons.potion.PotionTF2Item;
+import rafradek.TF2weapons.tileentity.IEntityConfigurable;
 import rafradek.TF2weapons.tileentity.TileEntityAmmoFurnace;
+import rafradek.TF2weapons.tileentity.TileEntityCapturePoint;
+import rafradek.TF2weapons.tileentity.TileEntityGameConfigure;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
+import rafradek.TF2weapons.tileentity.TileEntityResupplyCabinet;
 import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
 import rafradek.TF2weapons.util.PropertyType;
@@ -291,7 +311,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.6.0", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.6.1", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -327,6 +347,8 @@ public class TF2weapons {
 	public static CreativeTabs tabweapontf2;
 	public static CreativeTabs tabsurvivaltf2;
 	public static CreativeTabs tabspawnertf2;
+	public static CreativeTabs tabrareweapontf2;
+	public static CreativeTabs tabarenatf2;
 	// public static final ArmorMaterial OPARMOR =
 	// EnumHelper.addArmorMaterial("OPARMOR", "", 1000, new int[] {24,0,0,0},
 	// 100);
@@ -351,6 +373,9 @@ public class TF2weapons {
 	public static Block blockAmmoFurnace;
 	public static Block blockOverheadDoor;
 	public static Block blockRobotDeploy;
+	public static Block blockResupplyCabinet;
+	public static Block blockCapturePoint;
+	public static Block blockConfigure;
 	
 	public static boolean generateCopper;
 	public static boolean generateLead;
@@ -375,6 +400,9 @@ public class TF2weapons {
 	public static Potion sapped;
 	public static Potion regen;
 	public static Potion viralfire;
+	public static Potion shieldExplosive;
+	public static Potion shieldBullet;
+	public static Potion shieldFire;
 	
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
@@ -406,6 +434,8 @@ public class TF2weapons {
 	public static Item itemBossSpawn;
 	public static Item itemDoorController;
 	public static Item itemMoney;
+	public static Item itemConfigurator;
+	public static Item itemPickup;
 	
 	public static ResourceLocation lootTF2Character;
 	public static ResourceLocation lootScout;
@@ -438,11 +468,13 @@ public class TF2weapons {
 	public static boolean squakeLoaded;
 	public static boolean corrupted;
 	
+	public static Map<String, GameArena> gameArenas;
+	
 	@SidedProxy(clientSide = "rafradek.TF2weapons.client.ClientProxy", serverSide = "rafradek.TF2weapons.common.CommonProxy")
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 48;
+		return 49;
 	}
 
 	@Mod.EventHandler
@@ -472,12 +504,11 @@ public class TF2weapons {
 		if (!new File(this.weaponDir, "Weapons.json").exists() || shouldCopy ) {
 			conf.get("internal", "Weapon Config Version", getCurrentWeaponVersion()).set(getCurrentWeaponVersion());
 			conf.save();
-			TF2Util.extractData("Weapons.json", new File(this.weaponDir, "Weapons.json"), file);
-			TF2Util.extractData("Cosmetics.json", new File(this.weaponDir, "Cosmetics.json"), file);
-			TF2Util.extractData("Crates.json", new File(this.weaponDir, "Crates.json"), file);
-			TF2Util.extractData("TF2RobotSquad.json", squadFile, file);
+			TF2Util.extractData("weapons/weapons.json", new File(this.weaponDir, "Weapons.json"), file);
+			TF2Util.extractData("weapons/cosmetics.json", new File(this.weaponDir, "Cosmetics.json"), file);
+			TF2Util.extractData("weapons/crates.json", new File(this.weaponDir, "Crates.json"), file);
+			TF2Util.extractData("robots/robot_squad.json", squadFile, file);
 		}
-
 		
 		bluPattern=EnumHelper.addEnum(BannerPattern.class, "BLU_PATTERN", new Class<?>[]{String.class,String.class}, "blu_base","bb");
 		redPattern=EnumHelper.addEnum(BannerPattern.class, "RED_PATTERN", new Class<?>[]{String.class,String.class}, "red_base","rb");
@@ -498,6 +529,14 @@ public class TF2weapons {
 			}
 			
 		};
+		tabrareweapontf2 = new CreativeTabs("tf2rareweapons") {
+			@Override
+			public ItemStack getTabIconItem() {
+				return ItemFromData.getNewStack("rocketshotgun");
+			}
+			
+		};
+		
 		tabutilitytf2 = new CreativeTabs("tf2util") {
 			@Override
 			public ItemStack getTabIconItem() {
@@ -544,6 +583,13 @@ public class TF2weapons {
 			public ItemStack getTabIconItem() {
 				return new ItemStack(Item.getItemFromBlock(blockCabinet));
 			}
+		};
+		tabarenatf2 = new CreativeTabs("tf2arena") {
+			@Override
+			public ItemStack getTabIconItem() {
+				return new ItemStack(itemPickup,1,2);
+			}
+			
 		};
 		
 		LOGGER.info("Initializing attributes");
@@ -603,6 +649,7 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"onyx"),EntityOnyx.class, "onyx", 31, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"fireball"),EntityFuryFireball.class, "fireball", 32, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"light"),EntityLightDynamic.class, "light", 33, this, 256, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"pickup"),EntityPickup.class, "pickup", 34, this, 80, 20, false);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
 		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
@@ -649,6 +696,8 @@ public class TF2weapons {
 		ForgeRegistries.ITEMS.register(itemDoorController = new ItemDoorController().setCreativeTab(tabutilitytf2).setUnlocalizedName("doorcontroller")
 				.setRegistryName(TF2weapons.MOD_ID + ":door_controller"));
 		ForgeRegistries.ITEMS.register(itemMoney = new ItemMoney().setRegistryName(TF2weapons.MOD_ID + ":money"));
+		ForgeRegistries.ITEMS.register(itemConfigurator = new ItemConfigure().setRegistryName(TF2weapons.MOD_ID + ":configurator").setCreativeTab(tabarenatf2));
+		ForgeRegistries.ITEMS.register(itemPickup = new ItemPickup().setRegistryName(TF2weapons.MOD_ID + ":pickup").setCreativeTab(tabarenatf2));
 		
 		Iterator<String> iterator = MapList.weaponClasses.keySet().iterator();
 		while (iterator.hasNext()) {
@@ -660,6 +709,9 @@ public class TF2weapons {
 		GameRegistry.registerTileEntity(TileEntityAmmoFurnace.class, "AmmoFurnace");
 		GameRegistry.registerTileEntity(TileEntityOverheadDoor.class, new ResourceLocation(TF2weapons.MOD_ID, "overhead_door"));
 		GameRegistry.registerTileEntity(TileEntityRobotDeploy.class, new ResourceLocation(TF2weapons.MOD_ID, "robot_deploy"));
+		GameRegistry.registerTileEntity(TileEntityResupplyCabinet.class, new ResourceLocation(TF2weapons.MOD_ID, "resupply_cabinet"));
+		GameRegistry.registerTileEntity(TileEntityCapturePoint.class, new ResourceLocation(TF2weapons.MOD_ID, "capture_point"));
+		GameRegistry.registerTileEntity(TileEntityGameConfigure.class, new ResourceLocation(TF2weapons.MOD_ID, "game_configure"));
 
 		registerBlock(blockCabinet = new BlockCabinet().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("cabinet"), TF2weapons.MOD_ID + ":tf2workbench");
 		registerBlock(blockAmmoFurnace = new BlockAmmoFurnace().setHardness(5.0F).setResistance(10.0F).setUnlocalizedName("ammoFurnace"), TF2weapons.MOD_ID + ":ammo_furnace");
@@ -677,6 +729,12 @@ public class TF2weapons {
 				.setUnlocalizedName("blockOverhead"), TF2weapons.MOD_ID + ":overhead_door");
 		registerBlock(blockRobotDeploy= new BlockRobotDeploy().setCreativeTab(tabsurvivaltf2).setHardness(3.0F).setResistance(5.0F)
 				.setUnlocalizedName("blockRobotDeploy"), TF2weapons.MOD_ID + ":robot_deploy");
+		registerBlock(blockResupplyCabinet= new BlockResupplyCabinet().setCreativeTab(tabarenatf2).setBlockUnbreakable().setResistance(6000000F)
+				.setUnlocalizedName("blockResupplyCabinet"), TF2weapons.MOD_ID + ":resupply_cabinet");
+		registerBlock(blockCapturePoint= new BlockCapturePoint().setCreativeTab(tabarenatf2).setBlockUnbreakable().setResistance(6000000F)
+				.setUnlocalizedName("blockCapturePoint"), TF2weapons.MOD_ID + ":capture_point");
+		registerBlock(blockConfigure= new BlockGameConfigure().setCreativeTab(tabarenatf2).setBlockUnbreakable().setResistance(6000000F)
+				.setUnlocalizedName("blockGameConfigure"), TF2weapons.MOD_ID + ":game_configure");
 		ForgeRegistries.BLOCKS.register(blockProp= new BlockProp(Material.WOOD, MapColor.GOLD).setHardness(0.75F).setResistance(2.0F)
 				.setUnlocalizedName("blockProp").setRegistryName(TF2weapons.MOD_ID + ":prop_block"));
 
@@ -825,7 +883,12 @@ public class TF2weapons {
 		    }
 			
 		}.setPotionName("effect.viralFire").setRegistryName(TF2weapons.MOD_ID + ":viralFire"));
-
+		ForgeRegistries.POTIONS.register(shieldBullet = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_bullet_red.png"))
+				.setPotionName("effect.shieldBullet").setRegistryName(TF2weapons.MOD_ID + ":shieldBullet"));
+		ForgeRegistries.POTIONS.register(shieldExplosive = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_explosive_red.png"))
+				.setPotionName("effect.shieldExplosive").setRegistryName(TF2weapons.MOD_ID + ":shieldExplosive"));
+		ForgeRegistries.POTIONS.register(shieldFire = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_fire_red.png"))
+				.setPotionName("effect.shieldFire").setRegistryName(TF2weapons.MOD_ID + ":shieldFire"));
 		// conf.save();
 		ItemKillstreakFabricator.initKillstreaks();
 		PropertyType.init();
@@ -1067,9 +1130,8 @@ public class TF2weapons {
 		network.registerMessage(TF2PropertyHandler.class, TF2Message.PropertyMessage.class, 2, Side.SERVER, false);
 		network.registerMessage(TF2BulletHandler.class, TF2Message.BulletMessage.class, 3, Side.SERVER, true);
 		network.registerMessage(TF2ProjectileHandler.class, TF2Message.PredictionMessage.class, 4, Side.SERVER, true);
-		network.registerMessage(TF2GuiConfigHandler.class, TF2Message.GuiConfigMessage.class, 5, Side.SERVER, false);
+		network.registerMessage(TF2BuildingConfigHandler.class, TF2Message.BuildingConfigMessage.class, 5, Side.SERVER, false);
 		network.registerMessage(TF2CapabilityHandler.class, TF2Message.CapabilityMessage.class, 7, Side.SERVER, false);
-		network.registerMessage(TF2ShowGuiHandler.class, TF2Message.ShowGuiMessage.class, 9, Side.SERVER, false);
 		network.registerMessage(TF2DisguiseHandler.class, TF2Message.DisguiseMessage.class, 11, Side.SERVER, false);
 		network.registerMessage(TF2ActionHandler.class, TF2Message.ActionMessage.class, 18, Side.CLIENT, true);
 		network.registerMessage(TF2UseHandler.class, TF2Message.UseMessage.class, 1, Side.CLIENT, true);
@@ -1086,6 +1148,10 @@ public class TF2weapons {
 		network.registerMessage(TF2EffectCooldownHandler.class, TF2Message.EffectCooldownMessage.class, 20, Side.CLIENT, false);
 		network.registerMessage(TF2ParticleSpawnHandler.class, TF2Message.ParticleSpawnMessage.class, 21, Side.CLIENT, true);
 		network.registerMessage(TF2PlayerCapabilityHandler.class, TF2Message.PlayerCapabilityMessage.class, 22, Side.CLIENT, false);
+		network.registerMessage(TF2GuiConfigHandler.class, TF2Message.GuiConfigMessage.class, 23, Side.CLIENT, false);
+		network.registerMessage(TF2GuiConfigHandler.class, TF2Message.GuiConfigMessage.class, 24, Side.SERVER, false);
+		network.registerMessage(TF2ShowGuiHandler.class, TF2Message.ShowGuiMessage.class, 25, Side.CLIENT, false);
+		network.registerMessage(TF2ShowGuiHandler.class, TF2Message.ShowGuiMessage.class, 26, Side.SERVER, false);
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new IGuiHandler() {
 
 			@Override
@@ -1120,6 +1186,8 @@ public class TF2weapons {
 				}
 				else if (ID == 6 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityRobotDeploy)
 					return new ContainerRobotDeploy(player.inventory, (TileEntityRobotDeploy) world.getTileEntity(pos));
+				else if (ID == 7 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof IEntityConfigurable)
+					return new ContainerConfigurable(player, player.inventory, (IEntityConfigurable) world.getTileEntity(pos), world, pos);
 				return null;
 			}
 
@@ -1149,6 +1217,8 @@ public class TF2weapons {
 				}
 				else if (ID == 6 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityRobotDeploy)
 					return new GuiRobotDeploy(player.inventory, (TileEntityRobotDeploy) world.getTileEntity(pos));
+				else if (ID == 7 && world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof IEntityConfigurable)
+						return new GuiConfigurable(player.inventory, (IEntityConfigurable) world.getTileEntity(pos), world, pos);
 				return null;
 			}
 
@@ -1169,7 +1239,6 @@ public class TF2weapons {
 
 		updateMobSpawning();
 		updateOreGenStatus();
-		
 		squakeLoaded = Loader.isModLoaded("squake");
 		
 		animalsDisguise = new ArrayList<>();
@@ -1241,7 +1310,7 @@ public class TF2weapons {
 			ByteArrayOutputStream output=new ByteArrayOutputStream();
 			DataOutputStream stream=new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(output)));
 		
-			loadConfig(new File(instance.weaponDir, "Weapons.json"),stream);
+			loadConfig(new File(instance.weaponDir,"Weapons.json"),stream);
 			File[] files = instance.weaponDir.listFiles(new FilenameFilter() {
 	
 				@Override
@@ -1261,14 +1330,17 @@ public class TF2weapons {
 		}
 	}
 
-	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void loadConfig(File file,DataOutput output) {
+	public static void loadConfig(File file,DataOutput output) throws IOException {
+		loadConfig(Files.toString(file, StandardCharsets.UTF_8),file.getName(), output);
+	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void loadConfig(String fileData,String fileName,DataOutput output) {
 		/*
 		 * Configuration weaponsFile= new Configuration(file);
 		 * weaponsFile.load();
 		 */
-		ArrayList<WeaponData> list = WeaponData.parseFile(file);
+		ArrayList<WeaponData> list = WeaponData.parseFile(fileData, fileName);
 		for (WeaponData data : list) {
 			String weaponEntry = data.getName();
 			// Class<?> weaponClass =
@@ -1352,6 +1424,7 @@ public class TF2weapons {
 		event.registerServerCommand(new CommandGenerateReferences());
 		event.registerServerCommand(new CommandChangeConfig());
 		event.registerServerCommand(new CommandInvasion());
+		event.registerServerCommand(new CommandGameArena());
 		if(event.getServer().isSinglePlayer())
 			TF2UdpClient.addressToUse = "127.0.0.1";
 		try {

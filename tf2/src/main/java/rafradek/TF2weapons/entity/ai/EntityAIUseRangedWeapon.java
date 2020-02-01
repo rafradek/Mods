@@ -72,6 +72,13 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		this.attackRangeSSquared = (range+5) * (range+5);
 	}
 
+	public float getRange() {
+		return this.attackRange;
+	}
+	
+	public float getRangeSq() {
+		return this.attackRangeSquared;
+	}
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */

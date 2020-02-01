@@ -40,6 +40,11 @@ public class TF2CraftingManager {
 	private final Map<IRecipe, Predicate<EntityPlayer>> recipeConditions = new HashMap<>();
 
 	public TF2CraftingManager() {
+		
+		Ingredient sentrybuilding = Ingredient.fromStacks(new ItemStack(TF2weapons.itemBuildingBox, 1, 18),new ItemStack(TF2weapons.itemBuildingBox, 1, 19));
+		Ingredient dispenserbuilding = Ingredient.fromStacks(new ItemStack(TF2weapons.itemBuildingBox, 1, 20),new ItemStack(TF2weapons.itemBuildingBox, 1, 21));
+		Ingredient teleporterbuilding = Ingredient.fromStacks(new ItemStack(TF2weapons.itemBuildingBox, 1, 22),new ItemStack(TF2weapons.itemBuildingBox, 1, 23));
+		
 		ItemStack bonk = ItemFromData.getNewStack("bonk");
 		bonk.setCount( 2);
 		ItemStack cola = ItemFromData.getNewStack("critcola");
@@ -104,8 +109,8 @@ public class TF2CraftingManager {
 				"IAI", 'I', "ingotIron", 'A', new ItemStack(TF2weapons.itemTF2, 1, 6), 'R', new ItemStack(TF2weapons.itemTF2, 1, 11) }));
 		addRecipe(new ShapedOreRecipe(null, ItemFromData.getNewStack("pda"), new Object[] { "SDT", "AGA","BRB",
 				'G', "paneGlass", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2), 'R', new ItemStack(TF2weapons.itemTF2, 1, 3)
-				, 'B', new ItemStack(Blocks.STONE_BUTTON), 'S', new ItemStack(TF2weapons.itemBuildingBox, 1, 18)
-				, 'D', new ItemStack(TF2weapons.itemBuildingBox, 1, 20), 'T', new ItemStack(TF2weapons.itemBuildingBox, 1, 22)}));
+				, 'B', new ItemStack(Blocks.STONE_BUTTON), 'S', sentrybuilding
+				, 'D', dispenserbuilding, 'T', teleporterbuilding}));
 		/*addRecipe(new ShapedOreRecipe(null,new ItemStack(TF2weapons.blockAmmoFurnace),
 				new Object[] { "RIG", "SFr", "sIM", 'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M',
 						new ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo, 1, 8), 'R',

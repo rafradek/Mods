@@ -127,7 +127,7 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 				par1ItemStack.getTagCompound().setInteger("Heads", cap.getHeads());
 			}
 			
-			while (tag.getInteger(NBTLiterals.STREAK_KILLS) > 0 && cap.ticksTotal >= tag.getLong(NBTLiterals.STREAK_COOL)) {
+			while (TF2ConfigVars.killstreakDrop && tag.getInteger(NBTLiterals.STREAK_KILLS) > 0 && cap.ticksTotal >= tag.getLong(NBTLiterals.STREAK_COOL)) {
 				tag.setInteger(NBTLiterals.STREAK_KILLS, tag.getInteger(NBTLiterals.STREAK_KILLS) - 1);
 				int red = tag.getShort(NBTLiterals.STREAK_REDUCTION) * 2 + 1;
 				tag.setShort(NBTLiterals.STREAK_REDUCTION, red > Short.MAX_VALUE ? Short.MAX_VALUE : (short)red);
@@ -490,13 +490,25 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 	}
 	
 	public int getWeaponReloadTime(ItemStack stack, EntityLivingBase living) {
+		float speed= 1;
+		if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED)!=null) {
+			double orig = living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue();
+			double modifiers=(calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED),ATTACK_SPEED_MODIFIER,orig,1.4)-orig)*2+orig;
+			speed = (float) ((living instanceof EntityPlayer? 4:orig)/modifiers);
+		}
 		return (int) (TF2Attribute.getModifier("Reload Time", stack,
-				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME), living));
+				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME)*speed, living));
 	}
 
 	public int getWeaponFirstReloadTime(ItemStack stack, EntityLivingBase living) {
+		float speed= 1;
+		if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED)!=null) {
+			double orig = living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue();
+			double modifiers=(calculateModifiers(living.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED),ATTACK_SPEED_MODIFIER,orig,1.4)-orig)*2+orig;
+			speed = (float) ((living instanceof EntityPlayer? 4:orig)/modifiers);
+		}
 		return (int) (TF2Attribute.getModifier("Reload Time", stack,
-				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME_FIRST), living));
+				ItemFromData.getData(stack).getInt(PropertyType.RELOAD_TIME_FIRST)*speed, living));
 	}
 
 	public boolean hasClip(ItemStack stack) {
@@ -619,6 +631,14 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 				target.world.getGameRules().setOrCreateGameRule("showDeathMessages", "false");
 			}
 		}
+		else if(target instanceof EntityLivingBase && TF2Util.isOnSameTeam(attacker, target) && !(target instanceof EntityBuilding)) {
+			float heal=damage*TF2Attribute.getModifier("Heal Target", stack, 0, attacker);
+			if(heal>0) {
+				if (!simulate)
+				((EntityLivingBase) target).heal(heal);
+				return false;
+			}
+		}
 		return true;
 	}
 	
@@ -630,6 +650,14 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 		
 		if (target instanceof EntityLivingBase && attacker.hasCapability(TF2weapons.WEAPONS_CAP, null)){
 			boolean enemy = TF2Util.isEnemy(attacker, (EntityLivingBase) target);
+			EntityLivingBase targetliving = (EntityLivingBase) target;
+			int stun = (int) TF2Attribute.getModifier("Stun On Hit", stack, 0, attacker);
+			if (stun > 0 && !(attacker instanceof EntityPlayer && ((EntityPlayer)attacker).getCooldownTracker().hasCooldown(this))) {
+				TF2Util.stun(targetliving, 16, true);
+				if (attacker instanceof EntityPlayer) {
+					((EntityPlayer)attacker).getCooldownTracker().setCooldown(this, stun);
+				}
+			}
 			int metalhit = (int) TF2Attribute.getModifier("Metal Hit", stack, 0, attacker);
 			if (metalhit != 0) {
 				int restore=(int) (((TF2DamageSource) source).getAttackPower()*metalhit/TF2ConfigVars.damageMultiplier);
@@ -646,10 +674,10 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 			}
 			float healthHit=TF2Attribute.getModifier("Health Hit", stack, 0, attacker);
 			if (healthHit > 0)
-				attacker.heal(TF2Util.getReducedHealing(attacker, (EntityLivingBase) target, enemy ? healthHit : healthHit/2f));
+				attacker.heal(TF2Util.getReducedHealing(attacker, targetliving, enemy ? healthHit : healthHit/2f));
 			float bleed=TF2Attribute.getModifier("Bleed", stack, 0, attacker);
 			if (bleed > 0) {
-				((EntityLivingBase) target).addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
+				targetliving.addPotionEffect(new PotionEffect(TF2weapons.bleeding,(int) (bleed*20f)+10,0));
 			}
 			
 			int rage = (int) TF2Attribute.getModifier("Knockback Rage", stack, 0, attacker);
@@ -666,10 +694,34 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 				attacker.addPotionEffect(new PotionEffect(TF2weapons.regen,10,(int) TF2Attribute.getModifier("Regen On Hit", stack, 0f, attacker)-1));
 			}
 			
+			if (TF2Attribute.getModifier("Uber Hit Remove", stack, 0f, attacker) > 0f) {
+				ItemStack medigun = ItemStack.EMPTY;
+				if (target instanceof EntityPlayer) {
+					medigun =TF2Util.getFirstItem(((EntityPlayer)target).inventory, stackm -> stackm.getItem() instanceof ItemMedigun && stackm.getTagCompound().getFloat("ubercharge") > 0);
+				}
+				else if(target instanceof EntityTF2Character) {
+					medigun =TF2Util.getFirstItem(((EntityTF2Character)target).loadout, stackm -> stackm.getItem() instanceof ItemMedigun && stackm.getTagCompound().getFloat("ubercharge") > 0);
+				}
+				if (!medigun.isEmpty())
+					medigun.getTagCompound().setFloat("ubercharge", Math.max(0, medigun.getTagCompound().getFloat("ubercharge")-TF2Attribute.getModifier("Uber Hit Remove", stack, 0f, attacker)*0.01f));
+			}
+			
+			if (TF2Attribute.getModifier("Cloak Hit Remove", stack, 0f, attacker) > 0f) {
+				ItemStack cloak = ItemStack.EMPTY;
+				if (target instanceof EntityPlayer) {
+					cloak =TF2Util.getFirstItem(((EntityPlayer)target).inventory, stackm -> stackm.getItem() instanceof ItemCloak && stackm.getItemDamage() < stackm.getMaxDamage());
+				}
+				else if(target instanceof EntityTF2Character) {
+					cloak =TF2Util.getFirstItem(((EntityTF2Character)target).loadout, stackm -> stackm.getItem() instanceof ItemMedigun && stackm.getItemDamage() < stackm.getMaxDamage());
+				}
+				if (!cloak.isEmpty())
+					cloak.setItemDamage((int) Math.min(cloak.getMaxDamage(), cloak.getItemDamage()+cloak.getMaxDamage()*TF2Attribute.getModifier("Cloak Hit Remove", stack, 0f, attacker)*0.01f));
+			}
 			if (TF2Attribute.getModifier("Rocket Specialist", stack, 0f, attacker) > 0f) {
-				((EntityLivingBase) target).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS,(int) TF2Attribute.getModifier("Rocket Specialist", stack, 0f, attacker) * 8, 4));
+				targetliving.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS,(int) TF2Attribute.getModifier("Rocket Specialist", stack, 0f, attacker) * 8, 4));
 				TF2Util.setVelocity(target, 0, 0, 0);
 			}
+			
 			
 			if (TF2Attribute.getModifier("Fire Specialist", stack, 0f, attacker) > 0f) {
 				try {
@@ -945,5 +997,9 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 	
 	public static ItemWeapon getWeapon(ItemStack stack) {
 		return stack.getItem() instanceof ItemWeapon ? (ItemWeapon)stack.getItem() : null;
+	}
+
+	public void onOverload(ItemStack stack, EntityLivingBase owner, EnumHand hand) {
+		this.shoot(stack, owner, owner.world, 0, hand);
 	}
 }

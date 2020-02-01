@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -31,6 +32,11 @@ public class ItemBuilder extends ModelExporter {
 	
 	public List<Model> models = new ArrayList<>();
 	
+	private String modelPath = "minecraft"+(int)Minecraft2Source.blockSize+"/item";
+	
+	public ItemBuilder() {
+		modelReader.fixItemUV = true;
+	}
 	public void buildItem(ItemStack stack, World world, EntityLivingBase entity, Vector3f offset, float scale) {
 		this.sprites = new HashMap<>();
 		this.niceName = true;
@@ -48,7 +54,8 @@ public class ItemBuilder extends ModelExporter {
 		
 		EnumMap<EnumFacing, List<BakedQuad>> quads = new EnumMap<>(EnumFacing.class);
 		modelReader.buildModelCache(null, model, world, world.rand.nextLong(), twidth, theight, quads);
-		Model modelread = modelReader.readModel(Material.AIR, offset, this, null);
+		Model modelread = modelReader.readModel(Material.AIR, offset, this, null, true);
+		modelread.animations = EnumSet.of(MapBuilder.AnimTypes.ROTATING);
 		modelread.name = stack.getItem().getRegistryName().getResourcePath()+"_"+MapBuilder.encodeInt(stack.getItemDamage());
 		
 		if (stack.hasTagCompound()) {
@@ -74,7 +81,7 @@ public class ItemBuilder extends ModelExporter {
 	}
 	
 	public String getModelOutputPath() {
-		return "minecraft/item";
+		return modelPath;
 	}
 	
 	public String getMaterialOutputPath() {

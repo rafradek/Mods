@@ -71,7 +71,7 @@ public class EntityAIRepair extends EntityAIBase {
 	 */
 	public boolean isValidTarget(EntityBuilding building) {
 		return building != null && building.isEntityAlive() && this.entityHost.isWithinHomeDistanceFromPosition(building.getPosition())
-				&& (building.getMaxHealth() > building.getHealth()
+				&& (building.canUseWrenchImportant()
 						|| ((this.entityHost.getAttackTarget() == null || this.entityHost.getAttackTarget().isDead) && this.entityHost.hasSentryAndDispenser()
 								&& building.canUseWrench()));
 	}
@@ -81,7 +81,8 @@ public class EntityAIRepair extends EntityAIBase {
 		this.searchTimer--;
 		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 2)
 			return false;
-		
+		if (this.entityHost.shouldUseWrangler())
+			return false;
 		if (this.entityHost.grabbed != null || this.entityHost.loadout.getStackInSlot(2).isEmpty())
 			return false;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){
@@ -188,13 +189,15 @@ public class EntityAIRepair extends EntityAIBase {
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 
 		if (d0 <= this.attackRangeSquared && !this.runMetal) {
-			if (!pressed) {
+			if (!pressed|| (this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) == 0) {
 				pressed = true;
+				
 				((ItemUsable) this.entityHost.getHeldItem(EnumHand.MAIN_HAND).getItem()).startUse(
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+				
 			}
 
 		} else {

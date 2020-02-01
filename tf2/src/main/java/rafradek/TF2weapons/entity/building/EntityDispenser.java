@@ -225,8 +225,13 @@ public class EntityDispenser extends EntityBuilding {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
-			if (!this.world.isRemote)
-			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			if (!this.world.isRemote) {
+				if (TF2ConfigVars.disableBuildingGui)
+					this.grab();
+				else
+					FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			}
+			
 			return true;
 		}
 		return true;

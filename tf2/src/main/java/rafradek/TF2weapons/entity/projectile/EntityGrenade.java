@@ -52,6 +52,9 @@ public class EntityGrenade extends EntityProjectileBase {
 			this.setBomb(2);
 			this.fuse=(int) (20-((ItemWeapon)weapon.getItem()).getCharge(shooter,weapon)*20);
 		}
+		else {
+			this.fuse=(int) (TF2Attribute.getModifier("Fuse Time", weapon, 2.3f, shooter)*20);
+		}
 	}
 	
 	@Override

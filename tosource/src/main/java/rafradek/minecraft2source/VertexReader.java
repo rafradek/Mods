@@ -55,6 +55,7 @@ public class VertexReader extends WorldVertexBufferUploader {
                     //GlStateManager.glEnableClientState(GL11.GL_COLOR_ARRAY);
                     break;
                 case UV:
+                	System.out.println("uv:" +buffer.getFloat()+" "+buffer.getFloat());
                     //OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit + attr.getIndex());
                     //GlStateManager.glTexCoordPointer(count, constant, stride, buffer);
                     //GlStateManager.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);

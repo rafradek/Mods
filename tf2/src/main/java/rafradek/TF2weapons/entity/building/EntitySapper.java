@@ -31,7 +31,7 @@ public class EntitySapper extends EntityBuilding {
 				return;
 			}
 			TF2Util.dealDamage(this.sappedBuilding, this.world, this.getOwner(), sapperItem, 0, 0.25f,
-					TF2Util.causeBulletDamage(sapperItem, this.getOwner(), 0, this));
+					TF2Util.causeBulletDamage(sapperItem, this.getOwner(), this));
 
 			if (!this.isEntityAlive() && this.sappedBuilding != null)
 				this.sappedBuilding.sapper = null;

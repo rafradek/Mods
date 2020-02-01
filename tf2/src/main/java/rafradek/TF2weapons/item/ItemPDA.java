@@ -238,6 +238,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		if (living.isSneaking()) {
 			living.getHeldItem(hand).getTagCompound().setBoolean("ShowHud", !living.getHeldItem(hand).getTagCompound().getBoolean("ShowHud"));
+			System.out.println(living.getHeldItem(hand).getTagCompound().getBoolean("ShowHud"));
 			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 		}
 		return new ActionResult<ItemStack>(EnumActionResult.FAIL, living.getHeldItem(hand));

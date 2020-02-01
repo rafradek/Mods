@@ -117,7 +117,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		}
 		this.diffTour = diff;
 		this.difficulty *= DIFFICULTY[diff] * (3f / (players.size() + 2));
-		this.waves = 4 + world.rand.nextInt(3);
+		this.waves = TF2ConfigVars.invasionMaxWaves-TF2ConfigVars.invasionMaxWaves / 3 + world.rand.nextInt(TF2ConfigVars.invasionMaxWaves / 3 + 1);
 		this.calculateWave();
 	}
 
@@ -133,6 +133,7 @@ public class InvasionEvent implements INBTSerializable<NBTTagCompound> {
 		if (player instanceof EntityPlayerMP)
 			this.bossInfo.removePlayer((EntityPlayerMP) player);
 		TF2PlayerCapability.get(player).setInvasionDir(Float.MIN_VALUE);
+		TF2PlayerCapability.get(player).lastDayInvasion=(int) (this.world.getWorldTime()/24000);
 	}
 
 	public void addRobotToList(EntityTF2Character entity) {

@@ -102,7 +102,9 @@ import rafradek.TF2weapons.client.renderer.entity.RenderHHH;
 import rafradek.TF2weapons.client.renderer.entity.RenderJar;
 import rafradek.TF2weapons.client.renderer.entity.RenderMerasmus;
 import rafradek.TF2weapons.client.renderer.entity.RenderMonoculus;
+import rafradek.TF2weapons.client.renderer.entity.RenderPickup;
 import rafradek.TF2weapons.client.renderer.entity.RenderPlayerDisguised;
+import rafradek.TF2weapons.client.renderer.entity.RenderPlayerForceTexture;
 import rafradek.TF2weapons.client.renderer.entity.RenderProjectile;
 import rafradek.TF2weapons.client.renderer.entity.RenderProjectileSimple;
 import rafradek.TF2weapons.client.renderer.entity.RenderRocket;
@@ -117,6 +119,7 @@ import rafradek.TF2weapons.client.renderer.tileentity.RenderDoor;
 import rafradek.TF2weapons.client.renderer.tileentity.RenderRobotDeploy;
 import rafradek.TF2weapons.common.CommonProxy;
 import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.entity.EntityPickup;
 import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
@@ -161,6 +164,7 @@ public class ClientProxy extends CommonProxy {
 	public static RenderCustomModel disguiseRender;
 	public static RenderLivingBase disguiseRenderPlayer;
 	public static RenderLivingBase disguiseRenderPlayerSmall;
+	public static RenderLivingBase forceTextureRenderPlayer;
 	public static TextureMap particleMap;
 	public static KeyBinding reload = new KeyBinding("key.reload", Keyboard.KEY_R, "TF2");
 	public static KeyBinding backpackitem = new KeyBinding("key.activatebackpack", Keyboard.KEY_0, "TF2");
@@ -273,6 +277,7 @@ public class ClientProxy extends CommonProxy {
 		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
+		forceTextureRenderPlayer = new RenderPlayerForceTexture(Minecraft.getMinecraft().getRenderManager(), false);
 		interactingBlocks = new HashSet<>();
 		Method usemethod = null;
 		for (Method method : Block.class.getMethods()) {
@@ -679,6 +684,13 @@ public class ClientProxy extends CommonProxy {
 			public Render<EntityMonoculus> createRenderFor(RenderManager manager) {
 				// TODO Auto-generated method stub
 				return new RenderMonoculus(manager);
+			}
+		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityPickup.class, new IRenderFactory<EntityPickup>() {
+			@Override
+			public Render<EntityPickup> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
+				return new RenderPickup(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityFuryFireball.class,

@@ -32,7 +32,10 @@ public class TF2PlayerCapabilityHandler implements IMessageHandler<PlayerCapabil
 						for(DataEntry<?> param: message.entries) {
 							cap.onChangeValue(param.getKey(), param.getValue());
 						}
-						cap.dataManager.setEntryValues(message.entries);
+						if (message.global)
+							cap.dataManagerGlobal.setEntryValues(message.entries);
+						else
+							cap.dataManager.setEntryValues(message.entries);
 					}
 				}
 			}

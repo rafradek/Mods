@@ -3,6 +3,7 @@ package rafradek.TF2weapons.util;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -18,10 +19,9 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public boolean selfdmg;
 	private int attackFlags;
 	private float power = 1;
-	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter, int critical) {
+	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter) {
 		super("bullet", projectile, shooter);
 		this.weapon = weapon;
-		this.critical = critical;
 	}
 
 	@Override
@@ -128,6 +128,12 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	@Override
 	public void setAttackPower(float power) {
 		this.power = power;
+	}
+
+	@Override
+	public DamageSource setCritical(int crit) {
+		this.critical = crit;
+		return this;
 	}
 	
 	

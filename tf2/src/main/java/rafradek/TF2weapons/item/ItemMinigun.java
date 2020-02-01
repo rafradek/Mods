@@ -130,6 +130,8 @@ public class ItemMinigun extends ItemBulletWeapon {
 		return false;
 	}
 
+	
+	
 	@Override
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
 		if (world.isRemote && this.canFire(world, living, stack)) {
@@ -208,7 +210,7 @@ public class ItemMinigun extends ItemBulletWeapon {
 								
 							})){
 								
-								TF2Util.dealDamage(target, world, living, stack, 0, flamedmg, TF2Util.causeDirectDamage(stack, living, 0).setFireDamage());
+								TF2Util.dealDamage(target, world, living, stack, 0, flamedmg, TF2Util.causeDirectDamage(stack, living).setFireDamage());
 								TF2Util.igniteAndAchievement(target, living, 6, 1);
 							}
 						}

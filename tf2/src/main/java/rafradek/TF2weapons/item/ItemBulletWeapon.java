@@ -33,6 +33,7 @@ import rafradek.TF2weapons.entity.projectile.EntityFlame;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.DamageSourceDirect;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
@@ -58,7 +59,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 		Iterator<Entity> iterator = map.keySet().iterator();
 		boolean damageDone = false;
 		while (iterator.hasNext()) {
-			DamageSource var22 = TF2Util.causeDirectDamage(stack, living, critical);
+			DamageSourceDirect var22 = TF2Util.causeDirectDamage(stack, living);
 			((TF2DamageSource)var22).addAttackFlag(flags);
 			
 			if (!(this instanceof ItemMeleeWeapon))
@@ -66,12 +67,18 @@ public class ItemBulletWeapon extends ItemWeapon {
 			
 			Entity entity = iterator.next();
 			((TF2DamageSource)var22).setAttackPower(map.get(entity)[0]);
-			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, map.get(entity)[1], critical, false))
+			
+			this.setCritical(stack, living, entity, critical, var22);
+			var22.setCritical(critical);
+			
+			float damage = map.get(entity)[0] * TF2Util.calculateDamage(entity, world, living, stack, critical, map.get(entity)[1]);
+			
+			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, damage, critical, false))
 				continue;
 			Vec3d pushvec = entity.getPositionVector().subtract(living.getPositionVector()).normalize();
 			
-			if (map.get(entity) != null && map.get(entity)[1] != 0
-					&& TF2Util.dealDamage(entity, world, living, stack, critical, map.get(entity)[1], var22)) {
+			if (map.get(entity) != null && damage != 0
+					&& TF2Util.dealDamage(entity, world, living, stack, critical, damage, var22)) {
 				damageDone = true;
 				// System.out.println("Damage: "+map.get(entity)[1]);
 				//distance = ((ItemBulletWeapon) stack.getItem()).getMaxRange(stack) / distance;
@@ -79,7 +86,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 				double distY = (living.posY - entity.posY) * distance;
 				double distZ = (living.posZ - entity.posZ) * distance;*/
 				if (!stack.isEmpty()) {
-					double knockbackAmount = ((ItemBulletWeapon) stack.getItem()).getKnockbackForDamage(stack, living, map.get(entity)[1], var22);
+					double knockbackAmount = ((ItemBulletWeapon) stack.getItem()).getKnockbackForDamage(stack, living, damage, var22);
 
 					if(entity instanceof EntityLivingBase)
 						knockbackAmount *= 1-((EntityLivingBase) entity).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
@@ -141,14 +148,13 @@ public class ItemBulletWeapon extends ItemWeapon {
 						critical = this.getHeadshotCrit(living, stack);
 						flags |= TF2DamageSource.HEADSHOT;
 					}
-					critical = this.setCritical(stack, living, target, critical);
 					if (critical > totalCrit)
 						totalCrit = critical;
 					// ItemRangedWeapon.critical=critical;
 					float[] values = shotInfo.get(target);
 					// System.out.println(obj[2]+" "+critical);
 					values[0]++;
-					values[1] += TF2Util.calculateDamage(target, world, living, stack, critical, ((float[])obj.hitInfo)[1]);
+					values[1] = ((float[])obj.hitInfo)[1];
 				}
 				// living.getCapability(TF2weapons.WEAPONS_CAP,
 				// null).predictionList.add(message);
@@ -270,11 +276,10 @@ public class ItemBulletWeapon extends ItemWeapon {
 						critical = this.getHeadshotCrit(living, stack);
 						lastFlags.set(lastFlags.get() | TF2DamageSource.HEADSHOT);
 					}
-					critical = this.setCritical(stack, living, var4.entityHit, critical);
 					ItemWeapon.critical = critical;
 					float[] values = lastShot.get().get(var4.entityHit);
 					values[0]++;
-					values[1] += TF2Util.calculateDamage(var4.entityHit, world, living, stack, critical, distance);
+					values[1] = distance;
 					// values[2]=distance;
 				} else if (world.isRemote) {
 					// System.out.println(var4.hitInfo);
@@ -349,7 +354,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 		return 0.04f/this.getWeaponPelletCount(stack, living);
 	}
 
-	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old) {
-		return TF2Util.calculateCritPost(target, shooter, old, stack);
+	public int setCritical(ItemStack stack, EntityLivingBase shooter, Entity target, int old, DamageSource source) {
+		return TF2Util.calculateCritPost(target, shooter, old, stack, source);
 	}
 }

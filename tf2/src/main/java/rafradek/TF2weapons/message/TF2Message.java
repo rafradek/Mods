@@ -5,6 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import com.google.common.collect.HashMultimap;
@@ -14,6 +16,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -35,6 +38,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.arena.GameArena;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.Contract.Objective;
@@ -376,26 +380,96 @@ public abstract class TF2Message implements IMessage {
 
 	}
 
+	public static class GameArenaMessage extends TF2Message {
+		Map<UUID,List<EntityDataManager.DataEntry<? >>> playerInfoUUID = new HashMap<>();
+		int arenaId;
+		Type type;
+		enum Type {
+			ADD,
+			UPDATE,
+			REMOVE
+		}
+		public GameArenaMessage() {
+		}
+
+		public GameArenaMessage(GameArena arena, Type type) {
+			this.type = type;
+			this.arenaId = arena.networkId;
+			if (type != Type.REMOVE) {
+				for (Entry<UUID, EntityDataManager> entry : arena.playerInfoUUID.entrySet()) {
+					if(type == Type.ADD) {
+						playerInfoUUID.put(entry.getKey(), entry.getValue().getAll());
+					}
+					else {
+						playerInfoUUID.put(entry.getKey(), entry.getValue().getDirty());
+					}
+				}
+			}
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.type = Type.values()[buf.readByte()];
+			this.arenaId = buf.readInt();
+			while(buf.readableBytes() > 0) {
+				try {
+					UUID uuid = new PacketBuffer(buf).readUniqueId();
+					playerInfoUUID.put(uuid, EntityDataManager.readEntries(new PacketBuffer(buf)));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			buf.writeByte(this.type.ordinal());
+			buf.writeInt(this.arenaId);
+			for (Entry<UUID,List<EntityDataManager.DataEntry<? >>> entry : playerInfoUUID.entrySet()) {
+				new PacketBuffer(buf).writeUniqueId(entry.getKey());
+				try {
+					EntityDataManager.writeEntries(entry.getValue(),new PacketBuffer(buf));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+	
 	public static class PlayerCapabilityMessage extends TF2Message {
 		List < EntityDataManager.DataEntry<? >> entries;
 		int entityID;
+		boolean global;
 		public PlayerCapabilityMessage() {
 		}
 
-		public PlayerCapabilityMessage(Entity entity,boolean sendAll) {
+		public PlayerCapabilityMessage(Entity entity,boolean sendAll, boolean global) {
 			TF2PlayerCapability cap = entity.getCapability(TF2weapons.PLAYER_CAP, null);
 			this.entityID = entity.getEntityId();
-			if(sendAll) {
-				this.entries=cap.dataManager.getAll();
+			this.global = global;
+			if (global) {
+				if(sendAll) {
+					this.entries=cap.dataManagerGlobal.getAll();
+				}
+				else {
+					this.entries=cap.dataManagerGlobal.getDirty();
+				}
 			}
 			else {
-				this.entries=cap.dataManager.getDirty();
+				if(sendAll) {
+					this.entries=cap.dataManager.getAll();
+				}
+				else {
+					this.entries=cap.dataManager.getDirty();
+				}
 			}
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			entityID = buf.readInt();
+			this.global = buf.readBoolean();
 			try {
 				entries = EntityDataManager.readEntries(new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -406,6 +480,7 @@ public abstract class TF2Message implements IMessage {
 		@Override
 		public void toBytes(ByteBuf buf) {
 			buf.writeInt(entityID);
+			buf.writeBoolean(global);
 			try {
 				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
 			} catch (IOException e) {
@@ -471,7 +546,7 @@ public abstract class TF2Message implements IMessage {
 
 	}
 
-	public static class GuiConfigMessage extends TF2Message {
+	public static class BuildingConfigMessage extends TF2Message {
 		// public int shooter;
 		int entityid;
 		BlockPos pos;
@@ -482,11 +557,11 @@ public abstract class TF2Message implements IMessage {
 		int value;
 		int targetFlags;
 
-		public GuiConfigMessage() {
+		public BuildingConfigMessage() {
 
 		}
 
-		public GuiConfigMessage(int entityID, byte id, int value) {
+		public BuildingConfigMessage(int entityID, byte id, int value) {
 			// this.shooter=shooter.getEntityId();
 			this.isTile = true;
 			this.id = id;
@@ -510,10 +585,46 @@ public abstract class TF2Message implements IMessage {
 
 	}
 
+	public static class GuiConfigMessage extends TF2Message {
+		// public int shooter;
+		NBTTagCompound tag;
+		int containerid;
+		BlockPos pos;
+
+		public GuiConfigMessage() {
+
+		}
+
+		public GuiConfigMessage(NBTTagCompound tag, BlockPos pos) {
+			// this.shooter=shooter.getEntityId();
+			this.tag = tag;
+			this.pos = pos;
+		}
+
+		@Override
+		public void fromBytes(ByteBuf buf) {
+			this.pos = new PacketBuffer(buf).readBlockPos();
+			try {
+				this.tag = new PacketBuffer(buf).readCompoundTag();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void toBytes(ByteBuf buf) {
+			new PacketBuffer(buf).writeBlockPos(pos);
+			new PacketBuffer(buf).writeCompoundTag(tag);
+		}
+
+	}
+	
 	public static class ShowGuiMessage extends TF2Message {
 		// public int shooter;
 
 		public int id;
+		public NBTTagCompound data;
 
 		public ShowGuiMessage() {
 
@@ -523,16 +634,32 @@ public abstract class TF2Message implements IMessage {
 			// this.shooter=shooter.getEntityId();
 			this.id = id;
 		}
+		
+		public ShowGuiMessage(int id, NBTTagCompound data) {
+			// this.shooter=shooter.getEntityId();
+			this.id = id;
+			this.data = data;
+		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			id = buf.readByte();
+			if (buf.readableBytes() > 0) {
+				try {
+					data = new PacketBuffer(buf).readCompoundTag();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 
 		@Override
 		public void toBytes(ByteBuf buf) {
 			buf.writeByte(id);
-
+			if (data != null) {
+				new PacketBuffer(buf).writeCompoundTag(data);
+			}
 		}
 
 	}

@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.entity;
 
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
 
 public interface IEntityTF2 {
@@ -20,11 +22,11 @@ public interface IEntityTF2 {
 		return false;
 	}
 	
-	default boolean isBackStabbable() {
+	default boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
 		return true;
 	}
 	
-	default float getBackstabDamageReduction() {
-		return 0;
+	default float getBackstabDamageReduction(EntityLivingBase attacker, ItemStack knife, float mult) {
+		return mult;
 	}
 }

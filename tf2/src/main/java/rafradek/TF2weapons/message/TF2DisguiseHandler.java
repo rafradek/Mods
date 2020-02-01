@@ -6,6 +6,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.message.TF2Message.DisguiseMessage;
 
@@ -23,7 +24,7 @@ public class TF2DisguiseHandler implements IMessageHandler<TF2Message.DisguiseMe
 						|| ((stack = player.getHeldItemOffhand()) != null
 								&& stack.getItem() instanceof ItemDisguiseKit)) {
 					ItemDisguiseKit.startDisguise(player, player.world, message.value);
-					if (!player.capabilities.isCreativeMode)
+					if (!player.capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
 						stack.damageItem(1, player);
 				}
 			}

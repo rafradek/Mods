@@ -38,6 +38,7 @@ public abstract class ModelExporter {
 	public List<Future<?>> futures = new ArrayList<>();
 	public int threadCount =Minecraft2Source.threadCount;
 	protected float scale = Minecraft2Source.blockSize;
+	private String modelPath = "minecraft"+(int)Minecraft2Source.blockSize;
 
 	public void addSprite(TextureAtlasSprite sprite, boolean model, Material material) {
 		if (!sprites.containsKey(sprite)) {
@@ -139,60 +140,85 @@ public abstract class ModelExporter {
         		writer.close();
     		}
     		
-    		writer = new FileWriter(new File(parent,model.name+".qc"));
-    		writer.write("$modelname \""+getModelOutputPath()+"/"+model.name+".mdl\"\n");
-    		writer.write("$body root \""+model.name+".smd\"\n");
-    		writer.write("$staticprop\n");
-    		writer.write("$surfaceprop combinemetal\n");
-    		writer.write("$cdmaterials \"models/"+getModelOutputPath()+"\"\n");
-    		writer.write("$sequence idle \""+model.name+".smd\"\n");
-    		writer.write("$texturegroup gr \n");
-    		writer.write("{\n");
-    		writer.write("{ ");
-    		for (ModelExporter.SpriteProperties sprite : spriteSet) {
-				writer.write(sprite.name);
-				writer.write(" ");
-			}
-    		writer.write("}\n");
-    		for (int i = 0; i < model.skinCount; i++) {
-    			writer.write("{ ");
-    			for (ModelExporter.SpriteProperties sprite : spriteSet) {
-    				if (i >= sprite.colors.size())
-    					writer.write(sprite.name);
-    				else
-    					writer.write(sprite.name+"-"+MapBuilder.encodeInt(sprite.colors.get(i)));
-    				writer.write(" ");
-    			}
-    			writer.write("}\n");
+    		this.writeQcFile(outputDir, parent, model, true, spriteSet);
+    		if (model.animations != null) {
+    			this.writeQcFile(outputDir, parent, model, false, spriteSet);
     		}
-    		writer.write("}\n");
-    		if (!model.collisionBox.isEmpty()) {
-    			writer.write("$collisionmodel \""+model.name+"-p.smd"+"\"\n");
-    			writer.write("{\n");
-    			writer.write("$concave\n");
-    			writer.write("}\n");
-    		}
-    		writer.flush();
-    		writer.close();
-    		threads.execute(()->
-    		{
-    			try {
-    				Process pr = Runtime.getRuntime().exec("\""+new File(Minecraft2Source.enginePathFile, "studiomdl").getAbsolutePath()
-							+"\" -game \""+Minecraft2Source.gamePathFile.getAbsolutePath()+"\" \""+new File(parent,model.name+".qc").getAbsolutePath()+"\"");
-    				pr.waitFor();
-					for(File file : new File(Minecraft2Source.gamePathFile, "models/"+getModelOutputPath()).listFiles()) {
-						if (file.getName().startsWith(model.name)) {
-							Files.move(file, new File(outputDir, file.getName()));
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-    		});
     		
     	}
     }
-    
+	
+	public void writeQcFile(File outputDir, File parent, Model model, boolean isStatic, Set<ModelExporter.SpriteProperties> spriteSet) throws IOException {
+		
+		final String name;
+		if (isStatic)
+			name = model.name;
+		else {
+			name = model.name+"-a";
+		}
+		FileWriter writer = new FileWriter(new File(parent,name+".qc"));
+		writer.write("$modelname \""+getModelOutputPath()+"/"+name+".mdl\"\n");
+		writer.write("$body root \""+model.name+".smd\"\n");
+		if (isStatic)
+			writer.write("$staticprop\n");
+		writer.write("$surfaceprop combinemetal\n");
+		writer.write("$cdmaterials \"models/"+getMaterialOutputPath()+"\"\n");
+		if (isStatic)
+			writer.write("$sequence idle \""+model.name+".smd\"\n");
+		else {
+			writer.write("$sequence idle {\n");
+			writer.write("\"rotating.smd\"\n");
+			writer.write("loop\n");
+			writer.write("fps 4\n");
+			writer.write("scale "+Minecraft2Source.blockSize*0.5+"\n");
+			writer.write("}\n");
+			writer.write("$sequence static \""+model.name+".smd\"\n");
+		}
+		writer.write("$texturegroup gr \n");
+		writer.write("{\n");
+		writer.write("{ ");
+		for (ModelExporter.SpriteProperties sprite : spriteSet) {
+			writer.write(sprite.name);
+			writer.write(" ");
+		}
+		writer.write("}\n");
+		for (int i = 0; i < model.skinCount; i++) {
+			writer.write("{ ");
+			for (ModelExporter.SpriteProperties sprite : spriteSet) {
+				if (i >= sprite.colors.size())
+					writer.write(sprite.name);
+				else
+					writer.write(sprite.name+"-"+MapBuilder.encodeInt(sprite.colors.get(i)));
+				writer.write(" ");
+			}
+			writer.write("}\n");
+		}
+		writer.write("}\n");
+		if (!model.collisionBox.isEmpty()) {
+			writer.write("$collisionmodel \""+model.name+"-p.smd"+"\"\n");
+			writer.write("{\n");
+			writer.write("$concave\n");
+			writer.write("}\n");
+		}
+		writer.flush();
+		writer.close();
+		threads.execute(()->
+		{
+			try {
+				Process pr = Runtime.getRuntime().exec("\""+new File(Minecraft2Source.enginePathFile, "studiomdl").getAbsolutePath()
+						+"\" -game \""+Minecraft2Source.gamePathFile.getAbsolutePath()+"\" \""+new File(parent,name+".qc").getAbsolutePath()+"\"");
+				pr.waitFor();
+				for(File file : new File(Minecraft2Source.gamePathFile, "models/"+getModelOutputPath()).listFiles()) {
+					if (file.getName().startsWith(model.name)) {
+						Files.move(file, new File(outputDir, file.getName()));
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
     public void writeTriangles(Writer writer, List<ModelTriangle> tris, Set<ModelExporter.SpriteProperties> spriteSet) throws IOException {
     	
 		for (ModelTriangle tri : tris) {
@@ -257,7 +283,7 @@ public abstract class ModelExporter {
     }
     
     public String getModelOutputPath() {
-		return "minecraft";
+		return modelPath;
 	}
 	
 	public String getMaterialOutputPath() {

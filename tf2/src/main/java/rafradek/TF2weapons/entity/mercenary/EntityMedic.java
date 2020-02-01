@@ -50,7 +50,7 @@ public class EntityMedic extends EntityTF2Character {
 			}
 		});
 		this.targetTasks.addTask(2, new EntityAINearestChecked(this, EntityLivingBase.class, true,
-				false, this::isValidTarget, true, false) {
+				false, this::isValidTarget, false, false) {
 			@Override
 			public boolean shouldExecute() {
 				return canHeal() && super.shouldExecute();
@@ -74,8 +74,32 @@ public class EntityMedic extends EntityTF2Character {
 	}
 
 	public boolean canHeal() {
-		return this.loadout.getStackInSlot(1).getItem() instanceof ItemMedigun;
+		return this.loadout.getStackInSlot(1).getItem() instanceof ItemMedigun && 
+				((ItemMedigun)this.loadout.getStackInSlot(1).getItem()).isAmmoSufficient(this.loadout.getStackInSlot(1), this, true);
 	}
+	
+	public boolean isReloadPressed() {
+		if (this.getHeldItemMainhand().getItem() instanceof ItemMedigun && ((ItemMedigun)this.getHeldItemMainhand().getItem()).isShieldResist(this.getHeldItemMainhand(), this)) {
+			DamageSource source = null;
+			if (this.getAttackTarget() != null && this.getAttackTarget().getLastDamageSource() != null) {
+				source = this.getAttackTarget().getLastDamageSource();
+			}
+			else {
+				source = this.getLastDamageSource();
+			}
+			if (source != null) {
+				int type = 0;
+				if (source.isExplosion())
+					type = 1;
+				else if (source.isFireDamage())
+					type = 2;
+				if (type != this.getHeldItemMainhand().getTagCompound().getByte("ResType"))
+					return true;
+			}
+		}
+		return false;
+	}
+	
 	protected void addWeapons() {
 		super.addWeapons();
 		if (this.isGiant()) {

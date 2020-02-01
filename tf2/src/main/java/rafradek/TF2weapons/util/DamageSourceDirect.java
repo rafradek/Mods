@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -18,10 +19,9 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	private int attackFlags;
 
 	public float power = 1;
-	public DamageSourceDirect(ItemStack weapon, Entity shooter, int critical) {
+	public DamageSourceDirect(ItemStack weapon, Entity shooter) {
 		super("bullet", shooter);
 		this.weapon = weapon;
-		this.critical = critical;
 	}
 
 	@Override
@@ -116,6 +116,12 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	@Override
 	public void setAttackPower(float power) {
 		this.power = power;
+	}
+
+	@Override
+	public DamageSource setCritical(int crit) {
+		this.critical = crit;
+		return this;
 	}
 	
 	

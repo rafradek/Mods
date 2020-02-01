@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.UUID;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
@@ -57,7 +59,9 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketEntityEffect;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.network.play.server.SPacketExplosion;
@@ -127,6 +131,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.inventory.InventoryWearables;
 import rafradek.TF2weapons.item.ItemAmmo;
+import rafradek.TF2weapons.item.ItemAmmoPackage;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -317,9 +322,8 @@ public class TF2Util {
 		return false;
 	}
 
-	public static int calculateCritPost(Entity target, EntityLivingBase shooter, int initial, ItemStack stack) {
-		if (initial > 0 && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.backup) != null))
-			initial = 0;
+	public static int calculateCritPost(Entity target, EntityLivingBase shooter, int initial, ItemStack stack, DamageSource source) {
+		
 		
 		if (initial == 0 && (target instanceof EntityLivingBase && (((EntityLivingBase) target).getActivePotionEffect(TF2weapons.markDeath) != null
 				|| ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.jarate) != null)))
@@ -352,6 +356,22 @@ public class TF2Util {
 		
 		if (initial == 1 && (!stack.isEmpty() && shooter != null && shooter instanceof EntityPlayer && TF2Attribute.getModifier("Crit Mini", stack, 0, shooter) != 0))
 			initial = 2;
+		
+		if (initial > 0 && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.backup) != null))
+			initial = 0;
+		
+		if (initial > 0 && source.isProjectile() && !source.isExplosion() &&
+				!source.isFireDamage() && !source.isMagicDamage() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldBullet) != null 
+				&& ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldBullet).getAmplifier() > 0))
+			initial = 0;
+		
+		if (initial > 0 && source.isExplosion() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldExplosive) != null 
+				&& ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldExplosive).getAmplifier() > 0))
+			initial = 0;
+		
+		if (initial > 0 && source.isFireDamage() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldFire) != null 
+				&& ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldFire).getAmplifier() > 0))
+			initial = 0;
 		
 		if (target instanceof EntityBuilding && initial == 1)
 			initial = 0;
@@ -535,7 +555,7 @@ public class TF2Util {
 				((Entity)(((MultiPartEntityPart)entity).parent)).hurtResistantTime = 0;
 		}
 		
-		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer) && !source.isDifficultyScaled()) {
+		if(entity instanceof EntityPlayer && !(living instanceof EntityPlayer) && !source.isDifficultyScaled() && TF2ConfigVars.scaleAttributes) {
 			if(world.getDifficulty() == EnumDifficulty.NORMAL) {
 				damage *= 0.7f;
 			}
@@ -825,7 +845,16 @@ public class TF2Util {
 			else
 				distance = (float) getDistanceBox(shooter, ent.posX, ent.posY, ent.posZ, ent.width+0.1, ent.height+0.1);
 			
-			criticalloc = calculateCritPost(ent, shooter, criticalloc, weapon);
+			boolean fromSentry = exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase;
+			DamageSource source;
+			if (TF2Attribute.getModifier("Unblockable", weapon, 0, shooter) == 1)
+				source = TF2Util.causeDirectDamage(weapon, shooter);
+			else {
+				source = TF2Util.causeBulletDamage(weapon, shooter,fromSentry ? ((EntityProjectileBase)exploder).sentry : exploder);
+			}
+			
+			criticalloc = calculateCritPost(ent, shooter, criticalloc, weapon, source);
+			((TF2DamageSource)source).setCritical(criticalloc);
 			float dmg = calculateDamage(ent, world, shooter, weapon, criticalloc, distance) * damageMult;
 			
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
@@ -869,14 +898,9 @@ public class TF2Util {
 				if (shooter.getItemStackFromSlot(EntityEquipmentSlot.FEET).getItem() == TF2weapons.itemGunboats)
 					dmg *= 0.4f;
 			}
-			boolean fromSentry = exploder instanceof EntityProjectileBase && ((EntityProjectileBase)exploder).sentry != null && ent instanceof EntityLivingBase;
 			
-			DamageSource source;
-			if (TF2Attribute.getModifier("Unblockable", weapon, 0, shooter) == 1)
-				source = TF2Util.causeDirectDamage(weapon, shooter, criticalloc);
-			else {
-				source = TF2Util.causeBulletDamage(weapon, shooter, criticalloc, fromSentry ? ((EntityProjectileBase)exploder).sentry : exploder);
-			}
+			
+			
 			
 			
 			
@@ -948,12 +972,12 @@ public class TF2Util {
 		return thisCritical;
 	}
 
-	public static DamageSource causeBulletDamage(ItemStack weapon, Entity shooter, int critical, Entity projectile) {
-		return (new DamageSourceProjectile(weapon, projectile, shooter, critical)).setProjectile();
+	public static DamageSourceProjectile causeBulletDamage(ItemStack weapon, Entity shooter, Entity projectile) {
+		return (DamageSourceProjectile) (new DamageSourceProjectile(weapon, projectile, shooter)).setProjectile();
 	}
 
-	public static DamageSource causeDirectDamage(ItemStack weapon, Entity shooter, int critical) {
-		return (new DamageSourceDirect(weapon, shooter, critical));
+	public static DamageSourceDirect causeDirectDamage(ItemStack weapon, Entity shooter) {
+		return (new DamageSourceDirect(weapon, shooter));
 	}
 
 	public static Vec3d radiusRandom3D(float radius, Random random) {
@@ -1142,7 +1166,7 @@ public class TF2Util {
 	}
 	
 	public static ItemStack mergeStackByDamage(IItemHandler inventory, ItemStack stack) {
-		if (stack.isEmpty() || stack.getCount() > 1)
+		if (stack.isEmpty() || stack.getCount() > 1 || !(stack.getItem() instanceof ItemFireAmmo))
 			return stack;
 		ItemStack existingAmmo;
 		int amount = 0;
@@ -1377,7 +1401,12 @@ public class TF2Util {
 	
 	public static void extractData(String input, File output, File source) {
 		try {
-			if (source.isFile()) {
+			byte[] bytes = Resources.toByteArray(TF2Util.class.getResource("/assets/"+TF2weapons.MOD_ID+"/"+input));
+			FileOutputStream ostream = new FileOutputStream(output);
+			ostream.write(bytes);
+			ostream.flush();
+			ostream.close();
+			/*if (source.isFile()) {
 				ZipFile zip = new ZipFile(source);
 				ZipEntry entry = zip.getEntry(input);
 				if (entry != null) {
@@ -1423,7 +1452,7 @@ public class TF2Util {
 				crc2.update(bytesc);
 				TF2weapons.LOGGER.info("Value: "+crc2.getValue());
 				istr2.close();
-			}
+			}*/
 		}
 		catch (IOException e) {
 			TF2weapons.corrupted = true;
@@ -1431,6 +1460,7 @@ public class TF2Util {
 		}
 		
 		if (TF2weapons.corrupted) {
+			output.delete();
 			TF2weapons.instance.weaponDir.delete();
 			TF2weapons.proxy.displayCorruptedFileError();
 		}
@@ -1608,6 +1638,48 @@ public class TF2Util {
 			player.getEntityWorld().playSound(x, y, z, event, category, volume, pitch, false);
 	}
 	
+	public static boolean restoreAmmoToWeapons(EntityPlayer player, float ammo) {
+		boolean restored = false;
+		for (int i=0; i< player.inventory.getSizeInventory(); i++) {
+			ItemStack stack = player.inventory.getStackInSlot(i);
+			if (stack.getItem() instanceof ItemFromData) {
+				int ammotype =((ItemFromData)stack.getItem()).getAmmoType(stack);
+				int ammocount = ItemFromData.getAmmoAmountType(player, ammotype);
+				if (ammocount < ItemFromData.getData(stack).getInt(PropertyType.MAX_AMMO)) {
+					int maxammo = MathHelper.ceil(ItemFromData.getData(stack).getInt(PropertyType.MAX_AMMO) * ammo);
+					restored = true;
+					TF2Util.pickAmmo(ItemAmmoPackage.getAmmoForType(ammotype, Math.min(ItemFromData.getData(stack).getInt(PropertyType.MAX_AMMO)-ammocount,maxammo)), player, true);
+				}
+			}
+		}
+		return restored;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> NBTTagListToList(NBTBase nbttag, Class<T> clazz) {
+		List<T> list = new ArrayList<T>();
+		if (!(nbttag instanceof NBTTagList))
+			return list;
+		
+		NBTTagList nbtlist = (NBTTagList)nbttag;
+		if (clazz == NBTBase.class)
+			addNBTBaseToList(nbtlist, (List<NBTBase>) list);
+		if (nbtlist.getTagType() == 8)
+			addStringToList(nbtlist, (List<String>) list);
+		return list;
+	}
+	
+	private static <T> void addNBTBaseToList(NBTTagList nbtlist, List<NBTBase> list) {
+		for (int i = 0; i < nbtlist.tagCount();i++) {
+			list.add(nbtlist.get(i));
+		}
+	}
+	
+	private static <T> void addStringToList(NBTTagList nbtlist, List<String> list) {
+		for (int i = 0; i < nbtlist.tagCount();i++) {
+			list.add(nbtlist.getStringTagAt(i));
+		}
+	}
 	static {
 		for (int i = 0; i < 512; i++) {
 			ASIN_VALUES[i] = (float) Math.asin(i/511D);

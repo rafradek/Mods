@@ -22,6 +22,7 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
 		super.initProjectile(shooter, hand, weapon);
 		this.setType(4);
+		
 	}
 	
 	public boolean isPushable() {
@@ -54,10 +55,6 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 			super.onHitGround(x, y, z, mop);
 	}
 	
-	@Override
-	public void spawnParticles(double x, double y, double z) {
-		ClientProxy.spawnBisonParticle(world, x, y, z, TF2Util.getTeamColor(this.shootingEntity));
-	}
 	
 	@Override
 	public void onUpdate() {

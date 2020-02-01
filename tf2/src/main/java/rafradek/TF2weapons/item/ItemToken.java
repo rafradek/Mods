@@ -53,9 +53,11 @@ public class ItemToken extends Item {
 		living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).removeModifier(HEALTH_MULT_UUID);
 		if (!stack.isEmpty() && stack.getMetadata() >= 0 && stack.getMetadata() < CLASS_NAMES.length) {
 			WeaponsCapability.get(living).setUsedToken(stack.getMetadata());
+			float livinghealth = living.getHealth()/living.getMaxHealth();
 			living.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).applyModifier(new AttributeModifier(SPEED_UUID, "tokenspeed", SPEED_VALUES[stack.getMetadata()], 1)); 
 			living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier(HEALTH_UUID, "tokenhealth", HEALTH_VALUES[stack.getMetadata()], 0)); 
 			living.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).applyModifier(new AttributeModifier(HEALTH_MULT_UUID, "tokenhealthmult", TF2ConfigVars.damageMultiplier-1, 2)); 
+			living.setHealth(living.getMaxHealth()*living.getHealth());
 		}
 		else {
 			WeaponsCapability.get(living).setUsedToken(-1);
@@ -98,7 +100,7 @@ public class ItemToken extends Item {
 		case "medic": return 6; 
 		case "sniper": return 7; 
 		case "spy": return 8; 
-		default: return 0;
+		default: return -1;
 		}
 	}
 }

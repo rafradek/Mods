@@ -1171,6 +1171,86 @@
     	"rafradek_tf2_weapons:weapon/item_14"
     ]
   },
+  "weapon.fire.lochnload": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loch_n_load_shoot"
+    ]
+  },
+  "weapon.fire.lochnload.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/loch_n_load_shoot_crit"
+    ]
+  },
+  "weapon.fire.beggarbazooka": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/doom_rocket_launcher"
+    ]
+  },
+  "weapon.fire.beggarbazooka.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/doom_rocket_launcher_crit"
+    ]
+  },
+  "weapon.fire.blackbox": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_blackbox_shoot"
+    ]
+  },
+  "weapon.fire.blackbox.crit": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_blackbox_shoot_crit"
+    ]
+  },
+  "weapon.explosion.blackbox": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/rocket_blackbox_explode1",
+    	"rafradek_tf2_weapons:weapon/rocket_blackbox_explode2",
+    	"rafradek_tf2_weapons:weapon/rocket_blackbox_explode3"
+    ]
+  },
+  "weapon.reload.beggarbazooka": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/dumpster_rocket_reload"
+    ]
+  },
+  "weapon.heal.vaccinator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/vaccinator_heal"
+    ]
+  },
+  "weapon.charged.vaccinator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/vaccinator_charge_tier_03"
+    ]
+  },
+  "weapon.invulnerable.on.vaccinator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/invuln_on_vaccinator"
+    ]
+  },
+  "weapon.invulnerable.off.vaccinator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/invuln_off_vaccinator"
+    ]
+  },
+  "weapon.toggle.vaccinator": {
+    "category": "neutral",
+    "sounds": [
+    	"rafradek_tf2_weapons:weapon/vaccinator_toggle"
+    ]
+  },
   "weapon.hit.cleaver": {
     "category": "neutral",
     "sounds": [

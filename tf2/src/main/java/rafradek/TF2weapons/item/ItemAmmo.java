@@ -68,7 +68,7 @@ public class ItemAmmo extends Item {
 
 	@Override
 	public int getItemStackLimit(ItemStack stack) {
-		return AMMO_MAX_STACK[MathHelper.clamp(stack.getMetadata(),0,AMMO_MAX_STACK.length)];
+		return AMMO_MAX_STACK[MathHelper.clamp(stack.getMetadata(),0,AMMO_MAX_STACK.length-1)];
 	}
 
 	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {

@@ -185,6 +185,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	
 	public void grab() {
 		if(!this.isDisabled() && this.disposableID == -1) {
+			boolean grabbed = true;
 			if (this.owner instanceof EntityEngineer) {
 				NBTTagCompound tag = new NBTTagCompound();
 				this.writeEntityToNBT(tag);
@@ -202,6 +203,8 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 					TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carryingType = this.getBuildingID();
 					this.clearReferences();
 				}
+				else
+					grabbed = false;
 			}
 			else {
 				ItemStack stack = this.getPickedResult(null);
@@ -213,6 +216,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			
 			// System.out.println("Saved:
 			// "+stack.getTagCompound().getCompoundTag("SavedEntity"));
+			if (grabbed)
 			this.setDead();
 		}
 	}
@@ -378,7 +382,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				TF2Util.dealDamage(this, this.world, this.sapperOwner, this.sapper, 0,
 						this.sapper.isEmpty() ? 0.14f
 								: ((ItemSapper) this.sapper.getItem()).getWeaponDamage(sapper, this.sapperOwner, this),
-						TF2Util.causeDirectDamage(this.sapper, this.sapperOwner, 0));
+						TF2Util.causeDirectDamage(this.sapper, this.sapperOwner));
 			
 			if (this.charge.getStackInSlot(0).hasCapability(CapabilityEnergy.ENERGY, null)) {
 				this.energy.receiveEnergy(this.charge.getStackInSlot(0).getCapability(CapabilityEnergy.ENERGY, null)
@@ -486,8 +490,8 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		else {
 			switch(this.getEntTeam()) {
 			case 0: return this.world.getScoreboard().getTeam("RED");
-			case 1: this.world.getScoreboard().getTeam("BLU");
-			case 2: this.world.getScoreboard().getTeam("Robots");
+			case 1: return this.world.getScoreboard().getTeam("BLU");
+			case 2: return this.world.getScoreboard().getTeam("Robots");
 			default: return this.world.getScoreboard().getTeam("RED");
 			}
 		}
@@ -631,7 +635,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	}
 
 	public boolean canUseWrench() {
-		return this.getMaxHealth() > this.getHealth() || this.getLevel() < this.getMaxLevel();
+		return this.canUseWrenchImportant() || this.getLevel() < this.getMaxLevel();
+	}
+	public boolean canUseWrenchImportant() {
+		return this.getMaxHealth() > this.getHealth();
 	}
 	public boolean canBeHitWithPotion()
     {
@@ -666,7 +673,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	
 	@Override
 	protected boolean canDespawn() {
-		return this.getOwnerId() == null;
+		return this.getOwnerId() == null && (this.getOwner() == null || !this.getOwner().isEntityAlive());
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -746,7 +753,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	}
 
 	@Override
-	public boolean isBackStabbable() {
+	public boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
 		// TODO Auto-generated method stub
 		return false;
 	}

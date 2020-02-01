@@ -84,6 +84,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
@@ -536,11 +537,17 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 				base *= 1.25f;
 		if (attribute.equals("Auto Fire"))
 			return 0f;
+		if (attribute.equals("Overload"))
+			return 0f;
 		return base;
 	}
 
 	public boolean hasHeldInventory() {
 		return !(this.isRobot() && this.getOwnerId() != null);
+	}
+	
+	public boolean isReloadPressed() {
+		return true;
 	}
 	
 	@Override
@@ -591,8 +598,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 			this.world.spawnEntity(medic);
 			this.spawnMedic = false;
 		}
-		if ((this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 4) == 0)
-			this.getCapability(TF2weapons.WEAPONS_CAP, null).state += 4;
+		
 		if (!this.noAmmo && this.getAttackTarget() != null && Math.abs(this.rotationYaw - this.rotationYawHead) > 60/*
 																													 * TF2ActionHandler.playerAction.get ().get(this)!=null&&(
 																													 * TF2ActionHandler.playerAction.get ().get(this)&3)>0
@@ -608,7 +614,11 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		}
 		
 		if (!this.world.isRemote) {
-			
+			if (this.isReloadPressed())
+				this.getWepCapability().state |= 4;
+			else if (!this.isReloadPressed()) {
+				this.getWepCapability().state &= ~4;
+			}
 			if (this.ticksExisted % 2 == 0) {
 				this.loadout.updateSlots();
 			}
@@ -1085,7 +1095,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 	public boolean isValidTarget(EntityLivingBase living) {
 		boolean hostilemob = false;
-		if (TF2ConfigVars.attackMobs && !this.isRobot() && TF2Util.isHostile(living)) {
+		if (TF2ConfigVars.attackMobs && !this.isRobot() && living instanceof EntityLiving && TF2Util.isHostile(living)) {
 			double rangesq = living.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue()+1;
 			rangesq *= rangesq;
 			hostilemob = living.getDistanceSq(EntityTF2Character.this) < rangesq;
@@ -2114,7 +2124,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	@Override
-	public boolean isBackStabbable() {
+	public boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
 		// TODO Auto-generated method stub
 		return true;
 	}
@@ -2131,7 +2141,27 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 		this.moneyDrop = moneyDrop;
 	}
 	
-	public float getBackstabDamageReduction() {
-		return 5;
+	public float getBackstabDamageReduction(EntityLivingBase attacker, ItemStack knife, float mult) {
+		if (this.isGiant()) {
+			mult *= 0.6f;
+			if(this.getEntityData().hasKey(NBTLiterals.BACKSTAB_MULT))
+				mult /= this.getEntityData().getFloat(NBTLiterals.BACKSTAB_MULT);
+		}
+		return mult;
+	}
+	
+	public static EntityTF2Character createByClassId(World world, int id) {
+		switch (id) {
+		case 0: return new EntityScout(world);
+		case 1: return new EntitySoldier(world);
+		case 2: return new EntityPyro(world);
+		case 3: return new EntityDemoman(world);
+		case 4: return new EntityHeavy(world);
+		case 5: return new EntityEngineer(world);
+		case 6: return new EntityMedic(world);
+		case 7: return new EntitySniper(world);
+		case 8: return new EntitySpy(world);
+		}
+		return null;
 	}
 }

@@ -53,9 +53,11 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.CapabilityItemHandler;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.client.renderer.entity.RenderTF2Character;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
@@ -163,6 +165,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	public EnumMap<EnumHand, ItemStack> stackActive = new EnumMap<>(EnumHand.class);
 	
 	private float[] rageDrain = new float[RageType.values().length];
+	public int disguiseCounter;
 	
 	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
@@ -177,6 +180,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Integer> METAL= new DataParameter<Integer>(3, DataSerializers.VARINT);
 	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
 	private static final DataParameter<Byte> CAN_FIRE = new DataParameter<Byte>(13, DataSerializers.BYTE);
+	private static final DataParameter<Float> UBER_VIEW = new DataParameter<Float>(14, DataSerializers.FLOAT);
 	private static final EnumMap<RageType, DataParameter<Float>> RAGE = new EnumMap<>(RageType.class);
 	private static final EnumMap<RageType, DataParameter<Boolean>> RAGE_ACTIVE = new EnumMap<>(RageType.class);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
@@ -213,6 +217,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(CHARGING, false);
 		this.dataManager.register(TOKEN_USED, -1);
 		this.dataManager.register(CAN_FIRE, (byte)0);
+		this.dataManager.register(UBER_VIEW, 0f);
 		for (RageType type: RageType.values()) {
 			this.dataManager.register(RAGE.get(type), 0f);
 			this.dataManager.register(RAGE_ACTIVE.get(type), false);
@@ -236,6 +241,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.set(HEAL_TARGET, target);
 	}
 	
+	public float getUberView() {
+		return this.dataManager.get(UBER_VIEW);
+	}
+	
+	public void setUberView(float uber) {
+		this.dataManager.set(UBER_VIEW, uber);
+	}
 	public int getHeads() {
 		return this.dataManager.get(HEADS);
 	}
@@ -453,7 +465,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if (entry.getValue() <= 0)
 				efiterator.remove();
 		}
-		if (!this.owner.world.isRemote && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
+		if (!this.owner.world.isRemote && TF2ConfigVars.headCountDrop && this.dataManager.get(HEADS) > 0 && collectedHeadsTime < this.owner.ticksExisted - Math.max(100,2000 - MathHelper.log2(this.dataManager.get(HEADS))*300) ) {
 			this.dataManager.set(HEADS, this.dataManager.get(HEADS) - 1);
 			collectedHeadsTime = this.owner.ticksExisted;
 			
@@ -598,9 +610,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 						&& (!item.searchForAmmo(owner, stack).isEmpty()
 								|| owner.world.isRemote)) {
 					ItemWeapon weapon = (ItemWeapon)item;
+					boolean full = (weapon.getClip(stack) >= weapon.getWeaponClipSize(stack, owner) && TF2Attribute.getModifier("Overload", stack, 0, owner) == 0);
 					boolean emptyMag = weapon.getClip(stack) == 0 && TF2Attribute.getModifier("Auto Fire", stack, 0, owner) == 0;
 					if (((state & 4) != 0 || emptyMag || continueReload) && stackcap.active == 2 && this.reloadingHand == null
-							&& weapon.getClip(stack) != weapon.getWeaponClipSize(stack, owner) && this.reloadCool <= 0
+							&& !full && this.reloadCool <= 0
 							&& (this.getPrimaryCooldown() <= 0)
 							&& owner.getActivePotionEffect(TF2weapons.stun) == null) {
 						this.reloadingHand = hand;
@@ -615,12 +628,13 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 							TF2weapons.proxy.playReloadSound(owner, stack);
 	
 					} else if (this.getPrimaryCooldown() <= 0 || ((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack))
-						while (this.reloadingHand == hand && this.reloadCool <= 0 && weapon.getClip(stack) != weapon.getWeaponClipSize(stack, owner)) {
+						while (this.reloadingHand == hand && this.reloadCool <= 0 && !full) {
 							// System.out.println("On client:
 							// "+owner.world.isRemote);
 							int maxAmmoUse = item.getAmmoAmount(owner, stack);
 							int consumeAmount = 0;
 	
+							boolean overload = weapon.getClip(stack) >= weapon.getWeaponClipSize(stack, owner);
 							if (((ItemWeapon) stack.getItem()).IsReloadingFullClip(stack)) {
 								consumeAmount += Math.min(weapon.getWeaponClipSize(stack, owner)-weapon.getClip(stack), maxAmmoUse);
 								weapon.consumeClip(stack, -consumeAmount, owner, hand);
@@ -638,6 +652,11 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 								//TF2weapons.proxy.playReloadSound(owner, stack);
 							}
 							
+							if (overload) {
+								consumeAmount = 0;
+								weapon.consumeClip(stack, 1, owner, hand);
+								weapon.onOverload(stack, owner, hand);
+							}
 							if (!owner.world.isRemote)
 								item.consumeAmmoGlobal(owner, stack, consumeAmount);
 							if (!owner.world.isRemote && owner instanceof EntityPlayerMP)
@@ -857,7 +876,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					damage *= 0.5f;
 				}
 				TF2Util.dealDamage(result.entityHit, result.entityHit.world, owner, ItemChargingTarge.getChargingShield(owner), 0, damage,
-						TF2Util.causeDirectDamage(ItemChargingTarge.getChargingShield(owner), owner, 0));
+						TF2Util.causeDirectDamage(ItemChargingTarge.getChargingShield(owner), owner));
 
 				this.bashCritical = charging.getDuration() < 20;
 				if(charging.getDuration()<12)
@@ -882,40 +901,51 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			if(owner instanceof EntityPlayer) {
 				((EntityPlayer)owner).refreshDisplayName();
 			}
-			
+			this.disguiseCounter +=1;
 			this.lastDisguiseValue = disguisetype;
 			if(this.getDisguiseType().startsWith("P:")) {
 				this.skinDisguise = null;
-				this.skinType = DefaultPlayerSkin.getSkinType(owner.getUniqueID());
-				THREAD_POOL.submit(new Runnable() {
-
-					@Override
-					public void run() {
-						GameProfile profile = TileEntitySkull
-								.updateGameprofile(new GameProfile(owner.getUniqueID(), getDisguiseType().substring(2)));
-						if (profile.getId() != null) {
-							skinType = DefaultPlayerSkin.getSkinType(profile.getId());
-							skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
-						}
-						Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile, new SkinManager.SkinAvailableCallback() {
-							@Override
-							public void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture) {
-								if (typeIn == Type.SKIN) {
+				EntityPlayer playerDisguise = this.owner.world.getPlayerEntityByName(getDisguiseType().substring(2));
+				if (playerDisguise != null && TF2PlayerCapability.get(playerDisguise).isForceClassTexture() && WeaponsCapability.get(playerDisguise).getUsedToken() >= 0) {
+					this.skinType = "default";
+					if (TF2Util.getTeamForDisplay(playerDisguise) == 0) {
+						this.skinDisguise = RenderTF2Character.RED_TEXTURES[WeaponsCapability.get(playerDisguise).getUsedToken()];
+					}
+					else {
+						this.skinDisguise = RenderTF2Character.BLU_TEXTURES[WeaponsCapability.get(playerDisguise).getUsedToken()];
+					}
+				}
+				else {
+					this.skinType = DefaultPlayerSkin.getSkinType(owner.getUniqueID());
+					THREAD_POOL.submit(new Runnable() {
+	
+						@Override
+						public void run() {
+							GameProfile profile = TileEntitySkull
+									.updateGameprofile(new GameProfile(owner.getUniqueID(), getDisguiseType().substring(2)));
+							if (profile.getId() != null) {
+								skinType = DefaultPlayerSkin.getSkinType(profile.getId());
+								skinDisguise= DefaultPlayerSkin.getDefaultSkin(profile.getId());
+							}
+							Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile, new SkinManager.SkinAvailableCallback() {
+								@Override
+								public void skinAvailable(Type typeIn, ResourceLocation location, MinecraftProfileTexture profileTexture) {
 									if (typeIn == Type.SKIN) {
-										skinDisguise = location;
-									}
-									skinType = profileTexture.getMetadata("model");
-
-									if (skinType == null) {
-										skinType = "default";
+										if (typeIn == Type.SKIN) {
+											skinDisguise = location;
+										}
+										skinType = profileTexture.getMetadata("model");
+	
+										if (skinType == null) {
+											skinType = "default";
+										}
 									}
 								}
-							}
-						}, false);
-					}
-
-				});
-				
+							}, false);
+						}
+	
+					});
+				}
 			}
 			
 		}

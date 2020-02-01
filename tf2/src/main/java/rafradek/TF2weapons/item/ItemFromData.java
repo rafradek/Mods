@@ -189,18 +189,21 @@ public class ItemFromData extends Item implements IItemOverlay{
 	}
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
-		if(!this.isInCreativeTab(par2CreativeTabs))
+		if(!this.isInCreativeTab(par2CreativeTabs) && par2CreativeTabs != TF2weapons.tabrareweapontf2)
 			return;
 		Iterator<Entry<String, WeaponData>> iterator = MapList.nameToData.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, WeaponData> entry = iterator.next();
 			// System.out.println("Hidden:
 			// "+entry.getValue().hasProperty(PropertyType.HIDDEN));
+			boolean isRare = entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 2;
 			if (entry.getValue().hasProperty(PropertyType.HIDDEN) && entry.getValue().getBoolean(PropertyType.HIDDEN))
 				continue;
-			Item item = MapList.weaponClasses.get(entry.getValue().getString(PropertyType.CLASS));
-			if (item == this)
-				par3List.add(ItemFromData.getNewStack(entry.getKey()));
+			if ((isRare && par2CreativeTabs == TF2weapons.tabrareweapontf2) || (!isRare && par2CreativeTabs != TF2weapons.tabrareweapontf2)) {
+				Item item = MapList.weaponClasses.get(entry.getValue().getString(PropertyType.CLASS));
+				if (item == this)
+					par3List.add(ItemFromData.getNewStack(entry.getKey()));
+			}
 		}
 	}
 
@@ -601,6 +604,33 @@ public class ItemFromData extends Item implements IItemOverlay{
 		return TF2Attribute.getModifier("No Ammo", stack, 0, null) != 0 ? 0:getData(stack).getInt(PropertyType.AMMO_TYPE);
 	}
 	
+	public static int getAmmoAmountType(EntityPlayer owner, int type) {
+		int ammoCount = 0;
+		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
+			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
+			.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			for (int i = 0; i < inv.getSlots(); i++) {
+				ItemStack stackCap = inv.getStackInSlot(i);
+				if (!stackCap.isEmpty() && stackCap.getItem() instanceof ItemAmmo
+						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type){
+					//System.out.println("Found: "+i);
+					ammoCount += ((ItemAmmo) stackCap.getItem()).getAmount(stackCap);
+				}
+				else if (type == 1000 && !stackCap.isEmpty() && stackCap.getItem() instanceof ItemArrow)
+					ammoCount += stackCap.getCount();
+			}
+		}
+		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
+			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
+			if (!stackInv.isEmpty() && stackInv.getItem() instanceof ItemAmmo
+					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type)
+				ammoCount += ((ItemAmmo) stackInv.getItem()).getAmount(stackInv);
+			else if (type == 1000 && !stackInv.isEmpty() && stackInv.getItem() instanceof ItemArrow)
+				ammoCount += stackInv.getCount();
+		}
+		return ammoCount;
+	}
+	
 	public int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
 		
 		int type = this.getAmmoType(stack);
@@ -625,30 +655,8 @@ public class ItemFromData extends Item implements IItemOverlay{
 			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 		}
 
-		int ammoCount = 0;
-
-		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
-			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-			.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			for (int i = 0; i < inv.getSlots(); i++) {
-				ItemStack stackCap = inv.getStackInSlot(i);
-				if (!stackCap.isEmpty() && stackCap.getItem() instanceof ItemAmmo
-						&& ((ItemAmmo) stackCap.getItem()).getTypeInt(stackCap) == type){
-					//System.out.println("Found: "+i);
-					ammoCount += ((ItemAmmo) stackCap.getItem()).getAmount(stackCap);
-				}
-				else if (type == 1000 && !stackCap.isEmpty() && stackCap.getItem() instanceof ItemArrow)
-					ammoCount += stackCap.getCount();
-			}
-		}
-		for (int i = 0; i < ((EntityPlayer) owner).inventory.mainInventory.size(); i++) {
-			ItemStack stackInv = ((EntityPlayer) owner).inventory.mainInventory.get(i);
-			if (!stackInv.isEmpty() && stackInv.getItem() instanceof ItemAmmo
-					&& ((ItemAmmo) stackInv.getItem()).getTypeInt(stackInv) == type)
-				ammoCount += ((ItemAmmo) stackInv.getItem()).getAmount(stackInv);
-			else if (type == 1000 && !stackInv.isEmpty() && stackInv.getItem() instanceof ItemArrow)
-				ammoCount += stackInv.getCount();
-		}
+		int ammoCount = getAmmoAmountType((EntityPlayer)owner, type);
+		
 		return (int) (ammoCount / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
 	}
 	

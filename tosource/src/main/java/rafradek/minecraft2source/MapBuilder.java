@@ -51,7 +51,6 @@ import com.google.common.collect.Table;
 import com.google.common.io.Files;
 
 import akka.actor.FSM.State;
-import codechicken.lib.math.MathHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockLiquid;
@@ -59,6 +58,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -69,6 +70,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -83,6 +85,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.ChunkCache;
@@ -124,7 +127,7 @@ public class MapBuilder extends ModelExporter
     public short[][][] widthCache;
     public short[][][] depthCache;
     public byte[][][] lights;
-    
+    public boolean modelLightmap = true;
    	public TextureAtlasSprite lavaStill = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/lava_still");
    	public TextureAtlasSprite lavaFlow = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/lava_flow");
    	public TextureAtlasSprite waterStill = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/water_still");
@@ -356,9 +359,33 @@ public class MapBuilder extends ModelExporter
 	    	                
 	    	            	state.addCollisionBoxToList(world, pos, new AxisAlignedBB(pos), cboxo, null, true);
 	    	            	TileEntity tent = ccache.getTileEntity(pos);
-	    	            	if (tent != null) {
+	    	            	/*if (tent != null) {
+	    	            		TileEntitySpecialRenderer<?> tesr = TileEntityRendererDispatcher.instance.getRenderer(tent);
+	    	            		for (Field field : tesr.getClass().getDeclaredFields()) {
+	    	            			if (ModelBase.class.isAssignableFrom(field.getType())) {
+	    	            				try {
+	    	            					field.setAccessible(true);
+											ModelBase mbase = (ModelBase) field.get(tesr);
+											for (Field fieldm : mbase.getClass().getDeclaredFields()) {
+												if (ModelRenderer.class.isAssignableFrom(fieldm.getType())) {
+													fieldm.setAccessible(true);
+													ModelRenderer rendr = (ModelRenderer) fieldm.get(mbase);
+													for (Field fieldb : rendr.getClass().getDeclaredFields()) {
+														if (fieldb.getName().equals("compiled")) {
+															fieldb.setAccessible(true);
+															fieldb.setBoolean(rendr, false);
+														}
+													}
+												}
+											}
+										} catch (Exception e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+	    	            			}
+	    	            		}
 	    	            		TileEntityRendererDispatcher.instance.render(tent, 0, 0);
-	    	            	}
+	    	            	}*/
 	    	            	for (AxisAlignedBB bbox : cboxo) {
 	    	            		cbox.add(bbox.offset(-pos.getX(), -pos.getY(), -pos.getZ()));
 	    	            	}
@@ -372,11 +399,15 @@ public class MapBuilder extends ModelExporter
 		        	        		addModel(state, this.modelReader.readModel(state, cbox, offset, this));
 		        	        	}
 		        	        	else {
+		        	        		this.modelLightmap = true;
 		        	        		List<CubeDef> cubes= readCubes(quads, state, model, rand, noFaceQuad, cbox);
 		        	        		if (cubes != null)
 		        	        			brushes.put(state, cubes);
-		        	        		else
-		        	        			addModel(state, this.modelReader.readModel(state, cbox, offset, this));
+		        	        		else {
+		        	        			Model modela = this.modelReader.readModel(state, cbox, offset, this);
+		        	        			modela.lightmap = this.modelLightmap;
+		        	        			addModel(state, modela);
+		        	        		}
 		        	        	}
 	    	        		}
 	    	        		else if (state.getRenderType() == EnumBlockRenderType.LIQUID) {
@@ -596,11 +627,13 @@ public class MapBuilder extends ModelExporter
 	    	        		MapEntity modelinst = new MapEntity("prop_static",true);
 	    	        		
 	    	        		modelinst.setPosition(x+(float)offset.x, y+(float)offset.y, z+(float)offset.z);
-	    	        		
+
 	    	        		modelinst.properties.put("disableshadows", "1");
-	    	        		modelinst.properties.put("model", "models/minecraft/"+modeldef.name+".mdl");
-	    	        		modelinst.properties.put("skin", Integer.toString(skinid));
+	    	        		if (!modeldef.lightmap) {
 	    	        		modelinst.properties.put("ignorenormals", "1");
+	    	        		}
+	    	        		modelinst.properties.put("model", "models/"+this.getModelOutputPath()+"/"+modeldef.name+".mdl");
+	    	        		modelinst.properties.put("skin", Integer.toString(skinid));
 
 	    	        		if (modeldef.collisionBox.isEmpty())
 	    	        			modelinst.properties.put("solid", "0");
@@ -1389,11 +1422,11 @@ public class MapBuilder extends ModelExporter
     	this.models.put(state, model);
     }
     
-    public void writeModels() throws IOException {
+    /*public void writeModels() throws IOException {
     	File parent = new File("./models/");
     	parent.mkdirs();
-    	new File(Minecraft2Source.gamePathFile, "models/minecraft/").mkdirs();
-    	File outputDir = new File(Minecraft2Source.gamePathFile, "custom/minecraft/models/minecraft/");
+    	new File(Minecraft2Source.gamePathFile, "models/"+modelPath+"").mkdirs();
+    	File outputDir = new File(Minecraft2Source.gamePathFile, "custom/minecraft/models/"+modelPath+"/");
     	outputDir.mkdirs();
     	for (Entry<IBlockState, Model> entry : this.models.entrySet()) {
     		Model model = entry.getValue();
@@ -1431,11 +1464,11 @@ public class MapBuilder extends ModelExporter
     		}
     		
     		writer = new FileWriter(new File(parent,model.name+".qc"));
-    		writer.write("$modelname \"minecraft/"+model.name+".mdl\"\n");
+    		writer.write("$modelname \""+modelPath+"/"+model.name+".mdl\"\n");
     		writer.write("$body root \""+model.name+".smd\"\n");
     		writer.write("$staticprop\n");
     		writer.write("$surfaceprop combinemetal\n");
-    		writer.write("$cdmaterials \"models/minecraft"+"\"\n");
+    		writer.write("$cdmaterials \"models/"+modelPath+"\"\n");
     		writer.write("$sequence idle \""+model.name+".smd\"\n");
     		writer.write("$texturegroup gr \n");
     		writer.write("{\n");
@@ -1471,7 +1504,7 @@ public class MapBuilder extends ModelExporter
     				Process pr = Runtime.getRuntime().exec("\""+new File(Minecraft2Source.enginePathFile, "studiomdl").getAbsolutePath()
 							+"\" -game \""+Minecraft2Source.gamePathFile.getAbsolutePath()+"\" \""+new File(parent,model.name+".qc").getAbsolutePath()+"\"");
     				pr.waitFor();
-					for(File file : new File(Minecraft2Source.gamePathFile, "models/minecraft/").listFiles()) {
+					for(File file : new File(Minecraft2Source.gamePathFile, "models/"+modelPath+"/").listFiles()) {
 						if (file.getName().startsWith(model.name)) {
 							Files.move(file, new File(outputDir, file.getName()));
 						}
@@ -1482,9 +1515,9 @@ public class MapBuilder extends ModelExporter
     		});
     		
     	}
-    }
+    }*/
     
-    public void writeTriangles(Writer writer, List<ModelTriangle> tris, Set<ModelExporter.SpriteProperties> spriteSet) throws IOException {
+    /*public void writeTriangles(Writer writer, List<ModelTriangle> tris, Set<ModelExporter.SpriteProperties> spriteSet) throws IOException {
     	
 		for (ModelTriangle tri : tris) {
 			if (tri.sprite != null) {
@@ -1514,38 +1547,17 @@ public class MapBuilder extends ModelExporter
     			writer.write(" 0\n");
 			}
 		}
-    }
-    public void writeTextures() throws IOException {
+    }*/
+   /* public void writeTextures() throws IOException {
     	File parent = new File(Minecraft2Source.gamePathFile,"custom/minecraft/materials");
     	parent.mkdirs();
     	new File(parent,"minecraft").mkdirs();
     	new File(parent,"models/minecraft").mkdirs();
     	for (Entry<TextureAtlasSprite, ModelExporter.SpriteProperties> entry : this.sprites.entrySet()) {
     		TextureAtlasSprite sprite = entry.getKey();
-    		//BufferedImage image = new BufferedImage(sprite.getIconWidth(),sprite.getIconHeight(),BufferedImage.TYPE_INT_ARGB);
-    		//image.setRGB(0, 0, sprite.getIconWidth(), sprite.getIconHeight(), imagedata, 0, sprite.getIconWidth());
     		VTFWriter.write(parent,"minecraft/"+entry.getValue().name,sprite, entry.getValue());
-    		/*for (int i = 0; i < entry.getValue().colors.size(); i++) {
-    			int color = entry.getValue().get(i);
-    			float r = ((color >>> 16) & 255) / 255f;
-    			float g = ((color >>> 8) & 255) / 255f;
-    			float b = (color & 255) / 255f;
-    			int[] imagedatac = imagedata.clone();
-    			for (int j = 0; j < imagedatac.length; j++) {
-    				int ap = imagedatac[j] >>> 24;
-    				int rp = (int) (((imagedatac[j] >>> 16) & 255) * r);
-        			int gp = (int) (((imagedatac[j] >>> 8) & 255) * g);
-        			int bp = (int) ((imagedatac[j] & 255) * b);
-        			imagedatac[j] = (ap << 24) | (rp << 16) | (gp << 8) | bp;
-    			}
-        		BufferedImage imagec = new BufferedImage(sprite.getIconWidth(),sprite.getIconHeight(),BufferedImage.TYPE_INT_ARGB);
-        		imagec.setRGB(0, 0, sprite.getIconWidth(), sprite.getIconHeight(), imagedatac, 0, sprite.getIconWidth());
-        		File filec = ;
-        		ImageIO.write(imagec, "png", filec);
-        		VTFWriter.write(parent,spriteID.get(sprite)+"-"+i,sprite.getIconWidth(), sprite.getIconHeight(),1,imagedatac);
-    		}*/
     	}
-    }
+    }*/
     public void calculateOccluders(World world) {
     	
     	int lastVolume=Integer.MAX_VALUE;
@@ -1862,18 +1874,30 @@ public class MapBuilder extends ModelExporter
     		float smaxy = Math.max(second[0].y,second[2].y);
     		float smaxz = Math.max(second[0].z,second[2].z);
     		if (!Minecraft2Source.allowFlatBrush) {
-    			if (facingfirst == EnumFacing.UP && facingsecond == EnumFacing.DOWN && fmaxy <= smaxy)
+    			if (facingfirst == EnumFacing.UP && facingsecond == EnumFacing.DOWN && fmaxy <= smaxy) {
+    				this.modelLightmap = false;
     				return false;
-    			else if (facingfirst == EnumFacing.DOWN && facingsecond == EnumFacing.UP && fminy >= sminy)
+    			}
+    			else if (facingfirst == EnumFacing.DOWN && facingsecond == EnumFacing.UP && fminy >= sminy) {
+    				this.modelLightmap = false;
     				return false;
-    			else if (facingfirst == EnumFacing.EAST && facingsecond == EnumFacing.WEST && fmaxx <= smaxx)
+    			}
+    			else if (facingfirst == EnumFacing.EAST && facingsecond == EnumFacing.WEST && fmaxx <= smaxx) {
+    				this.modelLightmap = false;
     				return false;
-    			else if (facingfirst == EnumFacing.WEST && facingsecond == EnumFacing.EAST && fminx >= sminx)
+    			}
+    			else if (facingfirst == EnumFacing.WEST && facingsecond == EnumFacing.EAST && fminx >= sminx) {
+    				this.modelLightmap = false;
     				return false;
-    			else if (facingfirst == EnumFacing.SOUTH && facingsecond == EnumFacing.NORTH && fmaxz <= smaxz)
+    			}
+    			else if (facingfirst == EnumFacing.SOUTH && facingsecond == EnumFacing.NORTH && fmaxz <= smaxz) {
+    				this.modelLightmap = false;
     				return false;
-    			else if (facingfirst == EnumFacing.NORTH && facingsecond == EnumFacing.SOUTH && fminz >= sminz)
+    			}
+    			else if (facingfirst == EnumFacing.NORTH && facingsecond == EnumFacing.SOUTH && fminz >= sminz) {
+    				this.modelLightmap = false;
     				return false;
+    			}
     		}
     			return (fminx == sminx && fminy == sminy && fmaxx == smaxx && fmaxy == smaxy)
 	    	    		|| (fminx == sminx && fminz == sminz && fmaxx == smaxx && fmaxz == smaxz)
@@ -2132,15 +2156,16 @@ public class MapBuilder extends ModelExporter
 							}
 						}
 						else {
-							for (int j =0; j < (first.yMax-first.yMin) * Minecraft2Source.blockSize / 18f; j++) {
+							float width = 1f/Minecraft2Source.blockSize;
+							for (int j =1; j < (first.yMax-first.yMin) * Minecraft2Source.blockSize / 18f; j++) {
 								ramp.yMin=first.yMin;
-								ramp.yMax=first.yMin+(18f/Minecraft2Source.blockSize)*(j+1);
+								ramp.yMax=first.yMin+(18f/Minecraft2Source.blockSize)*(j);
 								
 								switch (facing) {
-								case WEST: ramp.zMin=first.zMin; ramp.zMax=first.zMax; ramp.xMax = first.xMin; ramp.xMin = first.xMin - 0.03125f * j; break;
-								case EAST: ramp.zMin=first.zMin; ramp.zMax=first.zMax; ramp.xMin = first.xMax; ramp.xMax = first.xMax + 0.03125f * j; break;
-								case NORTH: ramp.xMin=first.xMin; ramp.xMax=first.xMax; ramp.zMax = first.zMin; ramp.zMin = first.zMin - 0.03125f * j; break;
-								case SOUTH: ramp.xMin=first.xMin; ramp.xMax=first.xMax; ramp.zMin = first.zMax; ramp.zMax = first.zMax + 0.03125f * j; break;
+								case WEST: ramp.zMin=first.zMin; ramp.zMax=first.zMax; ramp.xMax = first.xMin; ramp.xMin = first.xMin - width * j; break;
+								case EAST: ramp.zMin=first.zMin; ramp.zMax=first.zMax; ramp.xMin = first.xMax; ramp.xMax = first.xMax + width * j; break;
+								case NORTH: ramp.xMin=first.xMin; ramp.xMax=first.xMax; ramp.zMax = first.zMin; ramp.zMin = first.zMin - width * j; break;
+								case SOUTH: ramp.xMin=first.xMin; ramp.xMax=first.xMax; ramp.zMin = first.zMax; ramp.zMax = first.zMax + width * j; break;
 								default:
 								}
 							}
@@ -2180,12 +2205,25 @@ public class MapBuilder extends ModelExporter
     	label2:
     	for (int i = 0; i < cubes.size(); i++) {
 			CubeDef first = cubes.get(i);
-			
+			int nonjoinablethis = 0;
 			if (first.autoEntity == 0 && !(first.sprites.get(EnumFacing.NORTH) instanceof SpriteTool))
 				first.autoEntity = cbox.isEmpty() ? 2 : (fullcube ? 0 : 1);
-			if ((first.xMin != 0 && first.xMax != 1 && first.yMin != 0 && first.yMax != 1 && first.zMin != 0 && first.zMax != 1)) {
-				nonjoinable++;
+			
+			if (first.helperDir == null) {
+				if (first.xMin != 0)
+					nonjoinablethis++;
+				if (first.xMax != 1)
+					nonjoinablethis++;
+				if (first.yMin != 0)
+					nonjoinablethis++;
+				if (first.yMax != 1)
+					nonjoinablethis++;
+				if (first.zMin != 0)
+					nonjoinablethis++;
+				if (first.zMax != 1)
+					nonjoinablethis++;
 			}
+			
 			for (int j = 0; j < cubes.size(); j++) {
 				if (j != i) {
 					CubeDef last = cubes.get(j);
@@ -2201,11 +2239,12 @@ public class MapBuilder extends ModelExporter
 			    	}
 				}
     		}
+			nonjoinable +=nonjoinablethis;
 			if (first.xMin == 0 && first.xMax == 1 && first.yMin == 0 && first.yMax == 1 && first.zMin == 0 && first.zMax == 1) {
 				first.isFullCube = true;
 			}
     	}
-    	if (nonjoinable > 1)
+    	if (nonjoinable > 8)
     		return null;
     	for (int i = 0; i < cubes.size(); i++) {
     		CubeDef first = cubes.get(i);
@@ -2368,7 +2407,8 @@ public class MapBuilder extends ModelExporter
     }
     
     public static class Model {
-    	public int id;
+    	public boolean lightmap;
+		public int id;
     	public String name;
     	public boolean hasTint;
     	public int skinCount;
@@ -2376,6 +2416,11 @@ public class MapBuilder extends ModelExporter
     	public List<ModelTriangle> quads = new ArrayList<>();
     	public Vector3f min;
     	public Vector3f max;
+    	public EnumSet<AnimTypes> animations;
+    }
+    
+    public static enum AnimTypes {
+    	ROTATING
     }
     
     public static class ModelTriangle {
@@ -2595,7 +2640,6 @@ public class MapBuilder extends ModelExporter
 		// TODO Auto-generated method stub
 		return this.models.values();
 	}
-    
     static {
 
     	materialNames.put(Material.ANVIL, "metal");
@@ -2603,7 +2647,7 @@ public class MapBuilder extends ModelExporter
     	materialNames.put(Material.CAKE, "foliage");
     	materialNames.put(Material.CARPET, "carpet");
     	materialNames.put(Material.CLAY, "gravel");
-    	materialNames.put(Material.CLOTH, "flesh");
+    	materialNames.put(Material.CLOTH, "carpet");
     	materialNames.put(Material.CRAFTED_SNOW, "snow");
     	materialNames.put(Material.GLASS, "glass");
     	materialNames.put(Material.GRASS, "grass");

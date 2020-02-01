@@ -37,7 +37,7 @@ public class ModelReader {
 	public Map<BakedQuad, Vector3f[]> vecCache = new HashMap<>();
     public Map<BakedQuad, Vector2f[]> uvCache = new HashMap<>();
     
-    
+    public boolean fixItemUV = false;
 	public boolean buildModelCache(IBlockState state, IBakedModel model, World world, long rand, float twidth, float theight,EnumMap<EnumFacing, List<BakedQuad>> quads) {
     	
     	vecCache.clear();
@@ -105,6 +105,13 @@ public class ModelReader {
         		
         		float usize = sprite.getMaxU()-sprite.getMinU();
         		float vsize = sprite.getMaxV()-sprite.getMinV();
+        		
+        		float minu = 1;
+        		float maxu = 0;
+        		
+        		float minv = 1;
+        		float maxv = 0;
+        		
 		    	for (int i=0; i<28;i+=7) {
 	        		float x1 = Math.round(Float.intBitsToFloat(vertexData[0+i])*256f)/256f;
 	        		float y1 = Math.round(Float.intBitsToFloat(vertexData[1+i])*256f)/256f;
@@ -122,28 +129,105 @@ public class ModelReader {
 	        			if ((prev.x != x1 && prev.y != y1) || (prev.x != x1 && prev.z != z1) || (prev.y != y1 && prev.z != z1))
 	        				diagonal = true;
 	        		}
+	        		if (fixItemUV) {
+		        		if (u < minu)
+		        			minu = u;
+		        		if (u > maxu)
+		        			maxu = u;
+		        		if (v < minv)
+		        			minv = v;
+		        		if (v > maxv)
+		        			maxv = v;
+	        		}
 	        		uvcache[i/7]= new Vector2f(u, v);
+
+	        		
 	        		//Minecraft.getMinecraft().player.sendMessage(new TextComponentString( x1+" "+y1+" "+z1+" "+u+" "+v+" "+quad.getSprite().getMaxV()+" "+vertexData.length));
 	    		}
+		    	if (fixItemUV) {
+		    		/*for (Vector2f vec : uvcache) {
+		    			if (vec.x == minu) {
+		    				vec.x += 0.00390625f;
+		    			}
+		    			if (vec.x == maxu) {
+		    				vec.x -= 0.00390625f;
+		    			}
+		    			if (vec.y == minv) {
+		    				vec.y += 0.00390625f;
+		    			}
+		    			if (vec.y == maxv) {
+		    				vec.y -= 0.00390625f;
+		    			}
+		    		}*/
+		    		if (minu == maxu) {
+		    			if (cache[0].z < cache[2].z) {
+			    			uvcache[2].x-=0.001f;
+			    			uvcache[3].x-=0.001f;
+		    			}
+		    			else {
+		    				uvcache[2].x+=0.001f;
+			    			uvcache[3].x+=0.001f;
+		    			}
+		    		}
+		    		if (minv == maxv) {
+		    			if (cache[0].z < cache[2].z) {
+			    			uvcache[2].y-=0.001f;
+			    			uvcache[3].y-=0.001f;
+		    			}
+		    			else {
+		    				uvcache[2].y+=0.001f;
+			    			uvcache[3].y+=0.001f;
+		    			}
+		    		}
+		    	}
 	    		quads.get(quad.getFace()).add(quad);
     		}
 		}
     	return diagonal;
     }
 	
-	public Model readModel(Material material, Vector3f offset, ModelExporter spriteReg, List<AxisAlignedBB> cbox){
+	public Model readModel(Material material, Vector3f offset, ModelExporter spriteReg, List<AxisAlignedBB> cbox, boolean generate){
 		Model model = new Model();
     	
 		boolean findBounds = false;
 		
-		if (cbox == null) {
+		if (cbox == null && generate) {
     		findBounds = true;
     		cbox = new ArrayList<>();
     		
     	}
 		
+		float minx = Float.MAX_VALUE;
+		float miny = Float.MAX_VALUE;
+		float minz = Float.MAX_VALUE;
+		float maxx = Float.MIN_VALUE;
+		float maxy = Float.MIN_VALUE;
+		float maxz = Float.MIN_VALUE;
     	for (BakedQuad quad : vecCache.keySet()) {
     		Vector3f[] vec = vecCache.get(quad);
+    		
+    		if (findBounds) {
+    			for (Vector3f v : vec) {
+    				if (v.x < minx) {
+    					minx = v.x;
+    				}
+    				if (v.x > maxx) {
+    					maxx = v.x;
+    				}
+    				if (v.y < miny) {
+    					miny = v.y;
+    				}
+    				if (v.y > maxy) {
+    					maxy = v.y;
+    				}
+    				if (v.z < minz) {
+    					minz = v.z;
+    				}
+    				if (v.z > maxz) {
+    					maxz = v.z;
+    				}
+    			}
+    		}
     		
     		Vector3f.add(vec[0], offset, vec[0]);
     		Vector3f.add(vec[1], offset, vec[1]);
@@ -151,6 +235,7 @@ public class ModelReader {
     		Vector3f.add(vec[3], offset, vec[3]);
     		
     		Vector2f[] uv = uvCache.get(quad);
+    		//System.out.println(uv[0]+" "+uv[1]+" "+uv[2]+" "+uv[3]);
     		Vector3f sub1 = new Vector3f();
     		Vector3f sub2 = new Vector3f();
     		Vector3f normal = new Vector3f();
@@ -176,9 +261,13 @@ public class ModelReader {
     		if (quad.hasTintIndex())
     			model.hasTint = true;
     		spriteReg.addSprite(quad.getSprite(), true,material);
+    		
+    		
     	}
     	
-    	
+    	if (findBounds) {
+    		cbox.add(new AxisAlignedBB(minx,miny,minz,maxx,maxy,maxz));
+    	}
     	
     	for (AxisAlignedBB box : cbox) {
     		box = box.offset(offset.x, offset.y, offset.z);
@@ -250,19 +339,22 @@ public class ModelReader {
     		tri1.normal = new Vector3f[] {mmmn,mxmn,xxmn};
     		tri1.pos = new Vector3f[] {mmm,mxm,xxm};
     		model.collisionBox.add(tri1);
+    		
+    		
+    	}
+    	Vector2f[] uvdef = new Vector2f[] {new Vector2f(1,0),new Vector2f(1,1),new Vector2f(0,0)};
+    	for (ModelTriangle tri: model.collisionBox) {
+    		tri.uv = uvdef;
     	}
     	return model;
 	}
 	
 	public Model readModel(IBlockState state, List<AxisAlignedBB> cbox, Vector3f offset, ModelExporter spriteReg){
     	
-    	Model model = readModel(state.getMaterial(), offset, spriteReg, cbox);
+    	Model model = readModel(state.getMaterial(), offset, spriteReg, cbox, false);
     	
     	
-    	Vector2f[] uvdef = new Vector2f[] {new Vector2f(1,0),new Vector2f(1,1),new Vector2f(0,0)};
-    	for (ModelTriangle tri: model.collisionBox) {
-    		tri.uv = uvdef;
-    	}
+    	
     	
     	StringBuilder modelname = new StringBuilder();
     	if (spriteReg.niceName)

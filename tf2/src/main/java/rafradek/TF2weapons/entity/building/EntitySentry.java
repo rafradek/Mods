@@ -30,10 +30,13 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
@@ -194,14 +197,14 @@ public class EntitySentry extends EntityBuilding {
 			this.attackDelayRocket--;
 		this.ignoreFrustumCheck = this.isControlled();
 		if (this.isControlled() && !this.world.isRemote) {
-			Vec3d lookVec = this.getOwner().getLookVec().scale(200);
-			List<RayTraceResult> trace = TF2Util.pierce(world, this.getOwner(), this.getOwner().posX,
+			Vec3d lookVec = Vec3d.fromPitchYaw(this.getOwner().rotationPitch, this.getOwner().rotationYawHead).scale(200);
+			RayTraceResult trace = TF2Util.pierce(world, this.getOwner(), this.getOwner().posX,
 					this.getOwner().posY + this.getOwner().getEyeHeight(), this.getOwner().posZ,
 					this.getOwner().posX + lookVec.x,
 					this.getOwner().posY + this.getOwner().getEyeHeight() + lookVec.y,
-					this.getOwner().posZ + lookVec.z, false, 0.02f, false);
-			this.getLookHelper().setLookPosition(trace.get(0).hitVec.x, trace.get(0).hitVec.y,
-					trace.get(0).hitVec.z, 30, 75);
+					this.getOwner().posZ + lookVec.z, false, 0.01f, false).get(0);
+			this.getLookHelper().setLookPosition(trace.hitVec.x, trace.hitVec.y,
+					trace.hitVec.z, 30, 75);
 		}
 		if (this.getAttackTarget() != null && (!this.getAttackTarget().isEntityAlive() || !this.canEntityBeSeen(this.getAttackTarget())))
 			this.setAttackTarget(null);
@@ -275,11 +278,11 @@ public class EntitySentry extends EntityBuilding {
 
 	public void shootBullet(EntityLivingBase owner) {
 		this.setSoundState(this.getAmmo() > 0 && this.energy.getEnergyStored() >= this.getMinEnergy() ? 2 : 3);
-		Vec3d attackPos = this.isControlled()
-				? new Vec3d(this.getLookHelper().getLookPosX(), this.getLookHelper().getLookPosY(),
-						this.getLookHelper().getLookPosZ())
+		Vec3d attackPos = (this.isControlled()
+				? new Vec3d(this.getLookHelper().getLookPosX()-this.posX, this.getLookHelper().getLookPosY()-this.posY-this.getEyeHeight(),
+						this.getLookHelper().getLookPosZ()-this.posZ)
 				: this.getAttackTarget().getPositionEyes(1).subtract(this.getPositionEyes(1))
-				.normalize().scale(30).add(this.getPositionVector());
+				).normalize().scale(60).add(this.getPositionEyes(1));
 		while (this.attackDelay <= 0 && this.getAmmo() > 0 && this.consumeEnergy(this.getMinEnergy())) {
 			if(this.getOwnerId() != null && this.ticksExisted % 10 == 0)
 				TF2Util.attractMobs(this, this.world);
@@ -325,9 +328,10 @@ public class EntitySentry extends EntityBuilding {
 						TF2Util.sendParticle(EnumTF2Particles.BULLET_TRACER, this, this.posX, this.posY + this.getEyeHeight(), this.posZ, 
 								bullet.hitVec.x, bullet.hitVec.y, bullet.hitVec.z, 1,0, TF2Util.getTeamColor(this), 1280);
 				}
+
 				if (bullet.entityHit != null) {
 
-					DamageSource src = TF2Util.causeBulletDamage(this.getHeldItem(EnumHand.OFF_HAND), owner, 0, this).setProjectile();
+					DamageSource src = TF2Util.causeBulletDamage(this.getHeldItem(EnumHand.OFF_HAND), owner, this).setProjectile();
 					if (this.fromPDA)
 						((TF2DamageSource)src).addAttackFlag(TF2DamageSource.SENTRY_PDA);
 					
@@ -336,8 +340,18 @@ public class EntitySentry extends EntityBuilding {
 						range =  Math.max(0.5f,(float)this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue() / range);
 					else
 						range = 1;
+					if (bullet.entityHit instanceof EntityPlayer && !(owner instanceof EntityPlayer) && TF2ConfigVars.scaleAttributes) {
+						if (this.isControlled())
+							damage *=0.92f;
+						if(world.getDifficulty() == EnumDifficulty.NORMAL) {
+							damage*=0.9f;
+						}
+						else if(world.getDifficulty() == EnumDifficulty.EASY) {
+							damage*=0.8f;
+						}
+					}
 					if (TF2Util.dealDamage(bullet.entityHit, this.world, owner, this.getHeldItem(EnumHand.OFF_HAND),
-							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY), range * damage, src)) {
+							TF2Util.calculateCritPost(bullet.entityHit, null, 0, ItemStack.EMPTY, src), range * damage, src)) {
 						Vec3d dist = new Vec3d(bullet.entityHit.posX - this.posX, bullet.entityHit.posY - this.posY,
 								bullet.entityHit.posZ - this.posZ).normalize();
 						dist=dist.scale(0.25 * (this.getLevel()>1? 0.7 : 1));
@@ -534,6 +548,11 @@ public class EntitySentry extends EntityBuilding {
 	}
 
 	@Override
+	public boolean canUseWrenchImportant() {
+		return super.canUseWrenchImportant() || this.getAmmo() == 0;
+	}
+	
+	@Override
 	public void upgrade() {
 		super.upgrade();
 		this.setAmmo(200);
@@ -555,8 +574,12 @@ public class EntitySentry extends EntityBuilding {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
-			if (!this.world.isRemote)
-			FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			if (!this.world.isRemote) {
+				if (TF2ConfigVars.disableBuildingGui)
+					this.grab();
+				else
+					FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			}
 			return true;
 		}
 		return true;

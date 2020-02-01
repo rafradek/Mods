@@ -11,7 +11,10 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class RenderPlayerDisguised extends RenderPlayer {
@@ -29,9 +32,19 @@ public class RenderPlayerDisguised extends RenderPlayer {
 	@Override
 	public ResourceLocation getEntityTexture(final AbstractClientPlayer entity) {
 
+		boolean isClass = WeaponsCapability.get(entity).getDisguiseType().startsWith("T:");
+		if (isClass) {
+			int clazz = ItemToken.getClassID(WeaponsCapability.get(entity).getDisguiseType().substring(2).toLowerCase());
+			if (TF2Util.getTeamForDisplay(entity) == 0) {
+				return RenderTF2Character.BLU_TEXTURES[clazz];
+			}
+			else if (TF2Util.getTeamForDisplay(entity) == 1) {
+				return RenderTF2Character.RED_TEXTURES[clazz];
+			}
+		}
 		return entity.getCapability(TF2weapons.WEAPONS_CAP, null).skinDisguise != null
 				? entity.getCapability(TF2weapons.WEAPONS_CAP, null).skinDisguise
-				: DefaultPlayerSkin.getDefaultSkin(entity.getUniqueID());
+				: RenderPlayer.class.cast(this.renderManager.getEntityRenderObject(entity)).getEntityTexture(entity);
 	}
 
 	@Override
