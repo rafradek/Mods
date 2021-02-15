@@ -47,6 +47,7 @@ import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.boss.EntityWither;
 import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityGhast;
 import net.minecraft.entity.monster.EntityPigZombie;
@@ -289,20 +290,36 @@ public class TF2Util {
 		 * (random.nextDouble()*radius*2-radius)+(random.nextDouble()*radius*2-
 		 * raddddddddius); double r = u>1?2-u:u;
 		 */
-		float a = random.nextFloat(), b = random.nextFloat();
-		double x = Math.max(a, b) * radius * MathHelper.cos((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));
-		double y = Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));
+		float a, b;
+		double x;
+		double y;
+		
+		do {
+			a = random.nextFloat() * 2f - 1f;
+			b = random.nextFloat() * 2f - 1f;
+		}
+		while(a * a + b * b > 1);
+		
+		x = a * radius;
+		y = b * radius;
+		
+		
+		/*a = random.nextFloat();
+		b = random.nextFloat();
+		x = Math.max(a, b) * radius * MathHelper.cos((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));
+		y = Math.max(a, b) * radius * MathHelper.sin((float) (2f * Math.PI * Math.min(a, b) / Math.max(a, b)));*/
+		
 		double z = 1;
 		
-		float f = MathHelper.cos(yaw);
+		float yawcos = MathHelper.cos(yaw);
         float f1 = MathHelper.sin(yaw);
         float f2 = MathHelper.cos(pitch);
         float f3 = MathHelper.sin(pitch);
         
         double y1 = y * (double)f2 + z * (double)f3;
         double z1 = z * (double)f2 - y * (double)f3;
-        double x1 = x * (double)f + z1 * (double)f1;
-        double z2 = z1 * (double)f - x * (double)f1;
+        double x1 = x * (double)yawcos + z1 * (double)f1;
+        double z2 = z1 * (double)yawcos - x * (double)f1;
 		return new Vec3d(x1 * dist, y1 * dist, z2 * dist);
 	}
 	public static boolean isUsingShield(Entity shielded, DamageSource source) {
@@ -372,6 +389,9 @@ public class TF2Util {
 		if (initial > 0 && source.isFireDamage() && (target instanceof EntityLivingBase && ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldFire) != null 
 				&& ((EntityLivingBase) target).getActivePotionEffect(TF2weapons.shieldFire).getAmplifier() > 0))
 			initial = 0;
+		
+		if (initial > 1 && TF2Attribute.getModifier("Crits Become Mini Crits", stack, 0, shooter) != 0)
+			initial = 1;
 		
 		if (target instanceof EntityBuilding && initial == 1)
 			initial = 0;
@@ -498,6 +518,19 @@ public class TF2Util {
 				&& (ent != shooter) /*&& !(shooter instanceof IEntityOwnable && ((IEntityOwnable) shooter).getOwner() == ent)*/);
 	}
 
+	public static <T extends Entity> T getClosestEntityInCone(Vec3d start, Vec3d end, List<T> list, double aperture) {
+		double mindist = Double.MAX_VALUE;
+		T minentity = null;
+		for (T entity : list) {
+			double entdist = entity.getDistanceSq(start.x, start.y, start.z);
+			if (entdist < mindist && (aperture >= 180 || TF2Util.isLyingInCone(entity.getPositionVector(),start,end,(float) Math.toRadians(aperture)))) {
+				mindist = entdist;
+				minentity = entity;
+			}
+		}
+		return minentity;
+	}
+	
 	public static boolean lookingAt(EntityLivingBase entity, double max, double targetX, double targetY, double targetZ) {
 		return TF2Util.isLyingInCone(new Vec3d(targetX, targetY, targetZ),entity.getPositionEyes(1),entity.getPositionEyes(1).add(entity.getLook(1)),(float) Math.toRadians(max));
 	}
@@ -605,6 +638,15 @@ public class TF2Util {
 		double lvelocityX = entity.motionX;
 		double lvelocityY = entity.motionY;
 		double lvelocityZ = entity.motionZ;
+		boolean lairborne = entity.isAirBorne;
+		if (entity instanceof MultiPartEntityPart) {
+			Entity parent = (Entity) ((MultiPartEntityPart)entity).parent;
+			lairborne = parent.isAirBorne;
+			lvelocityX = parent.motionX;
+			lvelocityY = parent.motionY;
+			lvelocityZ = parent.motionZ;
+		}
+		
 		float prehealth=entity instanceof EntityLivingBase?((EntityLivingBase)entity).getHealth()+((EntityLivingBase)entity).getAbsorptionAmount():0f;
 		
 		if (entity.attackEntityFrom(source, damage)) {
@@ -645,6 +687,14 @@ public class TF2Util {
 				livingTarget.motionY = lvelocityY;
 				livingTarget.motionZ = lvelocityZ;
 				livingTarget.velocityChanged = false;
+			}
+			if (entity instanceof MultiPartEntityPart) {
+				Entity parent = (Entity) ((MultiPartEntityPart)entity).parent;
+				parent.isAirBorne = lairborne;
+				parent.motionX = lvelocityX;
+				parent.motionY = lvelocityY;
+				parent.motionZ = lvelocityZ;
+				parent.velocityChanged = false;
 			}
 			return true;
 		}
@@ -856,6 +906,10 @@ public class TF2Util {
 			criticalloc = calculateCritPost(ent, shooter, criticalloc, weapon, source);
 			((TF2DamageSource)source).setCritical(criticalloc);
 			float dmg = calculateDamage(ent, world, shooter, weapon, criticalloc, distance) * damageMult;
+			
+			if (ent instanceof EntityEnderCrystal && shooter != null && shooter.getRNG().nextFloat() > dmg/15f) {
+				continue;
+			}
 			
 			Vec3d vec=explosion.getKnockbackMap().get(ent);
 			if(vec != null) {
@@ -1372,8 +1426,8 @@ public class TF2Util {
 	
 	public static Vec2f getAngleFromFacing(EnumFacing facing) {
 		switch (facing) {
-		case UP: return new Vec2f(0,90);
-		case DOWN: return new Vec2f(0,-90);
+		case UP: return new Vec2f(0,-90);
+		case DOWN: return new Vec2f(0,90);
 		default : return new Vec2f(facing.getHorizontalAngle(),0);
 		}
 	}
@@ -1596,6 +1650,20 @@ public class TF2Util {
 		default: return new BlockPos(vec);
 		}
 	}
+	public static double getHeightAboveGround(Entity entity, World world, boolean checkWater) {
+		if (entity.onGround)
+			return 0.;
+		else
+			return getHeightAboveGround(new Vec3d(entity.posX, entity.getEntityBoundingBox().minY, entity.posZ), world, checkWater);
+	}
+	public static double getHeightAboveGround(Vec3d pos, World world, boolean checkWater) {
+		RayTraceResult ray = world.rayTraceBlocks(pos, pos.subtract(0., 256., 0.), checkWater);
+		
+		if (ray != null && ray.hitVec != null)
+			return pos.y-ray.hitVec.y;
+		else
+			return 0.;
+	}
 	
 	public static float getReducedHealing(EntityLivingBase attacker, EntityLivingBase target, float damage) {
 		return getDamageReduction(new DamageSource("").setProjectile(), attacker, 15f)/15f*damage;
@@ -1629,6 +1697,18 @@ public class TF2Util {
 		handler.insertItem(fromSlot+1, new ItemStack(TF2weapons.itemMoney,medium,1), false);
 		handler.extractItem(fromSlot+2, 64, false);
 		handler.insertItem(fromSlot+2, new ItemStack(TF2weapons.itemMoney,big,2), false);
+	}
+	
+	public static IItemHandler getLoadoutItemHandler(EntityLivingBase living) {
+		if (living instanceof EntityPlayer) {
+			IItemHandler handler = living.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			return handler;
+		}
+		else if (living instanceof EntityTF2Character) {
+			IItemHandler handler = ((EntityTF2Character)living).loadout;
+			return handler;
+		}
+		return null;
 	}
 	
 	public static void playSoundToPlayer(EntityPlayer player, SoundEvent event, SoundCategory category, double x, double y, double z, float volume, float pitch) {

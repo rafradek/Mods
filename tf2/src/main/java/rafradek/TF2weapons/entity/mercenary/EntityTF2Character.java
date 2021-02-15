@@ -347,7 +347,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 
 			if (this.rand.nextFloat() < 0.095F * chance) {
 				++i;
-				this.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).applyModifier(new AttributeModifier("hatarmort", 1, 0));
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).applyModifier(new AttributeModifier("hatarmort", 2, 0));
 			}
 
 			boolean flag = true;
@@ -408,7 +408,7 @@ public class EntityTF2Character extends EntityCreature implements IMob, IMerchan
 	}
 
 	public int getDiff() {
-		return Math.max(0, this.dataManager.get(DIFFICULTY) + this.difficulty + (this.isGiant() ? 2:0));
+		return Math.max(1, this.dataManager.get(DIFFICULTY) + this.difficulty + (this.isGiant() ? 2:0));
 	}
 
 	public void setEntTeam(int team) {

@@ -16,6 +16,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.items.IItemHandler;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
@@ -41,6 +42,7 @@ import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 
 public class TF2Attribute {
@@ -383,12 +385,89 @@ public class TF2Attribute {
 		new TF2Attribute(159, "FuseTimeBonus", "Fuse Time", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(160, "OverHealRatePenalty", "Overheal Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(161, "UberRateOverhealPenalty", "Uber Overheal Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(162, "UberShield", "Uber Shield", Type.ADDITIVE, 0f, State.POSITIVE);
-		new TF2Attribute(163, "PassiveShield", "Passive Shield", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(162, "UberShield", "Uber Shield", Type.ADDITIVE, 0f, State.HIDDEN);
+		new TF2Attribute(163, "PassiveShield", "Passive Shield", Type.ADDITIVE, 0f, State.HIDDEN);
 		new TF2Attribute(164, "CanOverload", "Overload", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(165, "UberTimeBonus", "Uber Time", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(166, "UberOnHitRemove", "Uber Hit Remove", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(167, "CloakOnHitRemove", "Cloak Hit Remove", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(168, "FireResistPenalty", "Fire Resist", Type.PERCENTAGE, 1, State.NEGATIVE);
+		new TF2Attribute(169, "AltFireChargeShot", "Alt Fire Charge Shot", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(170, "CritsBecomeMiniCrits", "Crits Become Mini Crits", Type.ADDITIVE, 0, State.NEGATIVE);
+		new TF2Attribute(171, "MedicHealingDecreased", "Medic Heal", Type.PERCENTAGE, 1, State.NEGATIVE);
+		new TF2Attribute(172, "DamageHealthBonus", "Damage Health", Type.PERCENTAGE, 1, State.POSITIVE);
+		new TF2Attribute(173, "MoveSpeedHealthBonus", "Move Speed Health", Type.PERCENTAGE, 1, State.POSITIVE);
+		new TF2Attribute(174, "IncreaseCaptureRate", "Capture Rate", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(175, "AirblastCostPenalty", "Airblast Cost", Type.PERCENTAGE, 0, State.NEGATIVE);
+		new TF2Attribute(176, "CritFromBehind", "Crit Behind", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(177, "HolsterTimeBonus", "Holster Time", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(178, "SelfPushForcePenalty", "Self Push Force", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(179, "DamageBuildingBonus", "Damage Building", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(180, "DamagePlayersPenalty", "Damage Players", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(181, "HealthFromHealersPenalty", "Healh From Healers", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(182, "HealthFromKitsBonus", "Healh From Kits", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(183, "CanRemoveSappers", "Remove Sappers", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(184, "CritWet", "Crit Wet", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(185, "DoubleAttack", "Double Attack", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(186, "SpeedOnHit", "Speed Hit", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(187, "HypeJump", "Hype Jump", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(188, "SpeedRage", "Speed Rage", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(189, "JumpRageReduction", "Jump Add Rage", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(190, "TakeDamageRageReduction", "Take Damage Add Rage", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(191, "MinicritBehind", "Minicrit Behind", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(192, "JumpHeightBonus", "Jump Height", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(193, "WrapRelease", "Ball Release", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(194, "ExplosionResistPenalty", "Explosion Resist", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(195, "DropHealthPackOnHit", "Drop Health Pack On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(196, "HitSelfOnMiss", "Hit Self On Miss", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(197, "AttackConnectedMedic", "Attack Connected Medic", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(198, "MarkForDeath", "Mark For Death", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(199, "FuseTimeReduced", "Fuse Time", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(200, "GrenadeNoRoll", "Grenade Roll", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(201, "ChargeDamageBonus", "Max Charge Damage", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(202, "ArmTimeBonus", "Arm Time", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(203, "ImpactDamageBonus", "Impact Damage", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(204, "MeleeKillChargeRecharge", "Melee Kill Charge", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(205, "TakeDamageReducesCharge", "Take Damage Charge", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(206, "HealthOnKillRelative", "Health Kill Relative", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(207, "Honorbound", "Honorbound", Type.ADDITIVE, 0, State.NEGATIVE);
+		new TF2Attribute(208, "OnHitChargeRecharge", "On Hit Charge Recharge", Type.ADDITIVE, 0, State.POSITIVE);
+		new TF2Attribute(209, "MaxAmmoDecreased", "Max Ammo Global", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(210, "AmmoRechargeCharge", "Ammo Charge Recharge", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(211, "DetonateOnHit", "Detonate On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(212, "SlowOnHit", "Slow On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(213, "DamageResistHalfHealthSpinningBonus", "Damage Resist Half Health Spinning", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(214, "MovementSpinPenalty", "Speed Spin", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(215, "CritNoDamage", "Crit No Damage", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(216, "CritMakesLaugh", "Crit Laugh", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(217, "RevengeCrits", "Revenge Crits", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(218, "RepairRatePenalty", "Repair Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(219, "SeeEnemyHealth", "Enemy Health", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(220, "OrganHarvest", "Organ Harvest", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(221, "HealRadial", "Heal Radial", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(222, "MovementUberBonus", "Movement Uber", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(223, "ChargeRateOnKill", "Charge Rate On Kill", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(224, "DamageAboveHalfHealthPenalty", "Damage Above Half Health", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(225, "DamageBelowHalfHealthBonus", "Damage Above Half Health", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(226, "NoFlinchCharged", "No Flinch Charged", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(227, "KnockbackReductionAim", "Knockback Aim", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(228, "IndependentCharge", "Independent Charge", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(229, "BodyDamagePenalty", "Body Damage", Type.PERCENTAGE, 1f, State.NEGATIVE);
+		new TF2Attribute(230, "CannotHeadshotUnlessCharged", "Independent Charge", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(231, "FocusRage", "Focus Rage", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(232, "CloakDurationGlobalBonus", "Cloak Duration Global", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(233, "CloakOnKill", "Cloak On Kill", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(234, "SpeedBoostOnKill", "Speed Boost On Kill", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(235, "MeltsInFire", "Melts In Fire", Type.ADDITIVE, 0f, State.NEGATIVE);
+		new TF2Attribute(236, "FireProofOnHit", "Fire Proof On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(237, "AbsorbHealthBackstab", "Absorb Health Backstab", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(238, "CritOnKillSap", "Crit On Kill Sap", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(239, "PierceResistances", "Pierce Resistances", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(240, "DamageWhenDisguisedBonus", "Damage When Disguised", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(241, "ProvideWhenActive", "Provide When Active", Type.ADDITIVE, 0f, State.NEUTRAL);
+		new TF2Attribute(242, "ReverseBuilding", "ReverseBuilding", Type.ADDITIVE, 0f, State.POSITIVE);
+		new TF2Attribute(243, "HealthDegen", "Health Regen", Type.ADDITIVE, 0f, State.NEGATIVE);
+		
 		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
 				SHIELD, 1f, 1, 250, 3);*/
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
@@ -408,6 +487,19 @@ public class TF2Attribute {
 		}
 		return value;
 	}
+	
+	private static float getModifierStack(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
+
+		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+			return initial;
+		float value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, initial);
+
+		if (entity != null && entity instanceof EntityTF2Character)
+			value *= ((EntityTF2Character) entity).getAttributeModifier(effect);
+
+		return value;
+	}
+	
 	public static float getModifier(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
 
 		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
@@ -420,6 +512,23 @@ public class TF2Attribute {
 		return value;
 	}
 
+	public static float getModifierGlobal(String effect, float initial, EntityLivingBase entity) {
+		float value = initial;
+		
+		IItemHandler itemHandler = TF2Util.getLoadoutItemHandler(entity);
+		for (int i = 0; i < itemHandler.getSlots(); i++) {
+			ItemStack stack = itemHandler.getStackInSlot(i);
+			if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+				continue;
+			stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, value);
+		}
+
+		if (entity != null && entity instanceof EntityTF2Character)
+			value *= ((EntityTF2Character) entity).getAttributeModifier(effect);
+
+		return value;
+	}
+	
 	public String getTranslatedString(float value, boolean withColor) {
 		String valueStr = String.valueOf(value);
 		if (this.typeOfValue == Type.PERCENTAGE)

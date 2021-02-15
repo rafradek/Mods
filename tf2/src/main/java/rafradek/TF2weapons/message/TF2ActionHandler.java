@@ -50,6 +50,7 @@ import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemJetpackTrigger;
 import rafradek.TF2weapons.item.ItemParachute;
@@ -196,10 +197,20 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						});
 						//FMLNetworkHandler.openGui(player, TF2weapons.instance, 4, player.world,(int) player.posX,(int)  player.posY,(int)  player.posZ);
 					} 
-					else if (message.value == 23 && WeaponsCapability.get(player).airJumps < WeaponsCapability.get(player).getMaxAirJumps()) {
+					else if (message.value == 23 && (WeaponsCapability.get(player).airJumps < WeaponsCapability.get(player).getMaxAirJumps() || WeaponsCapability.get(player).isGrappled())) {
 						player.fallDistance = 0;
-						WeaponsCapability.get(player).airJumps+=1;
-						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
+						if (!WeaponsCapability.get(player).isGrappled()) {
+							WeaponsCapability.get(player).airJumps+=1;
+							player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
+						}
+						else {
+							if (player.getHeldItemMainhand().getItem() instanceof ItemGrapplingHook){
+								WeaponsCapability.get(player).setPrimaryCooldown(EnumHand.MAIN_HAND, ((ItemGrapplingHook) player.getHeldItemMainhand().getItem()).getFiringSpeed(player.getHeldItemMainhand(), player));
+								player.motionY += 0.42;
+								player.velocityChanged = true;
+							}
+						}
+						WeaponsCapability.get(player).setGrapplingHook(null);
 					} 
 					else if (message.value == 25) {
 						ItemStack stack = ItemBackpack.getBackpack(player);
@@ -221,7 +232,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					} 
 					else if (message.value == 27) {
 						TF2PlayerCapability.get(player).setEquipBackpackItem(false);
-					} 
+					}
 					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {

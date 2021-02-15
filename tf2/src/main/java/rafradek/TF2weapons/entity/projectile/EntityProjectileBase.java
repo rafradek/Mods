@@ -10,6 +10,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
@@ -83,6 +84,10 @@ public abstract class EntityProjectileBase extends Entity
 	public double cachedGravity = -1;
 	public float damageModifier = 1f;
 	public float chargeLevel;
+	
+	public Entity homingTarget;
+	public float homingAngle;
+	public float homingSpeed;
 	
 	private static final DataParameter<Byte> CRITICAL = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BYTE);
@@ -371,7 +376,7 @@ public abstract class EntityProjectileBase extends Entity
 		}
 		boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
 		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
-				this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
+				this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate(), this.getCollisionPredicate()
 				)) {
 			
 			if (target.entityHit != null
@@ -417,6 +422,11 @@ public abstract class EntityProjectileBase extends Entity
 			}
 		}
 	}
+	
+	protected Predicate<Entity> getCollisionPredicate() {
+		return TF2Util.TARGETABLE;
+	}
+
 	/**
 	 * Called to update the entity's position/logic.
 	 */
@@ -456,6 +466,35 @@ public abstract class EntityProjectileBase extends Entity
 				this.setSticked(false);
 		}
 		if (this.moveable()) {
+			if (this.shootingEntity != null && this.getHomingAngle() > 0f && !this.world.isRemote) {
+				if (this.homingTarget == null || !this.homingTarget.isEntityAlive()) {
+					List<Entity> targets = this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox().grow(128), entity -> {
+						return entity.isEntityAlive() && entity instanceof EntityLivingBase && TF2Util.isEnemy(shootingEntity, (EntityLivingBase)entity) && !this.hitEntities.contains(entity);
+					});
+					this.homingTarget = TF2Util.getClosestEntityInCone(this.getPositionVector(), this.getPositionVector().addVector(this.motionX, this.motionY, this.motionZ), targets, this.getHomingAngle());
+				}
+				if (this.hitEntities.contains(this.homingTarget)) {
+					this.homingTarget = null;
+				}
+				if (this.homingTarget != null ) {
+					float sq = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+					float yaw = (float) (MathHelper.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
+					float pitch = (float) (MathHelper.atan2(this.motionY, sq) * 180.0D / Math.PI);
+					Vec3d offset = new Vec3d(this.homingTarget.posX - this.posX, this.homingTarget.posY - this.posY + this.homingTarget.height / 2D, this.homingTarget.posZ - this.posZ);
+					float targetsq = MathHelper.sqrt(offset.x * offset.x + offset.z * offset.z);
+					float targetyaw = (float) (MathHelper.atan2(offset.x, offset.z) * 180.0D / Math.PI);
+					float targetpitch = (float) (MathHelper.atan2(offset.y, targetsq) * 180.0D / Math.PI);
+					yaw += MathHelper.clamp(MathHelper.wrapDegrees(targetyaw - yaw), -this.getHomingTurnSpeed(), this.getHomingTurnSpeed());
+					pitch += MathHelper.clamp(MathHelper.wrapDegrees(targetpitch - pitch), -this.getHomingTurnSpeed(), this.getHomingTurnSpeed());
+					offset = Vec3d.fromPitchYaw(pitch, yaw).scale(MathHelper.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ));
+					this.velocityChanged = true;
+					this.motionX = -offset.x;
+					this.motionY =- offset.y;
+					this.motionZ = offset.z;
+				}
+				
+			}
+			
 			if (!this.useCollisionBox()) {
 				this.posX += this.motionX;
 				this.posY += this.motionY;
@@ -772,11 +811,15 @@ public abstract class EntityProjectileBase extends Entity
 	public boolean moveable() {
 		return !this.isSticked();
 	}
-
-	/**
-	 * Whether the arrow has a stream of critical hit particles flying behind
-	 * it.
-	 */
+	
+	public float getHomingAngle() {
+		return this.homingAngle;
+	}
+	
+	public float getHomingTurnSpeed() {
+		return this.homingSpeed;
+	}
+	
 	public void setCritical(int critical) {
 		this.dataManager.set(CRITICAL, (byte) critical);
 	}

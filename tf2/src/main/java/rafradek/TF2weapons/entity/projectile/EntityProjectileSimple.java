@@ -27,17 +27,18 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 	}
 	
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
-		if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
+		String name = ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE);
+		if(name.equals("repairclaw"))
 			this.setType(0);
-		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("syringe"))
+		else if(name.equals("syringe"))
 			this.setType(1);
-		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
+		else if(name.equals("cleaver"))
 			this.setType(2);
-		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("arrow"))
+		else if(name.equals("arrow"))
 			this.setType(3);
-		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("pomson"))
+		else if(name.equals("pomson"))
 			this.setType(4);
-		else if(ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE).equals("hhhaxe"))
+		else if(name.equals("hhhaxe"))
 			this.setType(8);
 		
 		super.initProjectile(shooter, hand, weapon);

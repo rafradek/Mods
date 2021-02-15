@@ -122,6 +122,7 @@ import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemMeleeWeapon;
@@ -203,15 +204,23 @@ public class TF2EventsClient {
 		Minecraft minecraft = Minecraft.getMinecraft();
 		if (minecraft.currentScreen == null) {
 			ItemStack stack = minecraft.player.getHeldItemMainhand();
-			if (minecraft.gameSettings.keyBindJump.isPressed() && !minecraft.player.onGround) {
+			if (minecraft.gameSettings.keyBindJump.isPressed()) {
 				ItemStack chest = ItemBackpack.getBackpack(minecraft.player);
-				if(WeaponsCapability.get(minecraft.player).airJumps < WeaponsCapability.get(minecraft.player).getMaxAirJumps()) {
+				if (!minecraft.player.onGround && WeaponsCapability.get(minecraft.player).airJumps < WeaponsCapability.get(minecraft.player).getMaxAirJumps()) {
 					minecraft.player.jump();
 					float speedmult=minecraft.player.getAIMoveSpeed() * (minecraft.player.isSprinting() ? 2 : 1);
 					Vec3d moveDir = TF2Util.getMovementVector(minecraft.player);
+					minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).airJumps += 1;
 					minecraft.player.motionX=moveDir.x * speedmult;
 					minecraft.player.motionZ=moveDir.y * speedmult;
-					minecraft.player.getCapability(TF2weapons.WEAPONS_CAP, null).airJumps += 1;
+					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
+				}
+				else if (WeaponsCapability.get(minecraft.player).isGrappled()) {
+					minecraft.player.jump();
+					if (minecraft.player.getHeldItemMainhand().getItem() instanceof ItemGrapplingHook){
+						WeaponsCapability.get(minecraft.player).setPrimaryCooldown(EnumHand.MAIN_HAND, ((ItemGrapplingHook) minecraft.player.getHeldItemMainhand().getItem()).getFiringSpeed(minecraft.player.getHeldItemMainhand(), minecraft.player));
+						
+					}
 					
 					TF2weapons.network.sendToServer(new TF2Message.ActionMessage(23));
 				}
@@ -1267,7 +1276,8 @@ public class TF2EventsClient {
 		}
 		if (event.getEntity().getActivePotionEffect(TF2weapons.buffbanner) != null || 
 				event.getEntity().getActivePotionEffect(TF2weapons.backup) != null ||
-				event.getEntity().getActivePotionEffect(TF2weapons.conch) != null) {
+				event.getEntity().getActivePotionEffect(TF2weapons.conch) != null || 
+				event.getEntity().getActivePotionEffect(TF2weapons.quickFix) != null) {
 			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 			GlStateManager.enableBlend();
 			GlStateManager.disableLighting();

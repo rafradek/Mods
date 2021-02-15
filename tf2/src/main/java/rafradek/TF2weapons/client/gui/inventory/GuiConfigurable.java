@@ -56,12 +56,14 @@ public class GuiConfigurable extends GuiContainer {
 	public String[] keys = new String[0];
 	public int[] types = new int[0];
 	public Gui[] fields = new Gui[0];
+	public BlockPos pos;
 
 	public GuiConfigurable(InventoryPlayer playerInv, IEntityConfigurable station, World worldIn,
 			BlockPos blockPosition) {
 		super(new ContainerConfigurable(Minecraft.getMinecraft().player, playerInv, station, worldIn, blockPosition));
 		this.xSize = 230;
 		this.ySize = 225;
+		this.pos = blockPosition;
 		// this.itemsToRender=new ItemStack[9];
 	}
 
@@ -214,7 +216,7 @@ public class GuiConfigurable extends GuiContainer {
 				newtag.setString(keys[t], ((GuiTextField)fields[t]).getText());
 			}
 		}
-		TF2weapons.network.sendToServer(new TF2Message.GuiConfigMessage(newtag));
+		TF2weapons.network.sendToServer(new TF2Message.GuiConfigMessage(newtag, this.pos));
     }
 	/**
 	 * Draw the foreground layer for the GuiContainer (everything in front of

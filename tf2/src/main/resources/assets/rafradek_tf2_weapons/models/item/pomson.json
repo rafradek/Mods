@@ -1958,5 +1958,13 @@
 		"fixed": {
 			"rotation":  [ 0, 11, 0 ]
 		}
-	}
+	},
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/pomson_blu"
+		}
+	]
 }

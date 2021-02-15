@@ -214,10 +214,12 @@ import rafradek.TF2weapons.entity.projectile.EntityCleaver;
 import rafradek.TF2weapons.entity.projectile.EntityFlame;
 import rafradek.TF2weapons.entity.projectile.EntityFlare;
 import rafradek.TF2weapons.entity.projectile.EntityFuryFireball;
+import rafradek.TF2weapons.entity.projectile.EntityGrapplingHook;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileEnergy;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileShortCircuitOrb;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
@@ -311,7 +313,7 @@ import rafradek.TF2weapons.util.WeaponData;
 import rafradek.TF2weapons.world.gen.structure.MannCoBuilding;
 import rafradek.TF2weapons.world.gen.structure.ScatteredFeatureTF2Base;
 
-@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.6.1", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
+@Mod(modid = TF2weapons.MOD_ID, name = "TF2 Stuff", version = "1.7.0", guiFactory = "rafradek.TF2weapons.client.gui.TF2GuiFactory", acceptedMinecraftVersions = "[1.12, 1.13)", 
 dependencies = "after:dynamiclights;after:thermalexpansion", updateJSON="https://rafradek.github.io/tf2stuffmod.json")
 public class TF2weapons {
 
@@ -403,6 +405,8 @@ public class TF2weapons {
 	public static Potion shieldExplosive;
 	public static Potion shieldBullet;
 	public static Potion shieldFire;
+	public static Potion gas;
+	public static Potion quickFix;
 	
 	public static Item itemDisguiseKit;
 	public static Item itemBuildingBox;
@@ -474,7 +478,7 @@ public class TF2weapons {
 	public static CommonProxy proxy;
 	
 	public static int getCurrentWeaponVersion() {
-		return 49;
+		return 50;
 	}
 
 	@Mod.EventHandler
@@ -650,6 +654,8 @@ public class TF2weapons {
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"fireball"),EntityFuryFireball.class, "fireball", 32, this, 64, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"light"),EntityLightDynamic.class, "light", 33, this, 256, 20, false);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"pickup"),EntityPickup.class, "pickup", 34, this, 80, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"grapplinghook"),EntityGrapplingHook.class, "grapplinghook", 35, this, 64, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"shortcircuitorb"),EntityProjectileShortCircuitOrb.class, "shortcircuitorb", 36, this, 64, 20, false);
 		// GameRegistry.registerItem(new ItemArmor(TF2weapons.OPARMOR, 3,
 		// 0).setUnlocalizedName("oparmor").setTextureName("diamond_helmet").setCreativeTab(tabtf2),"oparmor");
 		ForgeRegistries.ITEMS.register(itemPlacer = new ItemMonsterPlacerPlus().setUnlocalizedName("monsterPlacer").setRegistryName(TF2weapons.MOD_ID + ":placer"));
@@ -777,6 +783,8 @@ public class TF2weapons {
 				.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "7107DE5E-7CE8-4030-940E-14B35B5565E2", 0.35D, 1));
 		ForgeRegistries.POTIONS.register(markDeath = new PotionTF2(true, 0, 1, 2).setPotionName("effect.markDeath").setRegistryName(TF2weapons.MOD_ID + ":markDeathEff"));
 		ForgeRegistries.POTIONS.register(critBoost = new PotionTF2(false, 0, 4, 0).setPotionName("effect.critBoost").setRegistryName(TF2weapons.MOD_ID + ":critBoostEff").setBeneficial());
+		ForgeRegistries.POTIONS.register(quickFix = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/medigun_im.png")).setPotionName("effect.quickfix")
+				.setRegistryName(TF2weapons.MOD_ID + ":quickFixEff").setBeneficial().registerPotionAttributeModifier(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "0d09b7c3-ac5e-4f56-9b65-fe2d09b99dc1", 10, 0));
 		ForgeRegistries.POTIONS.register(jarate = new PotionTF2Item(true, 0xFFD500, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/jarate.png")).setPotionName("effect.jarate")
 				.setRegistryName(TF2weapons.MOD_ID + ":jarateEff"));
 		ForgeRegistries.POTIONS.register(madmilk = new PotionTF2Item(true, 0xF1F1F1, new ResourceLocation(TF2weapons.MOD_ID, "textures/items/madmilk.png")).setPotionName("effect.madmilk")
@@ -883,12 +891,14 @@ public class TF2weapons {
 		    }
 			
 		}.setPotionName("effect.viralFire").setRegistryName(TF2weapons.MOD_ID + ":viralFire"));
-		ForgeRegistries.POTIONS.register(shieldBullet = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_bullet_red.png"))
+		ForgeRegistries.POTIONS.register(shieldBullet = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_bullet_red.png"))
 				.setPotionName("effect.shieldBullet").setRegistryName(TF2weapons.MOD_ID + ":shieldBullet"));
-		ForgeRegistries.POTIONS.register(shieldExplosive = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_explosive_red.png"))
+		ForgeRegistries.POTIONS.register(shieldExplosive = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_explosive_red.png"))
 				.setPotionName("effect.shieldExplosive").setRegistryName(TF2weapons.MOD_ID + ":shieldExplosive"));
-		ForgeRegistries.POTIONS.register(shieldFire = new PotionTF2Item(true, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_fire_red.png"))
+		ForgeRegistries.POTIONS.register(shieldFire = new PotionTF2Item(false, 0, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_fire_red.png"))
 				.setPotionName("effect.shieldFire").setRegistryName(TF2weapons.MOD_ID + ":shieldFire"));
+		ForgeRegistries.POTIONS.register(gas = new PotionTF2Item(true, 0x2B3E00, new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/vac_fire_red.png"))
+				.setPotionName("effect.gas").setRegistryName(TF2weapons.MOD_ID + ":gaspasserEff"));
 		// conf.save();
 		ItemKillstreakFabricator.initKillstreaks();
 		PropertyType.init();

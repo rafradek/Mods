@@ -2,12 +2,15 @@ package rafradek.TF2weapons.entity.projectile;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class EntityRocket extends EntityProjectileBase {
 
@@ -19,6 +22,12 @@ public class EntityRocket extends EntityProjectileBase {
 			this.makeLit();
 	}
 
+	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		String name = ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE);
+		if (name.equals("cowmangler"))
+			this.setType(1);
+		super.initProjectile(shooter, hand, weapon);
+	}
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.02,

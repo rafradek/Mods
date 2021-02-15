@@ -93,6 +93,7 @@ import rafradek.TF2weapons.client.particle.EntityMuzzleFlash;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.client.particle.ParticleBulletHole;
 import rafradek.TF2weapons.client.particle.ParticleExplosion;
+import rafradek.TF2weapons.client.particle.ParticleGasSmoke;
 import rafradek.TF2weapons.client.renderer.LayerWearables;
 import rafradek.TF2weapons.client.renderer.entity.RenderBall;
 import rafradek.TF2weapons.client.renderer.entity.RenderDispenser;
@@ -749,6 +750,11 @@ public class ClientProxy extends CommonProxy {
 	
 	public static void spawnBisonParticle(World world, double pX, double pY, double pZ, int teamForDisplay) {
 		Particle entity = new EntityBisonEffect(world, pX, pY, pZ, teamForDisplay);
+		spawnParticle(world, entity);
+	}
+	
+	public static void spawnGasSmokeParticle(World world, double pX, double pY, double pZ, int teamForDisplay) {
+		Particle entity = new ParticleGasSmoke(world, pX, pY, pZ, teamForDisplay);
 		spawnParticle(world, entity);
 	}
 	

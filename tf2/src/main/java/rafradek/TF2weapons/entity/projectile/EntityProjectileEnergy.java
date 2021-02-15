@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.entity.projectile;
 
+import com.google.common.base.Predicate;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,7 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 		
 	}
 	
+	
 	public boolean isPushable() {
 		return false;
 	}
@@ -41,12 +44,11 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
 		super.onHitMob(entityHit, mop);
+		this.hitEntities.clear();
 		if (this.struck == 0) {
 			this.struck = new Vec3d(this.motionX, this.motionY, this.motionZ).lengthVector();
-			this.motionX = (this.motionX / this.struck) * 0.9;
-			this.motionY = (this.motionY / this.struck) * 0.9;
-			this.motionZ = (this.motionZ / this.struck) * 0.9;
 		}
+		
 	}
 	
 	@Override
@@ -63,9 +65,6 @@ public class EntityProjectileEnergy extends EntityProjectileSimple {
 			this.hitEntities.clear();
 		}
 		else if(this.struck != 0) {
-			this.motionX = (this.motionX * this.struck) / 0.9;
-			this.motionY = (this.motionY * this.struck) / 0.9;
-			this.motionZ = (this.motionZ * this.struck) / 0.9;
 			this.struck = 0;
 		}
 	}

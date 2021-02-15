@@ -6,6 +6,8 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -32,6 +34,7 @@ import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.client.ClientRender;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
@@ -251,6 +254,9 @@ public class ItemMedigun extends ItemUsable {
 						par1ItemStack.getTagCompound().setByte("ResType", (byte) 0);
 					}
 				}
+				if (this.getPotion(par1ItemStack, living) == TF2weapons.quickFix && this.isAlreadyUbered(par1ItemStack, living)) {
+					this.heal(par1ItemStack, living, par2World, living);
+				}
 				Entity healTargetEnt = par2World.getEntityByID(cap.getHealTarget());
 				if(healTargetEnt != null && healTargetEnt instanceof EntityLivingBase){
 					EntityLivingBase healTarget=(EntityLivingBase) healTargetEnt;
@@ -366,7 +372,11 @@ public class ItemMedigun extends ItemUsable {
 		return TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 1;
 	}
 	public float getHealAmount(ItemStack stack, EntityLivingBase living, EntityLivingBase target) {
-		return TF2Attribute.getModifier("Heal", stack, ItemFromData.getData(stack).getFloat(PropertyType.HEAL), living);
+		float mult = 1f;
+		if (this.getPotion(stack, living) == TF2weapons.quickFix && this.isAlreadyUbered(stack, target)) {
+			mult *= 3f;
+		}
+		return mult * TF2Attribute.getModifierGlobal("Medic Heal", TF2Attribute.getModifier("Heal", stack, ItemFromData.getData(stack).getFloat(PropertyType.HEAL), living), living);
 	}
 	public int getUbers(ItemStack stack, EntityLivingBase living) {
 		return this.isShieldResist(stack,living) ? 4 : 1;
@@ -503,5 +513,23 @@ public class ItemMedigun extends ItemUsable {
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_ALPHA_TEST);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		
+		if (this.isShieldResist(stack, player)) {
+			float offset = 0f;
+			if (TF2Util.getTeamForDisplay(player) != 0)
+				offset = 96f;
+			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientRender.VAC_EFFECT);
+			switch (stack.getTagCompound().getByte("ResType")) {
+			case 0:
+				offset += 0f; break;
+			case 1:
+				offset += 32f; break;
+			case 2:
+				offset += 64f; break;
+			default:
+				offset += 0f; break;
+			}
+			Gui.drawModalRectWithCustomSizedTexture(resolution.getScaledWidth() - 95, resolution.getScaledHeight() - 90, offset, 0, 32, 32, 256, 32);
+		}
 	}
 }

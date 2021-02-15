@@ -15,6 +15,7 @@ import rafradek.TF2weapons.entity.projectile.EntityCleaver;
 import rafradek.TF2weapons.entity.projectile.EntityFlame;
 import rafradek.TF2weapons.entity.projectile.EntityFlare;
 import rafradek.TF2weapons.entity.projectile.EntityFuryFireball;
+import rafradek.TF2weapons.entity.projectile.EntityGrapplingHook;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
@@ -33,6 +34,8 @@ import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemFlameThrower;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemGas;
+import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemJar;
 import rafradek.TF2weapons.item.ItemJetpack;
@@ -110,8 +113,11 @@ public class MapList {
 		weaponClasses.put("jetpack", new ItemJetpack());
 		weaponClasses.put("jetpacktrigger", new ItemJetpackTrigger());
 		weaponClasses.put("pda", new ItemPDA());
+		weaponClasses.put("gas", new ItemGas());
+		weaponClasses.put("shortcircuit", new ItemBulletWeapon());
 		weaponClasses.put("airblast", new ItemAirblast());
 		weaponClasses.put("backpackgeneric", new ItemBackpack());
+		weaponClasses.put("grapplinghook", new ItemGrapplingHook());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
@@ -123,7 +129,9 @@ public class MapList {
 		 */
 
 		projectileClasses.put("rocket", EntityRocket.class);
+		projectileClasses.put("cowmangler", EntityRocket.class);
 		projectileClasses.put("fire", EntityFlame.class);
+		projectileClasses.put("gas", EntityJar.class);
 		projectileClasses.put("fireball", EntityFuryFireball.class);
 		projectileClasses.put("flare", EntityFlare.class);
 		projectileClasses.put("grenade", EntityGrenade.class);
@@ -137,5 +145,6 @@ public class MapList {
 		projectileClasses.put("energy", EntityProjectileEnergy.class);
 		projectileClasses.put("onyx", EntityOnyx.class);
 		projectileClasses.put("pomson", EntityProjectileSimple.class);
+		projectileClasses.put("grapplinghook", EntityGrapplingHook.class);
 	}
 }

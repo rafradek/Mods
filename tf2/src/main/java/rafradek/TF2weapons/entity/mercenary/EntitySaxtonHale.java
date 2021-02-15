@@ -67,6 +67,8 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	public int jumpCooldown;
 	public boolean endangered;
 	public int lastWeekCheck;
+	
+	private int targetAirborneTicks;
 
 	private int noPathTime = 0;
 	private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE,
@@ -243,28 +245,49 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		if (!this.world.isRemote) {
 			this.jumpCooldown--;
 
-			if (this.getAttackTarget() == null)
-				this.heal(0.35f);
-
 			if (this.rand.nextInt(20) == 0) {
 				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12*TF2Util.lerp(1.5f, 1, this.getHealth()/this.getMaxHealth()));
 			}
 			this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
 			// System.out.println("Has path: "+this.getNavigator().noPath());
-			List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
-			boolean obscuredView = false;
-			for (AxisAlignedBB box : boxes)
-				if (box.calculateIntercept(this.getPositionVector().addVector(0, this.getEyeHeight(), 0),
-						this.getPositionVector().add(this.getVectorForRotation(0, this.rotationYawHead).addVector(0,
-								this.getEyeHeight(), 0))) != null) {
-					obscuredView = true;
-					break;
+			
+			if (this.getAttackTarget() == null)
+				this.heal(0.35f);
+			else if (this.getAttackTarget().isEntityAlive()) {
+				
+				if (!this.getAttackTarget().onGround) {
+					this.targetAirborneTicks++;
 				}
-
-			if (this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && obscuredView) {
-				this.superJump = true;
-				this.jump();
+				
+				if (!this.onGround) {
+					Vec3d forward = new Vec3d(this.getAttackTarget().posX-this.posX, 0., this.getAttackTarget().posZ-this.posZ).normalize().scale(this.getAIMoveSpeed() * 0.42);
+					this.motionX += forward.x;
+					this.motionZ += forward.z;
+				}
+				
+				List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
+				boolean obscuredView = false;
+				for (AxisAlignedBB box : boxes)
+					if (box.calculateIntercept(this.getPositionVector().addVector(0, this.getEyeHeight(), 0),
+							this.getPositionVector().add(this.getVectorForRotation(0, this.rotationYawHead).addVector(0,
+									this.getEyeHeight(), 0))) != null) {
+						obscuredView = true;
+						break;
+					}
+				
+				if (this.onGround && this.jumpCooldown <= 0) {
+					if (obscuredView)
+						this.superJump();
+					else if (this.targetAirborneTicks > 25) {
+						double height = TF2Util.getHeightAboveGround(this.getAttackTarget(), world, true) ;
+						if (height > 2. && height < 30.)
+							this.superJump();
+						else if (height >= 30.) 
+							this.heal(0.35f);
+					}
+				}
 			}
+			
 			
 			if (this.ticksExisted % 3 == 0) {
 				if(this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && this.getNavigator().getPathToEntityLiving(this.getAttackTarget()) == null) {
@@ -304,8 +327,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 					this.playSound(TF2Sounds.MOB_SAXTON_RAGE, 2.5F, 1F);
 					for (EntityLivingBase living : list)
 						TF2Util.stun(living, 160, false);
-					this.superJump = true;
-					this.jump();
+					this.superJump();
 				}
 			}
 		}
@@ -357,29 +379,33 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	@Override
 	protected float getJumpUpwardsMotion() {
-		if (superJump && jumpCooldown <= 0)
+		if (superJump)
 			return 2.7F;
 		return 0.7F;
 	}
 
+	public void superJump() {
+		if (this.jumpCooldown > 0)
+			return;
+		
+		this.playSound(TF2Sounds.MOB_SAXTON_JUMP, 2F, 1F);
+		this.motionY = 0;
+		
+		this.jumpCooldown = 25;
+		
+		this.superJump = true;
+		super.jump();
+		this.superJump = false;
+	}
+	
 	@Override
 	public void jump() {
 		/*
 		 * if(this.getAttackTarget()!=null&&this.getAttackTarget().posY-this.
 		 * posY>=3){ this.superJump=true; }
 		 */
-		if (superJump && jumpCooldown <= 0)
-			this.playSound(TF2Sounds.MOB_SAXTON_JUMP, 2F, 1F);
+		
 
-		if (this.onGround || this.jumpCooldown <= 0) {
-			this.motionY = 0;
-			super.jump();
-		}
-
-		if (superJump)
-			this.superJump = false;
-
-		this.jumpCooldown = 20;
 	}
 
 	@Override

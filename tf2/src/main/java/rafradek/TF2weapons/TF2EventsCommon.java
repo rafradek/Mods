@@ -816,6 +816,13 @@ public class TF2EventsCommon {
 				TF2Util.playSound(target, TF2Sounds.MISC_CRIT, 1.5F, 1.2F / (target.getRNG().nextFloat() * 0.2F + 0.9F));
 			}
 		}
+		if (attacker != null && target.getActivePotionEffect(TF2weapons.gas) != null) {
+			target.removePotionEffect(TF2weapons.gas);
+			
+			TF2Util.explosion(target.world, attacker, ItemFromData.getNewStack("explodeonignite"), attacker, target, target.posX, target.posY, target.posZ, 2, 1f, 0, 0f);
+			TF2Util.igniteAndAchievement(target, attacker, 8, 1f);
+			//event.setAmount(event.getAmount() + 35f);
+		}
 		if (!target.world.isRemote && target.getDataManager().get(ENTITY_OVERHEAL) > 0) {
 			target.getDataManager().set(ENTITY_OVERHEAL, target.getAbsorptionAmount());
 			if (target.getDataManager().get(ENTITY_OVERHEAL) <= 0) {
@@ -900,6 +907,7 @@ public class TF2EventsCommon {
 			if (target.getActivePotionEffect(TF2weapons.madmilk) != null) {
 				attacker.heal(TF2Util.getReducedHealing(attacker, target, 0.6f * event.getAmount()));
 			}
+			
 		}
 	}
 	
@@ -1134,6 +1142,11 @@ public class TF2EventsCommon {
 	public void stopJump(LivingEvent.LivingJumpEvent event) {
 
 		EntityLivingBase living=event.getEntityLiving();
+		
+		if (WeaponsCapability.get(living) != null && WeaponsCapability.get(living).isGrappled()) {
+			WeaponsCapability.get(living).setGrappled(false);
+		}
+		
 		if ((living.getActivePotionEffect(TF2weapons.stun) != null && living.getActivePotionEffect(TF2weapons.bombmrs) == null)
 			|| living.getActivePotionEffect(TF2weapons.charging) != null
 				|| (living.getHeldItemMainhand() != null && (living.getHeldItemMainhand().getItem() instanceof ItemMinigun || living.getHeldItemMainhand().getItem() instanceof ItemHuntsman)

@@ -63,6 +63,7 @@ import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityScout;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.entity.projectile.EntityGrapplingHook;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.item.IItemNoSwitch;
@@ -167,6 +168,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private float[] rageDrain = new float[RageType.values().length];
 	public int disguiseCounter;
 	
+	private EntityGrapplingHook grapplingHook;
+	
 	
 	private static final DataParameter<Boolean> EXP_JUMP = new DataParameter<Boolean>(6, DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> CHARGING = new DataParameter<Boolean>(11, DataSerializers.BOOLEAN);
@@ -181,6 +184,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	private static final DataParameter<Integer> TOKEN_USED= new DataParameter<Integer>(12, DataSerializers.VARINT);
 	private static final DataParameter<Byte> CAN_FIRE = new DataParameter<Byte>(13, DataSerializers.BYTE);
 	private static final DataParameter<Float> UBER_VIEW = new DataParameter<Float>(14, DataSerializers.FLOAT);
+	private static final DataParameter<Boolean> GRAPPLING = new DataParameter<Boolean>(15, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> GRAPPLED = new DataParameter<Boolean>(16, DataSerializers.BOOLEAN);
 	private static final EnumMap<RageType, DataParameter<Float>> RAGE = new EnumMap<>(RageType.class);
 	private static final EnumMap<RageType, DataParameter<Boolean>> RAGE_ACTIVE = new EnumMap<>(RageType.class);
 	public static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(0, 2, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
@@ -218,6 +223,8 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		this.dataManager.register(TOKEN_USED, -1);
 		this.dataManager.register(CAN_FIRE, (byte)0);
 		this.dataManager.register(UBER_VIEW, 0f);
+		this.dataManager.register(GRAPPLED, false);
+		this.dataManager.register(GRAPPLING, false);
 		for (RageType type: RageType.values()) {
 			this.dataManager.register(RAGE.get(type), 0f);
 			this.dataManager.register(RAGE_ACTIVE.get(type), false);
@@ -439,7 +446,7 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 	
 	public int focusShotTime(ItemStack stack) {
 		int stackLevel=(int) TF2Attribute.getModifier("Focus", stack, 0, owner);
-		return 68-stackLevel*21+((ItemUsable)stack.getItem()).getFiringSpeed(stack, owner)/50;
+		return (68-stackLevel*21+((ItemUsable)stack.getItem()).getFiringSpeed(stack, owner)/50) * 2;
 	}
 	
 	public void onChangeValue(DataParameter<?> param, Object newValue) {
@@ -542,6 +549,35 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 			(int)Math.signum(TF2Attribute.getModifier("Max Metal", stack1, 1, this.owner) - TF2Attribute.getModifier("Max Metal", stack2, 1, this.owner))
 			, stackl -> TF2Attribute.getModifier("Max Metal", stackl, 1, this.owner) != 1),1, this.owner);
 		}
+		
+		if (this.grapplingHook != null) {
+			
+			if (!this.grapplingHook.isEntityAlive()) {
+				this.setGrapplingHook(null);
+			}
+			
+			else if (this.grapplingHook.sticked) {
+				//if (this.owner.ticksExisted % 40 == 0 && this.grapplingHook.stickedEntity == null && TF2Util.pierce(this.owner.world, this.owner, this.owner.posX, this.owner.posY + this.owner.getEyeHeight(), this.owner.posZ,
+				//		this.grapplingHook.posX, this.grapplingHook.posY, this.grapplingHook.posZ, false, 0f, false).get(0).typeOfHit == RayTraceResult.Type.BLOCK)
+				//	this.setGrapplingHook(null);
+				//else {
+					Vec3d motionVec = new Vec3d(this.grapplingHook.posX - this.owner.posX, this.grapplingHook.posY - this.owner.posY - this.owner.getEyeHeight(), this.grapplingHook.posZ - this.owner.posZ);
+					if (motionVec.lengthSquared() > 0.77 * 0.77)
+						motionVec = motionVec.normalize().scale(0.77);
+					this.owner.motionX = motionVec.x;
+					this.owner.motionY = motionVec.y;
+					this.owner.motionZ = motionVec.z;
+					this.owner.isAirBorne = true;
+					this.owner.onGround = false;
+					this.owner.velocityChanged = true;
+					this.setGrappled(true);
+				//}
+			}
+			else {
+				this.setGrappled(false);
+			}
+		}
+		
 		for (EnumHand hand: EnumHand.values()) {
 			ItemStack stack = owner.getHeldItem(hand);
 			
@@ -566,7 +602,10 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 					item.onUpdate(stack, owner.world, owner, 0, true);
 				WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 				if(TF2Attribute.getModifier("Focus", stack, 0, owner)!=0){
-					this.focusShotTicks+=this.owner.isSprinting()?0:1;
+					this.focusShotTicks+=this.owner.isSprinting() ? 1 : 2;
+					if (this.owner.isSprinting() && this.focusShotTicks >= (this.focusShotTime(stack) * 3 / 4)) {
+						this.focusShotTicks = this.focusShotTime(stack) * 3 / 4;
+					}
 					this.focusShotRemaining--;
 				}
 				if (stackcap.active == 1) {
@@ -1383,6 +1422,33 @@ public class WeaponsCapability implements ICapabilityProvider, INBTSerializable<
 		if(this.invisTicks < 20 && this.owner.world instanceof WorldServer)
 			((WorldServer)this.owner.world).spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.owner.posX, this.owner.posY, this.owner.posZ, 20, 0.2, 1, 0.2, 0.04f, new int[0]);
 	}
+	
+	public boolean isGrappling() {
+		return this.dataManager.get(GRAPPLING);
+	}
+	
+	public boolean isGrappled() {
+		return this.dataManager.get(GRAPPLED);
+	}
+	
+	public void setGrappled(boolean grappled) {
+		this.dataManager.set(GRAPPLED, grappled);
+	}
+	
+	public EntityGrapplingHook getGrapplingHook() {
+		return grapplingHook;
+	}
+
+	public void setGrapplingHook(EntityGrapplingHook grapplingHook) {
+		if (this.grapplingHook != null) {
+			if (this.grapplingHook.isEntityAlive())
+				this.grapplingHook.setDead();
+		}
+		this.setGrappled(false);
+		this.dataManager.set(GRAPPLING, grapplingHook != null);
+		this.grapplingHook = grapplingHook;
+	}
+	
 	public static enum RageType {
 		PHLOG,
 		MINICRIT,

@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -68,7 +69,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 			Entity entity = iterator.next();
 			((TF2DamageSource)var22).setAttackPower(map.get(entity)[0]);
 			
-			this.setCritical(stack, living, entity, critical, var22);
+			critical = this.setCritical(stack, living, entity, critical, var22);
 			var22.setCritical(critical);
 			
 			float damage = map.get(entity)[0] * TF2Util.calculateDamage(entity, world, living, stack, critical, map.get(entity)[1]);
@@ -76,6 +77,10 @@ public class ItemBulletWeapon extends ItemWeapon {
 			if (!((ItemWeapon) stack.getItem()).onHit(stack, living, entity, damage, critical, false))
 				continue;
 			Vec3d pushvec = entity.getPositionVector().subtract(living.getPositionVector()).normalize();
+			
+			if (entity instanceof EntityEnderCrystal && living.getRNG().nextFloat() > damage/15f) {
+				continue;
+			}
 			
 			if (map.get(entity) != null && damage != 0
 					&& TF2Util.dealDamage(entity, world, living, stack, critical, damage, var22)) {
@@ -92,7 +97,7 @@ public class ItemBulletWeapon extends ItemWeapon {
 						knockbackAmount *= 1-((EntityLivingBase) entity).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
 						.getAttributeValue();
 					if (knockbackAmount > 0){
-						boolean flag=map.get(entity)[1] >= 3.75 && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0&&TF2Attribute.getModifier("KnockbackFAN", stack, 0, living) != 0;
+						boolean flag=map.get(entity)[1] < 3.75 && living.getCapability(TF2weapons.WEAPONS_CAP, null).fanCool<=0&&TF2Attribute.getModifier("KnockbackFAN", stack, 0, living) != 0;
 						pushvec=new Vec3d(pushvec.x * knockbackAmount * (flag?2.8:1), (pushvec.y+(flag?1:0)) * knockbackAmount,
 								pushvec.z * knockbackAmount * (flag?2.8:1));
 						entity.addVelocity(pushvec.x,pushvec.y,pushvec.z);

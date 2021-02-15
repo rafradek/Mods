@@ -361,12 +361,13 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 	@Override
 	public boolean fireTick(ItemStack stack, EntityLivingBase living, World world) {
 		WeaponsCapability cap = living.getCapability(TF2weapons.WEAPONS_CAP, null);
-		if (this.holdingMode(stack, living) > 0 && cap.isCharging())
+		if (this.holdingMode(stack, living) > 0 && cap.isCharging()) {
 			// System.out.println("charging "+tag.getShort("chargeticks"));
 			cap.chargeTicks += 1;
 			if (cap.chargeTicks >= this.holdingMode(stack, living) && !this.shouldKeepCharged(stack, living))
 				this.endUse(stack, living, world, 1, 0);
 				
+		}
 		return false;
 	}
 
@@ -425,6 +426,12 @@ public abstract class ItemWeapon extends ItemUsable implements IItemNoSwitch {
 					damage = TF2Attribute.getModifier("Damage Building", stack, damage, living);
 				else if (target instanceof EntityLivingBase)
 					damage = TF2Attribute.getModifier("Damage Player", stack, damage, living);
+			}
+			if (living != null) {
+				float damageHealth = TF2Attribute.getModifier("Damage Health", stack, 1f, living);
+				if (damageHealth != 1) {
+					damage = damage * (damageHealth - ((living.getHealth()/living.getMaxHealth()) * damageHealth - 0.5f ));//* TF2Util.lerp(damageHealth, 1f - (damageHealth - 1f), TF2Util.position(living.getMaxHealth(), , lerp));
+				}
 			}
 			if (living != null && living.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE) != null){
 				//System.out.println("Pre "+damage);

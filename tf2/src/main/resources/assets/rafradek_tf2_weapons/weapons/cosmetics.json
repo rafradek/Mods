@@ -164,5 +164,45 @@
 		},
 		"Cost": 54,
 		"Wear flags": 1
+	},
+	"prisonheavy": {
+		"Class": "cosmetic",
+		"Render": "rafradek_tf2_weapons:prisonheavy",
+		"Slot": 
+		{
+			"heavy":9
+		},
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"hoodiehat": {
+		"Class": "cosmetic",
+		"Render": "rafradek_tf2_weapons:hoodiehat",
+		"Slot": 
+		{
+			"scout":9
+		},
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"maxhat": {
+		"Class": "cosmetic",
+		"Render": "rafradek_tf2_weapons:maxhat",
+		"Slot": 
+		{
+			"scout":9
+		},
+		"Cost": 54,
+		"Wear flags": 1
+	},
+	"pootisbird": {
+		"Class": "cosmetic",
+		"Render": "rafradek_tf2_weapons:pootisbird",
+		"Slot": 
+		{
+			"heavy":9
+		},
+		"Cost": 54,
+		"Wear flags": 1
 	}
 }

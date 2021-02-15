@@ -23,11 +23,13 @@ public class EntityTarget extends EntityArmorStand {
 
 	public EntityTarget(World worldIn) {
 		super(worldIn);
+        this.setSize(0.6F, 1.8625F);
 		// TODO Auto-generated constructor stub
 	}
 	
 	public EntityTarget(World worldIn, double d, double d1, double e, boolean creative) {
 		super(worldIn, d, d1, e);
+        this.setSize(0.6F, 1.8625F);
 		this.creative = creative;
 	}
 
@@ -61,6 +63,16 @@ public class EntityTarget extends EntityArmorStand {
 			this.setCustomNameTag("Last: "+format.format(this.getLastDamage())+ " DPS: "+format.format(total * (20f/(this.lastAttack - this.startAttack + this.deltaTime)))+" Total: "+format.format(total));
 		}
 	}
+	
+	public void notifyDataManagerChange(DataParameter<?> key)
+    {
+        if (STATUS.equals(key))
+        {
+        	this.setSize(0.6F, 1.8625F);
+        }
+        else
+        	super.notifyDataManagerChange(key);
+    }
 	
 	public void entityInit() {
 		super.entityInit();
@@ -129,6 +141,12 @@ public class EntityTarget extends EntityArmorStand {
             return false;
         }
     }
+	
+	public float getEyeHeight()
+    {
+        return this.isChild() ? this.height * 0.5F : 1.6825F;
+    }
+	
 	public boolean getAlwaysRenderNameTag() {
 		return true;
 	}
