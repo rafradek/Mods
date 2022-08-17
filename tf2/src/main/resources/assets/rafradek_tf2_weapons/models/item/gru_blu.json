@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/gru",
-	"textures": {
-		"layer0": "rafradek_tf2_weapons:items/gru_blu"
-	}
-}

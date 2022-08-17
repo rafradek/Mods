@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/kgb",
-	"textures": {
-		"layer0": "rafradek_tf2_weapons:items/kgb_blu"
-	}
-}

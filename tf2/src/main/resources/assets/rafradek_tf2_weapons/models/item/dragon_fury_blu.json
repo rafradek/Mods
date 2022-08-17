@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/dragon_fury",
-	"textures": {
-		"0": "rafradek_tf2_weapons:items/dragon_fury_blu"
-	}
-}

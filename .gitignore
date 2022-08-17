@@ -20,5 +20,7 @@ build
 # other
 eclipse
 run
-/cc/
-/lib/
+libs
+
+# Files from Forge MDK
+forge*changelog.txt

@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/medigun",
-	"textures": {
-		"0": "rafradek_tf2_weapons:items/medigun_blu"
-	}
-}

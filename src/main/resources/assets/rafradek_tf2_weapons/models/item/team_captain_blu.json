@@ -1,0 +1,6 @@
+{
+	"parent": "rafradek_tf2_weapons:item/team_captain",
+	"textures": {
+		"team_captain": "rafradek_tf2_weapons:items/team_captain_blu"
+	}
+}

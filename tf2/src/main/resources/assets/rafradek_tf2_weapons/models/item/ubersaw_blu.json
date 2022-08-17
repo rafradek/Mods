@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/ubersaw",
-	"textures": {
-		"0": "rafradek_tf2_weapons:items/ubersaw_blu"
-	}
-}

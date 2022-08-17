@@ -1,7 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/syringegun",
-	"textures": {
-		"texture0": "rafradek_tf2_weapons:items/syringegun0_blu",
-		"texture1": "rafradek_tf2_weapons:items/syringegun1_blu"
-	}
-}

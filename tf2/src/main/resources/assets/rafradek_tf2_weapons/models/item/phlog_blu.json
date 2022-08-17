@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/phlog",
-	"textures": {
-		"texture": "rafradek_tf2_weapons:items/phlog_blu"
-	}
-}

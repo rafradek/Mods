@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/jetpack_trigger",
-	"textures": {
-		"layer0": "rafradek_tf2_weapons:items/jetpack_trigger_blu"
-	}
-}

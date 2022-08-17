@@ -1,6 +1,0 @@
-{
-	"parent": "rafradek_tf2_weapons:item/thermal_thruster",
-	"textures": {
-		"thermal_thruster": "rafradek_tf2_weapons:items/thermal_thruster_blu"
-	}
-}
