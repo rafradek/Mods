@@ -48,7 +48,8 @@ public class ItemKillstreakKit extends ItemApplicableEffect {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.killstreakkit." + ItemKillstreakKit.NAMES[MathHelper.clamp(this.getLevel(stack) - 1, 0, 2)];
+		return "item." + TF2weapons.MOD_ID + ".killstreakkit."
+				+ ItemKillstreakKit.NAMES[MathHelper.clamp(this.getLevel(stack) - 1, 0, 2)];
 	}
 
 	@Override

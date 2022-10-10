@@ -24,7 +24,7 @@ import rafradek.TF2weapons.entity.EntityStatue;
 public class ItemStatue extends Item {
 
 	public ItemStatue() {
-		this.setUnlocalizedName("statue");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".statue");
 	}
 
 	@Override

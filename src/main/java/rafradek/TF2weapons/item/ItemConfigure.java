@@ -24,7 +24,7 @@ import rafradek.TF2weapons.tileentity.IEntityConfigurable;
 public class ItemConfigure extends Item {
 
 	public ItemConfigure() {
-		this.setUnlocalizedName("configurator");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".configurator");
 	}
 
 	@Override

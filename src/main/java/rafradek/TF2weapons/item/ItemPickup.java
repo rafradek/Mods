@@ -10,18 +10,19 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.EntityPickup;
 
 public class ItemPickup extends Item {
 
 	public ItemPickup() {
 		this.setHasSubtypes(true);
-		this.setUnlocalizedName("tf2pickup");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".tf2pickup");
 	}
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.tf2pickup." + stack.getMetadata();
+		return super.getUnlocalizedName(stack) + "." + stack.getMetadata();
 	}
 
 	@Override

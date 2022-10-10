@@ -26,6 +26,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
 import rafradek.TF2weapons.entity.boss.EntityMonoculus;
@@ -48,7 +49,7 @@ public class ItemBossSpawner extends Item {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item." + NAMES[stack.getMetadata() % NAMES.length];
+		return "item." + TF2weapons.MOD_ID + "." + NAMES[stack.getMetadata() % NAMES.length];
 	}
 
 	@Override

@@ -69,7 +69,8 @@ public class ItemKillstreakFabricator extends ItemFabricator {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.killstreakfabricator." + ItemKillstreakKit.NAMES[MathHelper.clamp(this.getLevel(stack) - 1, 0, 2)];
+		return "item." + TF2weapons.MOD_ID + ".killstreakfabricator."
+				+ ItemKillstreakKit.NAMES[MathHelper.clamp(this.getLevel(stack) - 1, 0, 2)];
 	}
 
 	public TF2Attribute getAttribute(ItemStack stack) {

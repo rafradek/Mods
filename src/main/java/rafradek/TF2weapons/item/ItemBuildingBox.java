@@ -26,7 +26,7 @@ import rafradek.TF2weapons.TF2weapons;
 public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwitch {
 	public ItemBuildingBox() {
 		this.setCreativeTab(TF2weapons.tabspawnertf2);
-		this.setUnlocalizedName("buildingbox");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".buildingbox");
 		this.setHasSubtypes(true);
 		this.setMaxStackSize(1);
 	}

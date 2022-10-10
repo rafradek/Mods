@@ -40,7 +40,7 @@ public class ItemToken extends Item {
 	public ItemToken() {
 		this.setHasSubtypes(true);
 		this.setCreativeTab(TF2weapons.tabsurvivaltf2);
-		this.setUnlocalizedName("token");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".token");
 	}
 
 	@Override

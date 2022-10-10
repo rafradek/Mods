@@ -16,12 +16,12 @@ public class ItemRobotPart extends Item {
 	public ItemRobotPart() {
 		this.setHasSubtypes(true);
 		this.setCreativeTab(TF2weapons.tabsurvivaltf2);
-		this.setUnlocalizedName("robotpart");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".robotpart");
 	}
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.robotpart." + stack.getMetadata();
+		return super.getUnlocalizedName(stack) + "." + stack.getMetadata();
 	}
 
 	public static int getLevel(ItemStack stack) {

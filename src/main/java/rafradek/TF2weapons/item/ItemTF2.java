@@ -27,12 +27,12 @@ public class ItemTF2 extends Item {
 	public ItemTF2() {
 		this.setHasSubtypes(true);
 		this.setCreativeTab(TF2weapons.tabsurvivaltf2);
-		this.setUnlocalizedName("tf2item");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".tf2item");
 	}
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item." + NAMES[stack.getMetadata() % NAMES.length];
+		return "item." + TF2weapons.MOD_ID + "." + NAMES[stack.getMetadata() % NAMES.length];
 	}
 
 	@Override

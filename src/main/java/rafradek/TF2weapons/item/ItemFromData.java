@@ -133,7 +133,7 @@ public class ItemFromData extends Item implements IItemOverlay {
 
 	public ItemFromData() {
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
-		this.setUnlocalizedName("tf2usable");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".tf2usable");
 		this.setMaxStackSize(1);
 		this.setNoRepair();
 		this.addPropertyOverride(new ResourceLocation("team"),

@@ -21,7 +21,7 @@ public class ItemMoney extends Item {
 	public ItemMoney() {
 		this.setHasSubtypes(true);
 		this.setCreativeTab(TF2weapons.tabsurvivaltf2);
-		this.setUnlocalizedName("tf2money");
+		this.setUnlocalizedName(TF2weapons.MOD_ID + ".tf2money");
 	}
 
 	@Override

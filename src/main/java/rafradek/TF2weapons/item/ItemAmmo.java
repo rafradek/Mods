@@ -49,7 +49,7 @@ public class ItemAmmo extends Item {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.tf2ammo." + getType(stack);
+		return super.getUnlocalizedName(stack) + "." + getType(stack);
 	}
 
 	@Override
@@ -78,12 +78,12 @@ public class ItemAmmo extends Item {
 
 			/*
 			 * if (stack.isEmpty() && living instanceof EntityPlayer) {
-			 * 
+			 *
 			 * if (living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3) !=
 			 * null){ IItemHandlerModifiable invAmmo = (IItemHandlerModifiable)
 			 * living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
 			 * .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			 * 
+			 *
 			 * for (int i = 0; i < invAmmo.getSlots(); i++) { ItemStack stackInv =
 			 * invAmmo.getStackInSlot(i); if (stack == stackInv) { invAmmo.setStackInSlot(i,
 			 * null); return; } } } ((EntityPlayer) living).inventory.deleteStack(stack); }

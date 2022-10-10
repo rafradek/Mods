@@ -24,7 +24,7 @@ public class ItemEventMaker extends Item {
 
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
-		return "item.eventmaker." + stack.getMetadata();
+		return super.getUnlocalizedName(stack) + "." + stack.getMetadata();
 	}
 
 	@Override

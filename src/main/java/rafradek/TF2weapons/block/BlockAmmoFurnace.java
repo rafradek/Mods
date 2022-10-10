@@ -42,6 +42,7 @@ public class BlockAmmoFurnace extends BlockContainer {
 		this.setSoundType(SoundType.METAL);
 		this.setDefaultState(
 				this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(BURNING, false));
+		setCreativeTab(TF2weapons.tabsurvivaltf2);
 	}
 
 	@Override
@@ -149,8 +150,10 @@ public class BlockAmmoFurnace extends BlockContainer {
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(meta & 7)).withProperty(BURNING,
-				(meta & 8) == 8);
+		EnumFacing facing = EnumFacing.getFront(meta & 7);
+		if (facing.getAxis() == EnumFacing.Axis.Y)
+			facing = EnumFacing.NORTH;
+		return this.getDefaultState().withProperty(FACING, facing).withProperty(BURNING, (meta & 8) == 8);
 	}
 
 	@Override
