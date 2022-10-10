@@ -144,8 +144,10 @@ public class GuiContracts extends GuiScreen {
 						this.guiLeft+83, this.guiTop+67+i*20,164, 0xFFFFFF);
 			}
 			this.fontRenderer.drawString(I18n.format("gui.contracts.rewards"), this.guiLeft+9, this.guiTop+135, 0xFFFFFF);
-			this.fontRenderer.drawString(I18n.format("gui.contracts.reward1"), this.guiLeft+9, this.guiTop+150, 0xFFFFFF);
-			this.fontRenderer.drawString(I18n.format("gui.contracts.reward2"), this.guiLeft+9, this.guiTop+165, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward1"), this.guiLeft+9, this.guiTop+148, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward1m"), this.guiLeft+9, this.guiTop+157, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward2"), this.guiLeft+9, this.guiTop+170, 0xFFFFFF);
+			this.fontRenderer.drawString(I18n.format("gui.contracts.reward2m"), this.guiLeft+9, this.guiTop+179, 0xFFFFFF);
 		}
 		else if(contractDay==0) {
 			this.fontRenderer.drawSplitString(I18n.format("gui.contracts.require"), this.guiLeft+83, this.guiTop+18,164, 0xFFFFFF);

@@ -1,21 +1,28 @@
 package rafradek.TF2weapons.entity.projectile;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityOnyx extends EntityProjectileBase {
 
 	public EntityOnyx(World p_i1756_1_) {
 		super(p_i1756_1_);
 	}
-
+	
 	@Override
 	public int getMaxTime() {
 		return 8;
 	}
-
+	
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
@@ -33,8 +40,7 @@ public class EntityOnyx extends EntityProjectileBase {
 	protected float getSpeed() {
 		return 2.5f;
 	}
-
-	@Override
+	
 	public float getExplosionSize() {
 		return 1.7f;
 	}
@@ -43,7 +49,7 @@ public class EntityOnyx extends EntityProjectileBase {
 	public double getGravity() {
 		return 0;
 	}
-
+	
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.05,

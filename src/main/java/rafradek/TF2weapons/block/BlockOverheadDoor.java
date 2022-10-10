@@ -10,22 +10,28 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Mirror;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor.Allow;
@@ -37,31 +43,32 @@ public class BlockOverheadDoor extends BlockContainer {
 	public static final PropertyBool CONTROLLER = PropertyBool.create("controller");
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 	protected static final AxisAlignedBB SOUTH_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.03125D);
-	protected static final AxisAlignedBB NORTH_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.96875D, 1.0D, 1.0D, 1.0D);
-	protected static final AxisAlignedBB WEST_AABB = new AxisAlignedBB(0.96875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
-	protected static final AxisAlignedBB EAST_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.03125D, 1.0D, 1.0D);
-
+    protected static final AxisAlignedBB NORTH_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.96875D, 1.0D, 1.0D, 1.0D);
+    protected static final AxisAlignedBB WEST_AABB = new AxisAlignedBB(0.96875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+    protected static final AxisAlignedBB EAST_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.03125D, 1.0D, 1.0D);
+	
 	public BlockOverheadDoor() {
 		super(Material.IRON, MapColor.IRON);
 		this.setLightOpacity(TF2ConfigVars.doorBlockLight ? 255 : 0);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(SLIDING, false));
+		// TODO Auto-generated constructor stub
 	}
-
+	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.MODEL;
 	}
-
+	
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
+		// TODO Auto-generated method stub
 		if ((meta & 4) == 4)
 			return new TileEntityOverheadDoor();
 		return null;
 	}
 
-	@Override
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-	{
+    {
 		switch (state.getValue(FACING)) {
 		case NORTH: return SOUTH_AABB;
 		case EAST: return WEST_AABB;
@@ -69,11 +76,10 @@ public class BlockOverheadDoor extends BlockContainer {
 		case WEST: return EAST_AABB;
 		default: return FULL_BLOCK_AABB;
 		}
-	}
-
-	@Override
+    }
+	
 	public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-	{
+    {
 		if (state.getValue(SLIDING)) {
 			return NULL_AABB;
 		}
@@ -84,13 +90,12 @@ public class BlockOverheadDoor extends BlockContainer {
 		case WEST: return EAST_AABB;
 		default: return NULL_AABB;
 		}
-	}
-
-	@Override
+    }
+	
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
 		worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
-	}
-
+    }
+	
 	/*@SuppressWarnings("deprecation")
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 		IBlockState above = world.getBlockState(pos.up());
@@ -121,53 +126,49 @@ public class BlockOverheadDoor extends BlockContainer {
 			world.scheduleUpdate(pos, this, this.tickRate(world));
 	}*/
 
-
-	@Override
+	
 	public BlockFaceShape getBlockFaceShape(IBlockAccess world, IBlockState state, BlockPos pos, EnumFacing face) {
 		return face == state.getValue(FACING) ? BlockFaceShape.SOLID : BlockFaceShape.UNDEFINED;
-	}
-
-	@Override
+    }
+	
 	public boolean isFullCube(IBlockState state)
-	{
-		return false;
-	}
-
-	@Override
+    {
+        return false;
+    }
+	
 	public boolean isOpaqueCube(IBlockState state)
-	{
-		return false;
-	}
-
-	@Override
+    {
+        return false;
+    }
+	
 	public int getLightOpacity(IBlockState state, IBlockAccess world, BlockPos pos)
-	{
-		return state.getValue(SLIDING) ? 0 : super.getLightOpacity(state, world, pos);
-	}
-
+    {
+        return state.getValue(SLIDING) ? 0 : super.getLightOpacity(state, world, pos);
+    }
+	
 	/*@Override
 	public boolean isOpaqueCube(IBlockState state) {
 		return false;
 	}
-
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public BlockRenderLayer getBlockLayer() {
 		return BlockRenderLayer.CUTOUT;
 	}*/
-
+	
 	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ,
 			int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
-
+	
 	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer,
 			ItemStack stack) {
 		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 	}
-
+	
 	@Override
 	public IBlockState withRotation(IBlockState state, Rotation rot) {
 		return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
@@ -177,7 +178,7 @@ public class BlockOverheadDoor extends BlockContainer {
 	public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
 		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
 	}
-
+	
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3))).withProperty(HOLDER, (meta & 4) == 4).withProperty(SLIDING, (meta & 8) == 8);
@@ -187,15 +188,14 @@ public class BlockOverheadDoor extends BlockContainer {
 	public int getMetaFromState(IBlockState state) {
 		return state.getValue(FACING).getIndex()-2 + (state.getValue(HOLDER) ? 4 : 0) + (state.getValue(SLIDING) ? 8 : 0);
 	}
-
+	
 	@Override
 	protected BlockStateContainer createBlockState() {
 		return new BlockStateContainer(this, new IProperty[] { FACING, HOLDER, SLIDING });
 	}
-
-	@Override
+	
 	public void onBlockDestroyedByPlayer(World worldIn, BlockPos pos, IBlockState state)
-	{
+    {
 		BlockPos off = pos;
 		while (true) {
 			off = off.up();
@@ -212,33 +212,28 @@ public class BlockOverheadDoor extends BlockContainer {
 			else
 				break;
 		}
-	}
-
-	@Override
+    }
+	
 	public Item getItemDropped(IBlockState state, Random rand, int fortune)
-	{
+    {
 		return state.getValue(HOLDER) ? super.getItemDropped(state, rand, fortune) : Items.AIR;
-	}
-
-	@Override
+    }
+	
 	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos)
-	{
+    {
 		TileEntity ent = worldIn.getTileEntity(pos);
 		if (ent instanceof TileEntityOverheadDoor) {
 			((TileEntityOverheadDoor) ent).powered = worldIn.isBlockPowered(pos);
 		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
+    }
+	
 	public net.minecraft.pathfinding.PathNodeType getAiPathNodeType(IBlockState state, IBlockAccess world, BlockPos pos)
-	{
+    {
 		return super.getAiPathNodeType(state, world, pos);
-	}
-
-	@Override
+    }
+	
 	public boolean isPassable(IBlockAccess worldIn, BlockPos pos)
-	{
+    {
 		if (worldIn.getBlockState(pos).getValue(SLIDING))
 			return true;
 		for (int y = 0; y < 5; y++) {
@@ -249,5 +244,5 @@ public class BlockOverheadDoor extends BlockContainer {
 			}
 		}
 		return false;
-	}
+    }
 }

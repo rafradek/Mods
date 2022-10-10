@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.util;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 
 public interface TF2DamageSource {
 
@@ -13,6 +14,7 @@ public interface TF2DamageSource {
 	ItemStack getWeaponOrig();
 	//void onShieldBlock(EntityLivingBase living);
 	int getCritical();
+	DamageSource setCritical(int crit);
 	void setAttackSelf();
 	int getAttackFlags();
 	void addAttackFlag(int flag);

@@ -1,20 +1,25 @@
 package rafradek.TF2weapons.command;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
@@ -25,19 +30,20 @@ public class CommandGiveWeapon extends CommandBase {
 
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
+		// TODO Auto-generated method stub
 		return "commands.giveweapon.usage";
 	}
 
 	@Override
 	public String getName() {
+		// TODO Auto-generated method stub
 		return "giveweapon";
 	}
-
-	@Override
+	
 	public int getRequiredPermissionLevel()
-	{
-		return 2;
-	}
+    {
+        return 2;
+    }
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -58,7 +64,7 @@ public class CommandGiveWeapon extends CommandBase {
 				String[] attr = args[i].split(":");
 				if(attr.length==2){
 					boolean streak = attr[1].startsWith("k");
-
+					
 					if(attr[0].equals("u"))
 						item.getTagCompound().setByte("UEffect", remove? 0:Byte.parseByte(attr[1]));
 					else if(MapList.nameToAttribute.containsKey(attr[0]))
@@ -82,7 +88,7 @@ public class CommandGiveWeapon extends CommandBase {
 								attributes.setFloat(attr[0], Float.parseFloat(attr[1]));
 						else
 							attributes.removeTag(attr[0]);
-
+					
 				}
 				else if(attr[0].equals("a"))
 					item.getTagCompound().setBoolean("Australium", !remove);
@@ -90,11 +96,10 @@ public class CommandGiveWeapon extends CommandBase {
 					item.getTagCompound().setBoolean("Strange", !remove);
 				else if(attr[0].equals("v"))
 					item.getTagCompound().setBoolean("Valve", !remove);
-
+					
 			}
 			if (giveNew) {
-				EntityItem entityitem = entityplayermp.dropItem(item, false);
-				entityitem.setPickupDelay(0);
+				ItemHandlerHelper.giveItemToPlayer(entityplayermp, item);
 			}
 			else
 				item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).cached = false;
@@ -118,7 +123,7 @@ public class CommandGiveWeapon extends CommandBase {
 					}
 				}
 			}*/
-
+			
 			// notifyCommandListener(sender, this, "Found ores:"+ausCount+" "+leadCount+" "+coppCount+" "+diaCount, new Object[0]);
 			// entityitem.func_145797_a(entityplayermp.getCommandSenderName());
 			// func_152373_a(p_71515_1_, this, "commands.giveweapon.success",
@@ -128,20 +133,19 @@ public class CommandGiveWeapon extends CommandBase {
 			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
-	@Override
 	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
-	{
+    {
 		if (args.length == 1)
-		{
-			return getListOfStringsMatchingLastWord(args, MapList.nameToData.keySet());
-		}
+        {
+            return getListOfStringsMatchingLastWord(args, MapList.nameToData.keySet());
+        }
 		else if (args.length == 2)
-		{
-			return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-		}
-		else
-		{
-			return !args[args.length - 1].contains(":") ? getListOfStringsMatchingLastWord(args, MapList.nameToAttribute.keySet()) : Collections.emptyList();
-		}
-	}
+        {
+            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        }
+        else
+        {
+            return !args[args.length - 1].contains(":") ? getListOfStringsMatchingLastWord(args, MapList.nameToAttribute.keySet()) : Collections.emptyList();
+        }
+    }
 }

@@ -3,6 +3,7 @@ package rafradek.TF2weapons.entity.mercenary;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -14,6 +15,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DifficultyInstance;
@@ -23,6 +25,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.ai.EntityAIStickybomb;
+import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
 import rafradek.TF2weapons.item.ItemChargingTarge;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -36,7 +39,7 @@ public class EntityDemoman extends EntityTF2Character {
 	private static final DataParameter<Boolean> SENTRY_BUSTER = EntityDataManager.createKey(EntityDemoman.class, DataSerializers.BOOLEAN);
 
 	public int chargeCool=0;
-
+	
 	public EntityLivingBase target;
 	public BlockPos targetpos;
 	public EntityDemoman(World par1World) {
@@ -57,7 +60,6 @@ public class EntityDemoman extends EntityTF2Character {
 		// ItemUsable.getNewStack("Minigun"));
 
 	}
-	@Override
 	protected void addWeapons() {
 		super.addWeapons();
 		if(this.rand.nextFloat() > 0.18f && !this.loadout.getStackInSlot(1).isEmpty() && this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge){
@@ -65,12 +67,13 @@ public class EntityDemoman extends EntityTF2Character {
 
 				@Override
 				public boolean apply(WeaponData input) {
+					// TODO Auto-generated method stub
 					return !input.getBoolean(PropertyType.STOCK) && ItemFromData.isItemOfClassSlot(input, 2, "demoman");
 				}
-
+				
 			}));
 			if(!sword.isEmpty())
-				this.loadout.setStackInSlot(2,sword);
+				this.loadout.setStackInSlot(2,sword); 
 		}
 		if (this.isGiant()) {
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"), 0.5f);
@@ -88,13 +91,13 @@ public class EntityDemoman extends EntityTF2Character {
 	 * this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 	 * ItemFromData.getNewStack("grenadelauncher")); }
 	 */
-
+	
 	@Override
 	protected void entityInit() {
 		super.entityInit();
 		this.dataManager.register(SENTRY_BUSTER, false);
 	}
-
+	
 	private void setBusterInternal() {
 		this.dataManager.set(SENTRY_BUSTER, true);
 		this.targetTasks.taskEntries.clear();
@@ -105,20 +108,19 @@ public class EntityDemoman extends EntityTF2Character {
 		this.setBusterInternal();
 		this.target = target;
 	}
-
+	
 	public void setBuster(BlockPos target) {
 		this.setBusterInternal();
 		this.targetpos = target;
 	}
-
-	@Override
+	
 	public float[] getDropChance() {
 		return new float[] { 0.065f, 0.065f, 0.11f };
 	}
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
-
+		
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(35.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(17.5D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.15D);
@@ -135,12 +137,10 @@ public class EntityDemoman extends EntityTF2Character {
 		}
 		return data;
 	}
-	@Override
 	public int getDefaultSlot(){
 		return this.loadout.getStackInSlot(1).getItem() instanceof ItemChargingTarge ? 2:0;
 	}
-
-	@Override
+	
 	public void onLivingUpdate(){
 		super.onLivingUpdate();
 		this.chargeCool--;
@@ -174,21 +174,19 @@ public class EntityDemoman extends EntityTF2Character {
 			}
 		}
 	}
-
-	@Override
+	
 	protected void onFinishedPotionEffect(PotionEffect effect)
-	{
+    {
 		super.onFinishedPotionEffect(effect);
 		if(effect.getPotion()==TF2weapons.charging)
 			this.moveAttack.setDodge(true, false);
-	}
-
-	@Override
+    }
+	
 	public void onEquipItem(int slot, ItemStack stack) {
 		super.onEquipItem(slot, stack);
 		this.attack.fireAtFeet = slot == 1 ? TF2Attribute.getModifier("Explosion Radius", stack, 1, this) : 0;
 	}
-
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_DEMOMAN_SAY;
@@ -210,6 +208,11 @@ public class EntityDemoman extends EntityTF2Character {
 		return TF2Sounds.MOB_DEMOMAN_DEATH;
 	}
 
+	@Override
+	protected ResourceLocation getLootTable() {
+		return TF2weapons.lootDemoman;
+	}
+	
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */
@@ -220,20 +223,21 @@ public class EntityDemoman extends EntityTF2Character {
 		if (this.rand.nextFloat() < 0.06f + p_70628_2_ * 0.03f)
 			this.entityDropItem(ItemFromData.getNewStack("stickybomblauncher"), 0);
 	}
-
-	@Override
+	
 	public float getAttributeModifier(String attribute) {
 		if(attribute.equals("Spread") && this.getHeldItemMainhand() != null && this.getHeldItemMainhand().getItem() instanceof ItemStickyLauncher)
 			return 3f;
 		return super.getAttributeModifier(attribute);
 	}
 
-	@Override
 	public int getClassIndex() {
 		return 3;
 	}
-	public void explode() {}
-
+	public void explode() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	/*
 	 * @Override public float getAttributeModifier(String attribute) {
 	 * if(attribute.equals("Minigun Spinup")){ return

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.common.base.Predicate;
 
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -14,29 +15,33 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget.Sorter;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.Team;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.building.EntitySentry;
+import rafradek.TF2weapons.entity.mercenary.EntityMedic;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityAISpotTarget extends EntityAIBase {
 
 	/** The entity that this task belongs to */
-	protected final EntityBuilding taskOwner;
-	/** If true, EntityAI targets must be able to be seen (cannot be blocked by walls) to be suitable targets. */
-	protected boolean shouldCheckSight;
-	/** When true, only entities that can be reached with minimal effort will be targetted. */
-	private final boolean nearbyOnly;
-	/** When nearbyOnly is true: 0 -> No target, but OK to search; 1 -> Nearby target found; 2 -> Target too far. */
-	private int targetSearchStatus;
-	/** When nearbyOnly is true, this throttles target searching to avoid excessive pathfinding. */
-	private int targetSearchDelay;
-	/**
-	 * If  @shouldCheckSight is true, the number of ticks before the interuption of this AITastk when the entity does't
-	 * see the target
-	 */
-	protected EntityLivingBase target;
-	protected int unseenMemoryTicks;
+    protected final EntityBuilding taskOwner;
+    /** If true, EntityAI targets must be able to be seen (cannot be blocked by walls) to be suitable targets. */
+    protected boolean shouldCheckSight;
+    /** When true, only entities that can be reached with minimal effort will be targetted. */
+    private final boolean nearbyOnly;
+    /** When nearbyOnly is true: 0 -> No target, but OK to search; 1 -> Nearby target found; 2 -> Target too far. */
+    private int targetSearchStatus;
+    /** When nearbyOnly is true, this throttles target searching to avoid excessive pathfinding. */
+    private int targetSearchDelay;
+    /**
+     * If  @shouldCheckSight is true, the number of ticks before the interuption of this AITastk when the entity does't
+     * see the target
+     */
+    protected EntityLivingBase target;
+    protected int unseenMemoryTicks;
 
 	public int targetChoosen = 0;
 	private Class<? extends EntityLivingBase> targetClass;
@@ -57,7 +62,6 @@ public class EntityAISpotTarget extends EntityAIBase {
 		this.setMutexBits(1);
 		this.targetLock = targetLock;
 		this.targetEntitySelector = new Predicate<EntityLivingBase>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public boolean apply(EntityLivingBase target) {
 				if (p_i1665_6_ != null && !p_i1665_6_.apply((A) target))
@@ -81,7 +85,7 @@ public class EntityAISpotTarget extends EntityAIBase {
 						}
 						if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
-								|| ItemDisguiseKit.isDisguised(target, taskOwner)))
+										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = 0;
 						boolean fastCheck = allowBehind;
 						if (target.getDistance(taskOwner) > d0
@@ -97,26 +101,25 @@ public class EntityAISpotTarget extends EntityAIBase {
 		};
 	}
 
-	protected double getTargetDistance()
-	{
-		IAttributeInstance iattributeinstance = this.taskOwner.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE);
-		return iattributeinstance == null ? 16.0D : iattributeinstance.getAttributeValue();
-	}
+    protected double getTargetDistance()
+    {
+        IAttributeInstance iattributeinstance = this.taskOwner.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE);
+        return iattributeinstance == null ? 16.0D : iattributeinstance.getAttributeValue();
+    }
 
-	/**
-	 * Execute a one shot task or start executing a continuous task
-	 */
+    /**
+     * Execute a one shot task or start executing a continuous task
+     */
 
-	/**
-	 * Reset the task's internal state. Called when this task is interrupted by another one
-	 */
-	@Override
-	public void resetTask()
-	{
-		this.taskOwner.setAttackTarget((EntityLivingBase)null);
-		this.target = null;
-	}
-
+    /**
+     * Reset the task's internal state. Called when this task is interrupted by another one
+     */
+    public void resetTask()
+    {
+        this.taskOwner.setAttackTarget((EntityLivingBase)null);
+        this.target = null;
+    }
+    
 	@Override
 	public boolean shouldExecute() {
 		double d0 = this.getTargetDistance() / 2;
@@ -149,8 +152,8 @@ public class EntityAISpotTarget extends EntityAIBase {
 		this.taskOwner.setAttackTarget(this.targetEntity);
 		super.startExecuting();
 		this.targetSearchStatus = 0;
-		this.targetSearchDelay = 0;
-		this.targetUnseenTicks = 0;
+        this.targetSearchDelay = 0;
+        this.targetUnseenTicks = 0;
 	}
 
 	/**
@@ -159,9 +162,8 @@ public class EntityAISpotTarget extends EntityAIBase {
 	 */
 	@Override
 	public boolean shouldContinueExecuting() {
-
+		
 		EntityLivingBase entitylivingbase = this.taskOwner.getAttackTarget();
-
 		if (entitylivingbase == null)
 			return false;
 		else if (!entitylivingbase.isEntityAlive())
@@ -216,9 +218,9 @@ public class EntityAISpotTarget extends EntityAIBase {
 
 					if (target == ((IEntityOwnable) this.taskOwner).getOwner())
 						return false;
-				}
+				} 
 				if (target instanceof EntityPlayer && !includeInvincibles
-						&& ((EntityPlayer) target).capabilities.disableDamage)
+					&& ((EntityPlayer) target).capabilities.disableDamage)
 					return false;
 
 				return !this.shouldCheckSight || this.taskOwner.getEntitySenses().canSee(target);

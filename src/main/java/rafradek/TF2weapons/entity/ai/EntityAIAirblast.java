@@ -3,9 +3,13 @@ package rafradek.TF2weapons.entity.ai;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IProjectile;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
@@ -13,6 +17,8 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemAirblast;
 import rafradek.TF2weapons.item.ItemFlameThrower;
+import rafradek.TF2weapons.item.ItemMeleeWeapon;
+import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityAIAirblast extends EntityAIBase {
@@ -27,17 +33,19 @@ public class EntityAIAirblast extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
+		// TODO Auto-generated method stub
 		// System.out.println("executing
 		// "+TF2ActionHandler.playerAction.server.get(host));
 		// System.out.println("should execute:
 		// "+(host.world.getDifficulty().getDifficultyId()>=2));
-		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower
+		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower 
 				&& ((ItemFlameThrower)this.host.getHeldItemMainhand().getItem()).canAltFire(this.host.world, host, this.host.getHeldItemMainhand())
 				&& host.world.getDifficulty().getDifficultyId() >= 2;
 
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void updateTask() {
 		// System.out.println("executing
 		// "+TF2ActionHandler.playerAction.server.get(host));
@@ -51,11 +59,17 @@ public class EntityAIAirblast extends EntityAIBase {
 		List<Entity> list = host.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(eyeVec.x - 5,
 				eyeVec.y - 5, eyeVec.z - 5, eyeVec.x + 5, eyeVec.y + 5, eyeVec.z + 5));
 		boolean airblast = false;
-		for (Entity entity : list)
+		for (Entity entity : list) {
 			// System.out.println(entity+"
 			// "+ItemFlameThrower.isPushable(host,entity));
+			boolean hasmelee = false;
+			if (entity instanceof EntityLivingBase) {
+				ItemStack stack = ((EntityLivingBase)entity).getHeldItemMainhand();
+				hasmelee = stack.getItem() instanceof ItemMeleeWeapon || (!(stack.getItem() instanceof ItemWeapon) && 
+						stack.getAttributeModifiers(EntityEquipmentSlot.MAINHAND).containsKey(SharedMonsterAttributes.ATTACK_DAMAGE.getName()));
+			}
 			if (ItemAirblast.isPushable(host, entity)
-					&& (entity instanceof EntityThrowable || entity instanceof IProjectile)) {
+					&& (hasmelee || entity instanceof EntityThrowable || entity instanceof IProjectile)) {
 				// System.out.println(entity);
 				// System.out.println("dystans:
 				// "+(entity.getDistanceSq(host.posX, host.posY +
@@ -69,7 +83,7 @@ public class EntityAIAirblast extends EntityAIBase {
 				if (airblast)
 					break;
 			}
-
+		}
 		if (airblast) {
 			// System.out.println("airblast:");
 			((ItemFlameThrower) this.host.getHeldItemMainhand().getItem()).altUse(this.host.getHeldItemMainhand(), host,

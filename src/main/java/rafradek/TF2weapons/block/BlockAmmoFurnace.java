@@ -51,6 +51,7 @@ public class BlockAmmoFurnace extends BlockContainer {
 
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
+		// TODO Auto-generated method stub
 		return new TileEntityAmmoFurnace();
 	}
 
@@ -71,7 +72,7 @@ public class BlockAmmoFurnace extends BlockContainer {
 			double d0 = pos.getX() + 0.5D;
 			double d1 = pos.getY() + rand.nextDouble() * 6.0D / 16.0D;
 			double d2 = pos.getZ() + 0.5D;
-			//double d3 = 0.52D;
+			double d3 = 0.52D;
 			double d4 = rand.nextDouble() * 0.6D - 0.3D;
 
 			if (rand.nextDouble() < 0.1D)

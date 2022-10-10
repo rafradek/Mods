@@ -13,6 +13,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityMoveHelper;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,6 +28,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
@@ -44,15 +46,15 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityMonoculus extends EntityTF2Boss {
 
-	public static final int LASER_DURATION=110;
-	public static final int LASER_START=80;
+	public static final int LASER_DURATION=90;
+	public static final int LASER_START=60;
 	public int teleport = 200;
 	public int angryTicks = 0;
 	public int begin = 30;
 	public float toAngry=0;
 	public int laserTime;
 	public int laserCooldown = 150;
-
+	
 	private static final DataParameter<Boolean> ANGRY = EntityDataManager.createKey(EntityMonoculus.class,
 			DataSerializers.BOOLEAN);
 	private static final DataParameter<Boolean> LASER = EntityDataManager.createKey(EntityMonoculus.class,
@@ -64,6 +66,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mnceye"));
 		this.setHeldItem(EnumHand.OFF_HAND, ItemFromData.getNewStack("mnclaser"));
 		this.moveHelper = new MonoculusMoveHelper(this);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -79,25 +82,25 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.tasks.addTask(3, new AILaserAttack(this));
 		this.tasks.addTask(6, new AIFireballAttack(this));
 		this.tasks.addTask(7, new AILookAround(this));
-
+		
 		this.targetTasks.taskEntries.clear();
 		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class, 0,true, false,
 				new Predicate<EntityLivingBase>() {
 
-			@Override
-			public boolean apply(EntityLivingBase input) {
-				return input instanceof EntityPlayer || input instanceof EntityTF2Character;
-			}
+					@Override
+					public boolean apply(EntityLivingBase input) {
+						// TODO Auto-generated method stub
+						return input instanceof EntityPlayer || input instanceof EntityTF2Character;
+					}
 
-		}) {
-			@Override
+				}) {
 			protected double getTargetDistance()
-			{
-				return super.getTargetDistance() * 0.5;
-			}
+		    {
+		        return super.getTargetDistance() * 0.5;
+		    }
 		});
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
-		this.targetTasks.addTask(4, new EntityAINearestAttackableTarget<>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
+		this.targetTasks.addTask(4, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
 	}
 	@Override
 	public void fall(float distance, float damageMultiplier) {
@@ -134,7 +137,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	}
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-
+		
 
 		if (super.attackEntityFrom(source, amount)) {
 			if (source instanceof TF2DamageSource) {
@@ -153,11 +156,9 @@ public class EntityMonoculus extends EntityTF2Boss {
 		}
 		return false;
 	}
-	@Override
 	public SoundEvent getDeathSound(){
 		return TF2Sounds.MOB_MONOCULUS_DEFEAT;
 	}
-	@Override
 	public SoundEvent getAppearSound(){
 		return TF2Sounds.MOB_MONOCULUS_START;
 	}
@@ -168,7 +169,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		nbt.setShort("Angry", (short)this.angryTicks);
 		nbt.setShort("Teleport", (short)this.teleport);
 		nbt.setShort("LaserCooldown", (short)this.laserCooldown);
-
+		
 	}
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
@@ -182,7 +183,6 @@ public class EntityMonoculus extends EntityTF2Boss {
 	/**
 	 * Moves the entity based on the specified heading.
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public void travel(float strafe, float forward, float par3) {
 		if (this.isInWater()) {
@@ -245,7 +245,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	public void onLivingUpdate() {
 		if (this.getHeldItemMainhand().isEmpty() || !(this.getHeldItemMainhand().getItem() instanceof ItemWeapon))
 			this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mnceye"));
-
+		
 		super.onLivingUpdate();
 		if (this.begin-- > 20 && this.world.isRemote)
 			for (int i = 0; i < 40; i++) {
@@ -256,14 +256,18 @@ public class EntityMonoculus extends EntityTF2Boss {
 		if (this.ticksExisted == 1) {
 
 		}
-
+		
 		this.laserTime--;
 		if (this.world.isRemote) {
 			this.ignoreFrustumCheck = this.isLaser();
 		}
 		//System.out.println(" "+this.rotationPitch);
 		if (!this.world.isRemote) {
-
+			
+			if(this.begin==0){
+				this.setNoAI(false);
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(BOSS_ARMOR_SPAWN);
+			}
 			if (this.getAttackTarget() == null) {
 				double f = MathHelper.sqrt(this.motionX * this.motionX
 						+ this.motionZ * this.motionZ);
@@ -281,6 +285,8 @@ public class EntityMonoculus extends EntityTF2Boss {
 					double d1 = entitylivingbase.posX - this.posX;
 					double d2 = entitylivingbase.posZ - this.posZ;
 					double d3 = entitylivingbase.posY - (this.posY + this.getEyeHeight());
+					if (this.isLaser())
+						d3+= entitylivingbase.getEyeHeight();
 					double f = MathHelper.sqrt(d1 * d1 + d2 * d2);
 					float clamp = this.isLaser() ? 1.35f: 10f;
 					float yaw = -((float) MathHelper.atan2(d1, d2)) * (180F / (float) Math.PI);
@@ -293,15 +299,15 @@ public class EntityMonoculus extends EntityTF2Boss {
 					this.rotationYawHead = this.rotationYaw;
 				}
 			}
-
+			
 			if (this.level > 1)
-				this.laserCooldown--;
-
+			this.laserCooldown--;
+			
 			if (this.ticksExisted%20==0 && !this.isAngry() &&this.rand.nextInt(20)==0)
 				this.setAngry(100);
-
+				
 			if (this.ticksExisted%5==0) {
-				if (this.getAttackTarget() != null && !this.getEntitySenses().canSee(this.getAttackTarget())) {
+				if (this.getAttackTarget() != null && this.world.rayTraceBlocks(this.getPositionEyes(1), this.getAttackTarget().getPositionVector()) != null) {
 					TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39],
 							this.isAngry() ? 0.8f : 0.45f);
 					TF2Attribute.setAttribute(this.getHeldItemOffhand(), TF2Attribute.attributes[39], 0f);
@@ -338,7 +344,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(256.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(160);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.11D);
@@ -352,7 +358,6 @@ public class EntityMonoculus extends EntityTF2Boss {
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()*(0.95+this.level*0.05));
 		return p_110161_1_;
 	}
-	@Override
 	public void dropFewItems(boolean hit,int looting){
 		if(this.rand.nextBoolean()) {
 			ItemStack bomb = ItemFromData.getNewStack("bombinomicon");
@@ -377,7 +382,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 		if (this.world.isRemote && LASER.equals(key))
 			this.laserTime = 100;
 	}
-
+	
 	static class AIFireballAttack extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
 		private int attackTimer;
@@ -434,13 +439,13 @@ public class EntityMonoculus extends EntityTF2Boss {
 						this.parentEntity.playSound(TF2Sounds.MOB_MONOCULUS_SHOOT_MAD, 3f, 1);
 					else
 						this.parentEntity.playSound(TF2Sounds.MOB_MONOCULUS_SHOOT, 3f, 1);
-
+					
 					((ItemProjectileWeapon) this.parentEntity.getHeldItemMainhand().getItem()).shoot(
 							this.parentEntity.getHeldItemMainhand(), this.parentEntity, world, 2, EnumHand.MAIN_HAND);
 					if (this.triple > 0) {
 						triple--;
 						this.attackTimer = Math.max(4, 6 - this.parentEntity.level / 3);
-
+						
 					} else {
 						this.attackTimer = Math.max(11, 30 - this.parentEntity.level * 2);
 						if (this.parentEntity.isAngry())
@@ -478,25 +483,24 @@ public class EntityMonoculus extends EntityTF2Boss {
 		public boolean shouldContinueExecuting() {
 			return this.parentEntity.begin <= 0 && this.parentEntity.laserCooldown <= 0 && (this.parentEntity.getAttackTarget() != null || this.parentEntity.envDamage > 0);
 		}
-
+		
 		/**
 		 * Execute a one shot task or start executing a continuous task
 		 */
 		@Override
 		public void startExecuting() {
-			this.parentEntity.laserTime = LASER_DURATION;
+			this.parentEntity.laserTime = LASER_DURATION + this.parentEntity.level*10;
 		}
 
 		/**
 		 * Resets the task
 		 */
-
-		@Override
-		public void resetTask() {
+		
+		public void resetTask() { 
 			this.parentEntity.setLaser(false);
 			this.parentEntity.laserCooldown = 140;
 		}
-
+		 
 
 		/**
 		 * Updates the task
@@ -509,20 +513,20 @@ public class EntityMonoculus extends EntityTF2Boss {
 			}
 			else
 				this.parentEntity.setLaser(true);
-			if (this.parentEntity.laserTime < LASER_START && --this.damageCooldown <= 0) {
-				((ItemWeapon) this.parentEntity.getHeldItemOffhand().getItem()).use(
-						this.parentEntity.getHeldItemOffhand(), this.parentEntity, this.parentEntity.world, EnumHand.OFF_HAND, null);
-				this.damageCooldown= 5;
+			if (this.parentEntity.laserTime < LASER_START + this.parentEntity.level*10 && --this.damageCooldown <= 0) {
+			((ItemWeapon) this.parentEntity.getHeldItemOffhand().getItem()).use(
+					this.parentEntity.getHeldItemOffhand(), this.parentEntity, this.parentEntity.world, EnumHand.OFF_HAND, null);
+			this.damageCooldown= Math.max(20-this.parentEntity.level,10);
 			}
 			for (RayTraceResult trace : TF2Util.pierce(this.parentEntity.world, parentEntity, 120, false, 0.5f, true)) {
 				//if (trace.entityHit != null) {
-
+					
 				//}
 				((WorldServer)parentEntity.world).spawnParticle(EnumParticleTypes.CRIT, trace.hitVec.x, trace.hitVec.y, trace.hitVec.z, 1, 0D, 0D, 0D, 0D);
 			}
 		}
 	}
-
+	
 	static class AILookAround extends EntityAIBase {
 		private final EntityMonoculus parentEntity;
 
@@ -550,7 +554,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 				this.parentEntity.rotationYaw = -((float) MathHelper.atan2(this.parentEntity.motionX,
 						this.parentEntity.motionZ)) * (180F / (float) Math.PI);
 				this.parentEntity.rotationPitch = -((float) MathHelper.atan2(this.parentEntity.motionY, f))
-			 * (180F / (float) Math.PI);
+						* (180F / (float) Math.PI);
 				this.parentEntity.renderYawOffset = this.parentEntity.rotationYaw;
 				this.parentEntity.rotationYawHead = this.parentEntity.rotationYaw;
 			} else {
@@ -622,10 +626,10 @@ public class EntityMonoculus extends EntityTF2Boss {
 			EntityLivingBase target = this.parentEntity.getAttackTarget();
 			this.movingToHome = this.parentEntity.getHomePosition().distanceSq(d0, d1, d2) < this.parentEntity.getDistanceSq(this.parentEntity.getHomePosition());
 			boolean flyToPlayer = target != null && target.getDistanceSq(this.parentEntity) > 680;
-
+			
 			if((!flyToPlayer || target.getDistanceSq(d0, d1, d2) < target.getDistanceSq(this.parentEntity))
 					&& (flyToPlayer || (this.parentEntity.isWithinHomeDistanceCurrentPosition()
-							|| movingToHome)))
+					|| movingToHome)))
 				this.parentEntity.getMoveHelper().setMoveTo(d0, d1, d2, 0.3d);
 		}
 	}
@@ -683,8 +687,7 @@ public class EntityMonoculus extends EntityTF2Boss {
 			return true;
 		}
 	}
-
-	@Override
+	
 	public void returnSpawnItems() {
 		this.entityDropItem(new ItemStack(TF2weapons.itemBossSpawn,1,1), 0);
 	}

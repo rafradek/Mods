@@ -1,14 +1,16 @@
 {
-    "parent": "item/handheld",
-    "textures": {
-        "layer0": "rafradek_tf2_weapons:items/knife"
-    },
     "overrides": [
+        {
+            "predicate": {
+                "backstab": 0
+            },
+            "model": "rafradek_tf2_weapons:item/knife_normal"
+        },
         {
             "predicate": {
                 "backstab": 1
             },
-            "model": "rafradek_tf2_weapons:item/knifebackstab"
+            "model": "rafradek_tf2_weapons:item/knife_backstab"
         }
     ]
 }

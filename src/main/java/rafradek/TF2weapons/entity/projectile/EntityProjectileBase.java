@@ -4,10 +4,13 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.common.registry.IThrowableEntity;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import atomicstryker.dynamiclights.client.DynamicLights;
@@ -19,8 +22,12 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntitySentry;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.util.DamageSourceProjectile;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2DamageSource;
 import rafradek.TF2weapons.util.TF2Util;
 import net.minecraft.block.Block;
@@ -46,6 +53,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ReportedException;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -77,6 +85,10 @@ public abstract class EntityProjectileBase extends Entity
 	public float damageModifier = 1f;
 	public float chargeLevel;
 	
+	public Entity homingTarget;
+	public float homingAngle;
+	public float homingSpeed;
+	
 	private static final DataParameter<Byte> CRITICAL = EntityDataManager.createKey(EntityProjectileBase.class,
 			DataSerializers.BYTE);
 	public static final DataParameter<Byte> TYPE = EntityDataManager.createKey(EntityProjectileBase.class,
@@ -105,7 +117,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.usedWeaponOrig = weapon;
 		this.setLocationAndAngles(shooter.posX, shooter.posY + shooter.getEyeHeight(), shooter.posZ,
 				shooter.rotationYawHead, shooter.rotationPitch + this.getPitchAddition());
-		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch, shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
+		Vec3d look = Vec3d.fromPitchYaw(shooter.rotationPitch+ this.getPitchAddition(), shooter.rotationYawHead).scale(80).add(shooter.getPositionEyes(1f));
 		Vec3d trace;
 		if (shooter instanceof EntityPlayer) {
 			RayTraceResult ray = Iterables.getFirst(TF2Util.pierce(world, shooter, this.posX, this.posY, this.posZ, look.x, look.y, look.z, false, 0, false), null);
@@ -195,6 +207,7 @@ public abstract class EntityProjectileBase extends Entity
 		this.prevRotationPitch = this.rotationPitch = (float) (MathHelper.atan2(y, f3) * 180.0D / Math.PI);
 	}
 
+	
 	public void face(double x, double y, double z, float speedmult) {
 		float speed = (float) Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
 		x -= this.posX;
@@ -288,9 +301,11 @@ public abstract class EntityProjectileBase extends Entity
 		float size = this.getExplosionSize() * TF2Attribute.getModifier("Explosion Radius", this.usedWeapon, 1, this.shootingEntity);
 		if(TF2Attribute.getModifier("Airborne Bonus", this.usedWeapon, 0, this.shootingEntity) != 0) 
 			size *= 0.8f;
-		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult * this.damageModifier, this.getCritical(), 
-						(float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
-					.distanceTo(new Vec3d(x, y, z)));
+		TF2Util.explosion(world, shootingEntity, usedWeapon, this, direct, x, y, z, size, damageMult * this.damageModifier, this.getCritical(), this.getDistanceToTarget(null, x, y, z));
+	}
+
+	public SoundEvent getExplosionSound() {
+		return ItemFromData.getSound(this.usedWeapon, PropertyType.EXPLOSION_SOUND);
 	}
 
 	public void addDamageTypes(DamageSource source) {
@@ -301,13 +316,14 @@ public abstract class EntityProjectileBase extends Entity
 		if (!this.world.isRemote) {
 			if (!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
-				float distance = (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
+				float distance = this.getDistanceToTarget(target, hitPos.x, hitPos.y, hitPos.z);
+				DamageSourceProjectile src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, this);
 				int critical = TF2Util.calculateCritPost(target, shootingEntity, headshot ? 
 						((ItemWeapon) this.usedWeapon.getItem()).getHeadshotCrit(shootingEntity, this.usedWeapon) : this.getCritical(),
-						this.usedWeapon);
+						this.usedWeapon, src);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical,
 						distance) * this.damageModifier;
-				DamageSource src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, critical, this);
+				src.setCritical(critical);
 				this.addDamageTypes(src);
 				
 				if (headshot)
@@ -319,8 +335,7 @@ public abstract class EntityProjectileBase extends Entity
 						this.setDead();
 					if(proceed) {
 						Vec3d pushvec=new Vec3d(target.posX - hitPos.x, target.posY + target.height/2 - hitPos.y, target.posZ - hitPos.z).normalize();
-						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getWeaponKnockback(this.usedWeapon, shootingEntity)
-								*  0.01625D*dmg);
+						pushvec=pushvec.scale(((ItemWeapon) this.usedWeapon.getItem()).getKnockbackForDamage(usedWeapon, shootingEntity, dmg, src));
 						if(target instanceof EntityLivingBase) {
 							pushvec=pushvec.scale(1-((EntityLivingBase) target).getAttributeMap().getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
 							.getAttributeValue());
@@ -335,6 +350,14 @@ public abstract class EntityProjectileBase extends Entity
 			}
 		}
 		return false;
+	}
+	
+	public float getDistanceToTarget(Entity target, double x, double y, double z) {
+		if (target == null)
+			return (float) new Vec3d(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ)
+			.distanceTo(new Vec3d(x, y, z));
+		else
+			return (float) TF2Util.getDistanceBox(this.shootingEntity, target.posX, target.posY, target.posZ, target.width+0.1, target.height+0.1);
 	}
 	
 	@Override
@@ -353,7 +376,7 @@ public abstract class EntityProjectileBase extends Entity
 		}
 		boolean headshot = this.usedWeapon.isEmpty() || !flag ? false : ((ItemWeapon)this.usedWeapon.getItem()).canHeadshot(this.shootingEntity, this.usedWeapon);
 		for(RayTraceResult target : TF2Util.pierce(this.world, this.shootingEntity, this.posX, this.posY, this.posZ, this.posX + this.motionX,
-				this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate()
+				this.posY + this.motionY, this.posZ + this.motionZ, headshot, this.getCollisionSize(), this.canPenetrate(), this.getCollisionPredicate()
 				)) {
 			
 			if (target.entityHit != null
@@ -399,6 +422,11 @@ public abstract class EntityProjectileBase extends Entity
 			}
 		}
 	}
+	
+	protected Predicate<Entity> getCollisionPredicate() {
+		return TF2Util.TARGETABLE;
+	}
+
 	/**
 	 * Called to update the entity's position/logic.
 	 */
@@ -409,8 +437,14 @@ public abstract class EntityProjectileBase extends Entity
 			return;
 		}
 
+		if (this.getCritical() == -1) {
+			this.setCritical(0);
+			this.explode(posX, posY, posZ, null, 1f);
+			return;
+		}
+		
 		super.onUpdate();
-
+		
 		if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F) {
 			float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
 			this.prevRotationYaw = this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D
@@ -425,13 +459,42 @@ public abstract class EntityProjectileBase extends Entity
 		}
 		float f2;
 		if (this.isSticked()) {
-			this.setPosition((double) this.dataManager.get(STICK_X), (double) this.dataManager.get(STICK_Y),
-					(double) this.dataManager.get(STICK_Z));
+			this.setPosition(this.dataManager.get(STICK_X), this.dataManager.get(STICK_Y),
+					this.dataManager.get(STICK_Z));
 			if (!this.world.isRemote && this.ticksExisted % 5 == 0 && this.world
 					.getCollisionBoxes(this, this.getEntityBoundingBox().grow(0.1f, 0.1f, 0.1f)).isEmpty())
 				this.setSticked(false);
 		}
 		if (this.moveable()) {
+			if (this.shootingEntity != null && this.getHomingAngle() > 0f && !this.world.isRemote) {
+				if (this.homingTarget == null || !this.homingTarget.isEntityAlive()) {
+					List<Entity> targets = this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox().grow(128), entity -> {
+						return entity.isEntityAlive() && entity instanceof EntityLivingBase && TF2Util.isEnemy(shootingEntity, (EntityLivingBase)entity) && !this.hitEntities.contains(entity);
+					});
+					this.homingTarget = TF2Util.getClosestEntityInCone(this.getPositionVector(), this.getPositionVector().addVector(this.motionX, this.motionY, this.motionZ), targets, this.getHomingAngle());
+				}
+				if (this.hitEntities.contains(this.homingTarget)) {
+					this.homingTarget = null;
+				}
+				if (this.homingTarget != null ) {
+					float sq = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+					float yaw = (float) (MathHelper.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
+					float pitch = (float) (MathHelper.atan2(this.motionY, sq) * 180.0D / Math.PI);
+					Vec3d offset = new Vec3d(this.homingTarget.posX - this.posX, this.homingTarget.posY - this.posY + this.homingTarget.height / 2D, this.homingTarget.posZ - this.posZ);
+					float targetsq = MathHelper.sqrt(offset.x * offset.x + offset.z * offset.z);
+					float targetyaw = (float) (MathHelper.atan2(offset.x, offset.z) * 180.0D / Math.PI);
+					float targetpitch = (float) (MathHelper.atan2(offset.y, targetsq) * 180.0D / Math.PI);
+					yaw += MathHelper.clamp(MathHelper.wrapDegrees(targetyaw - yaw), -this.getHomingTurnSpeed(), this.getHomingTurnSpeed());
+					pitch += MathHelper.clamp(MathHelper.wrapDegrees(targetpitch - pitch), -this.getHomingTurnSpeed(), this.getHomingTurnSpeed());
+					offset = Vec3d.fromPitchYaw(pitch, yaw).scale(MathHelper.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ));
+					this.velocityChanged = true;
+					this.motionX = -offset.x;
+					this.motionY =- offset.y;
+					this.motionZ = offset.z;
+				}
+				
+			}
+			
 			if (!this.useCollisionBox()) {
 				this.posX += this.motionX;
 				this.posY += this.motionY;
@@ -748,11 +811,15 @@ public abstract class EntityProjectileBase extends Entity
 	public boolean moveable() {
 		return !this.isSticked();
 	}
-
-	/**
-	 * Whether the arrow has a stream of critical hit particles flying behind
-	 * it.
-	 */
+	
+	public float getHomingAngle() {
+		return this.homingAngle;
+	}
+	
+	public float getHomingTurnSpeed() {
+		return this.homingSpeed;
+	}
+	
 	public void setCritical(int critical) {
 		this.dataManager.set(CRITICAL, (byte) critical);
 	}
@@ -776,11 +843,11 @@ public abstract class EntityProjectileBase extends Entity
 	 * it.
 	 */
 	public int getCritical() {
-		return (int)this.dataManager.get(CRITICAL);
+		return this.dataManager.get(CRITICAL);
 	}
 	
 	public int getType() {
-		return (int)this.dataManager.get(TYPE);
+		return this.dataManager.get(TYPE);
 	}
 	
 	public boolean isSticked() {
@@ -803,7 +870,7 @@ public abstract class EntityProjectileBase extends Entity
 		if(this.dataManager.get(GRAVITY) == -1f && !this.usedWeapon.isEmpty()) {
 			this.dataManager.set(GRAVITY, ((ItemWeapon)this.usedWeapon.getItem()).getAdditionalGravity(shootingEntity, usedWeapon, this.getGravity()));
 		}
-		return (double)this.dataManager.get(GRAVITY);
+		return this.dataManager.get(GRAVITY);
 	}
 
 	@Override

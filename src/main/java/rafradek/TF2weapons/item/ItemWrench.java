@@ -3,6 +3,7 @@ package rafradek.TF2weapons.item;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -33,6 +34,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.entity.building.EntityTeleporter.TeleporterData;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -65,7 +67,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 				float metalMult = TF2Attribute.getModifier("Metal Used", stack, 1f, attacker);
 				if ((attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
 					metalMult = 10;
-
+				
 				ItemStack ingot = new ItemStack(Items.IRON_INGOT);
 				if (metalLeft == 0 && attacker instanceof EntityPlayer
 						&& ((EntityPlayer) attacker).inventory.hasItemStack(ingot)) {
@@ -93,7 +95,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 					if (building.getLevel() == 3) {
 						metalUse = Math.min(Math.min(20 - ((EntitySentry) building).getRocketAmmo(), (int) (8 * metalMult)), metalLeft / 2);
 						((EntitySentry) building)
-						.setRocketAmmo(Math.min(20, ((EntitySentry) building).getRocketAmmo() + metalUse));
+								.setRocketAmmo(Math.min(20, ((EntitySentry) building).getRocketAmmo() + metalUse));
 						metalLeft -= metalUse * 2;
 					}
 				}
@@ -129,7 +131,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 				float metalMult = TF2Attribute.getModifier("Metal Used", stack, 1f, attacker);
 				if ((attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
 					metalMult = 10;
-
+				
 				ItemStack ingot = new ItemStack(Items.IRON_INGOT);
 				if (metalLeft == 0 && attacker instanceof EntityPlayer
 						&& ((EntityPlayer) attacker).inventory.hasItemStack(ingot)) {
@@ -138,7 +140,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 					useIgnot = true;
 				}
 				int metalUse = 0;
-
+				
 				if (robot.getHealth() < robot.getMaxHealth()) {
 					metalUse = (int) Math.min(
 							(Math.min((robot.getMaxHealth() - robot.getHealth()) * 3.333333f, 33 * metalMult) + 1),
@@ -146,13 +148,13 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 					robot.heal(metalUse * 0.3f);
 					metalLeft -= metalUse;
 				}
-
+				
 				if (useIgnot && metalLeft != 50)
 					((EntityPlayer) attacker).inventory.clearMatchingItems(Items.IRON_INGOT, 0, 1, null);
-
+				
 				robot.playSound(ItemFromData.getSound(stack, metalLeft != attacker.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()
 						? PropertyType.BUILD_HIT_SUCCESS_SOUND : PropertyType.BUILD_HIT_FAIL_SOUND), 1.7f, 1f);
-
+				
 				if (!(attacker instanceof EntityPlayer && ((EntityPlayer) attacker).capabilities.isCreativeMode))
 					attacker.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(metalLeft);
 			}
@@ -166,7 +168,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 		ItemStack stack=living.getHeldItem(hand);
 		if(living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal()>=20 && TF2Attribute.getModifier("Weapon Mode", stack, 0, living) == 1) {
 			living.setActiveHand(hand);
-			return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
 		}
 		return super.onItemRightClick(world, living, hand);
 	}
@@ -184,11 +186,9 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 	 * newStack, boolean slotChanged) { return
 	 * super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged); }
 	 */
-	@Override
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
 		return true;
 	}
-	@Override
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		return new String[]{"METAL",Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal())};
 	}
@@ -224,7 +224,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 			}
 			if (pos != null) {
 				if (dimension != player.dimension)
-					player.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) player,
+					player.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) player, 
 							dimension, new EntityTeleporter.TeleporterDim((WorldServer) player.world,pos));
 				player.setPositionAndUpdate(pos.getX()+0.5, pos.getY()+0.23, pos.getZ()+0.5);
 				player.getCooldownTracker().setCooldown(MapList.weaponClasses.get("wrench"), 200);
@@ -234,7 +234,7 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 			}
 		}
 	}
-
+	
 	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder renderer, ScaledResolution resolution) {
 		if (player.getActiveItemStack().getItem() instanceof ItemWrench && player.getItemInUseCount() < 770) {
@@ -247,11 +247,11 @@ public class ItemWrench extends ItemMeleeWeapon implements IItemSlotNumber {
 			GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
 			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(resolution.getScaledWidth()/2-80, resolution.getScaledHeight()/2-32, 64, 192, 64, 64);
 			Minecraft.getMinecraft().ingameGUI.drawTexturedModalRect(resolution.getScaledWidth()/2+16, resolution.getScaledHeight()/2-32, 0, 192, 64, 64);
-
+			
 			gui.drawCenteredString(gui.getFontRenderer(), "(1-8)", resolution.getScaledWidth()/2-48, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.selectlocation"), resolution.getScaledWidth()/2, resolution.getScaledHeight()/2-50, 0xFFFFFFFF);
 			gui.drawCenteredString(gui.getFontRenderer(), "(9)", resolution.getScaledWidth()/2+48, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
-
+			
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			GL11.glDepthMask(true);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);

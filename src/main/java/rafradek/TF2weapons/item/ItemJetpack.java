@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.item;
 
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -19,6 +20,11 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemJetpack extends ItemBackpack {
 
+	public static ItemStack trigger = ItemStack.EMPTY;
+	public ItemJetpack() {
+		// TODO Auto-generated constructor stub
+	}
+	
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		return stack.getTagCompound().getShort("Charge") > 0;
@@ -28,7 +34,13 @@ public class ItemJetpack extends ItemBackpack {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		return (double)( stack.getTagCompound().getShort("Charge"))/this.getCooldown(stack, null);
 	}
-
+	
+	public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+		if (trigger.isEmpty())
+			trigger = ItemFromData.getNewStack("trigger");
+    	return trigger;
+    }
+	
 	@Override
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		super.onArmorTickAny(world, player, itemStack);
@@ -75,27 +87,27 @@ public class ItemJetpack extends ItemBackpack {
 			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX-vec.x*0.4-vec2.x*0.3, player.posY+1, player.posZ-vec.z*0.4-vec2.z*0.3, 0, 0, 0);
 		}
 	}
-
+	
 	public int getCooldown(ItemStack stack, EntityLivingBase living) {
-		return (int) ((TF2ConfigVars.fastItemCooldown ? getData(stack).getInt(PropertyType.COOLDOWN) : 300)/(TF2Attribute.getModifier("Charge", stack, 1, living)
+		return (int) (getData(stack).getInt(PropertyType.COOLDOWN) * (TF2ConfigVars.fastItemCooldown ? 1 : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))
+				/(TF2Attribute.getModifier("Charge", stack, 1, living)
 				+TF2Attribute.getModifier("Charges", stack, 0, living) * 0.12f));
 	}
-
-	@Override
+	
 	public int getAmmoType(ItemStack stack) {
 		return TF2ConfigVars.freeUseItems ? 0 : super.getAmmoType(stack);
 	}
-
+	
 	public boolean canActivate(ItemStack stack, EntityLivingBase player) {
 		return ItemToken.allowUse(player, "pyro")
-				&& (!stack.getTagCompound().getBoolean("Active") || TF2Attribute.getModifier("Jetpack", stack, 0f, player) > 0f)
+				&& (!stack.getTagCompound().getBoolean("Active") || TF2Attribute.getModifier("Jetpack", stack, 0f, player) > 0f) 
 				&& stack.getTagCompound().getByte("Load") <= 0 && stack.getTagCompound().getByte("Charges") > 0 ;
 	}
-
+	
 	public int getMaxCharges(ItemStack stack, EntityLivingBase player) {
 		return (int) TF2Attribute.getModifier("Charges", stack, 2, player);
 	}
-
+	
 	public void activateJetpack(ItemStack stack, EntityLivingBase player, boolean setTimer) {
 		player.motionY = Math.max(player.motionY, 0) + 0.5;
 		player.isAirBorne = true;
@@ -109,7 +121,7 @@ public class ItemJetpack extends ItemBackpack {
 		}
 		else {
 			for(int i=0;i<50;i++)
-				ClientProxy.spawnFlameParticle(player.world, player, 0, true);
+			ClientProxy.spawnFlameParticle(player.world, player, 0, true);
 		}
 		if (setTimer && !(player.getHeldItemMainhand().getItem() instanceof ItemJetpackTrigger)) {
 			WeaponsCapability.get(player).setPrimaryCooldown(1500);

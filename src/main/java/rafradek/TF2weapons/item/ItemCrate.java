@@ -3,11 +3,15 @@ package rafradek.TF2weapons.item;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
@@ -17,19 +21,26 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.item.ItemCrate.CrateContent;
+import rafradek.TF2weapons.item.ItemFromData.AttributeProvider;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
 
 public class ItemCrate extends ItemFromData {
-
+	
 	public static class PropertyContent extends PropertyType<CrateContent> {
-
+		
 		public PropertyContent(int id, String name, Class<CrateContent> type) {
 			super(id, name, type);
 		}
@@ -47,8 +58,7 @@ public class ItemCrate extends ItemFromData {
 			}
 			return content;
 		}
-
-		@Override
+		
 		public void serialize(DataOutput buf, WeaponData data, CrateContent value) throws IOException {
 			buf.writeByte(value.content.size());
 			for (Entry<String, Integer> entry : value.content.entrySet()) {
@@ -56,8 +66,7 @@ public class ItemCrate extends ItemFromData {
 				buf.writeShort(entry.getValue());
 			}
 		}
-
-		@Override
+		
 		public CrateContent deserialize(DataInput buf, WeaponData data) throws IOException {
 			int attributeCount = buf.readByte();
 			CrateContent content = new CrateContent();
@@ -83,7 +92,7 @@ public class ItemCrate extends ItemFromData {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
-		ItemStack itemStackIn=playerIn.getHeldItem(hand);
+		ItemStack itemStackIn=playerIn.getHeldItem(hand); 
 		if (!worldIn.isRemote && !itemStackIn.getTagCompound().getBoolean("Open")) {
 			if (playerIn.inventory.hasItemStack(new ItemStack(TF2weapons.itemTF2, 1, 7))) {
 				itemStackIn.getTagCompound().setBoolean("Open", true);
@@ -92,8 +101,8 @@ public class ItemCrate extends ItemFromData {
 		}
 		if (!worldIn.isRemote && itemStackIn.getTagCompound().getBoolean("Open")) {
 			//ArrayList<String> list = new ArrayList<String>();
-
-
+			
+			
 			ItemStack stack=ItemStack.EMPTY;
 			if(playerIn.getRNG().nextInt(32)==0){
 				stack= ItemFromData.getRandomWeaponOfClass("cosmetic", playerIn.getRNG(), false);
@@ -105,8 +114,8 @@ public class ItemCrate extends ItemFromData {
 				for (Entry<String, Integer> entry : getData(itemStackIn).get(PropertyType.CONTENT).content.entrySet()){
 					currVal+=entry.getValue();
 					if(choosen<currVal){
-						stack=ItemFromData.getNewStack(entry.getKey());
-						break;
+						 stack=ItemFromData.getNewStack(entry.getKey());
+						 break;
 					}
 					/*for (int i = 0; i < entry.getValue(); i++)
 						list.add(entry.getKey());*/
@@ -115,7 +124,7 @@ public class ItemCrate extends ItemFromData {
 			//
 			if (!(stack.getItem() instanceof ItemWearable))
 				stack.getTagCompound().setBoolean("Strange", true);
-
+			
 			if (!playerIn.inventory.addItemStackToInventory(stack))
 				playerIn.dropItem(stack, true);
 			//playerIn.addStat(TF2Achievements.LOOT_CRATE);
@@ -124,10 +133,10 @@ public class ItemCrate extends ItemFromData {
 				playerIn.addStat(TF2Achievements.CRATES_10);
 			}*/
 			itemStackIn.shrink(1);
-			return new ActionResult<>(EnumActionResult.SUCCESS, itemStackIn);
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
 		}
 		else
-			return new ActionResult<>(EnumActionResult.FAIL, itemStackIn);
+		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
 	}
 
 	@Override
@@ -156,8 +165,7 @@ public class ItemCrate extends ItemFromData {
 			}
 		}
 	}
-
-	@Override
+	
 	public int getItemBurnTime(ItemStack itemStack) {
 		return 2400;
 	}

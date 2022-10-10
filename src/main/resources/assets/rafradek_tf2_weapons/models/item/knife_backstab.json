@@ -1,0 +1,13 @@
+{
+    "parent": "rafradek_tf2_weapons:item/knife_normal",
+    "display": {
+        "firstperson_righthand": {
+			"rotation": [-14, 90, -122],
+			"translation": [1.5, 6, 3]
+		},
+		"firstperson_lefthand": {
+			"rotation": [-14, 90, -122],
+			"translation": [1.5, 6, 3]
+		}
+    }
+}

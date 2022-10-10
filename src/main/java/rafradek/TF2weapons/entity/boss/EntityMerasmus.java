@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
 import net.minecraft.entity.EntityLivingBase;
@@ -17,9 +20,13 @@ import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITarget;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.EntityMoveHelper;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -46,6 +53,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockProp;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -76,50 +84,53 @@ public class EntityMerasmus extends EntityTF2Boss {
 		this.setNoAI(true);
 		this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mrsbomb"));
 	}
-
+	
 	@Override
 	public void entityInit() {
 		super.entityInit();
 		this.dataManager.register(SPELL_BOMB, false);
 	}
-	@Override
 	protected void initEntityAI()
-	{
+    {
 		this.tasks.addTask(1, new EntityAISwimming(this));
 		this.tasks.addTask(4, new AIAttack(this));
 		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
 		this.tasks.addTask(6, new EntityAILookIdle(this));
-
+		
 		this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, false, new Class[0]));
-		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,3, false,false,new Predicate<EntityLivingBase>(){
+        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityLivingBase>(this, EntityLivingBase.class,3, false,false,new Predicate<EntityLivingBase>(){
 
 			@Override
 			public boolean apply(EntityLivingBase input) {
+				// TODO Auto-generated method stub
 				return input instanceof EntityTF2Character || input instanceof EntityPlayer;
 			}
-		}) {
-			@Override
-			protected double getTargetDistance()
-			{
-				return super.getTargetDistance() * 0.35;
-			}
+        }) {
+        	protected double getTargetDistance()
+		    {
+		        return super.getTargetDistance() * 0.35;
+		    }
 
-			@Override
 			public boolean shouldExecute()
-			{
-
+		    {
+				
 				return super.shouldExecute();
-			}
-		});
-		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer));
-	}
-
-
-	@Override
+		    }
+        });
+        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<EntityPlayer>(this, EntityPlayer.class,5, false,false,input ->input instanceof EntityPlayer) {
+        	public boolean shouldExecute()
+            {
+        		boolean ex = super.shouldExecute();
+        		return ex;
+            }
+        });
+    }
+	
+	
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		// this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).
-		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(256.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(200);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.098D);
@@ -127,10 +138,9 @@ public class EntityMerasmus extends EntityTF2Boss {
 
 	}
 	protected PathNavigate getNewNavigator(World worldIn)
-	{
-		return new PathNavigateClimber(this, worldIn);
-	}
-	@Override
+    {
+        return new PathNavigateClimber(this, worldIn);
+    }
 	public float getEyeHeight(){
 		return 2.1f;
 	}
@@ -157,7 +167,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 	public void onLivingUpdate() {
 		if (this.getHeldItemMainhand().isEmpty() || !(this.getHeldItemMainhand().getItem() instanceof ItemWeapon))
 			this.setHeldItem(EnumHand.MAIN_HAND, ItemFromData.getNewStack("mrsbomb"));
-
+		
 		super.onLivingUpdate();
 		if (this.getActivePotionEffect(TF2weapons.stun) != null)
 			this.rotationPitch=90;
@@ -167,19 +177,21 @@ public class EntityMerasmus extends EntityTF2Boss {
 				this.world.spawnParticle(EnumParticleTypes.PORTAL, pos.x + this.posX, this.posY - 0.5,
 						pos.y + this.posZ, 0, 0, 0, new int[0]);
 			}
-
+		
 		if(!world.isRemote){
 			if(this.begin==0){
 				this.setNoAI(false);
+				this.getEntityAttribute(SharedMonsterAttributes.ARMOR).removeModifier(BOSS_ARMOR_SPAWN);
 			}
 			this.bombDuration--;
 			for(EntityLivingBase living:this.world.getEntitiesWithinAABB(EntityLivingBase.class, this.getEntityBoundingBox().grow(1.5, 1, 1.5), new Predicate<EntityLivingBase>(){
 
 				@Override
 				public boolean apply(EntityLivingBase input) {
+					// TODO Auto-generated method stub
 					return input.getActivePotionEffect(TF2weapons.bombmrs)!=null;
 				}
-
+				
 			})){
 				living.removePotionEffect(TF2weapons.bombmrs);
 				living.removePotionEffect(TF2weapons.stun);
@@ -190,7 +202,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 				this.teleportCooldown=120;
 			}
 			if(!this.hidden){
-
+				
 				if (this.ticksExisted%5==0) {
 					if (this.getAttackTarget() != null && !this.getEntitySenses().canSee(this.getAttackTarget())) {
 						TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39], 0.35f);
@@ -198,15 +210,16 @@ public class EntityMerasmus extends EntityTF2Boss {
 					else
 						TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39], 0f);
 				}
-
+				
 				if(this.bombCooldown--<=0){
 					List<EntityPlayer> list=this.world.getEntitiesWithinAABB(EntityPlayer.class, this.getEntityBoundingBox().grow(30, 15, 30), new Predicate<EntityPlayer>(){
-
+	
 						@Override
 						public boolean apply(EntityPlayer input) {
+							// TODO Auto-generated method stub
 							return getDistanceSq(input)<900&&!TF2Util.isOnSameTeam(EntityMerasmus.this, input)&&EntityAITarget.isSuitableTarget(EntityMerasmus.this, input, false, false);
 						}
-
+						
 					});
 					if(!list.isEmpty()){
 						EntityPlayer living=list.get(this.rand.nextInt(list.size()));
@@ -215,9 +228,9 @@ public class EntityMerasmus extends EntityTF2Boss {
 						((EntityPlayerMP)living).connection.sendPacket(new SPacketSoundEffect(TF2Sounds.MOB_MERASMUS_HEADBOMB, this.getSoundCategory(), living.posX, living.posY, living.posZ, 4F, 1f));
 						//this.teleportCooldown=90;
 					}
-					this.bombCooldown=Math.max(600-this.playersAttacked*60,260);
+					this.bombCooldown=Math.max(680-this.playersAttacked*60,480);
 				}
-
+				
 				if(this.teleportCooldown--<=0 && !this.isBombSpell()){
 					this.teleport();
 				}
@@ -239,7 +252,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						this.motionY=0;
 					}
 					if(this.bombDuration==200||!this.getMoveHelper().isUpdating()){
-
+						
 						Random random = this.getRNG();
 						BlockPos pos = this.world.getTopSolidOrLiquidBlock(this.getPosition());
 						double d0 = this.posX;
@@ -250,7 +263,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 						}
 						double d1 = pos.getY()+7+random.nextInt(3);
 						this.getMoveHelper().setMoveTo(d0, this.topBlock, d2, 1.0D);
-
+						
 					}
 					this.rotationPitch=prevPitch;
 					this.rotationYawHead=prevYaw;
@@ -259,23 +272,23 @@ public class EntityMerasmus extends EntityTF2Boss {
 					}
 				}
 			}
-
-
+			
+			
 			if(this.hidden){
 				if(this.ticksExisted%5==0)
-					this.heal(this.getMaxHealth()*0.001f);
+				this.heal(this.getMaxHealth()*0.001f);
 				if(this.world.getBlockState(this.hiddenBlock).getBlock()!=TF2weapons.blockProp){
 					this.hide(false);
 				}
 			}
 		}
-
+		
 	}
-
+	
 	public void teleport() {
 		this.teleportCooldown=240;
 		this.playSound(TF2Sounds.MOB_MERASMUS_DISAPPEAR, 1F, 1f);
-
+		
 		for (int i = 0; i < 10; i++) {
 			double x;
 			double z;
@@ -320,8 +333,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		TF2Attribute.setAttribute(this.getHeldItemMainhand(), TF2Attribute.attributes[39],
 				bomb?0f:0.3f);
 	}
-
-	@Override
+	
 	public void dropFewItems(boolean hit,int looting){
 		ItemStack hat=ItemFromData.getNewStack("merasmushat");
 		hat.getTagCompound().setShort("BossLevel",(short)this.level);
@@ -331,15 +343,12 @@ public class EntityMerasmus extends EntityTF2Boss {
 		super.addAchievement(player);
 		player.addStat(TF2Achievements.MERASMUS);
 	}*/
-	@Override
 	public SoundEvent getDeathSound(){
 		return TF2Sounds.MOB_MERASMUS_DEFEAT;
 	}
-	@Override
 	public SoundEvent getAppearSound(){
 		return TF2Sounds.MOB_MERASMUS_START;
 	}
-	@Override
 	public void setDead(){
 		super.setDead();
 		for(BlockPos pos:this.usedPos){
@@ -365,7 +374,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		nbt.setShort("TopBlock", (short)this.topBlock);
 		nbt.setByte("HideCount", (byte)this.hideCount);
 		nbt.setBoolean("Bomb", this.isBombSpell());
-
+		
 	}
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
@@ -389,7 +398,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 			}
 		}
 	}
-
+	
 	@SuppressWarnings("deprecation")
 	public void hide(boolean hide){
 		this.hidden=hide;
@@ -415,8 +424,8 @@ public class EntityMerasmus extends EntityTF2Boss {
 				this.setPositionAndUpdate(pos.getX(), -20, pos.getZ());
 				this.usedPos.add(pos);
 			}
-
-
+			
+			
 		}
 		else{
 			this.setInvisible(false);
@@ -430,7 +439,6 @@ public class EntityMerasmus extends EntityTF2Boss {
 		}
 		this.setNoAI(hide);
 	}
-	@SuppressWarnings("deprecation")
 	@Override
 	public void travel(float strafe, float forward, float par3) {
 		if (!this.isBombSpell()&&!this.hidden){
@@ -486,7 +494,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 	public static class AIAttack extends EntityAIBase{
 
 		public EntityMerasmus host;
-
+		
 		public int attacksMade;
 		public int attackDuration;
 		public boolean lastAttackMagic;
@@ -496,6 +504,7 @@ public class EntityMerasmus extends EntityTF2Boss {
 		}
 		@Override
 		public boolean shouldExecute() {
+			// TODO Auto-generated method stub
 			return (this.host.getAttackTarget()!=null && this.host.getActivePotionEffect(TF2weapons.stun)==null) || host.envDamage > 0;
 		}
 		@Override
@@ -530,17 +539,17 @@ public class EntityMerasmus extends EntityTF2Boss {
 					}
 					else{
 						this.host.faceEntity(target, 180, 90);
-						((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
-								this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
+					((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
+							this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
 						if(sup) {
 							Vec3d right = this.host.getVectorForRotation(0, this.host.rotationYawHead+90);
 							this.host.rotationYawHead -= 24;
 							for (int i =-2; i <=2; i++) {
-								this.host.posX+= right.x * i;
-								this.host.posZ+= right.z * i;
-								this.host.rotationYawHead+=12;
-								((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
-										this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
+							this.host.posX+= right.x * i;
+							this.host.posZ+= right.z * i;
+							this.host.rotationYawHead+=12;
+							((ItemProjectileWeapon) this.host.getHeldItemMainhand().getItem()).shoot(
+									this.host.getHeldItemMainhand(), this.host, world, 0, EnumHand.MAIN_HAND);
 							}
 							this.host.rotationYawHead-=24;
 						}
@@ -556,12 +565,16 @@ public class EntityMerasmus extends EntityTF2Boss {
 
 						@Override
 						public boolean apply(EntityLivingBase input) {
+							// TODO Auto-generated method stub
 							return input.getDistanceSq(host)<range * range&&!TF2Util.isOnSameTeam(host, input)&&EntityAITarget.isSuitableTarget(host, input, false, false);
 						}
-
+						
 					})){
+						TF2Util.sendParticle(EnumTF2Particles.BULLET_TRACER, this.host, this.host.posX, this.host.posY + this.host.height/2, this.host.posZ, 
+								living.posX, living.posY+living.height/2, living.posZ, 1,0, 0x60FF60, 10000);
 						living.attackEntityFrom(new EntityDamageSource("magicm",this.host).setMagicDamage().setDifficultyScaled(), 4.4f + this.host.level * 0.7f);
 						living.addVelocity(0, 0.7, 0);
+						living.onGround=false;
 						if (living instanceof EntityPlayerMP)
 							TF2Util.sendTracking(new TF2Message.VelocityAddMessage(new Vec3d(0,0.7,0), true),living);
 						if (living.hasCapability(TF2weapons.WEAPONS_CAP, null))
@@ -628,14 +641,12 @@ public class EntityMerasmus extends EntityTF2Boss {
 			return true;
 		}
 	}
-	@Override
 	public void setAttackTarget(EntityLivingBase ent){
 		if(this.getAttackTarget()!=null&&ent instanceof EntityBuilding)
 			return;
 		super.setAttackTarget(ent);
 	}
-
-	@Override
+	
 	public void returnSpawnItems() {
 		if (!this.usedPos.isEmpty())
 			this.setPosition(hiddenBlock.getX(), hiddenBlock.getY(), hiddenBlock.getZ());

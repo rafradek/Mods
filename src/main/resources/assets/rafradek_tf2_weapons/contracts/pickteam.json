@@ -1,0 +1,18 @@
+{
+	"parent": "root",
+	"xpos": 0,
+	"ypos": 0,
+	"icon": "rafradek_tf2_weapons:itemTF2",
+	"name": "Pick team",
+	"stars": 0,
+	"description": "",
+	"max points": 100,
+	"objective":
+	{
+		"main": 
+		{
+			"name": "Talk to saxton hale and pick a team",
+			"points": 100
+		}
+	}
+}

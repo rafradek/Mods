@@ -5,13 +5,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
-
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.message.TF2Message.WeaponDataMessage;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.WeaponData;
@@ -25,10 +25,10 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 		DataInputStream input;
 		try {
 			input = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new ByteArrayInputStream(message.bytes, 0, message.bytes.length))));
-
+			
 			MapList.nameToData.clear();
 			MapList.buildInAttributes.clear();
-
+			
 			while(input.available()>0){
 				WeaponData weapon = new WeaponData(input.readUTF());
 				int propertyCount = input.readByte();
@@ -37,13 +37,15 @@ public class TF2WeaponDataHandler implements IMessageHandler<TF2Message.WeaponDa
 					PropertyType<?> prop = WeaponData.propertyTypes[propId];
 					weapon.properties.put(prop, prop.deserialize(input, weapon));
 				}
-
+		
 				TF2weapons.loadWeapon(weapon.getName(), weapon);
 				ClientProxy.RegisterWeaponData(weapon);
-
+				
 			}
 			input.close();
-		} catch (IOException e) {}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
 		return null;
 	}
 

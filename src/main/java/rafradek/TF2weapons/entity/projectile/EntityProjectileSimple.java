@@ -8,9 +8,11 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemSniperRifle;
+import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -23,25 +25,28 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 		super(world);
 		this.setSize(0.3F, 0.3F);
 	}
-
-	@Override
+	
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
+		String name = ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE);
+		if(name.equals("repairclaw"))
+			this.setType(0);
+		else if(name.equals("syringe"))
+			this.setType(1);
+		else if(name.equals("cleaver"))
+			this.setType(2);
+		else if(name.equals("arrow"))
+			this.setType(3);
+		else if(name.equals("pomson"))
+			this.setType(4);
+		else if(name.equals("hhhaxe"))
+			this.setType(8);
+		
 		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3F, 0.3F);
 		if (this.usedWeapon.getTagCompound().getBoolean("ArrowLit")) {
 			this.usedWeaponOrig.getTagCompound().setBoolean("ArrowLit", false);
 			this.setFire(1000);
 		}
-		if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("repairclaw"))
-			this.setType(0);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("syringe"))
-			this.setType(1);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("cleaver"))
-			this.setType(2);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("arrow"))
-			this.setType(3);
-		else if(ItemFromData.getData(this.usedWeapon).getString(PropertyType.PROJECTILE).equals("hhhaxe"))
-			this.setType(8);
 	}
 
 	@Override
@@ -52,7 +57,7 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 			if (ItemFromData.getData(this.usedWeapon).hasProperty(PropertyType.HIT_SOUND)) {
 				SoundEvent event = ItemFromData.getData(this.usedWeapon).hasProperty(PropertyType.HIT_WORLD_SOUND)
 						? ItemFromData.getSound(this.usedWeapon, PropertyType.HIT_WORLD_SOUND)
-								: ItemFromData.getSound(this.usedWeapon, PropertyType.HIT_SOUND);
+						: ItemFromData.getSound(this.usedWeapon, PropertyType.HIT_SOUND);
 				this.playSound(event, 1.3f, 1f);
 			}
 
@@ -83,11 +88,17 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void spawnParticles(double x, double y, double z) {
-
+		if (this.getType() == 4) {
+			ClientProxy.spawnBisonParticle(world, x, y, z, TF2Util.getTeamColor(this.shootingEntity));
+		}
 	}
 
-	@Override
 	public boolean isPushable() {
 		return this.getType()!=1;
+	}
+	
+	@Override
+	public double getGravity() {
+		return this.getType() == 4 ? 0 : super.getGravity();
 	}
 }

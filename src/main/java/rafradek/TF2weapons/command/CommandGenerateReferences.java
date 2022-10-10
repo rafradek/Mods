@@ -21,19 +21,20 @@ public class CommandGenerateReferences extends CommandBase {
 
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
+		// TODO Auto-generated method stub
 		return "commands.generatereferences.usage";
 	}
 
 	@Override
 	public String getName() {
+		// TODO Auto-generated method stub
 		return "generatereferences";
 	}
-
-	@Override
+	
 	public int getRequiredPermissionLevel()
-	{
-		return 4;
-	}
+    {
+        return 4;
+    }
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -48,14 +49,14 @@ public class CommandGenerateReferences extends CommandBase {
 				if(attr != null) {
 					writer.write(attr.id+"	"+attr.name+"	"+attr.effect+"	"+attr.defaultValue+"	"+I18n.format("weaponAttribute."+attr.name, attr.defaultValue));
 					writer.newLine();
-
+					
 				}
 			}
 			writer.close();
 			writer=new BufferedWriter(new FileWriter(new File(dir,"properties.txt")));
 			writer.write("ID - Name - Type");
 			writer.newLine();
-			for(PropertyType<?> prop:WeaponData.propertyTypes) {
+			for(PropertyType prop:WeaponData.propertyTypes) {
 				if(prop != null) {
 					writer.write(prop.id+"	"+prop.name+"	"+prop.type.toString());
 					writer.newLine();
@@ -73,6 +74,7 @@ public class CommandGenerateReferences extends CommandBase {
 			}
 			writer.close();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

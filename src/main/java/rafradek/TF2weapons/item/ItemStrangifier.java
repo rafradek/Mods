@@ -7,10 +7,12 @@ import com.google.common.base.Predicates;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.WeaponData;
 
 public class ItemStrangifier extends ItemApplicableEffect {
 
@@ -25,15 +27,14 @@ public class ItemStrangifier extends ItemApplicableEffect {
 		}
 		return super.getItemStackDisplayName(stack);
 	}
-
-	@Override
+	
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
 		if (!stack.hasTagCompound())
 			tooltip.add("Applicable to any weapon");
 		tooltip.add("Combine with the matching weapon in a crafting table");
 	}
-
+	
 	@Override
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("class")) {
@@ -45,14 +46,12 @@ public class ItemStrangifier extends ItemApplicableEffect {
 			stack.getTagCompound().removeTag("class");
 		}
 	}
-
-	@Override
+	
 	public boolean isApplicable(ItemStack stack, ItemStack weapon) {
 		return stack.hasTagCompound() && stack.getTagCompound().hasKey("Weapon") ? super.isApplicable(stack, weapon) : weapon.getItem() instanceof ItemUsable || weapon.getItem() instanceof ItemCloak
 				|| weapon.getItem() instanceof ItemPDA || weapon.getItem() instanceof ItemBackpack;
 	}
-
-	@Override
+	
 	public void apply(ItemStack stack, ItemStack weapon) {
 		weapon.getTagCompound().setBoolean("Strange", true);
 	}

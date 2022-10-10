@@ -32,6 +32,8 @@ import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
@@ -46,7 +48,7 @@ public class EntityTeleporter extends EntityBuilding {
 	public static final int TP_PER_PLAYER = 128;
 
 	public static int tpCount = 0;
-	public static HashMap<UUID, TeleporterData[]> teleporters = new HashMap<>();
+	public static HashMap<UUID, TeleporterData[]> teleporters = new HashMap<UUID, TeleporterData[]>();
 
 	public int tpID = -1;
 	public int ticksToTeleport;
@@ -57,7 +59,7 @@ public class EntityTeleporter extends EntityBuilding {
 	public float spinRender;
 
 	public long timestamp;
-
+	
 	private static final DataParameter<Integer> TELEPORTS = EntityDataManager.createKey(EntityTeleporter.class,
 			DataSerializers.VARINT);
 	private static final DataParameter<Integer> TPPROGRESS = EntityDataManager.createKey(EntityTeleporter.class,
@@ -78,11 +80,11 @@ public class EntityTeleporter extends EntityBuilding {
 	public AxisAlignedBB getCollisionBox(Entity entityIn) {
 		if (!this.world.isRemote && !this.isExit() && this.getTPprogress() <= 0 && entityIn != null
 				&& entityIn instanceof EntityLivingBase && !(entityIn instanceof EntityBuilding)
-				&& ((this.getOwner() != null && ((WeaponsCapability.get(this.getOwner()).teleporterEntity && !(entityIn instanceof EntityPlayer)) ||
+				&& ((this.getOwner() != null && ((WeaponsCapability.get(this.getOwner()).teleporterEntity && !(entityIn instanceof EntityPlayer)) || 
 						(WeaponsCapability.get(this.getOwner()).teleporterPlayer && entityIn instanceof EntityPlayer && entityIn.getTeam() == null)))
 						|| TF2Util.isOnSameTeam(EntityTeleporter.this, entityIn))
 				&& entityIn.getEntityBoundingBox()
-				.intersects(this.getEntityBoundingBox().grow(0, 0.5, 0).offset(0, 0.5D, 0)))
+						.intersects(this.getEntityBoundingBox().grow(0, 0.5, 0).offset(0, 0.5D, 0)))
 			if (ticksToTeleport <= 0)
 				if (ticksToTeleport < 0)
 					ticksToTeleport = 10;
@@ -91,9 +93,9 @@ public class EntityTeleporter extends EntityBuilding {
 					if (exit != null && this.consumeEnergy(this.getMinEnergy())) {
 						if (exit.dimension != this.dimension) {
 							if(entityIn instanceof EntityPlayerMP && net.minecraftforge.common.ForgeHooks.onTravelToDimension(this, exit.dimension)) {
-								this.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) entityIn,
+								this.world.getMinecraftServer().getPlayerList().transferPlayerToDimension((EntityPlayerMP) entityIn, 
 										exit.dimension, new TeleporterDim((WorldServer) this.world,exit));
-
+								
 							}
 							else {
 								World destworld = this.world.getMinecraftServer().getWorld(exit.dimension);
@@ -157,18 +159,18 @@ public class EntityTeleporter extends EntityBuilding {
 				 * EntityLivingBase.class, this.getEntityBoundingBox().grow(0,
 				 * 0.5, 0).offset(0, 0.5D, 0), new
 				 * Predicate<EntityLivingBase>(){
-				 *
+				 * 
 				 * @Override public boolean apply(EntityLivingBase input) {
-				 *
+				 * 
 				 * return !(input instanceof
 				 * EntityBuilding)&&EntityTeleporter.this!=input&&((TF2weapons.
 				 * dispenserHeal&&input instanceof EntityPlayer &&
 				 * getTeam()==null && input.getTeam() ==
 				 * null)||TF2weapons.isOnSameTeam(EntityTeleporter.this,input));
 				 * }
-				 *
+				 * 
 				 * });
-				 *
+				 * 
 				 * if(!targetList.isEmpty()){ if(ticksToTeleport<0){
 				 * ticksToTeleport=10; } else{ BlockPosDimension
 				 * exit=this.getTeleportExit(); if(exit !=null){
@@ -197,12 +199,13 @@ public class EntityTeleporter extends EntityBuilding {
 			List<EntityTeleporter> list = world.getEntities(EntityTeleporter.class,
 					new Predicate<EntityTeleporter>() {
 
-				@Override
-				public boolean apply(EntityTeleporter input) {
-					return data != null && data.id == input.tpID;
-				}
+						@Override
+						public boolean apply(EntityTeleporter input) {
+							// TODO Auto-generated method stub
+							return data != null && data.id == input.tpID;
+						}
 
-			});
+					});
 			if (!list.isEmpty())
 				this.linkedTp = list.get(0);
 			// System.out.println("linkedtpset");
@@ -226,7 +229,7 @@ public class EntityTeleporter extends EntityBuilding {
 
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
-
+		
 		if (player == this.getOwner() && player.getHeldItem(hand).getItem() instanceof ItemDye) {
 			if(!world.isRemote) {
 				this.setColor(player.getHeldItem(hand).getMetadata());
@@ -235,7 +238,10 @@ public class EntityTeleporter extends EntityBuilding {
 		}
 		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
 			if (!this.world.isRemote)
-				FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+				if (TF2ConfigVars.disableBuildingGui)
+					this.grab();
+				else
+					FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
 			return true;
 		}
 		return false;
@@ -273,9 +279,9 @@ public class EntityTeleporter extends EntityBuilding {
 
 	public void setID(int id) {
 		if ((id >= TP_PER_PLAYER || id < 0)/*
-		 * ||teleporters.get(UUID.fromString(
-		 * this.getOwnerId()))[id]!=null
-		 */)
+											 * ||teleporters.get(UUID.fromString(
+											 * this.getOwnerId()))[id]!=null
+											 */)
 			return;
 		if (this.getOwnerId() != null)
 			this.updateTeleportersData(true);
@@ -294,10 +300,12 @@ public class EntityTeleporter extends EntityBuilding {
 	}
 
 	public void setTeleports(int amount) {
+		// TODO Auto-generated method stub
 		this.dataManager.set(TELEPORTS, amount);
 	}
 
 	public int getTeleports() {
+		// TODO Auto-generated method stub
 		return this.dataManager.get(TELEPORTS);
 	}
 
@@ -311,7 +319,7 @@ public class EntityTeleporter extends EntityBuilding {
 	public int getColor() {
 		return this.dataManager.get(COLOR);
 	}
-
+	
 	/*
 	 * public void setOwner(EntityLivingBase owner) { super.setOwner(owner);
 	 * if(owner instanceof EntityPlayer){ this.dataManager.set(key, value);14,
@@ -380,26 +388,22 @@ public class EntityTeleporter extends EntityBuilding {
 		return 1f;
 	}
 
-	@Override
 	public int getIronDrop() {
 		return 1 + this.getLevel()/2;
 	}
-
-	@Override
+	
 	public boolean shouldUseBlocks() {
 		return TF2ConfigVars.teleporterUseEnergy >= 0 && super.shouldUseBlocks();
 	}
-
-	@Override
+	
 	public int getMinEnergy() {
 		return this.getOwnerId() != null ? TF2ConfigVars.teleporterUseEnergy : 0;
 	}
-
-	@Override
+	
 	public int getBuildingID() {
 		return 2 + (this.isExit() ? 1 : 0);
 	}
-
+	
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
@@ -413,7 +417,7 @@ public class EntityTeleporter extends EntityBuilding {
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-
+		
 		super.readEntityFromNBT(par1NBTTagCompound);
 		this.tpID = par1NBTTagCompound.getInteger("TeleID");
 		this.setTeleports(par1NBTTagCompound.getShort("Teleports"));
@@ -424,27 +428,26 @@ public class EntityTeleporter extends EntityBuilding {
 		if (this.world.isRemote)
 			this.getDataManager().set(EXIT,par1NBTTagCompound.getBoolean("TeleExit"));
 		this.getDataManager().set(COLOR, par1NBTTagCompound.getByte("Color"));
-
-
+		
+		
 	}
 
-	@Override
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
-		// GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
-		// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-		// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+        // GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        // gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+        // event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
 		ClientProxy.setColor(TF2Util.getTeamColor(this), 0.7f, 0, 0.25f, 0.8f);
-		gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
-		gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
-		/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
+        /*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.0D, 0.1875D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D, 0.1875D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D, 0D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.0D, 0D).endVertex();
         tessellator.draw();*/
 
-		double imagePos = this.isExit() ? 0.1875D : 0;
+        double imagePos = this.isExit() ? 0.1875D : 0;
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		renderer.pos(19, 48, 0.0D).tex(0.5625D + imagePos, 0.9375D).endVertex();
 		renderer.pos(69, 48, 0.0D).tex(0.75D + imagePos, 0.9375D).endVertex();
@@ -454,99 +457,99 @@ public class EntityTeleporter extends EntityBuilding {
 
 		if (!this.isEntityAlive())
 			return;
+		
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+        renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
+        renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
+        renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
+        tessellator.draw();
 
-		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
-		renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
-		renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
-		renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
-		tessellator.draw();
+        imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
+        renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
+        tessellator.draw();
 
-		imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
-		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-		renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-		renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
-		renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
-		tessellator.draw();
-
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
-			renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
-			renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
-			renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
-			tessellator.draw();
-		}
-		if (this.getTPprogress() <= 0) {
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+            renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
+            renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
+            renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
+            renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
+            tessellator.draw();
+        }
+        if (this.getTPprogress() <= 0) {
 			gui.drawString(gui.getFontRenderer(),
 					this.getTeleports() + " (ID: " + (this.getID() + 1) + ")", 85,
 					10, 16777215);
 		}
+        
+        float health = this.getHealth() / this.getMaxHealth();
+        if (health > 0.33f) {
+            GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
+        } else {
+            GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
+        }
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        for (int i = 0; i < health * 8; i++) {
 
-		float health = this.getHealth() / this.getMaxHealth();
-		if (health > 0.33f) {
-			GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
-		} else {
-			GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
-		}
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		for (int i = 0; i < health * 8; i++) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
+            renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
+        if (this.getTPprogress() > 0) {
+	       
+	        renderer.begin(7, DefaultVertexFormats.POSITION);
+	        renderer.pos(85, 21, 0.0D).endVertex();
+	        renderer.pos(140, 21, 0.0D).endVertex();
+	        renderer.pos(140, 7, 0.0D).endVertex();
+	        renderer.pos(85, 7, 0.0D).endVertex();
+	        tessellator.draw();
+        }
 
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
-			renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
-			renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
-			renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
-			tessellator.draw();
-		}
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
-		if (this.getTPprogress() > 0) {
-
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 21, 0.0D).endVertex();
-			renderer.pos(140, 21, 0.0D).endVertex();
-			renderer.pos(140, 7, 0.0D).endVertex();
-			renderer.pos(85, 7, 0.0D).endVertex();
-			tessellator.draw();
-		}
-
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 41, 0.0D).endVertex();
-			renderer.pos(140, 41, 0.0D).endVertex();
-			renderer.pos(140, 27, 0.0D).endVertex();
-			renderer.pos(85, 27, 0.0D).endVertex();
-			tessellator.draw();
-		}
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
-		if (this.getTPprogress() > 0) {
-			double tpProgress = (1 - ((double) this.getTPprogress() / (this.getLevel() == 1 ? 200 : (this.getLevel() == 2 ? 100 : 60)))) * 55;
-
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 21, 0.0D).endVertex();
-			renderer.pos(85 + tpProgress, 21, 0.0D).endVertex();
-			renderer.pos(85 + tpProgress, 7, 0.0D).endVertex();
-			renderer.pos(85, 7, 0.0D).endVertex();
-			tessellator.draw();
-		}
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 41, 0.0D).endVertex();
-			renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
-			.endVertex();
-			renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
-			.endVertex();
-			renderer.pos(85, 27, 0.0D).endVertex();
-			tessellator.draw();
-		}
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(140, 41, 0.0D).endVertex();
+            renderer.pos(140, 27, 0.0D).endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
+        if (this.getTPprogress() > 0) {
+        	double tpProgress = (1 - ((double) this.getTPprogress() / (this.getLevel() == 1 ? 200 : (this.getLevel() == 2 ? 100 : 60)))) * 55;
+	        
+	        renderer.begin(7, DefaultVertexFormats.POSITION);
+	        renderer.pos(85, 21, 0.0D).endVertex();
+	        renderer.pos(85 + tpProgress, 21, 0.0D).endVertex();
+	        renderer.pos(85 + tpProgress, 7, 0.0D).endVertex();
+	        renderer.pos(85, 7, 0.0D).endVertex();
+	        tessellator.draw();
+        }
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
+                    .endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
+                    .endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
 		// GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 		// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
 		// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
 
-
-		/*
+        
+/*
 		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		renderer.pos(69, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(0.9375D, 0.3125D).endVertex();
 		renderer.pos(83, event.getResolution().getScaledHeight() / 2 + 50, 0.0D).tex(1D, 0.3125D).endVertex();
@@ -629,7 +632,7 @@ public class EntityTeleporter extends EntityBuilding {
 			tessellator.draw();
 		}*/
 	}
-
+	
 	public static class TeleporterData extends BlockPos {
 
 		public final int dimension;
@@ -644,30 +647,29 @@ public class EntityTeleporter extends EntityBuilding {
 	public static class TeleporterDim extends Teleporter {
 
 		public BlockPos target;
-
+		
 		public TeleporterDim(WorldServer worldIn, BlockPos targetPos) {
 			super(worldIn);
 			target = targetPos;
+			// TODO Auto-generated constructor stub
 		}
-
-		@Override
+		
 		public boolean makePortal(Entity entityIn)
-		{
+	    {
 			return true;
-		}
-
-		@Override
+	    }
+		
 		public boolean placeInExistingPortal(Entity entityIn, float rotationYaw)
-		{
+	    {
 			if (entityIn instanceof EntityPlayerMP)
-			{
-				((EntityPlayerMP)entityIn).connection.setPlayerLocation(target.getX(), target.getY(), target.getZ(), entityIn.rotationYaw, entityIn.rotationPitch);
-			}
-			else
-			{
-				entityIn.setLocationAndAngles(target.getX(), target.getY(), target.getZ(), entityIn.rotationYaw, entityIn.rotationPitch);
-			}
-			return true;
-		}
+	        {
+	            ((EntityPlayerMP)entityIn).connection.setPlayerLocation(target.getX(), target.getY(), target.getZ(), entityIn.rotationYaw, entityIn.rotationPitch);
+	        }
+	        else
+	        {
+	            entityIn.setLocationAndAngles(target.getX(), target.getY(), target.getZ(), entityIn.rotationYaw, entityIn.rotationPitch);
+	        }
+	        return true;
+	    }
 	}
 }

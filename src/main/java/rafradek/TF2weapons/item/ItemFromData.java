@@ -3,20 +3,24 @@ package rafradek.TF2weapons.item;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 
 import javax.annotation.Nullable;
+
+import java.util.Random;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
@@ -38,6 +42,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -46,6 +51,9 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -63,15 +71,16 @@ import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.ItemCrate.CrateContent;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
+import rafradek.TF2weapons.util.WeaponData.WeaponDataCapability;
 
-@SuppressWarnings("deprecation")
 public class ItemFromData extends Item implements IItemOverlay{
-
+	
 	public static class PropertyAttribute extends PropertyType<AttributeProvider> {
-
+	
 		public PropertyAttribute(int id, String name, Class<AttributeProvider> type) {
 			super(id, name, type);
 		}
@@ -87,7 +96,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 				// System.out.println("to je"+attributeName+"
 				// "+attributeValue);
 				boolean has = false;
-
+	
 				while (iterator2.hasNext())
 					if (iterator2.next().equals(attributeName)) {
 						attributes.put(MapList.nameToAttribute.get(attributeName), attributeValue);
@@ -99,8 +108,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 			}
 			return new AttributeProvider(attributes);
 		}
-
-		@Override
+		
 		public void serialize(DataOutput buf, WeaponData data, AttributeProvider value) throws IOException {
 			buf.writeByte(value.attributes.size());
 			for (Entry<TF2Attribute, Float> attr : value.attributes.entrySet()) {
@@ -108,8 +116,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 				buf.writeFloat(attr.getValue());
 			}
 		}
-
-		@Override
+		
 		public AttributeProvider deserialize(DataInput buf, WeaponData data) throws IOException {
 			HashMap<TF2Attribute, Float> map = new HashMap<>();
 			int attributeCount = buf.readByte();
@@ -126,19 +133,20 @@ public class ItemFromData extends Item implements IItemOverlay{
 			this.attributes = attributes;
 		}
 	}
-
+	
 	public static final WeaponData BLANK_DATA = new WeaponData("toloadfiles");
 	public static final Predicate<WeaponData> VISIBLE_WEAPON = new Predicate<WeaponData>() {
 
 		@Override
 		public boolean apply(WeaponData input) {
+			// TODO Auto-generated method stub
 			return !input.getBoolean(PropertyType.HIDDEN) && input.getInt(PropertyType.ROLL_HIDDEN) == 0
 					&& !input.getString(PropertyType.CLASS).equals("cosmetic")
 					&& !input.getString(PropertyType.CLASS).equals("crate");
 		}
 
 	};
-
+	
 	public ItemFromData() {
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
 		this.setUnlocalizedName("tf2usable");
@@ -157,6 +165,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 				return 0;
 			}
 		});
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -176,22 +185,25 @@ public class ItemFromData extends Item implements IItemOverlay{
 				value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).inst = MapList.nameToData.get(stack.getTagCompound().getString("Type"));
 			}
 		}
-		return value;
+		return value;	
 	}
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
-		if(!this.isInCreativeTab(par2CreativeTabs))
+		if(!this.isInCreativeTab(par2CreativeTabs) && par2CreativeTabs != TF2weapons.tabrareweapontf2)
 			return;
 		Iterator<Entry<String, WeaponData>> iterator = MapList.nameToData.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, WeaponData> entry = iterator.next();
 			// System.out.println("Hidden:
 			// "+entry.getValue().hasProperty(PropertyType.HIDDEN));
+			boolean isRare = entry.getValue().getInt(PropertyType.ROLL_HIDDEN) == 2;
 			if (entry.getValue().hasProperty(PropertyType.HIDDEN) && entry.getValue().getBoolean(PropertyType.HIDDEN))
 				continue;
-			Item item = MapList.weaponClasses.get(entry.getValue().getString(PropertyType.CLASS));
-			if (item == this)
-				par3List.add(ItemFromData.getNewStack(entry.getKey()));
+			if ((isRare && par2CreativeTabs == TF2weapons.tabrareweapontf2) || (!isRare && par2CreativeTabs != TF2weapons.tabrareweapontf2)) {
+				Item item = MapList.weaponClasses.get(entry.getValue().getString(PropertyType.CLASS));
+				if (item == this)
+					par3List.add(ItemFromData.getNewStack(entry.getKey()));
+			}
 		}
 	}
 
@@ -200,10 +212,10 @@ public class ItemFromData extends Item implements IItemOverlay{
 		// "+Thread.currentThread().getName());
 		if(!MapList.nameToData.containsKey(type))
 			return ItemStack.EMPTY;
-
+		
 		return getNewStack(MapList.nameToData.get(type));
 	}
-
+	
 	public static ItemStack getNewStack(WeaponData type) {
 		ItemStack stack = new ItemStack(
 				MapList.weaponClasses.get(type.getString(PropertyType.CLASS)));
@@ -216,13 +228,12 @@ public class ItemFromData extends Item implements IItemOverlay{
 		// System.out.println(stack.toString());
 		return stack;
 	}
-
-	@Override
+	
 	public net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt)
-	{
-		return new WeaponData.WeaponDataCapability();
-	}
-
+    {
+        return new WeaponData.WeaponDataCapability();
+    }
+	
 	public static List<ItemStack> getRandomWeapons(Random random, Predicate<WeaponData> predicate, int count) {
 
 		ArrayList<WeaponData> weapons = new ArrayList<>();
@@ -275,41 +286,42 @@ public class ItemFromData extends Item implements IItemOverlay{
 	}
 
 	public static ItemStack getRandomWeaponOfSlotMob(final String mob, final int slot, Random random,
-			final boolean showHidden, boolean weighted, boolean stockOnly) {
+			final boolean showHidden, float stockWeight, boolean stockOnly) {
 		Predicate<WeaponData> base=new Predicate<WeaponData>() {
 
 			@Override
 			public boolean apply(WeaponData input) {
+				// TODO Auto-generated method stub
 				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
 						&& ItemFromData.isItemOfClassSlot(input, slot, mob);
 			}
 
 		};
-
-		if(!weighted && !stockOnly)
+		
+		if(stockWeight == 1f && !stockOnly)
 			return getRandomWeapon(random, base);
-
+		
 		ItemStack stock=getRandomWeapon(random, Predicates.and(base,new Predicate<WeaponData>(){
 
 			@Override
 			public boolean apply(WeaponData input) {
-
+				
 				return input.getBoolean(PropertyType.STOCK);
 			}
-
+			
 		}));
-
+		
 		if (stockOnly)
 			return stock;
 		Predicate<WeaponData> unipredicate=Predicates.and(base,new Predicate<WeaponData>(){
 
 			@Override
 			public boolean apply(WeaponData input) {
-
+				
 				return !input.getBoolean(PropertyType.STOCK);
 			}
-
-
+			
+		
 		});
 		float unicount=getWeaponCount(unipredicate);
 		ItemStack uni=getRandomWeapon(random, unipredicate);
@@ -319,7 +331,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 		else if(stock.isEmpty()){
 			return uni;
 		}
-		else if(random.nextFloat()<unicount/(unicount+2f)){
+		else if(random.nextFloat()<unicount/(unicount+stockWeight)){
 			return uni;
 		}
 		else{
@@ -332,6 +344,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 
 			@Override
 			public boolean apply(WeaponData input) {
+				// TODO Auto-generated method stub
 				return !input.getBoolean(PropertyType.HIDDEN) && !(input.getInt(PropertyType.ROLL_HIDDEN)>0 && !showHidden)
 						&& ItemFromData.isItemOfClassSlot(input, slot, mob);
 			}
@@ -352,7 +365,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 	@Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		return getData(oldStack) != getData(newStack) || (slotChanged);
-
+		
 	}
 
 	@Override
@@ -362,8 +375,8 @@ public class ItemFromData extends Item implements IItemOverlay{
 		String name = getTranslatedName(stack);
 		if (stack.getTagCompound().getBoolean("Strange"))
 			name = TextFormatting.GOLD
-			+ TF2EventsCommon.STRANGE_TITLES[stack.getTagCompound().getInteger("StrangeLevel")] + " "
-			+ name;
+					+ TF2EventsCommon.STRANGE_TITLES[stack.getTagCompound().getInteger("StrangeLevel")] + " "
+					+ name;
 		if (stack.getTagCompound().getBoolean("Australium"))
 			name = TextFormatting.GOLD + "Australium " + name;
 		if (stack.getTagCompound().getBoolean("Valve"))
@@ -371,22 +384,22 @@ public class ItemFromData extends Item implements IItemOverlay{
 		return name;
 	}
 
-	public static SoundEvent getSound(ItemStack stack, PropertyType<String> name) {
+	public static SoundEvent getSound(ItemStack stack, PropertyType name) {
 		return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(getData(stack).getString(name)));
 	}
 
 	public static int getSlotForClass(WeaponData data, String name) {
 		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name) ? data.get(PropertyType.SLOT).get(name) : -1;
 	}
-
+	
 	public static int getSlotForClass(WeaponData data, EntityTF2Character name) {
 		return getSlotForClass(data, ItemToken.CLASS_NAMES[name.getClassIndex()]);
 	}
-
+	
 	public static boolean isItemOfClassSlot(WeaponData data, int slot, String name) {
 		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name) && data.get(PropertyType.SLOT).get(name)==slot;
 	}
-
+	
 	public static boolean isItemOfClass(WeaponData data, String name) {
 		return data.hasProperty(PropertyType.SLOT) && data.get(PropertyType.SLOT).containsKey(name);
 	}
@@ -429,7 +442,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 						tooltip.add(attribute.getTranslatedString(tagFloat.getFloat(), true));
 				}
 			}
-
+			
 			if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
 				tooltip.add("Killstreak Active");
 				TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
@@ -437,7 +450,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 					tooltip.add(attribute.getTranslatedString(ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL)
 							, stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS), getData(stack)), true));
 			}
-
+			
 			if (getData(stack).hasProperty(PropertyType.DESC)) {
 				tooltip.add("");
 				for(String line:getData(stack).getString(PropertyType.DESC).split("\n"))
@@ -449,63 +462,65 @@ public class ItemFromData extends Item implements IItemOverlay{
 			}
 		}
 	}
-
+	
 	public boolean hasKillstreak(ItemStack stack, int minLevel) {
 		return stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL) >= minLevel;
 	}
-
-	@Override
+	
 	public int getEntityLifespan(ItemStack itemStack, World world)
-	{
-		return 12000;
-	}
-	@Override
+    {
+        return 12000;
+    }
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
 		return false;
 	}
-	@Override
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
 		return null;
 	}
 
 	@Override
-	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tesselator, BufferBuilder buffer, ScaledResolution resolution) {}
-
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tesselator, BufferBuilder buffer, ScaledResolution resolution) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		return this.getMaxRage(stack, null) > 0f ? (this.getRage(stack, Minecraft.getMinecraft().player) < this.getMaxRage(stack, Minecraft.getMinecraft().player)) : super.showDurabilityBar(stack);
 	}
 
+	@SideOnly(Side.CLIENT)
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
 		return this.getMaxRage(stack, null) > 0f ? (1 - this.getRage(stack, Minecraft.getMinecraft().player)/this.getMaxRage(stack, Minecraft.getMinecraft().player))
 				: super.getDurabilityForDisplay(stack);
 	}
-
+	
 	public RageType getRageType(ItemStack stack, EntityLivingBase living) {
 		return null;
 	}
-
+	
 	public float getMaxRage(ItemStack stack, EntityLivingBase living) {
 		return 0f;
 	}
-
+	
 	public float getRage(ItemStack stack, EntityLivingBase living) {
 		return WeaponsCapability.get(living).getRage(this.getRageType(stack, living));
 	}
-
+	
 	public void setRage(ItemStack stack, EntityLivingBase living, float value) {
 		WeaponsCapability.get(living).setRage(this.getRageType(stack, living), MathHelper.clamp(value, 0f, this.getMaxRage(stack, living)));
 	}
-
+	
 	public void addRage(ItemStack stack, EntityLivingBase living, float value) {
 		this.setRage(stack, living, this.getRage(stack, living) + value);
 	}
-
+	
 	public boolean isAmmoSufficient(ItemStack stack, EntityLivingBase living, boolean all) {
-		return true;
+		return !this.searchForAmmo(living, stack).isEmpty();
 	}
-
+	
 	public void consumeAmmoGlobal(EntityLivingBase living, ItemStack stack, int amount) {
 		if (EntityDispenser.isNearDispenser(living.world, living))
 			return;
@@ -533,9 +548,9 @@ public class ItemFromData extends Item implements IItemOverlay{
 					int ammo = amount;
 					amount -= stackAmmo.getCount();
 					stackAmmo.shrink(ammo);
-
+					
 				}
-
+				
 			}
 		}
 	}
@@ -548,7 +563,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 
 		if (type == 0 || (type == 14 && TF2ConfigVars.freeUseItems))
 			return ItemAmmo.STACK_FILL;
-
+		
 		if (owner instanceof EntityTF2Character) {
 			return ((EntityTF2Character)owner).getAmmo(ItemFromData.getSlotForClass(ItemFromData.getData(stack), (EntityTF2Character)owner)) > 0 ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
 		}
@@ -558,10 +573,10 @@ public class ItemFromData extends Item implements IItemOverlay{
 		if (metalammo != 0) {
 			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).hasMetal(metalammo) ? ItemAmmo.STACK_FILL : ItemStack.EMPTY;
 		}
-
+		
 		if (owner.world.isRemote && (type >= owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount.length || owner.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[type] > 0))
 			return ItemAmmo.STACK_FILL;
-
+		
 		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
 			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
 					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
@@ -588,36 +603,12 @@ public class ItemFromData extends Item implements IItemOverlay{
 	public int getAmmoType(ItemStack stack) {
 		return TF2Attribute.getModifier("No Ammo", stack, 0, null) != 0 ? 0:getData(stack).getInt(PropertyType.AMMO_TYPE);
 	}
-
-	public int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
-
-		int type = this.getAmmoType(stack);
-
-		if (type == 0)
-			return 999;
-
-		if (type == 14 && owner instanceof EntityPlayer && TF2ConfigVars.freeUseItems) {
-			return ((EntityPlayer)owner).getCooldownTracker().hasCooldown(this) ? 0 : 1;
-		}
-		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
-			return 999;
-
-		if (owner instanceof EntityTF2Character)
-			return (int) (((EntityTF2Character) owner).getAmmo() / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
-
-		if(TF2Attribute.getModifier("Ball Release", stack, 0, owner)>0)
-			stack=ItemFromData.getNewStack("sandmanball");
-
-
-		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
-			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
-		}
-
+	
+	public static int getAmmoAmountType(EntityPlayer owner, int type) {
 		int ammoCount = 0;
-
 		if (!owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
 			IItemHandler inv=owner.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-					.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 			for (int i = 0; i < inv.getSlots(); i++) {
 				ItemStack stackCap = inv.getStackInSlot(i);
 				if (!stackCap.isEmpty() && stackCap.getItem() instanceof ItemAmmo
@@ -637,9 +628,38 @@ public class ItemFromData extends Item implements IItemOverlay{
 			else if (type == 1000 && !stackInv.isEmpty() && stackInv.getItem() instanceof ItemArrow)
 				ammoCount += stackInv.getCount();
 		}
+		return ammoCount;
+	}
+	
+	public int getAmmoAmount(EntityLivingBase owner, ItemStack stack) {
+		
+		int type = this.getAmmoType(stack);
+		
+		if (type == 0)
+			return 999;
+		
+		if (type == 14 && owner instanceof EntityPlayer && TF2ConfigVars.freeUseItems) {
+			return ((EntityPlayer)owner).getCooldownTracker().hasCooldown(this) ? 0 : 1;
+		}
+		if (EntityDispenser.isNearDispenser(owner.world, owner) || (owner instanceof EntityPlayer && ((EntityPlayer)owner).capabilities.isCreativeMode))
+			return 999;
+
+		if (owner instanceof EntityTF2Character)
+			return (int) (((EntityTF2Character) owner).getAmmo() / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
+
+		if(TF2Attribute.getModifier("Ball Release", stack, 0, owner)>0)
+			stack=ItemFromData.getNewStack("sandmanball");
+		
+
+		if (TF2Attribute.getModifier("Metal Ammo", stack, 0, owner) != 0) {
+			return owner.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
+		}
+
+		int ammoCount = getAmmoAmountType((EntityPlayer)owner, type);
+		
 		return (int) (ammoCount / TF2Attribute.getModifier("Ammo Eff", stack, 1, owner));
 	}
-
+	
 	public int getActualAmmoUse(ItemStack stack, EntityLivingBase living, int amount) {
 		if (this.getAmmoType(stack) == 0 || amount == 0)
 			return 0;
@@ -656,7 +676,7 @@ public class ItemFromData extends Item implements IItemOverlay{
 		}
 		return amount;
 	}
-
+	
 	public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
 		return ItemFromData.getData(stack).getInt(PropertyType.WEAR);
 	}
@@ -666,11 +686,11 @@ public class ItemFromData extends Item implements IItemOverlay{
 		String key = "weapon."+data.getName();
 		return I18n.canTranslate(key) ? I18n.translateToLocal(key) : getData(stack).hasProperty(PropertyType.NAME) ? getData(stack).getString(PropertyType.NAME) : getData(stack).getName();
 	}
-
+	
 	public boolean canSwitchTo(ItemStack stack) {
 		return false;
 	}
-
+	
 	@SideOnly(Side.CLIENT)
 	public ItemMeshDefinition getMeshDefinition() {
 		return stack -> {

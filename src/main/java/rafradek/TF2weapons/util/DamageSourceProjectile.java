@@ -3,6 +3,7 @@ package rafradek.TF2weapons.util;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -11,7 +12,6 @@ import net.minecraft.util.text.translation.I18n;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 
-@SuppressWarnings("deprecation")
 public class DamageSourceProjectile extends EntityDamageSourceIndirect implements TF2DamageSource {
 	public ItemStack weapon;
 	public int critical;
@@ -19,10 +19,9 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public boolean selfdmg;
 	private int attackFlags;
 	private float power = 1;
-	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter, int critical) {
+	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter) {
 		super("bullet", projectile, shooter);
 		this.weapon = weapon;
-		this.critical = critical;
 	}
 
 	@Override
@@ -32,7 +31,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see rafradek.TF2weapons.TF2DamageSource#getWeapon()
 	 */
 	@Override
@@ -42,7 +41,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see rafradek.TF2weapons.TF2DamageSource#getCritical()
 	 */
 	@Override
@@ -71,8 +70,8 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 				? new TextComponentTranslation(s1,
 						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName(),
 								weapon.getDisplayName() })
-						: new TextComponentTranslation(s,
-								new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName() });
+				: new TextComponentTranslation(s,
+						new Object[] { p_151519_1_.getDisplayName(), this.getTrueSource().getDisplayName() });
 	}
 
 	/*
@@ -90,29 +89,29 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public void removeProjecileStatus() {
 		this.notProjectile = true;
 	}
-
+	
 	@Override
 	public boolean isProjectile() {
 		return super.isProjectile() && !this.notProjectile;
 	}
 
-	@Override
 	public Entity getTrueSource(){
 		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
 	}
-
-	@Override
+	
 	public void setAttackSelf(){
 		this.selfdmg=true;
 	}
 	@Override
 	public ItemStack getWeaponOrig() {
+		// TODO Auto-generated method stub
 		return this.getImmediateSource() instanceof EntityProjectileBase && !((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig.isEmpty() ?
 				((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig:this.getWeapon();
 	}
 
 	@Override
 	public int getAttackFlags() {
+		// TODO Auto-generated method stub
 		return this.attackFlags;
 	}
 
@@ -130,7 +129,18 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public void setAttackPower(float power) {
 		this.power = power;
 	}
+
+	@Override
+	public DamageSource setCritical(int crit) {
+		this.critical = crit;
+		return this;
+	}
+	
+	
 	/*@Override
-	public void onShieldBlock(EntityLivingBase living) {}*/
+	public void onShieldBlock(EntityLivingBase living) {
+		// TODO Auto-generated method stub
+		
+	}*/
 
 }

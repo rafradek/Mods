@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.entity.projectile;
 
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -11,7 +13,7 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 	public EntityStickProjectile(World world) {
 		super(world);
 		this.setSize(0.3F, 0.3F);
-
+		
 	}
 
 	@Override
@@ -52,7 +54,10 @@ public class EntityStickProjectile extends EntityProjectileSimple {
 	}
 
 	@Override
-	public void spawnParticles(double x, double y, double z) {}
+	public void spawnParticles(double x, double y, double z) {
+		// TODO Auto-generated method stub
+
+	}
 
 	@Override
 	public boolean moveable() {

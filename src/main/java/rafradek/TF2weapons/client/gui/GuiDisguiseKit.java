@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -26,6 +25,7 @@ import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityZombie;
@@ -34,6 +34,7 @@ import net.minecraft.tileentity.TileEntitySkull;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.mercenary.EntitySpy;
@@ -51,12 +52,12 @@ public class GuiDisguiseKit extends GuiScreen {
 	public float scroll;
 	private boolean isScrolling;
 	private boolean wasClicking;
-
+	
 	private static final ResourceLocation CRAFTING_TABLE_GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/container/cabinet.png");
-
+	
 	public GuiDisguiseKit() {
-
+		
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class GuiDisguiseKit extends GuiScreen {
 		player = new EntityOtherPlayerMP(this.mc.world, new GameProfile(mc.player.getUniqueID(), "name"));
 		for(ResourceLocation entry:ForgeRegistries.ENTITIES.getKeys()) {
 			Entity entity=EntityList.createEntityByIDFromName(entry, this.mc.world);
-			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss())||this.mc.player.capabilities.isCreativeMode)) {
+			if(entity instanceof EntityLivingBase && ((entity.width + entity.height < 6 && entity.isNonBoss() && entity instanceof EntityCreature)||this.mc.player.capabilities.isCreativeMode)) {
 				mobList.add((EntityLivingBase) entity);
 				if(entity instanceof EntitySpy) {
 					entity.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks=0;
@@ -75,9 +76,10 @@ public class GuiDisguiseKit extends GuiScreen {
 
 			@Override
 			public int compare(EntityLivingBase o1, EntityLivingBase o2) {
+				// TODO Auto-generated method stub
 				return EntityList.getKey(o2).toString().compareTo(EntityList.getKey(o1).toString());
 			}
-
+			
 		});
 		Keyboard.enableRepeatEvents(true);
 		this.playerNameField = new GuiTextField(6, this.fontRenderer, this.width / 2 + 26, this.height / 2 + 60, 108,
@@ -90,7 +92,7 @@ public class GuiDisguiseKit extends GuiScreen {
 					I18n.format(EntityList.getTranslationName(EntityList.getKey(EntityZombie.class)), new Object[0])));
 		}
 		this.buttonList
-		.add(playerDisguise = new GuiButton(30, this.width / 2 + 25, this.height / 2 + 80, 110, 20, "Player"));
+				.add(playerDisguise = new GuiButton(30, this.width / 2 + 25, this.height / 2 + 80, 110, 20, "Player"));
 		this.setButtons();
 
 	}
@@ -106,9 +108,9 @@ public class GuiDisguiseKit extends GuiScreen {
 			this.mc.displayGuiScreen(null);
 		}
 	}
-
+	
 	public void setButtons() {
-
+		
 		for (int i = 0; i < 16; i++) {
 			if(i+firstIndex<mobList.size()) {
 				this.buttonList.get(i).displayString=mobList.get(i+firstIndex).getName();
@@ -130,18 +132,18 @@ public class GuiDisguiseKit extends GuiScreen {
 		this.playerNameField.textboxKeyTyped(typedChar, keyCode);
 		if (playerNameField.isFocused())
 			this.needUpdating=true;
-
+			
 	}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-
+		
 		this.drawDefaultBackground();
 		this.drawCenteredString(this.fontRenderer, I18n.format("gui.disguise.info", new Object[0]),
 				this.width / 2 - 5, 20, 16777215);
 		/*for (int i = 0; i < this.mobs.length; i++)
 			drawEntityOnScreen(this.width / 2 - 105 + (i % 4) * 70, this.height / 2 - 26 + 110 * (i / 4), 35, mobs[i]);
-
+			
 		drawEntityOnScreen(this.width / 2 + 105, this.height / 2 + 66, 35, player);*/
 		int entdraw= -1;
 		for(int i=0;i<16;i++) {
@@ -161,7 +163,7 @@ public class GuiDisguiseKit extends GuiScreen {
 		int l = j - 60;
 		int i1 = k + 14;
 		int j1 = l + 160;
-
+		
 		if (!this.wasClicking && flag && mouseX >= k && mouseY >= l && mouseX < i1 && mouseY < j1)
 			this.isScrolling = true;
 
@@ -179,17 +181,17 @@ public class GuiDisguiseKit extends GuiScreen {
 			this.setButtons();
 		}
 		this.mc.getTextureManager().bindTexture(CRAFTING_TABLE_GUI_TEXTURES);
-
+		
 		k = this.width / 2 + 6;
 		l = this.height / 2 - 59;
 		i = l + 160;
 
 		this.drawTexturedModalRect(k, l + (int) ((i - l - 17) * this.scroll), 232, 0, 12, 15);
-
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		this.playerNameField.drawTextBox();
-
-
+		
+		
 
 	}
 
@@ -248,7 +250,7 @@ public class GuiDisguiseKit extends GuiScreen {
 				public void run() {
 					GameProfile profile = TileEntitySkull
 							.updateGameprofile(new GameProfile(mc.player.getUniqueID(), playerNameField.getText()));
-
+					
 					player = new EntityOtherPlayerMP(mc.world, profile);
 					WeaponsCapability.get(player).setDisguised(true);
 					WeaponsCapability.get(player).setDisguiseType("P:"+playerNameField.getText());
@@ -258,19 +260,19 @@ public class GuiDisguiseKit extends GuiScreen {
 						cap.skinType = DefaultPlayerSkin.getSkinType(profile.getId());
 					Minecraft.getMinecraft().getSkinManager().loadProfileTextures(profile,
 							new SkinManager.SkinAvailableCallback() {
-						@Override
-						public void skinAvailable(Type typeIn, ResourceLocation location,
-								MinecraftProfileTexture profileTexture) {
-							if (typeIn == Type.SKIN) {
-								if (typeIn == Type.SKIN)
-									cap.skinDisguise = location;
-								cap.skinType = profileTexture.getMetadata("model");
+								@Override
+								public void skinAvailable(Type typeIn, ResourceLocation location,
+										MinecraftProfileTexture profileTexture) {
+									if (typeIn == Type.SKIN) {
+										if (typeIn == Type.SKIN)
+											cap.skinDisguise = location;
+										cap.skinType = profileTexture.getMetadata("model");
 
-								if (cap.skinType == null)
-									cap.skinType = "default";
-							}
-						}
-					}, false);
+										if (cap.skinType == null)
+											cap.skinType = "default";
+									}
+								}
+							}, false);
 				}
 
 			});

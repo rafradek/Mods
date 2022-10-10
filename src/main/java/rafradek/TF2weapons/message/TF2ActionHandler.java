@@ -12,6 +12,7 @@ import net.minecraft.entity.IMerchant;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ContainerMerchant;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
@@ -19,6 +20,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
@@ -29,27 +31,37 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.items.ItemHandlerHelper;
+import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Achievements;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityStatue;
+import rafradek.TF2weapons.entity.building.EntityTeleporter;
+import rafradek.TF2weapons.entity.building.EntityTeleporter.TeleporterData;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntitySoldier;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.IItemSlotNumber;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemJetpack;
+import rafradek.TF2weapons.item.ItemJetpackTrigger;
 import rafradek.TF2weapons.item.ItemParachute;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
+import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.util.Contract;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.WeaponData;
 
 public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessage, IMessage> {
 
@@ -105,7 +117,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					} else if (message.value == 18 && player.openContainer != null && player.openContainer instanceof ContainerMerchant &&
 							player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.containsKey(player.getName())) {
 						player.closeScreen();
-						final MerchantRecipeList listg = player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.get(player.getName());
+						final MerchantRecipeList listg = player.world.getCapability(TF2weapons.WORLD_CAP, null).lostItems.get(player.getName()); 
 						if(listg != null) {
 							Iterator<MerchantRecipe> iterator=listg.iterator();
 							while(iterator.hasNext()){
@@ -131,16 +143,18 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 										}
 									}
 								}
-
+								
 							}
 
 							@Override
 							public EntityPlayer getCustomer() {
+								// TODO Auto-generated method stub
 								return player;
 							}
 
 							@Override
 							public MerchantRecipeList getRecipes(EntityPlayer player) {
+								// TODO Auto-generated method stub
 								if(list==null)
 									list=listg;
 								return list;
@@ -154,37 +168,50 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							@Override
 							public void useRecipe(MerchantRecipe recipe) {
 								recipe.incrementToolUses();
-
+								
 							}
 
 							@Override
 							public void verifySellingItem(ItemStack stack) {
-
+								
 							}
 
 							@Override
 							public ITextComponent getDisplayName() {
+								// TODO Auto-generated method stub
 								return new TextComponentTranslation("gui.recoveritems");
 							}
 
 							@Override
 							public World getWorld() {
+								// TODO Auto-generated method stub
 								return player.world;
 							}
 
 							@Override
 							public BlockPos getPos() {
+								// TODO Auto-generated method stub
 								return player.getPosition();
 							}
-
+							
 						});
 						//FMLNetworkHandler.openGui(player, TF2weapons.instance, 4, player.world,(int) player.posX,(int)  player.posY,(int)  player.posZ);
-					}
-					else if (message.value == 23 && WeaponsCapability.get(player).airJumps < WeaponsCapability.get(player).getMaxAirJumps()) {
+					} 
+					else if (message.value == 23 && (WeaponsCapability.get(player).airJumps < WeaponsCapability.get(player).getMaxAirJumps() || WeaponsCapability.get(player).isGrappled())) {
 						player.fallDistance = 0;
-						WeaponsCapability.get(player).airJumps+=1;
-						player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
-					}
+						if (!WeaponsCapability.get(player).isGrappled()) {
+							WeaponsCapability.get(player).airJumps+=1;
+							player.getServerWorld().spawnParticle(EnumParticleTypes.CLOUD, player.posX, player.posY, player.posZ, 12, 1, 0.2, 1, 0D);
+						}
+						else {
+							if (player.getHeldItemMainhand().getItem() instanceof ItemGrapplingHook){
+								WeaponsCapability.get(player).setPrimaryCooldown(EnumHand.MAIN_HAND, ((ItemGrapplingHook) player.getHeldItemMainhand().getItem()).getFiringSpeed(player.getHeldItemMainhand(), player));
+								player.motionY += 0.42;
+								player.velocityChanged = true;
+							}
+						}
+						WeaponsCapability.get(player).setGrapplingHook(null);
+					} 
 					else if (message.value == 25) {
 						ItemStack stack = ItemBackpack.getBackpack(player);
 						if(!stack.isEmpty() && stack.getItem() instanceof ItemParachute) {
@@ -193,40 +220,34 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 					}
 					else if (message.value == 29) {
 						player.world.getScoreboard().removePlayerFromTeams(player.getName());
-					}
+					} 
 					else if (message.value == 30) {
 						ItemStack stack = ItemBackpack.getBackpack(player);
 						if (stack.getItem() instanceof ItemJetpack && TF2Attribute.getModifier("Jetpack Item", stack, 0f, player) != 0 && ((ItemJetpack)stack.getItem()).canActivate(stack, player) ) {
 							((ItemJetpack)stack.getItem()).activateJetpack(stack, player, true);
 						}
+					} 
+					else if (message.value == 26) {
+						TF2PlayerCapability.get(player).setEquipBackpackItem(true);
+					} 
+					else if (message.value == 27) {
+						TF2PlayerCapability.get(player).setEquipBackpackItem(false);
 					}
 					else if (message.value >=32 && message.value <48) {
 						int id=message.value-32;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id).active=true;
 						}
-					}
+					} 
 					else if (message.value >=48 && message.value <64) {
 						int id=message.value-48;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
 							Contract contract=player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.get(id);
-							if((contract.rewards&1)==1) {
-								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,1,2):ItemFromData.getRandomWeapon(player.getRNG(), ItemFromData.VISIBLE_WEAPON);
-								if(!player.inventory.addItemStackToInventory(reward))
-									player.dropItem(reward, true);
-								player.addExperience(240);
-							}
-							if((contract.rewards&2)==2) {
-								ItemStack reward=player.getRNG().nextBoolean()?new ItemStack(TF2weapons.itemTF2,4,2):new ItemStack(TF2weapons.itemTF2,1,7);
-								if(!player.inventory.addItemStackToInventory(reward))
-									player.dropItem(reward, true);
-								player.addExperience(1200);
-							}
-							contract.rewards=0;
+							contract.completeContract(player);
 							if(contract.progress>=Contract.REWARD_HIGH)
 								player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.remove(id);
 						}
-					}
+					} 
 					else if (message.value >=64 && message.value <80) {
 						int id=message.value-64;
 						if(player != null && id<player.getCapability(TF2weapons.PLAYER_CAP, null).contracts.size()) {
@@ -238,7 +259,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 						int id=message.value-100;
 						if(player != null && player.getHeldItemMainhand().getItem() instanceof IItemSlotNumber) {
 							((IItemSlotNumber) player.getHeldItemMainhand().getItem()).onSlotSelection(player.getHeldItemMainhand(), player, id);
-
+							
 						}
 					}
 					else if (message.value >= 110 && message.value<119) {
@@ -267,12 +288,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 										});
 										for (EntityMedic medic : list) {
 											if (TF2Util.teleportSafe(medic, player)) {
-
+												
 												success = true;
 												medic.setOrder(Order.FOLLOW);
 											}
 										}
-
+										
 										if(success) {
 											it.remove();
 											break;
@@ -304,12 +325,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 										});
 										for (EntityTF2Character medic : list) {
 											if (TF2Util.teleportSafe(medic, player)) {
-
+												
 												success = true;
 												medic.setOrder(Order.FOLLOW);
 											}
 										}
-
+										
 										if(success) {
 											it.remove();
 											break;
@@ -365,11 +386,16 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 								for(EntityEngineer living : player.world.getEntitiesWithinAABB(EntityEngineer.class, player.getEntityBoundingBox().grow(40, 15, 40), (test) -> {
 									return TF2Util.isOnSameTeam(player, test);
 								})){
-
+									
 								}
 							}
 						}
 					}
+					else if (message.value >= 120 && message.value < 130) {
+						if (TF2PlayerCapability.get(player).getGameArena() != null) {
+							TF2PlayerCapability.get(player).getGameArena().tryPlayerJoinTeam(player, message.value-110);
+						}
+					} 
 				}
 
 			});
@@ -387,12 +413,12 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							player.setDead();
 							//player.world.spawnEntity(new EntityStatue(player.world, player,false));
 						}
-					}
+					} 
 					else if (message.value == 24) {
 						if (player != null) {
 							player.world.spawnEntity(new EntityStatue(player.world, player,true));
 						}
-					}
+					} 
 					else if (message.value == 22) {
 						if (player != null && player.getHeldItemMainhand() != null
 								&& player.getHeldItemMainhand().hasTagCompound())
@@ -418,6 +444,14 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							((ItemJetpack)chest.getItem()).activateJetpack(chest, player, true);
 						}
 					}
+					else if (message.value == 31) {
+						if (player != null)
+							TF2PlayerCapability.get((EntityPlayer) player).setEquipBackpackItem(true);
+					}
+					else if (message.value == 32) {
+						if (player != null)
+							TF2PlayerCapability.get((EntityPlayer) player).setEquipBackpackItem(false);
+					}
 				}
 
 			});
@@ -425,16 +459,16 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 		return null;
 	}
 
-
+	
 	/*
 	 * public static class TF2ActionHandlerReturn implements
 	 * IMessageHandler<TF2Message.ActionMessage, IMessage> {
-	 *
+	 * 
 	 * @Override public IMessage onMessage(TF2Message.ActionMessage message,
 	 * MessageContext ctx) { EntityLivingBase player=(EntityLivingBase)
 	 * Minecraft.getMinecraft().theWorld.getEntityByID(message.entity);
 	 * handleMessage(message, player); return null; }
-	 *
+	 * 
 	 * }
 	 */
 	public static void handleMessage(TF2Message.ActionMessage message, EntityLivingBase player, boolean client) {
@@ -460,7 +494,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 			 * 0); } int
 			 * oldState=previousPlayerAction.get(player.world.isRemote).get(
 			 * player);
-			 *
+			 * 
 			 * previousPlayerAction.get(player.world.isRemote).put(player,
 			 * playerAction.get(true).get(player));
 			 */
@@ -478,7 +512,7 @@ public class TF2ActionHandler implements IMessageHandler<TF2Message.ActionMessag
 							message.value & 3);
 
 					cap.stateDo(player, stack, EnumHand.MAIN_HAND, stateOverride);
-
+					
 				} else if ((oldState & 2) > (message.value & 2))
 					((ItemUsable) stack.getItem()).endUse(stack, player, player.world, oldState, message.value & 3);
 				if ((oldState & 1) < (message.value & 1)) {

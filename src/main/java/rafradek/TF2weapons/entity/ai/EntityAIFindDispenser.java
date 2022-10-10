@@ -3,21 +3,22 @@ package rafradek.TF2weapons.entity.ai;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.Path;
+import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityAIFindDispenser extends EntityAIBase {
 
 	public EntityTF2Character host;
-
+	
 	public float range;
 	public float rangeSq;
-
+	
 	public Entity target;
 	public Path path;
-
+	
 	public int delay;
-
+	
 	public EntityAIFindDispenser(EntityTF2Character host, float range) {
 		this.host=host;
 		this.range=range;
@@ -27,6 +28,7 @@ public class EntityAIFindDispenser extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
+		// TODO Auto-generated method stub
 		if(this.host.getAmmo() <= 0 || (this.host.getAttackTarget() == null && (this.host.getHealth()<this.host.getMaxHealth() || !this.host.isAmmoFull()))) {
 			Entity disp = TF2Util.findAmmoSource(host, range, true);
 			if (disp != null) {
@@ -42,13 +44,13 @@ public class EntityAIFindDispenser extends EntityAIBase {
 	public void startExecuting() {
 		this.host.getNavigator().setPath(path, 1.0f);
 	}
-
+	
 	@Override
 	public boolean shouldContinueExecuting()
-	{
+    {
 		return this.target != null && target.isEntityAlive() && !(this.host.isAmmoFull() && this.host.getHealth() >= this.host.getMaxHealth());
-	}
-
+    }
+	
 	@Override
 	public void updateTask() {
 		if(this.host.getDistanceSq(target) > 2) {
@@ -58,7 +60,7 @@ public class EntityAIFindDispenser extends EntityAIBase {
 					return;
 				}
 			if (this.host.getAttackTarget() == null)
-				this.host.getLookHelper().setLookPositionWithEntity(this.target, 30, 15);
+			this.host.getLookHelper().setLookPositionWithEntity(this.target, 30, 15);
 		}
 		else
 			this.host.getNavigator().clearPath();

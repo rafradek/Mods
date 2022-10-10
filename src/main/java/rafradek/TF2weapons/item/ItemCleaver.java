@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.entity.EntityDummy;
 import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.PropertyType;
 
 public class ItemCleaver extends ItemProjectileWeapon {
 
@@ -26,7 +27,8 @@ public class ItemCleaver extends ItemProjectileWeapon {
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
 			if(living instanceof EntityPlayer)
-				((EntityPlayer)living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown?this.getFiringSpeed(stack, living) / 50 : 120);
+				((EntityPlayer)living).getCooldownTracker().setCooldown(this, (int) (this.getFiringSpeed(stack, living)/50 * 
+						(TF2ConfigVars.fastItemCooldown ? 1f: getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
 			

@@ -189,6 +189,14 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.powerup.disciplinary"));
 	public static final SoundEvent DOUBLE_DONK = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
+	public static final SoundEvent GRENADE_EXPLODESPECIAL = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "weapon.explosion.airstrike"));
+	public static final SoundEvent MVM_WAVE_START = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.start"));
+	public static final SoundEvent MVM_WAVE_END = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.end"));
+	public static final SoundEvent MVM_SENTRY_BUSTER = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "mvm.sentrybuster"));
 	
 	public static void registerSounds() {
 		/*

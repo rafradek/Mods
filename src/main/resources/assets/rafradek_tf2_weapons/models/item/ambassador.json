@@ -340,5 +340,13 @@
 			"name": "hammer",
 			"children": [19, 20]
 		}
+	],
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/ambassador_blu"
+		}
 	]
 }

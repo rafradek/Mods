@@ -3,41 +3,53 @@ package rafradek.TF2weapons.command;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import rafradek.TF2weapons.NBTLiterals;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
+import rafradek.TF2weapons.item.ItemFromData;
 
 public class CommandInvasion extends CommandBase {
 
 	@Override
 	public String getUsage(ICommandSender p_71518_1_) {
+		// TODO Auto-generated method stub
 		return "commands.invasion.usage";
 	}
 
 	@Override
 	public String getName() {
+		// TODO Auto-generated method stub
 		return "invasion";
 	}
-
-	@Override
+	
 	public int getRequiredPermissionLevel()
-	{
-		return 2;
-	}
+    {
+        return 2;
+    }
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -71,15 +83,14 @@ public class CommandInvasion extends CommandBase {
 			throw new WrongUsageException(getUsage(sender), new Object[0]);
 		}
 	}
-	@Override
 	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
-	{
+    {
 		if (args.length == 1)
-		{
-			return getListOfStringsMatchingLastWord(args, "stop");
-		}
+        {
+            return getListOfStringsMatchingLastWord(args, "stop");
+        }
 		else if (args.length > 1)
-		{
+        {
 			BlockPos pos = Minecraft.getMinecraft().player.getPosition();
 			switch (args.length) {
 			case 2: return Arrays.asList(Integer.toString(pos.getX()));
@@ -87,9 +98,9 @@ public class CommandInvasion extends CommandBase {
 			case 4: return Arrays.asList(Integer.toString(pos.getZ()));
 			default: return Collections.emptyList();
 			}
-		}
+        }
 		else {
 			return Collections.emptyList();
 		}
-	}
+    }
 }

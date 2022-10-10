@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.client.audio;
 
 import net.minecraft.client.audio.MovingSound;
+import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -20,7 +21,7 @@ public class NetworkedSound extends MovingSound {
 		this.repeat = repeat;
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	public NetworkedSound(Vec3d pos, SoundEvent soundIn, SoundCategory categoryIn, float volume, float pitch, int id, boolean repeat) {
 		super(soundIn, categoryIn);
 		this.isStatic = true;
@@ -33,7 +34,7 @@ public class NetworkedSound extends MovingSound {
 		this.zPosF = (float) pos.z;
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	@Override
 	public void update() {
 		if (!this.isStatic) {

@@ -1,10 +1,31 @@
 package rafradek.TF2weapons.item;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.common.collect.Sets;
+
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2PlayerCapability;
+import rafradek.TF2weapons.entity.building.EntityDispenser;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.client.TF2EventsClient;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
+import rafradek.TF2weapons.util.PropertyType;
+import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.WeaponData;
 import net.minecraft.client.Minecraft;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -12,6 +33,8 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
@@ -20,16 +43,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2ConfigVars;
-import rafradek.TF2weapons.TF2PlayerCapability;
-import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.common.TF2Attribute;
-import rafradek.TF2weapons.common.WeaponsCapability;
-import rafradek.TF2weapons.message.TF2Message;
-import rafradek.TF2weapons.message.TF2Message.PredictionMessage;
-import rafradek.TF2weapons.util.PropertyType;
-import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.util.WeaponData;
 
 public abstract class ItemUsable extends ItemFromData {
 	// public ConfigCategory data;
@@ -39,8 +52,7 @@ public abstract class ItemUsable extends ItemFromData {
 	// public static boolean addedIcons;
 	// public static ThreadLocalMap<EntityLivingBase, NBTTagCompound>
 	// itemProperties=new ThreadLocalMap<EntityLivingBase, NBTTagCompound>();
-	public static HashMap<EntityLivingBase, float[]> lastDamage = new HashMap<>();
-
+	
 	public ItemUsable() {
 		super();
 		this.setCreativeTab(TF2weapons.tabweapontf2);
@@ -50,11 +62,11 @@ public abstract class ItemUsable extends ItemFromData {
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
 			EnumHand hand) {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);
-		return new ActionResult<>((this.canAltFire(worldIn, playerIn, itemStackIn)
+		return new ActionResult<ItemStack>((this.canAltFire(worldIn, playerIn, itemStackIn)
 				&& this.getAltFiringSpeed(itemStackIn, playerIn) != Short.MAX_VALUE )
 				|| TF2ConfigVars.swapAttackButton || playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).getPrimaryCooldown()>0 ? EnumActionResult.SUCCESS
 						: EnumActionResult.PASS,
-						itemStackIn);
+				itemStackIn);
 	}
 
 	public abstract boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
@@ -84,17 +96,17 @@ public abstract class ItemUsable extends ItemFromData {
 		WeaponsCapability cap = par3Entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 		WeaponData.WeaponDataCapability stackcap = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 		EntityLivingBase living=(EntityLivingBase) par3Entity;
-
+		
 		int mincool = 0;
-
+		
 		if (living instanceof EntityPlayer && !par2World.isRemote)
-			mincool = -200;
-
+			mincool = WeaponsCapability.PLAYER_MINCOOL;
+		
 		if (stackcap.fire1Cool > mincool)
 			stackcap.fire1Cool -= 50;
 		else
 			stackcap.fire1Cool = mincool;
-
+		
 		if (stackcap.fire2Cool > mincool)
 			stackcap.fire2Cool -= 50;
 		else
@@ -124,7 +136,7 @@ public abstract class ItemUsable extends ItemFromData {
 
 	public void draw(WeaponsCapability weaponsCapability, ItemStack stack, EntityLivingBase living, World world) {
 		if(living instanceof EntityPlayerMP)
-			TF2weapons.network.sendTo(new TF2Message.UseMessage(stack.getItemDamage(),
+			TF2weapons.network.sendTo(new TF2Message.UseMessage(-1, 
 					false,this.getAmmoAmount(living, stack), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
 	}
 
@@ -166,9 +178,9 @@ public abstract class ItemUsable extends ItemFromData {
 			return WeaponsCapability.get(living).canFire(hand,true);
 		return canFire(world, living, stack);
 	}
-
+	
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-
+		
 		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0 && ItemToken.allowUse(living, this.getUsableClasses(stack))
 				&& (living.getActiveItemStack().isEmpty() || this.getDoubleWieldBonus(stack, living) != 1) && this.getFiringSpeed(stack, living) != Integer.MAX_VALUE;
 	}
@@ -179,7 +191,7 @@ public abstract class ItemUsable extends ItemFromData {
 		}
 		return getData(stack).get(PropertyType.SLOT).keySet();
 	}
-
+	
 	public abstract boolean fireTick(ItemStack stack, EntityLivingBase living, World world);
 
 	public abstract boolean altFireTick(ItemStack stack, EntityLivingBase living, World world);
@@ -228,7 +240,7 @@ public abstract class ItemUsable extends ItemFromData {
 	}
 
 	public static boolean isDoubleWielding(EntityLivingBase living) {
-		return ItemFromData.getData(living.getHeldItemMainhand()) != ItemFromData.BLANK_DATA
+		return ItemFromData.getData(living.getHeldItemMainhand()) != ItemFromData.BLANK_DATA 
 				&& living.getHeldItemMainhand().getItem() instanceof ItemUsable && living.getHeldItemOffhand().getItem() instanceof ItemUsable
 				&& ((ItemUsable) living.getHeldItemOffhand().getItem()).getDoubleWieldBonus(living.getHeldItemOffhand(), living) != 1
 				&& ((ItemUsable) living.getHeldItemMainhand().getItem()).getDoubleWieldBonus(living.getHeldItemMainhand(), living) != 1;
@@ -247,8 +259,9 @@ public abstract class ItemUsable extends ItemFromData {
 			return WeaponsCapability.get(player).canFire(hand,false);
 		return canAltFire(worldObj, player, item);
 	}
-
+	
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
+		// TODO Auto-generated method stub
 		return item.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).active > 0
 				&& player.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks == 0
 				&& ItemToken.allowUse(player, this.getUsableClasses(item))
@@ -262,7 +275,7 @@ public abstract class ItemUsable extends ItemFromData {
 	public float getHealthBasedBonus(ItemStack item, EntityLivingBase living, float maxbonus) {
 		if(living != null && living.getHealth()<living.getMaxHealth()*0.8f) {
 			float multiplier=MathHelper.clamp(TF2Util.position(0.1f, 0.8f, living.getHealth()/living.getMaxHealth()),0f,1f);
-
+			
 			return TF2Util.lerp(1, maxbonus, multiplier);
 		}
 		return 1f;
@@ -279,11 +292,11 @@ public abstract class ItemUsable extends ItemFromData {
 		}
 		return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
 	}
-
+	
 	public int getDeployTime(ItemStack stack, EntityLivingBase living) {
 		return (int) TF2Attribute.getModifier("Deploy Time", stack, 750, living);
 	}
-
+	
 	public int getStateOverride(ItemStack stack, EntityLivingBase living, int original) {
 		if(TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
 			//System.out.println("Act pre: "+original);
@@ -299,19 +312,14 @@ public abstract class ItemUsable extends ItemFromData {
 		return original;
 	}
 
-	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
-		return false;
-	}
-
 	public boolean shouldEntityFire(ItemStack stack, EntityLivingBase living, EntityLivingBase target) {
 		/*if(TF2Attribute.getModifier("Auto Fire", stack, 0, living) != 0) {
 			return stack.getItemDamage() > 0 && (stack.getItemDamage() == stack.getMaxDamage() || WeaponsCapability.get(living).reloadingHand != null);
 		}*/
-
+		
 		return true;
 	}
-
-	@Override
+	
 	public boolean canSwitchTo(ItemStack stack) {
 		return true;
 	}

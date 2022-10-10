@@ -13,11 +13,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
@@ -48,7 +51,7 @@ public class ItemJar extends ItemProjectileWeapon {
 
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		return !stack.getTagCompound().getBoolean("IsEmpty") && super.canFire(world, living, stack) &&
+		return !stack.getTagCompound().getBoolean("IsEmpty") && super.canFire(world, living, stack) && 
 				!(living instanceof EntityPlayer && ((EntityPlayer) living).getCooldownTracker().hasCooldown(this));
 	}
 
@@ -76,7 +79,8 @@ public class ItemJar extends ItemProjectileWeapon {
 			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
 			if (living instanceof EntityPlayer)
-				((EntityPlayer) living).getCooldownTracker().setCooldown(this, TF2ConfigVars.fastItemCooldown ? this.getFiringSpeed(stack, living)/50 : getData(stack).getInt(PropertyType.COOLDOWN));
+				((EntityPlayer) living).getCooldownTracker().setCooldown(this, (int) (this.getFiringSpeed(stack, living)/50 * 
+						(TF2ConfigVars.fastItemCooldown ? 1f: getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 		}
 		return true;
 	}
@@ -106,7 +110,7 @@ public class ItemJar extends ItemProjectileWeapon {
 	public EnumAction getItemUseAction(ItemStack stack) {
 		return EnumAction.DRINK;
 	}
-
+	
 	@Override
 	public void onUpdate(ItemStack stack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		super.onUpdate(stack, par2World, par3Entity, par4, par5);

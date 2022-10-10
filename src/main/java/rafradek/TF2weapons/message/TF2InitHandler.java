@@ -3,6 +3,7 @@ package rafradek.TF2weapons.message;
 import java.util.Map.Entry;
 
 import io.netty.util.internal.SocketUtils;
+import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -27,12 +28,13 @@ public class TF2InitHandler implements IMessageHandler<TF2Message.InitMessage, I
 				TF2ConfigVars.createConfig(false);
 			}
 			ClientProxy.buildingsUseEnergy = message.energyUse;
-
+			
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// System.out.println("setting "+message.value);
-		// TF2weapons.proxy.playReloadSound(player,stack);
+			// System.out.println("setting "+message.value);
+			// TF2weapons.proxy.playReloadSound(player,stack);
 		return null;
 	}
 }

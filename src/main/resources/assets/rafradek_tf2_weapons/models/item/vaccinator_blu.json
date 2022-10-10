@@ -1,0 +1,7 @@
+{
+	"parent": "rafradek_tf2_weapons:item/vaccinator",
+	"textures": {
+		"0": "rafradek_tf2_weapons:items/gunslinger_blu",
+		"1": "rafradek_tf2_weapons:items/extratextures_blu"
+	}
+}

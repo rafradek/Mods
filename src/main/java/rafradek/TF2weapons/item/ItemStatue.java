@@ -20,7 +20,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.EntityStatue;
 
-@SuppressWarnings("deprecation")
 public class ItemStatue extends Item {
 
 	public ItemStatue() {
@@ -55,9 +54,8 @@ public class ItemStatue extends Item {
 		return stack;
 	}
 
-	@Override
 	public String getItemStackDisplayName(ItemStack stack)
-	{
+    {
 		if(!stack.hasTagCompound())
 			return super.getItemStackDisplayName(stack);
 		if(!stack.getTagCompound().getCompoundTag("Statue").getBoolean("Player"))
@@ -66,8 +64,8 @@ public class ItemStatue extends Item {
 					I18n.translateToLocal(this.getUnlocalizedName() + ".name");
 		else
 			return I18n.translateToLocal(this.getUnlocalizedName() + ".player.name");
-	}
-
+    }
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
@@ -78,5 +76,5 @@ public class ItemStatue extends Item {
 			}
 		}
 	}
-
+	
 }

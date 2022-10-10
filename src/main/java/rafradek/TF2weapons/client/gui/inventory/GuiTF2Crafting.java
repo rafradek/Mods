@@ -7,27 +7,32 @@ import org.lwjgl.input.Mouse;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapedRecipes;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.gui.GuiButtonToggleItem;
 import rafradek.TF2weapons.inventory.ContainerTF2Workbench;
+import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.crafting.IRecipeTF2;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
 
@@ -108,7 +113,7 @@ public class GuiTF2Crafting extends GuiContainer {
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
-
+		
 		if(this.getSlotUnderMouse() != null && this.getSlotUnderMouse().getStack().isEmpty() &&
 				this.mc.player.inventory.getItemStack().isEmpty() && this.getSlotUnderMouse().inventory instanceof InventoryCrafting &&
 				!this.itemsToRender.get(this.getSlotUnderMouse().slotNumber - 1).isEmpty()) {
@@ -118,6 +123,7 @@ public class GuiTF2Crafting extends GuiContainer {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id < 12) {
 			int currentRecipe = button.id + this.firstIndex;
@@ -130,7 +136,7 @@ public class GuiTF2Crafting extends GuiContainer {
 				IRecipe recipe = TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe);
 				for (int i =1; i <10; i++) {
 					this.handleMouseClick(this.inventorySlots.getSlot(i), i, 0, ClickType.QUICK_MOVE);
-
+					
 				}
 				if (recipe instanceof IRecipeTF2) {
 					for (int i = 0; i < 9; i++)
@@ -138,14 +144,14 @@ public class GuiTF2Crafting extends GuiContainer {
 				}
 				else{
 					List<Ingredient> input = recipe.getIngredients();
-
+					
 					for (int i = 0; i < input.size(); i++) {
 						int space = 0;
 						if(recipe instanceof ShapedRecipes)
 							space = (3-((ShapedRecipes)recipe).recipeWidth)*(i/((ShapedRecipes)recipe).recipeWidth);
 						else if(recipe instanceof ShapedOreRecipe)
 							space = (3-((ShapedOreRecipe)recipe).getRecipeWidth())*(i/((ShapedOreRecipe)recipe).getRecipeWidth());
-
+							
 						if(input.get(i).getMatchingStacks().length>0) {
 							itemsToRender.set(i + space, input.get(i).getMatchingStacks()[0]);
 							if(itemsToRender.get(i + space).getMetadata()==32767)
@@ -218,5 +224,5 @@ public class GuiTF2Crafting extends GuiContainer {
 		this.drawTexturedModalRect(85 + this.guiLeft, 22 + this.guiTop, 85, 22, 54, 54);
 		this.zLevel = 0;
 	}
-
+	
 }

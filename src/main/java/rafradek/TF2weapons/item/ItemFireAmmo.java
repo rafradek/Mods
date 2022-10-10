@@ -7,15 +7,22 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.FluidTankProperties;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.item.ItemAmmoBelt.Provider;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemFireAmmo extends ItemAmmo {
@@ -63,7 +70,7 @@ public class ItemFireAmmo extends ItemAmmo {
 		}
 		return 0;
 	}
-
+	
 	@Override
 	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
 		if (stack == STACK_FILL)
@@ -76,7 +83,7 @@ public class ItemFireAmmo extends ItemAmmo {
 				if (living instanceof EntityPlayer)
 					remain = TF2Util.pickAmmo(remain, (EntityPlayer) living, true);
 				if (!remain.isEmpty())
-					living.entityDropItem(remain,0).setPickupDelay(0);
+				living.entityDropItem(remain,0).setPickupDelay(0);
 			}
 			else {
 				stack.setItemDamage(stack.getItemDamage() + amount);
@@ -103,21 +110,19 @@ public class ItemFireAmmo extends ItemAmmo {
 		}
 		return 0;
 	}
-
-	@Override
+	
 	public int getAmount(ItemStack stack) {
 		return (uses-stack.getItemDamage()) * stack.getCount();
 	}
-
-	@Override
+	
 	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt)
-	{
-		if(this.getTypeInt(stack) == 10 && TF2weapons.refinedFuel != null) {
-			Provider cap = new Provider(stack, 3, TF2weapons.refinedFuel);
-			return cap;
-		}
-		return null;
-	}
+    {
+        if(this.getTypeInt(stack) == 10 && TF2weapons.refinedFuel != null) {
+        	Provider cap = new Provider(stack, 3, TF2weapons.refinedFuel);
+        	return cap;
+        }
+        return null;
+    }
 
 	public static class Provider implements ICapabilityProvider, IFluidHandlerItem {
 
@@ -163,7 +168,7 @@ public class ItemFireAmmo extends ItemAmmo {
 				stack.setItemDamage(stack.getItemDamage() + resourceUsed/mult);
 				if (stack.getItemDamage() > stack.getMaxDamage())
 					stack.shrink(1);
-
+				
 			}
 			return new FluidStack(fluid, resourceUsed);
 		}
@@ -191,6 +196,6 @@ public class ItemFireAmmo extends ItemAmmo {
 			// TODO Auto-generated method stub
 			return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY ? (T) this : null;
 		}
-
+		
 	}
 }

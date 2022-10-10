@@ -1,14 +1,18 @@
 package rafradek.TF2weapons.client.renderer.entity;
 
 import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.model.ModelJar;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
+import rafradek.TF2weapons.item.ItemFromData;
 
 public class RenderJar extends Render<EntityJar> {
 
@@ -45,19 +49,20 @@ public class RenderJar extends Render<EntityJar> {
 		 * 0);
 		 */
 		bindEntityTexture(entity);
+		
+		if(entity.isGas() && !entity.isGasExploded())
+			Minecraft.getMinecraft().getRenderItem().renderItem(ItemFromData.getNewStack("gaspasser"), ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
+		else if(entity.isGasExploded()) {
+			
+		}
+		else {
+			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+		}
+		
 
 		// GL11.glTranslatef((float)entity.posX, (float)entity.posY,
 		// entity.posZ);
-		if (entity.getCritical() == 2) {
-			// GlStateManager.disableTexture2D();
-			GlStateManager.disableLighting();
-			// GlStateManager.color(0.0F, 0.0F, 1.0F, 1F);
-			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
-			// GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
-			// GlStateManager.enableTexture2D();
-			GlStateManager.enableLighting();
-		} else
-			model.render(entity, 0F, 0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+		
 
 		/*
 		 * GL11.glScalef(1.5f, 1.5f, 1.5f); GL11.glEnable(GL11.GL_BLEND);

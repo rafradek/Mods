@@ -151,7 +151,7 @@ public class GuiUpgradeStation extends GuiContainer {
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		int expPoints = TF2Util.getExperiencePoints(mc.player);
+		int expPoints = ((ContainerUpgrades)this.inventorySlots).playerCredits;
 		int size = ((ContainerUpgrades)this.inventorySlots).applicable.size();
 		ItemStack stack = this.inventorySlots.inventorySlots.get(0).getStack();
 		for (int i = 0; i < 6; i++) {

@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Predicate;
-
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
@@ -15,6 +15,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.Team;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityMedic;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
@@ -37,7 +39,6 @@ public class EntityAINearestChecked extends EntityAITarget {
 		this.setMutexBits(1);
 		this.targetLock = targetLock;
 		this.targetEntitySelector = new Predicate<EntityLivingBase>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public boolean apply(EntityLivingBase target) {
 				if (p_i1665_6_ != null && !p_i1665_6_.apply((A) target))
@@ -61,7 +62,7 @@ public class EntityAINearestChecked extends EntityAITarget {
 						}
 						if (target.hasCapability(TF2weapons.WEAPONS_CAP, null)
 								&& (target.getCapability(TF2weapons.WEAPONS_CAP, null).invisTicks >= 20
-								|| ItemDisguiseKit.isDisguised(target, taskOwner)))
+										|| ItemDisguiseKit.isDisguised(target, taskOwner)))
 							d0 = 1;
 						boolean fastCheck = allowBehind || (!(target instanceof EntityPlayer)
 								&& (TF2ConfigVars.naturalCheck.equals("Fast") && taskOwner instanceof EntityTF2Character
@@ -182,9 +183,9 @@ public class EntityAINearestChecked extends EntityAITarget {
 
 					if (target == ((IEntityOwnable) this.taskOwner).getOwner())
 						return false;
-				}
+				} 
 				if (target instanceof EntityPlayer && !includeInvincibles
-						&& ((EntityPlayer) target).capabilities.disableDamage)
+					&& ((EntityPlayer) target).capabilities.disableDamage)
 					return false;
 
 				return !this.shouldCheckSight || this.taskOwner.getEntitySenses().canSee(target);

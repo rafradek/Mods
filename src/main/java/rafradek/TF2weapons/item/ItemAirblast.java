@@ -13,6 +13,9 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketEntityTeleport;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -37,7 +40,7 @@ public class ItemAirblast extends ItemProjectileWeapon {
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
 		return super.canAltFire(worldObj, player, item) && WeaponsCapability.get(player).getPrimaryCooldown() <= 50 && TF2Attribute.getModifier("Cannot Airblast", item, 0, player) == 0;
 	}
-
+	
 	@Override
 	public short getAltFiringSpeed(ItemStack item, EntityLivingBase player) {
 		return (short) TF2Attribute.getModifier("Airblast Rate", item, 750, player);
@@ -49,17 +52,16 @@ public class ItemAirblast extends ItemProjectileWeapon {
 				&& !(target instanceof IThrowableEntity && ((IThrowableEntity) target).getThrower() == living)
 				&& !TF2Util.isOnSameTeam(living, target);
 	}
-
-	@Override
+	
 	public void playHitSound(ItemStack stack, EntityLivingBase living, Entity target) {
-
+		
 		if (target.isBurning() && getData(stack).hasProperty(PropertyType.SPECIAL_1_SOUND))
 			TF2Util.playSound(target, ItemFromData.getSound(stack, PropertyType.SPECIAL_1_SOUND), 0.7F, 1F);
 		else
 			super.playHitSound(stack, living, target);
-
+		
 	}
-
+	
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
 		living.getCapability(TF2weapons.WEAPONS_CAP, null).setPrimaryCooldown(this.getAltFiringSpeed(stack, living));
@@ -118,7 +120,7 @@ public class ItemAirblast extends ItemProjectileWeapon {
 							eyeVec.y + lookVec.y * 256 - entity.posY,
 							eyeVec.z + lookVec.z * 256 - entity.posZ, speed, 0);
 			} else {
-				double mult = (entity instanceof EntityLivingBase ?
+				double mult = (entity instanceof EntityLivingBase ? 
 						1-((EntityLivingBase) entity).getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getAttributeValue() : 0.2)
 						+ TF2Attribute.getModifier("Flame Range", stack, 0.8f, living);
 				entity.motionX = lookVec.x * 0.6 * mult;

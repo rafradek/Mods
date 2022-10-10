@@ -11,15 +11,19 @@ import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.IItemPropertyGetter;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -31,11 +35,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -43,15 +50,17 @@ import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.building.EntityTeleporter;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
+import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
+import rafradek.TF2weapons.util.WeaponData;
 
-public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay {
+public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverlay, IItemNoSwitch  {
 
 	@SuppressWarnings("unchecked")
-	private static final DataParameter<NBTTagCompound>[] VIEWS = new DataParameter[] {TF2PlayerCapability.SENTRY_VIEW, TF2PlayerCapability.DISPENSER_VIEW,
+	private static final DataParameter<NBTTagCompound>[] VIEWS = new DataParameter[] {TF2PlayerCapability.SENTRY_VIEW, TF2PlayerCapability.DISPENSER_VIEW, 
 			TF2PlayerCapability.TELEPORTERA_VIEW, TF2PlayerCapability.TELEPORTERB_VIEW};
 	private static final String[] GUI_BUILD_NAMES = new String[] {"gui.build.sentry", "gui.build.dispenser", "gui.build.entrance", "gui.build.exit", "gui.build.disposable"};
-
+	
 	public ItemPDA() {
 		this.setMaxStackSize(1);
 		this.addPropertyOverride(new ResourceLocation("building"), new IItemPropertyGetter() {
@@ -91,7 +100,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				int metal = EntityBuilding.getCost(slot, TF2Util.getFirstItem(player.inventory, stackL ->{
 					return TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1;
 				}));
-
+				
 				if (WeaponsCapability.get(player).hasMetal(metal)) {
 					if (!stack.hasTagCompound())
 						stack.setTagCompound(new NBTTagCompound());
@@ -103,32 +112,36 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			}
 		}
 	}
-
+	
 	@Override
 	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		this.forceItemSlot(stack, worldIn, entityIn, itemSlot, isSelected);
 		if (!worldIn.isRemote) {
+			
 			if (!stack.hasTagCompound())
 				stack.setTagCompound(new NBTTagCompound());
 			PlayerPersistStorage storage = PlayerPersistStorage.get(((EntityPlayer)entityIn));
-			if (TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null)
+			stack.getTagCompound().setBoolean("IsC", TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null);
+			if (TF2PlayerCapability.get((EntityPlayer) entityIn).carrying != null) {
 				stack.getTagCompound().setByte("Building", (byte) ((byte) TF2PlayerCapability.get((EntityPlayer) entityIn).carryingType + 1));
+			}
 			else if (stack.getTagCompound().getByte("Building") > 0) {
-				int metal = EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1,
+				int metal = EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1, 
 						TF2Util.getFirstItem(((EntityPlayer) entityIn).inventory, stackL -> stackL.getItem() instanceof ItemWrench));
 				if (!WeaponsCapability.get(entityIn).hasMetal(metal) || storage.hasBuilding(stack.getTagCompound().getByte("Building") - 1))
-					stack.getTagCompound().setByte("Building", (byte) 0);
+				stack.getTagCompound().setByte("Building", (byte) 0);
 			}
-
-
+				
+			
 		}
 	}
-
+	
 	@Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		return slotChanged || oldStack.getItem() != newStack.getItem();
-
+		
 	}
-
+	
 	@Override
 	public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos,
 			EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
@@ -136,9 +149,9 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 		ItemStack stack=playerIn.getHeldItem(hand);
 		if (worldIn.isRemote ) {
 			if ((!stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0))
-				return EnumActionResult.PASS;
+			return EnumActionResult.PASS;
 			else
-				return EnumActionResult.SUCCESS;
+				 return EnumActionResult.SUCCESS;
 		}
 		else if (!playerIn.canPlayerEdit(pos.offset(facing), facing, stack) || !stack.hasTagCompound() || stack.getTagCompound().getByte("Building") == 0)
 			return EnumActionResult.PASS;
@@ -150,20 +163,20 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 
 			if (facing == EnumFacing.UP && iblockstate.getBlock() instanceof BlockFence)
 				d0 = 0.5D;
-
+			
 			boolean disposable = stack.getTagCompound().getByte("Building") == 5;
-
+			
 			int id = 16 + stack.getTagCompound().getByte("Building") * 2;
 			if (stack.getTagCompound().getByte("Building") == 4)
 				id -= 2;
 			else if (disposable)
 				id = 18;
-
+			
 			EntityBuilding entity = (EntityBuilding) ItemMonsterPlacerPlus.spawnCreature(playerIn, worldIn, id, pos.getX() + 0.5D, pos.getY() + d0,
 					pos.getZ() + 0.5D, TF2PlayerCapability.get(playerIn).carrying);
 
 			if (entity != null) {
-
+				
 				entity.setEntTeam(TF2Util.getTeamForDisplay(playerIn));
 				entity.setOwner(playerIn);
 				if (entity instanceof EntitySentry) {
@@ -171,7 +184,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 					TF2Util.addModifierSafe(entity, SharedMonsterAttributes.FOLLOW_RANGE,
 							new AttributeModifier("upgraderange", TF2Attribute.getModifier("Sentry Range", stack, 1f, entity) - 1f, 2), true);
 					((EntitySentry)entity).setHeat((int) TF2Attribute.getModifier("Piercing", stack, 0, playerIn));
-					if (disposable || !TF2Util.getFirstItem(playerIn.inventory,
+					if (disposable || !TF2Util.getFirstItem(playerIn.inventory, 
 							stackL -> stackL.getItem() instanceof ItemWrench && TF2Attribute.getModifier("Weapon Mode", stackL, 0, playerIn) == 2).isEmpty()) {
 						((EntitySentry)entity).setMini(true);
 						if(entity.getLevel() > 1)
@@ -187,14 +200,14 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				if (entity instanceof EntityDispenser) {
 					((EntityDispenser)entity).setRange(TF2Attribute.getModifier("Dispenser Range", stack, 1, entity));
 				}
-
+				
 				entity.rotationYaw = playerIn.rotationYawHead;
 				entity.renderYawOffset = playerIn.rotationYawHead;
 				entity.rotationYawHead = playerIn.rotationYawHead;
 				entity.fromPDA = true;
 				if (stack.getTagCompound().getByte("Building") == 5 && entity.getDisposableID() == -1)
 					entity.setDisposableID(PlayerPersistStorage.get(playerIn).disposableBuildings.size());
-
+				
 				if (entity instanceof EntityTeleporter) {
 					((EntityTeleporter) entity).setID(127);
 					((EntityTeleporter) entity).setExit(stack.getTagCompound().getByte("Building") == 4);
@@ -202,7 +215,7 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				PlayerPersistStorage.get(playerIn).setBuilding(entity,TF2PlayerCapability.get(playerIn).calculateMaxSentries());
 				TF2PlayerCapability.get(playerIn).carrying = null;
 				if (!playerIn.capabilities.isCreativeMode && TF2PlayerCapability.get(playerIn).carrying == null)
-					WeaponsCapability.get(playerIn).consumeMetal(EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1,
+					WeaponsCapability.get(playerIn).consumeMetal(EntityBuilding.getCost(stack.getTagCompound().getByte("Building") - 1, 
 							TF2Util.getFirstItem(playerIn.inventory, stackL -> stackL.getItem() instanceof ItemWrench)),false);
 			}
 
@@ -225,25 +238,22 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		if (living.isSneaking()) {
 			living.getHeldItem(hand).getTagCompound().setBoolean("ShowHud", !living.getHeldItem(hand).getTagCompound().getBoolean("ShowHud"));
-			return new ActionResult<>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+			System.out.println(living.getHeldItem(hand).getTagCompound().getBoolean("ShowHud"));
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 		}
-		return new ActionResult<>(EnumActionResult.FAIL, living.getHeldItem(hand));
+		return new ActionResult<ItemStack>(EnumActionResult.FAIL, living.getHeldItem(hand));
 	}
-
-	@Override
+	
 	public boolean canSwitchTo(ItemStack stack) {
 		return true;
 	}
-
+	
 	@Override
 	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution) {
 		if (!stack.hasTagCompound() || (stack.getTagCompound().getByte("Building") == 0)) {
 			TF2PlayerCapability plcap = TF2PlayerCapability.get(player);
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ClientProxy.blueprintTexture);
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDepthMask(false);
-			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-			GL11.glDisable(GL11.GL_ALPHA_TEST);
+			
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 			GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
 			boolean hasTag = stack.hasTagCompound();
@@ -260,23 +270,23 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 				}
 				/*else
 					gui.drawTexturedModalRect(resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2, 0, 0, 64, 64);*/
-
+				
 			}
 			for (int i = 0; i < buildCount; i++) {
 				int cost = EntityBuilding.getCost(i, TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench));
-				gui.drawString(gui.getFontRenderer(), Integer.toString(cost), resolution.getScaledWidth()/2 - 72 -
+				gui.drawString(gui.getFontRenderer(), Integer.toString(cost), resolution.getScaledWidth()/2 - 72 - 
 						gui.getFontRenderer().getStringWidth(Integer.toString(cost)) + i * 72, resolution.getScaledHeight()/2 - 8, 0xFFFFFFFF);
 				gui.drawCenteredString(gui.getFontRenderer(), "["+(i+1)+"]", resolution.getScaledWidth()/2-108 + i * 72, resolution.getScaledHeight()/2+72, 0xFFFFFFFF);
 				gui.drawString(gui.getFontRenderer(), I18n.format(GUI_BUILD_NAMES[i]), resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2-18, 0xFFFFFFFF);
 				if (WeaponsCapability.get(player).getMetal() < cost && !(hasTag && i < 4 && plcap.dataManager.get(VIEWS[i]).getSize() != 0)) {
 					gui.getFontRenderer().drawSplitString(I18n.format("gui.build.nometal"), resolution.getScaledWidth()/2-140 + i * 72, resolution.getScaledHeight()/2+20, 80, 0xFFF00F0F);
 				}
-
+				
 			}
 			/*gui.drawTexturedModalRect(resolution.getScaledWidth()/2-68, resolution.getScaledHeight()/2-32, 64, 0, 64, 64);
 			gui.drawTexturedModalRect(resolution.getScaledWidth()/2+4, resolution.getScaledHeight()/2-32, 128, 0, 64, 64);
 			gui.drawTexturedModalRect(resolution.getScaledWidth()/2+72, resolution.getScaledHeight()/2-32, 192, 0, 64, 64);
-
+			
 			gui.drawCenteredString(gui.getFontRenderer(), "[2]", resolution.getScaledWidth()/2-36, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
 			gui.drawCenteredString(gui.getFontRenderer(), "[3]", resolution.getScaledWidth()/2+36, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
 			gui.drawCenteredString(gui.getFontRenderer(), "[4]", resolution.getScaledWidth()/2+108, resolution.getScaledHeight()/2+40, 0xFFFFFFFF);
@@ -285,14 +295,16 @@ public class ItemPDA extends ItemFromData implements IItemSlotNumber, IItemOverl
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.build.entrance"), resolution.getScaledWidth()/2+36, resolution.getScaledHeight()/2-40, 0xFFFFFFFF);
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.build.exit"), resolution.getScaledWidth()/2+108, resolution.getScaledHeight()/2-40, 0xFFFFFFFF);*/
 			gui.drawCenteredString(gui.getFontRenderer(), I18n.format("gui.build"), resolution.getScaledWidth()/2, resolution.getScaledHeight()/2-40, 0xFFFFFFFF);
-
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDepthMask(true);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
-			GL11.glEnable(GL11.GL_ALPHA_TEST);
+			
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		}
 
 	}
 
+	@Override
+	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
+		// TODO Auto-generated method stub
+		return stack.getTagCompound().getBoolean("IsC");
+	}
+	
 }

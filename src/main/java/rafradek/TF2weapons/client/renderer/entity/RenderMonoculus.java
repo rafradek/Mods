@@ -10,10 +10,13 @@ import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
+import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.client.model.ModelMonoculus;
 import rafradek.TF2weapons.entity.boss.EntityMonoculus;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class RenderMonoculus extends RenderLivingBase<EntityMonoculus> {
@@ -23,29 +26,28 @@ public class RenderMonoculus extends RenderLivingBase<EntityMonoculus> {
 			"textures/entity/tf2/monoculusangry.png");
 	public RenderMonoculus(RenderManager renderManagerIn) {
 		super(renderManagerIn, new ModelMonoculus(), 0f);
-
+		// TODO Auto-generated constructor stub
+		
 	}
-	@Override
 	protected boolean canRenderName(EntityMonoculus entity)
-	{
+    {
 		return false;
-	}
-	@Override
+    }
 	protected void preRenderCallback(EntityMonoculus entity, float partialTickTime)
-	{
+    {
 		float f = 2F;
 		if(entity.begin>0){
 			GlStateManager.translate(0, entity.begin*0.133333f, 0);
 		}
-		/*GlStateManager.rotate(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTickTime, 0.0F,
+        /*GlStateManager.rotate(entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTickTime, 0.0F,
 				0.0F, 1.0F);*/
-		GlStateManager.scale(f, f, f);
-	}
+        GlStateManager.scale(f, f, f);
+    }
 	@Override
 	protected ResourceLocation getEntityTexture(EntityMonoculus par1EntityLiving) {
 		return par1EntityLiving.isAngry()?TEXTURE_ANGRY:TEXTURE;
 	}
-
+	
 	@Override
 	public void doRender(EntityMonoculus entity, double x, double y, double z,
 			float entityYaw, float partialTicks) {

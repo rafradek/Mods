@@ -7,7 +7,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.IEntityOwnable;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
@@ -28,9 +31,9 @@ public class EntityNBTCondition implements LootCondition {
 	}
 
 	public EntityNBTCondition(String nbttag, Number test) {
-
+		
 	}
-
+	
 	@Override
 	public boolean testCondition(Random rand, LootContext context) {
 
@@ -39,7 +42,7 @@ public class EntityNBTCondition implements LootCondition {
 		NBTTagCompound tagmerge = new NBTTagCompound();
 		for (String key : tagValue.getKeySet())
 			tagmerge.setTag(key, tag.getTag(key));
-
+		
 		//tagmerge.merge(tagValue);
 		return (!negate && tagmerge.equals(tagValue)) || (negate && !tagmerge.equals(tagValue));
 	}
@@ -60,8 +63,9 @@ public class EntityNBTCondition implements LootCondition {
 			try {
 				return new EntityNBTCondition(JsonToNBT.getTagFromJson(JsonUtils.getString(json, "test", "{}")), JsonUtils.getBoolean(json, "negate", false));
 			} catch (NBTException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
-
+				
 			}
 			return new EntityNBTCondition(new NBTTagCompound(), false);
 		}

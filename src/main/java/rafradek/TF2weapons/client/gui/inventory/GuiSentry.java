@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -34,7 +37,7 @@ public class GuiSentry extends GuiContainer {
 
 	private static final ResourceLocation GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/container/building.png");
-
+	
 	public GuiSentry(EntitySentry sentry) {
 		super(new ContainerEnergy(sentry, Minecraft.getMinecraft().player.inventory));
 		this.sentry = sentry;
@@ -48,7 +51,7 @@ public class GuiSentry extends GuiContainer {
 		super.initGui();
 		this.buttonList.clear();
 		this.buttonList
-		.add(this.attackOnHurtBtn = new GuiButton(1, this.guiLeft + 181, this.guiTop + 14, 25, 20, "no"));
+				.add(this.attackOnHurtBtn = new GuiButton(1, this.guiLeft + 181, this.guiTop + 14, 25, 20, "no"));
 		this.buttonList.add(
 				this.attackOtherPlayersBtn = new GuiButton(2, this.guiLeft + 181, this.guiTop + 34, 25, 20, "no"));
 		this.buttonList.add(
@@ -69,11 +72,11 @@ public class GuiSentry extends GuiContainer {
 				else
 					button.displayString = "yes";
 				TF2weapons.network.sendToServer(
-						new TF2Message.GuiConfigMessage(this.sentry.getEntityId(), (byte) 0, attackFlags));
+						new TF2Message.BuildingConfigMessage(this.sentry.getEntityId(), (byte) 0, attackFlags));
 			} else if (button.id == 5) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-				.sendToServer(new TF2Message.GuiConfigMessage(this.sentry.getEntityId(), (byte) 127, 1));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.sentry.getEntityId(), (byte) 127, 1));
 			}
 	}
 
@@ -87,16 +90,17 @@ public class GuiSentry extends GuiContainer {
 		this.fontRenderer.drawString(I18n.format("gui.sentry.friendly", new Object[0]), 25, 80, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 25, 99, 4210752);
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.attackOnHurtBtn.displayString = (attackFlags & 1) == 0 ? "no" : "yes";
 		this.attackOtherPlayersBtn.displayString = (attackFlags & 2) == 0 ? "no" : "yes";
 		this.attackHostileMobsBtn.displayString = (attackFlags & 4) == 0 ? "no" : "yes";
 		this.attackFriendlyMobsBtn.displayString = (attackFlags & 8) == 0 ? "no" : "yes";
-
+		
 		this.drawDefaultBackground();
-
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		if(mouseX >= this.guiLeft+7 && mouseX < this.guiLeft+23 && mouseY >= this.guiTop+15 && mouseY < guiTop+75) {
 			if(ClientProxy.buildingsUseEnergy)
@@ -105,9 +109,9 @@ public class GuiSentry extends GuiContainer {
 				this.drawHoveringText("Energy use is disabled", mouseX, mouseY);
 		}
 		if(mouseX >= this.guiLeft+5 && mouseX < this.guiLeft+23 && mouseY >= this.guiTop+112 && mouseY < guiTop+130) {
-			List<String> list = new ArrayList<>(Arrays.asList(I18n.format("gui.sentry.help", this.sentry.getLevel() == 1 ? "6.4" : "12.8").split(Pattern.quote("\\n"))));
+			List<String> list = new ArrayList<String>(Arrays.asList(I18n.format("gui.sentry.help", this.sentry.getLevel() == 1 ? "6.4" : "12.8").split(Pattern.quote("\\n"))));
 			if (this.sentry.getLevel() > 2)
-				list.add(I18n.format("gui.sentry.help.rockets"));
+			list.add(I18n.format("gui.sentry.help.rockets"));
 			this.drawHoveringText(list, mouseX, mouseY);
 		}
 		this.renderHoveredToolTip(mouseX, mouseY);

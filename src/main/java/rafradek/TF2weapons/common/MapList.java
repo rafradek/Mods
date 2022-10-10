@@ -3,13 +3,19 @@ package rafradek.TF2weapons.common;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.JsonDeserializer;
+
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import rafradek.TF2weapons.entity.mercenary.EntityScout;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityBall;
 import rafradek.TF2weapons.entity.projectile.EntityCleaver;
 import rafradek.TF2weapons.entity.projectile.EntityFlame;
 import rafradek.TF2weapons.entity.projectile.EntityFlare;
 import rafradek.TF2weapons.entity.projectile.EntityFuryFireball;
+import rafradek.TF2weapons.entity.projectile.EntityGrapplingHook;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
@@ -27,6 +33,9 @@ import rafradek.TF2weapons.item.ItemCleaver;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemFlameThrower;
+import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemGas;
+import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemHuntsman;
 import rafradek.TF2weapons.item.ItemJar;
 import rafradek.TF2weapons.item.ItemJetpack;
@@ -43,6 +52,7 @@ import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemStickyLauncher;
 import rafradek.TF2weapons.item.ItemUsable;
+import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.item.ItemWrangler;
 import rafradek.TF2weapons.item.ItemWrench;
@@ -59,23 +69,23 @@ public class MapList {
 	public static Map<String, TF2Attribute> nameToAttribute;
 	public static Map<String, ItemUsable> specialWeapons;
 	public static Map<String, NBTTagCompound> buildInAttributes;
-
+	
 	// public static Map<MinigunLoopSound, EntityLivingBase > fireCritSounds;
 	// public static Map<List<SpawnListEntry>, SpawnListEntry> scoutSpawn;
 
 	public static void initMaps() {
-		weaponClasses = new HashMap<>();
-		projectileClasses = new HashMap<>();
-		nameToData = new HashMap<>();
-		propertyTypes = new HashMap<>();
-		nameToAttribute = new HashMap<>();
-		buildInAttributes = new HashMap<>();
-		specialWeapons = new HashMap<>();
+		weaponClasses = new HashMap<String, Item>();
+		projectileClasses = new HashMap<String, Class<? extends EntityProjectileBase>>();
+		nameToData = new HashMap<String, WeaponData>();
+		propertyTypes = new HashMap<String, PropertyType<?>>();
+		nameToAttribute = new HashMap<String, TF2Attribute>();
+		buildInAttributes = new HashMap<String, NBTTagCompound>();
+		specialWeapons = new HashMap<String, ItemUsable>();
 		/*WeaponData.propertyDeserializers = new HashMap<String, JsonDeserializer<ICapabilityProvider>>();
 		WeaponData.propertyDeserializers.put("Attributes", new ItemFromData.AttributeSerializer());
 		WeaponData.propertyDeserializers.put("Content", new ItemCrate.CrateSerializer());*/
 		//classNumbers = new HashMap<>();
-
+		
 		//classNumbers.put(EntityScout.class, 0);
 		// scoutSpawn=new HashMap<List<SpawnListEntry>, SpawnListEntry>();
 		weaponClasses.put("sniperrifle", new ItemSniperRifle());
@@ -103,8 +113,11 @@ public class MapList {
 		weaponClasses.put("jetpack", new ItemJetpack());
 		weaponClasses.put("jetpacktrigger", new ItemJetpackTrigger());
 		weaponClasses.put("pda", new ItemPDA());
+		weaponClasses.put("gas", new ItemGas());
+		weaponClasses.put("shortcircuit", new ItemBulletWeapon());
 		weaponClasses.put("airblast", new ItemAirblast());
 		weaponClasses.put("backpackgeneric", new ItemBackpack());
+		weaponClasses.put("grapplinghook", new ItemGrapplingHook());
 		/*
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
@@ -116,7 +129,9 @@ public class MapList {
 		 */
 
 		projectileClasses.put("rocket", EntityRocket.class);
+		projectileClasses.put("cowmangler", EntityRocket.class);
 		projectileClasses.put("fire", EntityFlame.class);
+		projectileClasses.put("gas", EntityJar.class);
 		projectileClasses.put("fireball", EntityFuryFireball.class);
 		projectileClasses.put("flare", EntityFlare.class);
 		projectileClasses.put("grenade", EntityGrenade.class);
@@ -129,5 +144,7 @@ public class MapList {
 		projectileClasses.put("hhhaxe", EntityProjectileSimple.class);
 		projectileClasses.put("energy", EntityProjectileEnergy.class);
 		projectileClasses.put("onyx", EntityOnyx.class);
+		projectileClasses.put("pomson", EntityProjectileSimple.class);
+		projectileClasses.put("grapplinghook", EntityGrapplingHook.class);
 	}
 }

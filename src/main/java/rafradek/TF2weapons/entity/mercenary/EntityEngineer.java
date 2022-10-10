@@ -1,6 +1,9 @@
 package rafradek.TF2weapons.entity.mercenary;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,17 +11,22 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.WeaponsCapability;
+import rafradek.TF2weapons.entity.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.entity.ai.EntityAIRepair;
 import rafradek.TF2weapons.entity.ai.EntityAISetup;
+import rafradek.TF2weapons.entity.ai.EntityAIUseWrangler;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemWrangler;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityEngineer extends EntityTF2Character {
 
@@ -34,10 +42,23 @@ public class EntityEngineer extends EntityTF2Character {
 		//this.ammoLeft = 24;
 		this.experienceValue = 15;
 		this.rotation = 15;
+		this.tasks.addTask(2, new EntityAIUseWrangler(this, 1, 50f));
 		this.tasks.addTask(3, new EntityAIRepair(this, 1, 2f));
 		this.tasks.addTask(5, new EntityAISetup(this));
 		this.tasks.removeTask(wander);
 		this.getCapability(TF2weapons.WEAPONS_CAP, null).setMetal(TF2ConfigVars.maxMetalEngineer);
+		this.targetTasks.addTask(5,new EntityAINearestChecked(this, EntityLivingBase.class, true, false, this::isValidTarget, true, false) {
+			
+			@Override
+			public boolean shouldExecute() {
+				return loadout.getStackInSlot(1).getItem() instanceof ItemWrangler && super.shouldExecute();
+			}
+			
+			@Override
+			protected double getTargetDistance() {
+		        return 50;
+		    }
+		});
 		if (this.attack != null)
 			attack.setRange(20);
 	}
@@ -93,14 +114,25 @@ public class EntityEngineer extends EntityTF2Character {
 	}
 
 	public void switchSlot(int slot, boolean noAmmoSwitch, boolean forceRefresh) {
-		if (this.grabbed != null) {
-			int buildType = this.grabbedid + 1;
-			this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
-					new ItemStack(TF2weapons.itemBuildingBox, 1, 16 + buildType * 2 + this.getEntTeam()));
-			this.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());
+		super.switchSlot(slot, noAmmoSwitch, forceRefresh);
+	}
+	
+	public boolean shouldUseWrangler() {
+		if (this.sentry != null && this.sentry.getHealth() > 0.3 * this.sentry.getMaxHealth() && this.getAttackTarget() != null && this.sentry.getAmmo() > 0
+				&& this.loadout.getStackInSlot(1).getItem() instanceof ItemWrangler) {
+			EntityLivingBase target = this.getAttackTarget();
+			double sentryRange = this.sentry.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getAttributeValue();
+			sentryRange *= sentryRange;
+			
+			if (sentryRange < this.sentry.getDistanceSq(this.getAttackTarget())) {
+				Entity entityhit = TF2Util.pierce(world, sentry, sentry.posX, sentry.posY+sentry.getEyeHeight(), sentry.posZ, 
+					target.posX, target.posY+target.getEyeHeight(), target.posZ, false, 0, false).get(0).entityHit;
+				
+				return entityhit == target || entityhit == this ||(entityhit != null && !TF2Util.isOnSameTeam(sentry, entityhit));
+			}
 		}
-		else
-			super.switchSlot(slot, noAmmoSwitch, forceRefresh);
+		
+		return false;
 	}
 	
 	public void onLivingUpdate() {
@@ -118,17 +150,20 @@ public class EntityEngineer extends EntityTF2Character {
 				}
 			};
 		}
-		if (this.getMaximumHomeDistance() == 0 && this.getDistanceSq(this.getHomePosition()) < 1) {
-			this.setHomePosAndDistance(this.getHomePosition(), 8);
-		}
-		if (this.getOwner() != null && this.getOrder() == Order.FOLLOW && this.grabbed == null) {
-			if (this.sentry != null && this.sentry.isEntityAlive() && !this.sentry.isMini() && this.getDistanceSq(sentry) < 16) {
-				this.sentry.grab();
+		if (!this.world.isRemote) {
+			if (this.getMaximumHomeDistance() == 0 && this.getDistanceSq(this.getHomePosition()) < 1) {
+				this.setHomePosAndDistance(this.getHomePosition(), 8);
 			}
-			else if (this.dispenser != null && this.dispenser.isEntityAlive() && this.getDistanceSq(dispenser) < 16) {
-				this.dispenser.grab();
+			if (this.getOwner() != null && this.getOrder() == Order.FOLLOW && this.grabbed == null) {
+				if (this.sentry != null && this.sentry.isEntityAlive() && !this.sentry.isMini() && this.getDistanceSq(sentry) < 16) {
+					this.sentry.grab();
+				}
+				else if (this.dispenser != null && this.dispenser.isEntityAlive() && this.getDistanceSq(dispenser) < 16) {
+					this.dispenser.grab();
+				}
 			}
 		}
+		
 		/*else if(this.getOwner() != null && this.getOrder() == Order.HOLD) {
 			if (this.sentry != null && this.sentry.isEntityAlive() && !this.isWithinHomeDistanceFromPosition(this.sentry.getPosition())) {
 				this.sentry.detonate();

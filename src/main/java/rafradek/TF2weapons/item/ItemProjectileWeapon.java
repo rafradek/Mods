@@ -9,9 +9,12 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityDummy;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntityScout;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityBall;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.util.PropertyType;
@@ -40,10 +43,13 @@ public class ItemProjectileWeapon extends ItemWeapon {
 						.newInstance(world);
 				proj.initProjectile(living, hand, stack);
 				// proj.setIsCritical(thisCritical);
-				world.spawnEntity(proj);
-				proj.trace();
 				proj.setCritical(thisCritical);
+				this.onProjectileShoot(stack, proj, living, world, thisCritical, hand);
+				world.spawnEntity(proj);
 				proj.infinite = this.isProjectileInfinite(living, stack);
+				proj.trace();
+				
+				
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
@@ -54,7 +60,11 @@ public class ItemProjectileWeapon extends ItemWeapon {
 		// living.rotationPitch=oldPitch;
 		// living.rotationYawHead=oldYaw;
 	}
-
+	
+	public void onProjectileShoot(ItemStack stack, EntityProjectileBase proj, EntityLivingBase living, World world, int thisCritical, EnumHand hand) {
+		
+	}
+	
 	@Override
 	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
@@ -62,8 +72,11 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				&& getData(stack).getName().equals("sandmanball")) {
 			EntityBall ball = (EntityBall) source.getImmediateSource();
 			double reduce=Math.max(0.5, (25-((EntityLivingBase) target).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue())/25D);
+			if (attacker instanceof EntityTF2Character) {
+				reduce *= ((EntityTF2Character)attacker).scaleWithDifficulty(0.5f, 1);
+			}
 			if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 1100) {
-				TF2Util.stun((EntityLivingBase) target,
+				TF2Util.stun((EntityLivingBase) target, 
 						(int) (160 * reduce), true);
 				target.playSound(TF2Sounds.WEAPON_STUN_MAX, 4f, 1f);
 			} else if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 12) {
@@ -81,9 +94,13 @@ public class ItemProjectileWeapon extends ItemWeapon {
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return /*
-		 * (((!(living instanceof EntityPlayer) || ) ||
-		 * TF2ProjectileHandler.nextShotPos.containsKey(living))||world.
-		 * isRemote
-		 */super.canFire(world, living, stack) && !(living instanceof EntityScout && ((EntityScout)living).usedSlot == 2 && ((EntityScout)living).ballCooldown > 0);
+				 * (((!(living instanceof EntityPlayer) || ) ||
+				 * TF2ProjectileHandler.nextShotPos.containsKey(living))||world.
+				 * isRemote
+				 */super.canFire(world, living, stack) && !(living instanceof EntityScout && ((EntityScout)living).usedSlot == 2 && ((EntityScout)living).ballCooldown > 0);
+	}
+	
+	public void onOverload(ItemStack stack, EntityLivingBase owner, EnumHand hand) {
+		this.shoot(stack, owner, owner.world, -1, hand);
 	}
 }

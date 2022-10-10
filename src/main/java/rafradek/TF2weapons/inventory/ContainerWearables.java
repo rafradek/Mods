@@ -23,17 +23,22 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemAmmoBelt;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ContainerWearables extends Container {
+	
+	public static final String[] CURRENCY_EMPTY= {TF2weapons.MOD_ID+":items/money_small_empty",TF2weapons.MOD_ID+":items/money_medium_empty",TF2weapons.MOD_ID+":items/money_big_empty"};
+	
 	private static final EntityEquipmentSlot[] VALID_EQUIPMENT_SLOTS = new EntityEquipmentSlot[] {
 			EntityEquipmentSlot.HEAD, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.FEET };
 	/** The crafting matrix inventory. */
@@ -55,6 +60,7 @@ public class ContainerWearables extends Container {
 		TF2PlayerCapability.get(player).wearablesAttrib[2].removeAll(SharedMonsterAttributes.ARMOR);
 		TF2PlayerCapability.get(player).wearablesAttrib[2].removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS);
 
+		//slot 0-3
 		for (int k = 0; k < 4; ++k) {
 			final EntityEquipmentSlot entityequipmentslot = VALID_EQUIPMENT_SLOTS[k];
 			this.addSlotToContainer(new Slot(playerInventory, 36 + (3 - k), 8, 8 + k * 18) {
@@ -88,6 +94,7 @@ public class ContainerWearables extends Container {
 				}
 			});
 		}
+		//slot 4-5
 		for (int k = 0; k < 2; k++) {
 			int l = k;
 			this.addSlotToContainer(new Slot(wearables, k, 77, 8 + k * 18) {
@@ -105,7 +112,7 @@ public class ContainerWearables extends Container {
 							ContainerWearables.this.player.getAttributeMap().removeAttributeModifiers(TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l]);
 							TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[l] = null;
 						}
-
+						
 						if (!this.getStack().isEmpty()) {
 							Multimap<String, AttributeModifier> modifiers = this.getStack().getAttributeModifiers(EntityEquipmentSlot.HEAD);
 							ContainerWearables.this.player.getAttributeMap().applyAttributeModifiers(modifiers);
@@ -136,7 +143,47 @@ public class ContainerWearables extends Container {
 				}
 			});
 		}
+		//slot 6
+		this.addSlotToContainer(new Slot(wearables, 2, 77, 44) {
+			/**
+			 * Check if the stack is a valid item for this slot. Always true
+			 * beside for the armor slots.
+			 */
+			@Override
+			public boolean isItemValid(@Nullable ItemStack stack) {
+				return stack.getItem() instanceof ItemFromData && stack.getItem().isValidArmor(stack, EntityEquipmentSlot.CHEST, player);
+			}
 
+			@Override
+			@Nullable
+			@SideOnly(Side.CLIENT)
+			public String getSlotTexture() {
+				return ItemArmor.EMPTY_SLOT_NAMES[EntityEquipmentSlot.CHEST.getIndex()];
+			}
+			
+			@Override
+			public void onSlotChanged() {
+				super.onSlotChanged();
+				if (!ContainerWearables.this.player.world.isRemote) {
+					// System.out.println("changed");
+					if (TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] != null) {
+						ContainerWearables.this.player.getAttributeMap().removeAttributeModifiers(TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2]);
+						TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] = null;
+					}
+					
+					if (!this.getStack().isEmpty()) {
+						Multimap<String, AttributeModifier> modifiers = this.getStack().getAttributeModifiers(EntityEquipmentSlot.CHEST);
+						modifiers.removeAll(SharedMonsterAttributes.ARMOR.getName());
+						modifiers.removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName());
+						ContainerWearables.this.player.getAttributeMap().applyAttributeModifiers(modifiers);
+						TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] = modifiers;
+					}
+					TF2Util.sendTracking(
+							new TF2Message.WearableChangeMessage(ContainerWearables.this.player, this.getSlotIndex(), this.getStack()),ContainerWearables.this.player);
+				}
+			}
+		});
+		//slot 7
 		this.addSlotToContainer(new Slot(wearables, 3, 154, 28) {
 			@Override
 			public int getSlotStackLimit() {
@@ -154,14 +201,14 @@ public class ContainerWearables extends Container {
 				else
 					return stack.getItem() instanceof ItemAmmoBelt;
 			}
-
+			
 			@Override
 			public void onSlotChanged() {
-
+				
 				super.onSlotChanged();
 				addSlotAmmo();
 			}
-
+			
 			@Override
 			@Nullable
 			@SideOnly(Side.CLIENT)
@@ -169,13 +216,16 @@ public class ContainerWearables extends Container {
 				return TF2weapons.MOD_ID + ":items/ammo_belt_empty";
 			}
 		});
+		//slot 8-34
 		for (int l = 0; l < 3; ++l)
 			for (int j1 = 0; j1 < 9; ++j1)
 				this.addSlotToContainer(new Slot(playerInventory, j1 + (l + 1) * 9, 8 + j1 * 18, 84 + l * 18));
 
+		//slot 35-43
 		for (int i1 = 0; i1 < 9; ++i1)
 			this.addSlotToContainer(new Slot(playerInventory, i1, 8 + i1 * 18, 142));
-
+		
+		//slot 44
 		this.addSlotToContainer(new Slot(wearables, 4, 77, 62) {
 			/**
 			 * Check if the stack is a valid item for this slot. Always true
@@ -193,45 +243,43 @@ public class ContainerWearables extends Container {
 				return TF2weapons.MOD_ID + ":items/token_empty";
 			}
 		});
-		this.addSlotToContainer(new Slot(wearables, 2, 77, 44) {
-			/**
-			 * Check if the stack is a valid item for this slot. Always true
-			 * beside for the armor slots.
-			 */
-			@Override
-			public boolean isItemValid(@Nullable ItemStack stack) {
-				return stack.getItem() instanceof ItemFromData && stack.getItem().isValidArmor(stack, EntityEquipmentSlot.CHEST, player);
-			}
+		
+		//slot 45-47
+		for (int k = 0; k < 3; k++) {
+			int l = k;
+			this.addSlotToContainer(new Slot(wearables, k+5, 175, 8 + k * 18) {
 
-			@Override
-			@Nullable
-			@SideOnly(Side.CLIENT)
-			public String getSlotTexture() {
-				return ItemArmor.EMPTY_SLOT_NAMES[EntityEquipmentSlot.CHEST.getIndex()];
-			}
-
-			@Override
-			public void onSlotChanged() {
-				super.onSlotChanged();
-				if (!ContainerWearables.this.player.world.isRemote) {
-					// System.out.println("changed");
-					if (TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] != null) {
-						ContainerWearables.this.player.getAttributeMap().removeAttributeModifiers(TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2]);
-						TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] = null;
+				@Override
+				public void onSlotChanged() {
+					super.onSlotChanged();
+					if (!ContainerWearables.this.player.world.isRemote) {
+						// System.out.println("changed");
+						
 					}
-
-					if (!this.getStack().isEmpty()) {
-						Multimap<String, AttributeModifier> modifiers = this.getStack().getAttributeModifiers(EntityEquipmentSlot.CHEST);
-						modifiers.removeAll(SharedMonsterAttributes.ARMOR.getName());
-						modifiers.removeAll(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName());
-						ContainerWearables.this.player.getAttributeMap().applyAttributeModifiers(modifiers);
-						TF2PlayerCapability.get(ContainerWearables.this.player).wearablesAttrib[2] = modifiers;
-					}
-					TF2Util.sendTracking(
-							new TF2Message.WearableChangeMessage(ContainerWearables.this.player, this.getSlotIndex(), this.getStack()),ContainerWearables.this.player);
 				}
-			}
-		});
+
+				/**
+				 * Check if the stack is a valid item for this slot. Always true
+				 * beside for the armor slots.
+				 */
+				@Override
+				public boolean isItemValid(@Nullable ItemStack stack) {
+					if (stack.isEmpty())
+						return false;
+					else
+						return stack.getItem() instanceof ItemMoney && stack.getMetadata() == l;
+				}
+
+				@Override
+				@Nullable
+				@SideOnly(Side.CLIENT)
+				public String getSlotTexture() {
+					return CURRENCY_EMPTY[l];
+				}
+			});
+		}
+				
+		//slot 48-56
 		for (int i = 0; i < 3; ++i)
 			for (int j = 0; j < 3; ++j)
 				addSlotToContainer(new SlotItemHandler( nullInv,
@@ -242,6 +290,8 @@ public class ContainerWearables extends Container {
 						return false;
 					}
 				});
+		
+		
 		addSlotAmmo();
 		//if(wearables.getStackInSlot(3)!=null && wearables.getStackInSlot(3).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
 		//this.addSlotAmmo();
@@ -310,10 +360,10 @@ public class ContainerWearables extends Container {
 			itemstack = itemstack1.copy();
 			EntityEquipmentSlot entityequipmentslot = EntityLiving.getSlotForItemStack(itemstack);
 
-			if (index >= 0 && index < 4) {
+			if (index >= 0 && index < 8) {
 				if (!this.mergeItemStack(itemstack1, 8, 44, false))
 					return ItemStack.EMPTY;
-			} else if (index >= 4 && index < 7) {
+			} else if (index >= 45 && index < 58) {
 				if (!this.mergeItemStack(itemstack1, 8, 44, false))
 					return ItemStack.EMPTY;
 			} else if (itemstack1.getItem() instanceof ItemBackpack && index >= 8) {
@@ -337,7 +387,10 @@ public class ContainerWearables extends Container {
 				if (!this.mergeItemStack(itemstack1, 4, 6, false))
 					return ItemStack.EMPTY;
 			} else if (itemstack1.getItem() instanceof ItemAmmo && ammoBelt && index < 44) {
-				if (!this.mergeItemStack(itemstack1, 45, 54, false))
+				if (!this.mergeItemStack(itemstack1, 48, 57, false))
+					return ItemStack.EMPTY;
+			} else if (itemstack1.getItem() instanceof ItemMoney) {
+				if (!this.mergeItemStack(itemstack1, itemstack1.getItemDamage()+45, itemstack1.getItemDamage()+48, false))
 					return ItemStack.EMPTY;
 			} else if (index >= 8 && index < 35) {
 				if (!this.mergeItemStack(itemstack1, 35, 44, false))

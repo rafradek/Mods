@@ -15,6 +15,7 @@ import net.minecraft.util.EnumFacing.AxisDirection;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
@@ -41,20 +42,19 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		TEAM
 	}
 	public TileEntityOverheadDoor() {
-
+		
 	}
 
 	public float getUpSpeed() {
 		return 0.25f;
 	}
-
+	
 	public float getDownSpeed() {
 		return 0.25f;
 	}
-
-	@Override
+	
 	public void invalidate() {
-
+		
 		if (this.hasWorld()) {
 			for (EnumFacing facing: EnumFacing.HORIZONTALS) {
 				BlockPos sidepos = this.pos.offset(facing);
@@ -67,11 +67,11 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		}
 		super.invalidate();
 	}
-
+	
 	@Override
 	public void update() {
 
-
+		
 		if (minBounds == null)
 			minBounds = this.pos;
 		if (minBounds != null ) {
@@ -86,33 +86,33 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 				this.minBounds = new BlockPos(this.minBounds.getX(),this.pos.getY(),this.minBounds.getZ());
 			}
 		}
-
+		
 		if (!this.world.isRemote && this.allow != null && !powered) {
-			hasEntity = this.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(this.maxBounds, this.minBounds).grow(2, 1, 2), input -> {
+			hasEntity = this.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(this.maxBounds, this.minBounds).grow(2, 1, 2), input -> { 
 				return (allow == Allow.PLAYER && input instanceof EntityPlayer) || (allow == Allow.TEAM && input.getTeam() == team) || (allow == Allow.ENTITY && input instanceof EntityLivingBase);
 			}).size() > 0;
-
-
+			
+			
 		}
 		else
 			hasEntity = false;
 		this.motion = 0;
 		boolean isEntity = powered || this.hasEntity || this.entitySome || this.clientOpen;
-
+		
 		if (isEntity && !this.entitySome && !this.world.isRemote)
 			this.updateAmountScrolled(15, false);
-
+		
 		if (isEntity && amountScrolled > 0.25) {
 			this.motion = -this.getUpSpeed();
-
+			
 		}
 		if (!isEntity && !entitySome && pos.getY() - this.minBounds.getY() + 1 > amountScrolled) {
 			this.motion = this.getDownSpeed();
-
+			
 		}
 		if (this.motion != 0) {
 			amountScrolled += this.motion;
-
+			
 		}
 		if (lastIsEntity != isEntity) {
 			this.world.addBlockEvent(this.pos, this.getBlockType(), 1, isEntity ? 1 : 0);
@@ -120,42 +120,42 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 				this.updateAmountScrolled(15, true);
 			}
 		}
-
+		
 		boolean isClosed = this.world.getBlockState(this.minBounds).getBlock() == this.getBlockType();
 		//this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, !isClosed));
 		if (isClosed && pos.getY() - this.minBounds.getY() + 1 > amountScrolled) {
 			if (!this.world.isRemote) {
-				for (int y = pos.getY()-1; y >= this.minBounds.getY(); y--) {
-					//IBlockState state = this.world.getBlockState(pos);
-					BlockPos doorpos = new BlockPos(pos.getX(), y, pos.getZ());
-					if (this.world.getBlockState(doorpos).getBlock() == this.getBlockType())
-						this.world.setBlockToAir(doorpos);
-				}
-				this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, true));
+			for (int y = pos.getY()-1; y >= this.minBounds.getY(); y--) {
+				//IBlockState state = this.world.getBlockState(pos);
+				BlockPos doorpos = new BlockPos(pos.getX(), y, pos.getZ());
+				if (this.world.getBlockState(doorpos).getBlock() == this.getBlockType())
+					this.world.setBlockToAir(doorpos);
+			}
+			this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, true));
 			}
 		}
 		else if (!isClosed && pos.getY() - this.minBounds.getY() + 1<= amountScrolled) {
-
+			
 			IBlockState state = this.world.getBlockState(pos).withProperty(BlockOverheadDoor.HOLDER, false).withProperty(BlockOverheadDoor.SLIDING, false);
 			for (int y = pos.getY()-1; y >= this.minBounds.getY(); y--) {
 				BlockPos doorpos = new BlockPos(pos.getX(), y, pos.getZ());
 				if (this.world.isAirBlock(doorpos)) {
 					if (!this.world.isRemote)
-						this.world.setBlockState(doorpos, state);
+					this.world.setBlockState(doorpos, state);
 				}
-
+					
 				else
 					this.minBounds = new BlockPos(pos.getX(),doorpos.getY()+1,pos.getZ());
 			}
 			if (!this.world.isRemote)
-				this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, false));
+			this.world.setBlockState(pos, this.world.getBlockState(pos).withProperty(BlockOverheadDoor.SLIDING, false));
 		}
 		//System.out.println("done"+this.minBounds.getY()+" "+this.pos.getY()+" ");
 		this.lastIsEntity = isEntity;
 		this.tickTime = this.world.getTotalWorldTime();
 		entitySome = false;
 	}
-
+	
 	public boolean isPowered() {
 		return this.hasEntity || this.powered || this.clientOpen || this.entitySome;
 	}
@@ -195,15 +195,14 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 				break;
 		}
 	}
-
-	@Override
+	
 	public void onLoad()
-	{
-		updateMasterStatus();
-	}
-
+    {
+        updateMasterStatus();
+    }
+	
 	public void updateMasterStatus()
-	{
+    {
 		EnumFacing facing = this.world.getBlockState(pos).getValue(BlockHorizontal.FACING).rotateAround(Axis.Y);
 		if (facing.getAxisDirection() == AxisDirection.NEGATIVE)
 			facing = facing.getOpposite();
@@ -233,10 +232,10 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 			Vec3i offset = facing.getDirectionVec();
 			offset = new BlockPos(offset.getX()*i, offset.getY()*i, offset.getZ()*i);
 			BlockPos nearpos = this.pos.add(offset);
-
+			
 			if (this.world.getBlockState(nearpos).getBlock() == this.getBlockType()) {
 				TileEntity ent = this.world.getTileEntity(nearpos);
-
+				
 				if (ent instanceof TileEntityOverheadDoor && ((TileEntityOverheadDoor)ent).master) {
 					BlockPos pos = ((TileEntityOverheadDoor)ent).maxBounds;
 					pos = TF2Util.setValueOnAxis(pos, facing.getAxis(), Math.max(TF2Util.getValueOnAxis(pos, facing.getAxis()), TF2Util.getValueOnAxis(this.pos, facing.getAxis())));
@@ -254,11 +253,10 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		//this.master = true;
 		this.minBounds = minBounds;
 		this.maxBounds = maxBounds;
-	}
-
-	@Override
+    }
+	
 	public boolean receiveClientEvent(int id, int type)
-	{
+    {
 		if (id == 1 ) {
 			if (this.world.isRemote) {
 				if (type == 0)
@@ -269,45 +267,41 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 			return true;
 		}
 		return super.receiveClientEvent(id, type);
-	}
-
-	@Override
+    }
+	
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate)
-	{
-		return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockOverheadDoor.HOLDER);
-	}
-
-	@Override
+    {
+        return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockOverheadDoor.HOLDER);
+    }
+	
 	public net.minecraft.util.math.AxisAlignedBB getRenderBoundingBox()
-	{
+    {
 		if (this.minBounds == null)
 			return new AxisAlignedBB(pos);
 		else
 			return new AxisAlignedBB(pos, this.minBounds).grow(1);
-	}
-
-	@Override
+    }
+	
 	public NBTTagCompound writeToNBT(NBTTagCompound compound)
-	{
+    {
 		super.writeToNBT(compound);
-		//compound.setBoolean("Master", this.master);
+        //compound.setBoolean("Master", this.master);
 		if (team != null)
 			compound.setString("Team", this.team.getName());
 		if (allow != null)
 			compound.setByte("Allow", (byte) this.allow.ordinal());
-		return compound;
-	}
-
-	@Override
+        return compound;
+    }
+	
 	public void readFromNBT(NBTTagCompound compound)
-	{
+    {
 		super.readFromNBT(compound);
 		//this.master = compound.getBoolean("Master");
 		if (this.hasWorld() && compound.hasKey("Team"))
 			this.team = this.world.getScoreboard().getTeam(compound.getString("Team"));
 		if (compound.hasKey("Allow"))
 			this.allow = Allow.values()[compound.getByte("Allow")];
-	}
+    }
 
 	public boolean setController(String string) {
 		this.dropController();
@@ -339,10 +333,9 @@ public class TileEntityOverheadDoor extends TileEntity implements ITickable{
 		}
 		this.getWorld().spawnEntity( new EntityItem(this.world,this.pos.getX(), this.pos.getY(), this.pos.getZ(),new ItemStack(TF2weapons.itemDoorController, 1, meta)));
 	}
-
-	@Override
+	
 	protected void setWorldCreate(World worldIn)
-	{
-		this.setWorld(worldIn);
-	}
+    {
+        this.setWorld(worldIn);
+    }
 }

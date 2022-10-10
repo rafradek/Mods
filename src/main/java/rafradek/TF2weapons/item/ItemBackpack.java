@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.enchantment.EnumEnchantmentType;
@@ -15,6 +16,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -31,7 +34,7 @@ import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemBackpack extends ItemFromData {
-
+	
 	private UUID ARMOR_MOD = UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E");
 	private UUID MAX_HEALTH_MOD = UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
 	private UUID ARMOR_TOUGHNESS_MOD = UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
@@ -65,7 +68,7 @@ public class ItemBackpack extends ItemFromData {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		return (double) (stack.getTagCompound().getShort("Cooldown") > 0 ? stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack) : super.getDurabilityForDisplay(stack));
 	}
-
+	
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
@@ -94,21 +97,23 @@ public class ItemBackpack extends ItemFromData {
 	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
 		this.onArmorTickAny(world, player, itemStack);
 	}
-
-	@Override
-	public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
-		return EntityEquipmentSlot.CHEST;
-	}
-
-	@Override
-	public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
+	
+    public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
+        return EntityEquipmentSlot.CHEST;
+    }
+    
+    public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
 		return stack.getTagCompound().getShort("Cooldown") == 0 ? ItemFromData.getData(stack).getInt(PropertyType.WEAR) : 0;
 	}
+	
+    public int getCooldown(ItemStack stack) {
+    	return 1200;
+    }
 
-	public int getCooldown(ItemStack stack) {
-		return 1200;
-	}
-
+    public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+    	return ItemStack.EMPTY;
+    }
+    
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {
@@ -128,21 +133,20 @@ public class ItemBackpack extends ItemFromData {
 			}
 		}
 	}
-
-	@Override
+	
 	public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.enchantment.Enchantment enchantment)
-	{
-		return super.canApplyAtEnchantingTable(stack, enchantment)
-				|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR || enchantment.type == EnumEnchantmentType.WEARABLE;
-	}
-
+    {
+        return super.canApplyAtEnchantingTable(stack, enchantment) 
+        		|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR || enchantment.type == EnumEnchantmentType.WEARABLE;
+    }
+	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)
 			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
-		return new ActionResult<>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}
-
+	
 	public static ItemStack getBackpack(EntityLivingBase living) {
 		if (living.hasCapability(TF2weapons.INVENTORY_CAP, null) && living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2).getItem() instanceof ItemBackpack) {
 			return living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2);

@@ -1,10 +1,12 @@
 package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -17,8 +19,10 @@ import rafradek.TF2weapons.entity.ai.EntityAIAirblast;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFlameThrower;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
+import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -47,19 +51,17 @@ public class EntityPyro extends EntityTF2Character {
 		return TF2weapons.lootPyro;
 	}
 
-	@Override
 	public float[] getDropChance() {
 		return new float[] { 0.062f, 0.12f, 0.11f };
 	}
-
-	@Override
+	
 	protected void addWeapons() {
 		super.addWeapons();
-
+		
 		if (this.isGiant()) {
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1),MapList.nameToAttribute.get("FireRateBonus"),0.42f);
 		}
-
+		
 		if (ItemFromData.getData(this.getItemStackFromSlot(EntityEquipmentSlot.HEAD)).getName().equals("head_prize") && this.rand.nextInt(3) == 0)
 			this.setCustomNameTag("Pywwo OwO");
 	}
@@ -84,8 +86,10 @@ public class EntityPyro extends EntityTF2Character {
 	public void onLivingUpdate() {
 
 		if(!this.world.isRemote && this.getAttackTarget() != null){
-			if(this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon){
-				if(this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64)){
+			if(this.getDiff()>1 ){
+				boolean isFlareGun=this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon;
+				if((isFlareGun && (this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64))) || 
+						(!isFlareGun && this.getAttackTarget().isPotionActive(MobEffects.FIRE_RESISTANCE)) ){
 					//System.out.println("Shotgun switch");
 					this.switchSlot(1);
 					//this.ammoLeft++;
@@ -103,19 +107,19 @@ public class EntityPyro extends EntityTF2Character {
 				this.getWepCapability().setRageActive(RageType.PHLOG, true, 2f);
 				this.playSound(ItemFromData.getSound(weapon, PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
 			}
-
+			
 			ItemStack backpack = ItemBackpack.getBackpack(this);
 			if (!this.world.isRemote && backpack.getItem() instanceof ItemJetpack) {
 				if (this.getDistanceSq(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
 					((ItemJetpack)backpack.getItem()).activateJetpack(backpack, this, true);
-
+					
 				}
 			}
 		}
 		super.onLivingUpdate();
 	}
-
-
+	
+	
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -181,7 +185,6 @@ public class EntityPyro extends EntityTF2Character {
 	 * super.getAttributeModifier(attribute)*1.5f; } return
 	 * super.getAttributeModifier(attribute); }
 	 */
-	@Override
 	public int getClassIndex() {
 		return 2;
 	}

@@ -4,18 +4,25 @@ import java.util.List;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemHandlerHelper;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 
 public class ItemTF2 extends Item {
 
 	public static final String[] NAMES = new String[] { "ingotCopper", "ingotLead", "ingotAustralium", "scrapMetal",
-			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat", "logicBoard", "strangifier"};
+			"reclaimedMetal", "refinedMetal", "nuggetAustralium", "key", "crate", "randomWeapon", "randomHat", "logicBoard", "robotPartsMedium", "robotPartsGiant"};
 
 	public ItemTF2() {
 		this.setHasSubtypes(true);
@@ -50,7 +57,27 @@ public class ItemTF2 extends Item {
 		if(stack.hasTagCompound() && stack.getTagCompound().hasKey("Token")) {
 			tooltip.add(ItemToken.CLASS_NAMES[stack.getTagCompound().getByte("Token")]);
 		}
+		if (stack.getMetadata() == 12 || stack.getMetadata() == 13)
+			tooltip.add("Right click to gain robot parts");
 	}
 	
+	@Override
+	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
+		ItemStack stack = living.getHeldItem(hand);
+		if (stack.getMetadata() == 12 || stack.getMetadata() == 13) {
+			if (!world.isRemote) {
+				int notDropPiece = living.getRNG().nextInt(ItemRobotPart.LEVEL.length);
+				for (int i = 0; i < ItemRobotPart.LEVEL.length; i++) {
+					if (i != notDropPiece)
+						ItemHandlerHelper.giveItemToPlayer(living, new ItemStack(TF2weapons.itemRobotPart,
+								stack.getMetadata() == 13 ? TileEntityRobotDeploy.GIANT_REQUIRE[ItemRobotPart.LEVEL[i]] :TileEntityRobotDeploy.NORMAL_REQUIRE[ItemRobotPart.LEVEL[i]],i), 0);
+				}
+				stack.shrink(1);
+			}
+			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
+		}
+		else
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+	}
 	
 }

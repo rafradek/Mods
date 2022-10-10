@@ -21,8 +21,10 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -31,6 +33,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
@@ -41,8 +44,8 @@ public class TF2Explosion extends Explosion {
 	private Random explosionRNG = new Random();
 	public World world;
 	/** A list of ChunkPositions of blocks affected by this explosion */
-	public List<BlockPos> affectedBlockPositions = new ArrayList<>();
-	public HashMap<Entity, Float> affectedEntities = new HashMap<>();
+	public List<BlockPos> affectedBlockPositions = new ArrayList<BlockPos>();
+	public HashMap<Entity, Float> affectedEntities = new HashMap<Entity, Float>();
 	private Entity directHit;
 	/** whether or not the explosion sets fire to blocks around it */
 	public boolean isFlaming;
@@ -58,7 +61,7 @@ public class TF2Explosion extends Explosion {
 	private float harvestDamage;
 	private float pushScale;
 	private SoundEvent sound;
-
+	
 	public TF2Explosion(World world, Entity exploder, double x, double y, double z, float size, Entity direct,
 			float harvestDamage,float pushScale, SoundEvent sound) {
 		super(world, exploder, x, y, z, size, false, true);
@@ -97,7 +100,7 @@ public class TF2Explosion extends Explosion {
 							d2 /= d3;
 							float f = TF2ConfigVars.destTerrain == 2
 									? this.explosionSize * (0.7F + this.world.rand.nextFloat() * 0.6F)
-											: (this.harvestDamage / 64);
+									: (this.harvestDamage / 64);
 							double d4 = this.explosionX;
 							double d6 = this.explosionY;
 							double d8 = this.explosionZ;
@@ -111,8 +114,8 @@ public class TF2Explosion extends Explosion {
 										float f2 = this.exploder != null
 												? this.exploder.getExplosionResistance(this, this.world, blockpos,
 														iblockstate)
-														: iblockstate.getBlock().getExplosionResistance(world, blockpos,
-																(Entity) null, this);
+												: iblockstate.getBlock().getExplosionResistance(world, blockpos,
+														(Entity) null, this);
 										f -= (f2 + 0.3F) * 0.3F;
 									}
 
@@ -149,12 +152,13 @@ public class TF2Explosion extends Explosion {
 		List<Entity> list = this.world.getEntitiesWithinAABB(Entity.class,
 				new AxisAlignedBB(j, j1, k1, k, l, i1),new Predicate<Entity>(){
 
-			@Override
-			public boolean apply(Entity input) {
-				return input != exploder && !input.isImmuneToExplosions() && (input.canBeAttackedWithItem() || TF2ConfigVars.destTerrain == 2)
-						&& TF2Util.canHit(getExplosivePlacedBy(), input);
-			}
-
+					@Override
+					public boolean apply(Entity input) {
+						// TODO Auto-generated method stub
+						return input != exploder && !input.isImmuneToExplosions() && (input.canBeAttackedWithItem() || TF2ConfigVars.destTerrain == 2) 
+								&& TF2Util.canHit(getExplosivePlacedBy(), input);
+					}
+			
 		});
 		net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.world, this, list, f3);
 		Vec3d Vec3d = new Vec3d(this.explosionX, this.explosionY, this.explosionZ);
@@ -206,15 +210,13 @@ public class TF2Explosion extends Explosion {
 					// * d8);
 					// entity.addVelocity(2, 2, 2);
 					d11 = d11 * 0.5 + 0.5;
-					if (entity.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
-						entity.getCapability(TF2weapons.WEAPONS_CAP, null).setExpJump(true);
-					}
+					
 					if (entity instanceof EntityPlayerMP) {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),
 						// (EntityPlayerMP) entity);
-
-
+						
+						
 						this.getKnockbackMap().put(entity, move.scale(d11));
 						// entity.getDataWatcher().updateObject(29,
 						// Byte.valueOf((byte) 1));
@@ -237,7 +239,7 @@ public class TF2Explosion extends Explosion {
 		if (sound != null) {
 			this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ,
 					sound, SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F,
-							1.0F);
+					1.0F);
 		}
 
 		if (this.isSmoking)
@@ -284,8 +286,8 @@ public class TF2Explosion extends Explosion {
 		if (this.isFlaming)
 			for (BlockPos blockpos1 : this.affectedBlockPositions)
 				if (this.world.getBlockState(blockpos1).getMaterial() == Material.AIR
-				&& this.world.getBlockState(blockpos1.down()).isFullBlock()
-				&& this.explosionRNG.nextInt(3) == 0)
+						&& this.world.getBlockState(blockpos1.down()).isFullBlock()
+						&& this.explosionRNG.nextInt(3) == 0)
 					this.world.setBlockState(blockpos1, Blocks.FIRE.getDefaultState());
 	}
 
@@ -294,9 +296,9 @@ public class TF2Explosion extends Explosion {
 	 * { double d0 = 1.0D / ((p_72842_2_.maxX - p_72842_2_.minX) * 2.0D + 1.0D);
 	 * double d1 = 1.0D / ((p_72842_2_.maxY - p_72842_2_.minY) * 2.0D + 1.0D);
 	 * double d2 = 1.0D / ((p_72842_2_.maxZ - p_72842_2_.minZ) * 2.0D + 1.0D);
-	 *
+	 * 
 	 * if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) { int i = 0; int j = 0;
-	 *
+	 * 
 	 * for (float f = 0.0F; f <= 1.0F; f = (float)(f + d0)) { for (float f1 =
 	 * 0.0F; f1 <= 1.0F; f1 = (float)(f1 + d1)) { for (float f2 = 0.0F; f2 <=
 	 * 1.0F; f2 = (float)(f2 + d2)) { double d3 = p_72842_2_.minX +
@@ -307,9 +309,9 @@ public class TF2Explosion extends Explosion {
 	 * false, true, false); IBlockState
 	 * state=this.world.getBlockState(mop.getBlockPos()); if (mop ==
 	 * null||state.getBlock()==Blocks.SNOW_LAYER) { ++i; }
-	 *
+	 * 
 	 * ++j; } } }
-	 *
+	 * 
 	 * return (float)i / (float)j; } else { return 0.0F; } }
 	 */
 	public float getBlockDensity(Vec3d origin, AxisAlignedBB p_72842_2_) {

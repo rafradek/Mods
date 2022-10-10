@@ -74,11 +74,11 @@ public class EntityDispenser extends EntityBuilding {
 	private static final DataParameter<Float> RANGE = EntityDataManager.createKey(EntityDispenser.class,
 			DataSerializers.FLOAT);
 	public ItemStackHandler items = new ItemStackHandler(9);
-
+	
 	public HashMap<ItemStack, Float> fillMeter = new HashMap<>();
 	public int food;
 	private ItemStack currRepairItem;
-
+	
 	public static final int MAX_METAL = 400;
 
 	public EntityDispenser(World worldIn) {
@@ -97,19 +97,19 @@ public class EntityDispenser extends EntityBuilding {
 		List<EntityLivingBase> targetList = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
 				this.getEntityBoundingBox().grow(2f * this.getRange(), 1.5 * this.getRange(), 2 * this.getRange()), new Predicate<EntityLivingBase>() {
 
-			@Override
-			public boolean apply(EntityLivingBase input) {
+					@Override
+					public boolean apply(EntityLivingBase input) {
 
-				return !(input instanceof EntityBuilding) && EntityDispenser.this != input
-						&& ((getOwner() != null && WeaponsCapability.get(getOwner()).dispenserPlayer && input instanceof EntityPlayer
-						&& input.getTeam() == null)
-								|| TF2Util.isOnSameTeam(EntityDispenser.this, input));
-			}
+						return !(input instanceof EntityBuilding) && EntityDispenser.this != input
+								&& ((getOwner() != null && WeaponsCapability.get(getOwner()).dispenserPlayer && input instanceof EntityPlayer
+										&& input.getTeam() == null)
+										|| TF2Util.isOnSameTeam(EntityDispenser.this, input));
+					}
 
-		});
+				});
 		if (!this.world.isRemote) {
 			this.reloadTimer--;
-
+			
 			if (this.reloadTimer <= 0 && this.getMetal() < MAX_METAL) {
 				int metalAmount = TF2ConfigVars.fastMetalProduction ? 30 : 21;
 				metalAmount = Math.min(MAX_METAL - this.getMetal(), metalAmount + this.getLevel() * (metalAmount / 3));
@@ -124,7 +124,7 @@ public class EntityDispenser extends EntityBuilding {
 				ItemStack foodItem = TF2Util.getFirstItem(this.items, stack -> {
 					return stack.getItem() instanceof ItemFood;
 				});
-
+				
 				if(!foodItem.isEmpty()) {
 					this.food += ((ItemFood)foodItem.getItem()).getHealAmount(foodItem);
 					foodItem.shrink(1);
@@ -134,7 +134,7 @@ public class EntityDispenser extends EntityBuilding {
 				int level = this.getLevel();
 				if (living.getHealth() < living.getMaxHealth() && this.consumeEnergy(this.getMinEnergy()))
 					living.heal(0.025f + 0.025f * level);
-
+				
 				if (this.giveAmmoTimer == 0) {
 					if (living instanceof EntityPlayer) {
 						FoodStats stats = ((EntityPlayer) living).getFoodStats();
@@ -148,7 +148,7 @@ public class EntityDispenser extends EntityBuilding {
 							}
 						}
 					}
-
+					
 					if (living instanceof EntityEngineer || living instanceof EntityPlayer) {
 						int metal = living.getCapability(TF2weapons.WEAPONS_CAP, null).getMetal();
 						int metalUse = Math.min(30 + this.getLevel() * 10,
@@ -158,14 +158,14 @@ public class EntityDispenser extends EntityBuilding {
 					}
 					if (living instanceof EntityTF2Character) {
 						((EntityTF2Character)living).restoreAmmo(0.1f+this.getLevel()*0.1f);
-
+					
 					}
 					Predicate<ItemStack> test = stack -> {
 						return !stack.isEmpty() && (stack.getItem().isRepairable() || (stack.isItemStackDamageable() && !TF2ConfigVars.oldDispenser))
-								&& stack.getItemDamage() != 0 && !TF2ConfigVars.repairBlacklist.contains(stack.getItem().getRegistryName());
+						&& stack.getItemDamage() != 0 && !TF2ConfigVars.repairBlacklist.contains(stack.getItem().getRegistryName());
 					};
 					ItemStack heldItem = TF2Util.getFirstItem(items, test);
-
+					
 					if (heldItem.isEmpty() && test.apply(living.getHeldItemMainhand()))
 						heldItem = living.getHeldItemMainhand();
 					if (!heldItem.isEmpty()) {
@@ -184,7 +184,7 @@ public class EntityDispenser extends EntityBuilding {
 								Math.min(
 										(int) (heldItem.getItemDamage() / repairMult) + 1,
 										this.getMetal()));
-
+						
 						//System.out.println("use: "+metalUse);
 						int repairUses = this.getRepairMaterialUses(heldItem, Math.min(heldItem.getItemDamage(), (int) (metalUse * repairMult)), 1f / enchantCost);
 						//System.out.println("repair use: "+repairUses);
@@ -193,7 +193,7 @@ public class EntityDispenser extends EntityBuilding {
 								this.setMetal(this.getMetal() - metalUse);
 								heldItem.setItemDamage(
 										heldItem.getItemDamage() - repairUses);
-
+	
 								if (living instanceof EntityPlayerMP)
 									((EntityPlayerMP) living).updateHeldItem();
 							}
@@ -225,13 +225,18 @@ public class EntityDispenser extends EntityBuilding {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (player == this.getOwner() && hand == EnumHand.MAIN_HAND) {
-			if (!this.world.isRemote)
-				FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			if (!this.world.isRemote) {
+				if (TF2ConfigVars.disableBuildingGui)
+					this.grab();
+				else
+					FMLNetworkHandler.openGui(player, TF2weapons.instance, 5, world, this.getEntityId(), 0, 0);
+			}
+			
 			return true;
 		}
 		return true;
 	}
-
+	
 	@Override
 	public SoundEvent getSoundNameForState(int state) {
 		switch (state) {
@@ -252,7 +257,7 @@ public class EntityDispenser extends EntityBuilding {
 				this.currRepairItem = uses.getKey();
 				float materialCost = this.getMaterialCost(tool) * matCostMult;
 				float use = ((float)maxRepair / (float)tool.getMaxDamage()) * materialCost;
-
+				
 				float maxUse = Math.min(uses.getValue(), use);
 				uses.setValue(uses.getValue() - maxUse);
 				if (uses.getValue() == 0)
@@ -260,13 +265,13 @@ public class EntityDispenser extends EntityBuilding {
 				return (int) (maxUse * (tool.getMaxDamage() / materialCost));
 			}
 		}
-
+		
 		for (int i = 0; i < this.items.getSlots(); i++) {
 			if(tool.getItem().getIsRepairable(tool, this.items.getStackInSlot(i))) {
-
+				
 				this.currRepairItem = this.items.getStackInSlot(i);
 				this.items.extractItem(i, 1, false);
-
+				
 				float materialCost = this.getMaterialCost(tool) * matCostMult;
 				float use = ((float)maxRepair / (float)tool.getMaxDamage()) * materialCost;
 				float maxUse = Math.min(1, use);
@@ -276,8 +281,7 @@ public class EntityDispenser extends EntityBuilding {
 		}
 		return 0;
 	}
-
-	@SuppressWarnings("deprecation")
+	
 	public float getMaterialCost(ItemStack stack) {
 		float cost = 0;
 		for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
@@ -286,7 +290,7 @@ public class EntityDispenser extends EntityBuilding {
 					if(ing.apply(this.currRepairItem)) {
 						cost++;
 					}
-
+						
 				}
 				if(cost != 0) {
 					break;
@@ -325,14 +329,14 @@ public class EntityDispenser extends EntityBuilding {
 		List<EntityDispenser> targetList = world.getEntitiesWithinAABB(EntityDispenser.class,
 				living.getEntityBoundingBox().grow(8D, 6D, 8D), new Predicate<EntityDispenser>() {
 
-			@Override
-			public boolean apply(EntityDispenser input) {
+					@Override
+					public boolean apply(EntityDispenser input) {
 
-				return !input.isDisabled() && input.dispenserTarget != null
-						&& input.dispenserTarget.contains(living);
-			}
+						return !input.isDisabled() && input.dispenserTarget != null
+								&& input.dispenserTarget.contains(living);
+					}
 
-		});
+				});
 		return !targetList.isEmpty();
 	}
 
@@ -350,7 +354,7 @@ public class EntityDispenser extends EntityBuilding {
 	public void setMetal(int amount) {
 		this.dataManager.set(METAL, amount);
 	}
-
+	
 	public float getRange() {
 		return this.dataManager.get(RANGE);
 	}
@@ -358,23 +362,21 @@ public class EntityDispenser extends EntityBuilding {
 	public void setRange(float range) {
 		this.dataManager.set(RANGE, range);
 	}
-
+	
 	@Override
 	public void upgrade() {
 		super.upgrade();
 		this.setMetal(this.getMetal() + 25);
 	}
 
-	@Override
 	public int getMinEnergy() {
 		return this.getOwnerId() != null ? TF2ConfigVars.dispenserUseEnergy : 0;
 	}
-
+	
 	public boolean isItemStackAccepted(ItemStack stack) {
 		return stack.isItemStackDamageable();
 	}
-
-	@Override
+	
 	public void drawFromBlock(BlockPos pos, TileEntity ent, EnumFacing facing) {
 		super.drawFromBlock(pos, ent, facing);
 		EnumFacing front = EnumFacing.getDirectionFromEntityLiving(pos, this);
@@ -383,7 +385,7 @@ public class EntityDispenser extends EntityBuilding {
 			if (front == facing || front == facing.getOpposite())
 				for(int i = 0; i < items.getSlots(); i++) {
 					if (items.getStackInSlot(i).isItemStackDamageable() && items.getStackInSlot(i).getItemDamage() == 0)
-						items.insertItem(i, ItemHandlerHelper.insertItem(handler, items.extractItem(i, 1, false), false), false);
+					items.insertItem(i, ItemHandlerHelper.insertItem(handler, items.extractItem(i, 1, false), false), false);
 				}
 			else{
 				for(int i = 0; i < handler.getSlots(); i++) {
@@ -392,12 +394,11 @@ public class EntityDispenser extends EntityBuilding {
 			}
 		}
 	}
-
-	@Override
+	
 	public boolean shouldUseBlocks() {
 		return true;
 	}
-
+	
 	@Override
 	protected SoundEvent getHurtSound(DamageSource source) {
 		return null;
@@ -408,18 +409,17 @@ public class EntityDispenser extends EntityBuilding {
 		return TF2Sounds.MOB_DISPENSER_DEATH;
 	}
 
-	@Override
 	public int getIronDrop() {
 		return 0 + this.getLevel();
 	}
-
+	
 	@Override
 	public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		super.writeEntityToNBT(par1NBTTagCompound);
 
 		par1NBTTagCompound.setTag("Items", this.items.serializeNBT());
 		par1NBTTagCompound.setShort("Metal", (short) this.getMetal());
-
+		
 		par1NBTTagCompound.setShort("Food", (short) food);
 		NBTTagList fill = new NBTTagList();
 		for(Entry<ItemStack, Float> entry : this.fillMeter.entrySet()) {
@@ -446,123 +446,120 @@ public class EntityDispenser extends EntityBuilding {
 			this.fillMeter.put(new ItemStack(values.getCompoundTag("Item")), values.getFloat("Fill"));
 		}
 	}
-
-	@Override
+	
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier)
-	{
+    {
 		super.dropEquipment(wasRecentlyHit, lootingModifier);
 		for(int i = 0; i < this.items.getSlots(); i++) {
 			this.entityDropItem(this.items.getStackInSlot(i), 0);
 		}
-	}
-
-	@Override
+    }
+	
 	public int getBuildingID() {
 		return 1;
 	}
-
-	@Override
+	
 	@SideOnly(Side.CLIENT)
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
-		// GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
-		// gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
-		// event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
+        // GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        // gui.drawTexturedModalRect(event.getResolution().getScaledWidth()/2-64,
+        // event.getResolution().getScaledHeight()/2+35, 0, 0, 128, 40);
 		ClientProxy.setColor(TF2Util.getTeamColor(this), 0.7f, 0, 0.25f, 0.8f);
-		gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
-		gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
-		/*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        gui.drawTexturedModalRect(20, 2, 0, 112,124, 44);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
+        gui.drawTexturedModalRect(0, 0, 0, 0, 144, 48);
+        /*renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.0D, 0.1875D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 76, 0.0D).tex(0.5625D, 0.1875D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 + 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.5625D, 0D).endVertex();
         renderer.pos(event.getResolution().getScaledWidth() / 2 - 72, event.getResolution().getScaledHeight() / 2 + 28, 0.0D).tex(0.0D, 0D).endVertex();
         tessellator.draw();*/
 
-		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(19, 48, 0.0D).tex(0.75D, 0.75D).endVertex();
-		renderer.pos(65, 48, 0.0D).tex(0.9375D, 0.75D).endVertex();
-		renderer.pos(65, 0, 0.0D).tex(0.9375D, 0.5625D).endVertex();
-		renderer.pos(19, 0, 0.0D).tex(0.75D, 0.5625D).endVertex();
-		tessellator.draw();
-
-		if (!this.isEntityAlive())
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(19, 48, 0.0D).tex(0.75D, 0.75D).endVertex();
+        renderer.pos(65, 48, 0.0D).tex(0.9375D, 0.75D).endVertex();
+        renderer.pos(65, 0, 0.0D).tex(0.9375D, 0.5625D).endVertex();
+        renderer.pos(19, 0, 0.0D).tex(0.75D, 0.5625D).endVertex();
+        tessellator.draw();
+        
+        if (!this.isEntityAlive())
 			return;
 
-		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
-		renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
-		renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
-		renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
-		tessellator.draw();
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(67, 22, 0.0D).tex(0.9375D, 0.1875D).endVertex();
+        renderer.pos(83, 22, 0.0D).tex(1D, 0.1875D).endVertex();
+        renderer.pos(83, 6, 0.0D).tex(1D, 0.125D).endVertex();
+        renderer.pos(67, 6, 0.0D).tex(0.9375D, 0.125D).endVertex();
+        tessellator.draw();
 
-		double imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
-		renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-		renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
-		renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
-		renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
-		renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
-		tessellator.draw();
+        double imagePos = this.getLevel() == 1 ? 0.3125D : this.getLevel() == 2 ? 0.375D : 0.4375D;
+        renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        renderer.pos(50, 18, 0.0D).tex(0.9375D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 18, 0.0D).tex(1D, 0.0625D + imagePos).endVertex();
+        renderer.pos(66, 2, 0.0D).tex(1D, imagePos).endVertex();
+        renderer.pos(50, 2, 0.0D).tex(0.9375D, imagePos).endVertex();
+        tessellator.draw();
 
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
-			renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
-			renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
-			renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
-			renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
-			tessellator.draw();
-		}
-		float health = this.getHealth() / this.getMaxHealth();
-		if (health > 0.33f) {
-			GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
-		} else {
-			GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
-		}
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		for (int i = 0; i < health * 8; i++) {
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+            renderer.pos(67, 42, 0.0D).tex(0.9375D, 0.125D).endVertex();
+            renderer.pos(83, 42, 0.0D).tex(1D, 0.125D).endVertex();
+            renderer.pos(83, 26, 0.0D).tex(1D, 0.0625).endVertex();
+            renderer.pos(67, 26, 0.0D).tex(0.9375D, 0.0625).endVertex();
+            tessellator.draw();
+        }
+        float health = this.getHealth() / this.getMaxHealth();
+        if (health > 0.33f) {
+        	GlStateManager.color(0.9F, 0.9F, 0.9F, 1F);
+        } else {
+        	GlStateManager.color(0.85F, 0.0F, 0.0F, 1F);
+        }
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        for (int i = 0; i < health * 8; i++) {
 
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
-			renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
-			renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
-			renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
-			tessellator.draw();
-		}
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(19, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 39 - i * 5, 0.0D).endVertex();
+            renderer.pos(9, 43 - i * 5, 0.0D).endVertex();
+            renderer.pos(19, 43 - i * 5, 0.0D).endVertex();
+            tessellator.draw();
+        }
 
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
-		renderer.begin(7, DefaultVertexFormats.POSITION);
-		renderer.pos(85, 21, 0.0D).endVertex();
-		renderer.pos(140, 21, 0.0D).endVertex();
-		renderer.pos(140, 7, 0.0D).endVertex();
-		renderer.pos(85, 7, 0.0D).endVertex();
-		tessellator.draw();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.33F);
+        renderer.begin(7, DefaultVertexFormats.POSITION);
+        renderer.pos(85, 21, 0.0D).endVertex();
+        renderer.pos(140, 21, 0.0D).endVertex();
+        renderer.pos(140, 7, 0.0D).endVertex();
+        renderer.pos(85, 7, 0.0D).endVertex();
+        tessellator.draw();
 
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 41, 0.0D).endVertex();
-			renderer.pos(140, 41, 0.0D).endVertex();
-			renderer.pos(140, 27, 0.0D).endVertex();
-			renderer.pos(85, 27, 0.0D).endVertex();
-			tessellator.draw();
-		}
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(140, 41, 0.0D).endVertex();
+            renderer.pos(140, 27, 0.0D).endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
 
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
-		renderer.begin(7, DefaultVertexFormats.POSITION);
-		renderer.pos(85, 21, 0.0D).endVertex();
-		renderer.pos(85 + this.getMetal() * 0.1375D, 21, 0.0D).endVertex();
-		renderer.pos(85 + this.getMetal() * 0.1375D, 7, 0.0D).endVertex();
-		renderer.pos(85, 7, 0.0D).endVertex();
-		tessellator.draw();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 0.85F);
+        renderer.begin(7, DefaultVertexFormats.POSITION);
+        renderer.pos(85, 21, 0.0D).endVertex();
+        renderer.pos(85 + this.getMetal() * 0.1375D, 21, 0.0D).endVertex();
+        renderer.pos(85 + this.getMetal() * 0.1375D, 7, 0.0D).endVertex();
+        renderer.pos(85, 7, 0.0D).endVertex();
+        tessellator.draw();
 
-		if (this.getLevel() < 3) {
-			renderer.begin(7, DefaultVertexFormats.POSITION);
-			renderer.pos(85, 41, 0.0D).endVertex();
-			renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
-			.endVertex();
-			renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
-			.endVertex();
-			renderer.pos(85, 27, 0.0D).endVertex();
-			tessellator.draw();
-		}
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
+        if (this.getLevel() < 3) {
+            renderer.begin(7, DefaultVertexFormats.POSITION);
+            renderer.pos(85, 41, 0.0D).endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 41, 0.0D)
+                    .endVertex();
+            renderer.pos(85 + this.getProgress() * 0.275D, 27, 0.0D)
+                    .endVertex();
+            renderer.pos(85, 27, 0.0D).endVertex();
+            tessellator.draw();
+        }
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 }

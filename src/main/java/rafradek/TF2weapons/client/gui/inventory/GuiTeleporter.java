@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -32,7 +33,7 @@ public class GuiTeleporter extends GuiContainer {
 
 	private static final ResourceLocation GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/container/building.png");
-
+	
 	public GuiTeleporter(EntityTeleporter teleporter) {
 		super(new ContainerEnergy(teleporter, Minecraft.getMinecraft().player.inventory));
 		this.teleporter = teleporter;
@@ -49,14 +50,14 @@ public class GuiTeleporter extends GuiContainer {
 		this.teleportField=new GuiTextField(5, fontRenderer, this.width / 2 -40, this.height / 2 - 40, 30, 20);
 		this.teleportField.setMaxStringLength(3);
 		this.teleportField.setFocused(true);
-
+		
 		this.teleportField.setText(Integer.toString(this.channel+1));
 		this.buttonList
-		.add(this.teleportUpBtn = new GuiButton(1, this.width / 2 - 60, this.height / 2 - 40, 20, 20, "+"));
+				.add(this.teleportUpBtn = new GuiButton(1, this.width / 2 - 60, this.height / 2 - 40, 20, 20, "+"));
 		this.buttonList
-		.add(this.teleportDownBtn = new GuiButton(2, this.width / 2 - 10, this.height / 2 - 40, 20, 20, "-"));
+				.add(this.teleportDownBtn = new GuiButton(2, this.width / 2 - 10, this.height / 2 - 40, 20, 20, "-"));
 		this.buttonList
-		.add(this.exitToggle = new GuiButton(3, this.width / 2 + 10, this.height / 2 - 40, 50, 20, "Exit"));
+				.add(this.exitToggle = new GuiButton(3, this.width / 2 + 10, this.height / 2 - 40, 50, 20, "Exit"));
 		this.buttonList.add(this.grab = new GuiButton(4, this.guiLeft + 86, this.guiTop + 90, 40, 20,
 				I18n.format("gui.teleporter.drop", new Object[0])));
 		if (this.channel == 127) {
@@ -69,8 +70,8 @@ public class GuiTeleporter extends GuiContainer {
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
-		if (button.enabled)
-
+		if (button.enabled) 
+			
 			if (button.id == 1) {
 				channel++;
 				if (channel >= EntityTeleporter.TP_PER_PLAYER - 1)
@@ -86,20 +87,19 @@ public class GuiTeleporter extends GuiContainer {
 			else if (button.id == 4) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-				.sendToServer(new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 127, 0));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 127, 0));
 			}
 	}
-
-	@Override
+	
 	public void onGuiClosed()
-	{
+    {
 		TF2weapons.network.sendToServer(
-				new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 0, channel));
+				new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 0, channel));
 		TF2weapons.network.sendToServer(
-				new TF2Message.GuiConfigMessage(this.teleporter.getEntityId(), (byte) 1, exit ? 1 : 0));
+				new TF2Message.BuildingConfigMessage(this.teleporter.getEntityId(), (byte) 1, exit ? 1 : 0));
 		super.onGuiClosed();
-	}
-
+    }
+	
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
@@ -116,18 +116,18 @@ public class GuiTeleporter extends GuiContainer {
 			channel = MathHelper.clamp(Integer.parseInt(this.teleportField.getText())-1,0,EntityTeleporter.TP_PER_PLAYER-2);
 		}
 		catch (Exception ex) {
-
+			
 		}
 		//this.teleportField.setText(Integer.toString(channel));
 	}
-
+	
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 		this.fontRenderer.drawString(I18n.format("gui.teleporter.info", new Object[0]), 8, 5, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 25, 99, 4210752);
 	}
-
+	
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();

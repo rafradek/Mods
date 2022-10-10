@@ -13,10 +13,12 @@ import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -25,13 +27,16 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.SPacketEntity;
+import net.minecraft.network.play.server.SPacketEntityVelocity;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -41,10 +46,12 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2ConfigVars;
+import rafradek.TF2weapons.TF2EventsCommon;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
@@ -54,6 +61,7 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.IEntityTF2;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
+import rafradek.TF2weapons.item.ItemPDA;
 import rafradek.TF2weapons.item.ItemSapper;
 import rafradek.TF2weapons.util.PlayerPersistStorage;
 import rafradek.TF2weapons.util.TF2Util;
@@ -76,18 +84,18 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			DataSerializers.BYTE);
 	protected static final DataParameter<Optional<UUID>> OWNER_UUID = EntityDataManager.createKey(EntityBuilding.class,
 			DataSerializers.OPTIONAL_UNIQUE_ID);
-
+	
 	private static final Logger LOGGER = LogManager.getLogger();
-
+	
 	public static final UUID UPGRADE_HEALTH_UUID= UUID.fromString("1184831d-b1dc-40c8-86e6-34fa8f30bada");
-
+	
 	public static final DamageSource DETONATE = new DamageSource("detonate").setDamageBypassesArmor().setDamageIsAbsolute();
 	public static final int SENTRY_COST = 130;
 	public static final int DISPENSER_COST = 100;
 	public static final int TELEPORTER_COST = 50;
 	public static final int SENTRY_MINI_COST = 100;
 	public static final int SENTRY_DISPOSABLE_COST = 60;
-
+	
 	public EntityLivingBase owner;
 	public BuildingSound buildingSound;
 	public int wrenchBonusTime;
@@ -104,7 +112,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public boolean fromPDA;
 	private int disposableID = -1;
 	public UUID ownerEntityID;
-
+	
 	public EntityBuilding(World worldIn) {
 		super(worldIn);
 		this.applyTasks();
@@ -133,11 +141,11 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public int getMaxLevel() {
 		return 3;
 	}
-
+	
 	@Override
 	public void notifyDataManagerChange(DataParameter<?> key) {
 		this.adjustSize();
-
+		
 		// System.out.println("Watcher update: "+data);
 		if (!this.world.isRemote && CONSTRUCTING.equals(key)) {
 			this.setSoundState(this.dataManager.get(CONSTRUCTING) >= this.getConstructionTime()? 0 : 25);
@@ -166,30 +174,37 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		}
 		return false;
 	}
-
+	
 	@Override
 	public ItemStack getPickedResult(RayTraceResult target) {
 		ItemStack stack = new ItemStack(TF2weapons.itemBuildingBox, 1,
 				(this instanceof EntitySentry ? 18 : (this instanceof EntityDispenser ? 20 : 22)) + this.getEntTeam());
-
+		
 		return stack;
 	}
-
+	
 	public void grab() {
 		if(!this.isDisabled() && this.disposableID == -1) {
+			boolean grabbed = true;
 			if (this.owner instanceof EntityEngineer) {
 				NBTTagCompound tag = new NBTTagCompound();
 				this.writeEntityToNBT(tag);
 				((EntityEngineer)this.owner).grabbed=tag;
 				((EntityEngineer)this.owner).grabbedid = this.getBuildingID();
-				((EntityEngineer)this.owner).switchSlot(0);
+				((EntityEngineer)this.owner).loadout.getStackInSlot(3).getTagCompound().setByte("Building", (byte) (this.getBuildingID()+1));
+				((EntityEngineer)this.owner).switchSlot(3);
 			}
 			else if (this.fromPDA) {
-				NBTTagCompound tag = new NBTTagCompound();
-				this.writeEntityToNBT(tag);
-				TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carrying = tag;
-				TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carryingType = this.getBuildingID();
-				this.clearReferences();
+				int slotpda = TF2Util.getFirstItemSlot(((EntityPlayer) this.getOwner()).inventory, stack -> stack.getItem() instanceof ItemPDA);
+				if (slotpda != -1) {
+					NBTTagCompound tag = new NBTTagCompound();
+					this.writeEntityToNBT(tag);
+					TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carrying = tag;
+					TF2PlayerCapability.get((EntityPlayer) this.getOwner()).carryingType = this.getBuildingID();
+					this.clearReferences();
+				}
+				else
+					grabbed = false;
 			}
 			else {
 				ItemStack stack = this.getPickedResult(null);
@@ -198,9 +213,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				this.writeEntityToNBT(stack.getTagCompound().getCompoundTag("SavedEntity"));
 				this.entityDropItem(stack, 0);
 			}
-
+			
 			// System.out.println("Saved:
 			// "+stack.getTagCompound().getCompoundTag("SavedEntity"));
+			if (grabbed)
 			this.setDead();
 		}
 	}
@@ -209,11 +225,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 
 	}
 
-	@Override
 	public boolean isPotionApplicable(PotionEffect potioneffectIn)
-	{
+    {
 		return potioneffectIn.getPotion() == TF2weapons.stun;
-	}
+    }
 	public SoundEvent getSoundNameForState(int state) {
 		return state == 50 ? TF2Sounds.MOB_SAPPER_IDLE : null;
 	}
@@ -267,11 +282,13 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 
 	@Override
 	public UUID getOwnerId() {
+		// TODO Auto-generated method stub
 		return this.dataManager.get(OWNER_UUID).orNull();
 	}
 
 	@Override
 	public EntityLivingBase getOwner() {
+		// TODO Auto-generated method stub
 		if (this.owner != null && !(this.owner instanceof EntityPlayer && this.owner.isDead))
 			return this.owner;
 		else if (this.getOwnerId() != null)
@@ -280,6 +297,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	}
 
 	public void setOwner(EntityLivingBase owner) {
+		// TODO Auto-generated method stub
 		this.owner = owner;
 		if (owner instanceof EntityPlayer){
 			this.ownerName = owner.getName();
@@ -299,7 +317,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		}
 		this.clearReferences();
 	}
-
+	
 	public void clearReferences() {
 		if (this.getOwnerId() != null && this.fromPDA) {
 			if (this.disposableID == -1)
@@ -323,7 +341,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			this.setDead();
 			return;
 		}
-
+			
 		if (!this.world.isRemote && this.engMade && this.getOwnerId() == null && (this.owner == null || this.owner.isDead) && this.ticksNoOwner++ >= 120)
 			this.setHealth(0);
 		else
@@ -331,17 +349,17 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		if (this.motionY > 0)
 			this.motionY = 0;
 		if (!this.world.isRemote) {
-
+			
 			if(this.ticksExisted % 80 == 0) {
 				int j1 = MathHelper.floor(this.rotationYaw * 256.0F / 360.0F);
-				int l1 = MathHelper.floor(this.rotationPitch * 256.0F / 360.0F);
+                int l1 = MathHelper.floor(this.rotationPitch * 256.0F / 360.0F);
 				((WorldServer)this.world).getEntityTracker().sendToTracking(this, new SPacketEntity.S16PacketEntityLook(this.getEntityId(), (byte)j1, (byte)l1, true));
 			}
-
+			
 			if (this.fromPDA && this.ticksExisted % 5 == 0 && this.isEntityAlive()) {
 				PlayerPersistStorage storage = PlayerPersistStorage.get(this.world, this.getOwnerId());
 				if (this.disposableID == -1) {
-					if (storage.buildings[this.getBuildingID()] == null ||
+					if (storage.buildings[this.getBuildingID()] == null || 
 							!storage.buildings[this.getBuildingID()].getFirst().equals(this.getUniqueID())) {
 						this.setHealth(0);
 						this.onDeath(DETONATE);
@@ -359,13 +377,13 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				}
 				//storage.buildings[this.getBuildingID()] = new Tuple<>(this.getUniqueID(),tag);
 			}
-
+			
 			if (this.isSapped())
 				TF2Util.dealDamage(this, this.world, this.sapperOwner, this.sapper, 0,
 						this.sapper.isEmpty() ? 0.14f
 								: ((ItemSapper) this.sapper.getItem()).getWeaponDamage(sapper, this.sapperOwner, this),
-								TF2Util.causeDirectDamage(this.sapper, this.sapperOwner, 0));
-
+						TF2Util.causeDirectDamage(this.sapper, this.sapperOwner));
+			
 			if (this.charge.getStackInSlot(0).hasCapability(CapabilityEnergy.ENERGY, null)) {
 				this.energy.receiveEnergy(this.charge.getStackInSlot(0).getCapability(CapabilityEnergy.ENERGY, null)
 						.extractEnergy(this.energy.receiveEnergy(this.energy.getMaxEnergyStored(), true), false), false);
@@ -375,19 +393,19 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				for (EnumFacing facing : EnumFacing.VALUES) {
 					BlockPos pos = this.getPosition().offset(facing);
 					TileEntity ent = this.world.getTileEntity(pos);
-
+					
 					if (ent != null) {
 						this.drawFromBlock(pos, ent, facing);
 					}
 				}
 		}
-
+		
 		super.onUpdate();
-
+		
 		if(this.isConstructing())
 			this.updateConstruction();
 		this.wrenchBonusTime--;
-
+		
 	}
 
 	public void detonate() {
@@ -397,18 +415,18 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public void drawFromBlock(BlockPos pos, TileEntity ent, EnumFacing facing) {
 		if (ent.hasCapability(CapabilityEnergy.ENERGY, facing.getOpposite())) {
 			this.energy.receiveEnergy(ent.getCapability(CapabilityEnergy.ENERGY, facing.getOpposite())
-					.extractEnergy(this.energy.receiveEnergy(this.energy.getMaxEnergyStored(), true), false), false);
+			.extractEnergy(this.energy.receiveEnergy(this.energy.getMaxEnergyStored(), true), false), false);
 		}
 	}
 
 	public boolean shouldUseBlocks() {
 		return this.energy.getEnergyStored() != this.energy.getMaxEnergyStored() ;
 	}
-
+	
 	public boolean consumeEnergy(int amount) {
 		return this.energy.getEnergyStored() >= amount && this.energy.extractEnergy(amount, true) == amount && this.energy.extractEnergy(amount, false) == amount;
 	}
-
+	
 	public int getMinEnergy() {
 		return 0;
 	}
@@ -418,13 +436,12 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		this.dataManager.set(SAPPED, (byte) 2);
 		this.setSoundState(50);
 	}
-
-	@Override
+	
 	public boolean isAIDisabled()
-	{
-		return super.isAIDisabled() || this.isDisabled();
-	}
-
+    {
+        return super.isAIDisabled() || this.isDisabled();
+    }
+	
 	public boolean isSapped() {
 		return this.dataManager.get(SAPPED) > 0;
 	}
@@ -470,8 +487,14 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		else if(this.getOwnerId() != null){
 			return this.world.getScoreboard().getPlayersTeam(this.ownerName);
 		}
-		return this.getEntTeam() == 0 ? this.world.getScoreboard().getTeam("RED")
-				: this.world.getScoreboard().getTeam("BLU");
+		else {
+			switch(this.getEntTeam()) {
+			case 0: return this.world.getScoreboard().getTeam("RED");
+			case 1: return this.world.getScoreboard().getTeam("BLU");
+			case 2: return this.world.getScoreboard().getTeam("Robots");
+			default: return this.world.getScoreboard().getTeam("RED");
+			}
+		}
 	}
 
 	public int getProgress() {
@@ -480,19 +503,19 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		else
 			return this.dataManager.get(PROGRESS);
 	}
-
+	
 	public void setProgress(int progress) {
 		this.dataManager.set(PROGRESS, progress);
 	}
-
+	
 	public int getInfoEnergy() {
 		return this.dataManager.get(ENERGY);
 	}
-
+	
 	public void setInfoEnergy(int energy) {
 		this.dataManager.set(ENERGY, energy);
 	}
-
+	
 	public int getLevel() {
 		return this.dataManager.get(LEVEL);
 	}
@@ -505,7 +528,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		this.setLevel(this.getLevel() + 1);
 		this.setProgress(0);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
-		.setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * 1.2);
+				.setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * 1.2);
 		this.setHealth(this.getMaxHealth());
 		this.adjustSize();
 	}
@@ -526,7 +549,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 
 		this.dataManager.set(CONSTRUCTING, constr?0:this.getConstructionTime());
 	}
-
+	
 	public void updateConstruction() {
 		if(!this.redeploy)
 			this.heal((this.getConstructionRate()*this.getMaxHealth())/this.getConstructionTime());
@@ -563,9 +586,9 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			par1NBTTagCompound.setString("OwnerName", this.ownerName);
 		}
 		if (this.isDisabled())
-		{
+        {
 			par1NBTTagCompound.setBoolean("NoAI", false);
-		}
+        }
 	}
 
 	@Override
@@ -593,8 +616,8 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			this.dataManager.set(OWNER_UUID, Optional.of(ownerID));
 			this.ownerName = tag.getString("OwnerName");
 			this.getOwner();
-
-
+			
+			
 			this.enablePersistence();
 		}
 	}
@@ -602,7 +625,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public int getBuildingID() {
 		return 0;
 	}
-
+	
 	public float getCollHeight() {
 		return 1f;
 	}
@@ -612,58 +635,60 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	}
 
 	public boolean canUseWrench() {
-		return this.getMaxHealth() > this.getHealth() || this.getLevel() < this.getMaxLevel();
+		return this.canUseWrenchImportant() || this.getLevel() < this.getMaxLevel();
 	}
-	@Override
+	public boolean canUseWrenchImportant() {
+		return this.getMaxHealth() > this.getHealth();
+	}
 	public boolean canBeHitWithPotion()
-	{
-		return false;
-	}
-	@Override
+    {
+        return false;
+    }
 	protected float updateDistance(float p_110146_1_, float p_110146_2_)
-	{
+    {
 		this.renderYawOffset=this.rotationYaw;
 		return p_110146_2_;
-	}
+    }
 	@Override
 	protected void dropFewItems(boolean p_70628_1_, int p_70628_2_) {
 		EntityLivingBase attacker=this.getAttackingEntity();
 		if (this.fromPDA || (TF2Util.isOnSameTeam(attacker, this) && this.getOwnerId() == null))
 			return;
-		if (this.getOwner() instanceof EntityEngineer && ((EntityEngineer)this.getOwner()).buildCount < 3)
-			for (int i = 0; i < this.getIronDrop(); i++)
+		if (!(this.getOwner() instanceof EntityEngineer && ((EntityEngineer)this.getOwner()).buildCount >= 3)) {
+			int count = this.getOwner() instanceof EntityPlayer ? this.getIronDrop() : MathHelper.ceil(this.getIronDrop()/2);
+			for (int i = 0; i < count; i++)
 				this.dropItem(Items.IRON_INGOT, 1);
+		}
 	}
 
-	@Override
 	protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier)
-	{
+    {
 		super.dropEquipment(wasRecentlyHit, lootingModifier);
 		this.entityDropItem(this.charge.getStackInSlot(0), 0);
-	}
-
+    }
+	
 	public int getIronDrop() {
 		return 1 + this.getLevel();
 	}
-
+	
 	@Override
 	protected boolean canDespawn() {
-		return this.getOwnerId() == null;
+		return this.getOwnerId() == null && (this.getOwner() == null || !this.getOwner().isEntityAlive());
 	}
-
+	
 	@SideOnly(Side.CLIENT)
 	public void renderGUI(BufferBuilder renderer, Tessellator tessellator, EntityPlayer player, int width, int height, GuiIngame gui) {
-
+		
 	}
-
+	
 	public int getGuiHeight() {
 		return 48;
 	}
-
+	
 	public int getConstructionTime() {
 		return 21000;
 	}
-
+	
 	public int getConstructionRate() {
 		int i=50;
 		if(this.wrenchBonusTime>0)
@@ -675,56 +700,61 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		//System.out.println("Constr: "+i);
 		return i;
 	}
-
-	@SuppressWarnings("unchecked")
+	
+    @SuppressWarnings("unchecked")
 	@Override
-	@Nullable
-	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-		if (capability == CapabilityEnergy.ENERGY) {
-			return (T) this.energy;
-		}
-		return super.getCapability(capability, facing);
-	}
+    @Nullable
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+        if (capability == CapabilityEnergy.ENERGY) {
+            return (T) this.energy;
+        }
+        return super.getCapability(capability, facing);
+    }
 
-	@Override
-	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
-	{
-		return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
-	}
-
-	public static int getCost(int building, ItemStack wrench) {
-		if (building == 0)
-			return TF2Attribute.getModifier("Weapon Mode", wrench, 0f, null) == 2 ? EntityBuilding.SENTRY_MINI_COST : EntityBuilding.SENTRY_COST;
-		if (building == 1)
-			return EntityBuilding.DISPENSER_COST;
-		else if (building == 4)
-			return EntityBuilding.SENTRY_DISPOSABLE_COST;
-		else
-			return (int) (EntityBuilding.TELEPORTER_COST / TF2Attribute.getModifier("Teleporter Cost", wrench, 1f, null));
-	}
+    @Override
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
+    {
+        return capability == CapabilityEnergy.ENERGY || super.hasCapability(capability, facing);
+    }
+    
+    public static int getCost(int building, ItemStack wrench) {
+    	if (building == 0)
+    		return TF2Attribute.getModifier("Weapon Mode", wrench, 0f, null) == 2 ? EntityBuilding.SENTRY_MINI_COST : EntityBuilding.SENTRY_COST;
+    	if (building == 1)
+    		return EntityBuilding.DISPENSER_COST;
+    	else if (building == 4)
+    		return EntityBuilding.SENTRY_DISPOSABLE_COST;
+    	else
+    		return (int) (EntityBuilding.TELEPORTER_COST / TF2Attribute.getModifier("Teleporter Cost", wrench, 1f, null));
+    }
 
 	@Override
 	public boolean hasHead() {
+		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public AxisAlignedBB getHeadBox() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean hasDamageFalloff() {
+		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isBuilding() {
+		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
-	public boolean isBackStabbable() {
+	public boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
+		// TODO Auto-generated method stub
 		return false;
 	}
 

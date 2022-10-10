@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.block.BlockOverheadDoor;
 import rafradek.TF2weapons.common.TF2Attribute;
@@ -20,7 +21,7 @@ public class TileEntityUpgrades extends TileEntity {
 
 	public static final int UPGRADES_COUNT = 10;
 	public HashMap<TF2Attribute, Integer> attributes = new HashMap<>();
-	public List<TF2Attribute> attributeList = new ArrayList<>();
+	public List<TF2Attribute> attributeList = new ArrayList<TF2Attribute>();
 	private int maxSize;
 	public boolean placed;
 
@@ -73,7 +74,7 @@ public class TileEntityUpgrades extends TileEntity {
 			for (int i = 0; i < attrList.tagCount(); i++)
 				this.attributeList.add(TF2Attribute.attributes[attrList.getIntAt(i)]);
 		}
-
+		
 	}
 
 	@Override
@@ -94,12 +95,11 @@ public class TileEntityUpgrades extends TileEntity {
 		return compound;
 	}
 
-	@Override
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate)
-	{
-		return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockOverheadDoor.HOLDER);
-	}
-
+    {
+        return oldState.getBlock() != newSate.getBlock() || !newSate.getValue(BlockOverheadDoor.HOLDER);
+    }
+	
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
 		// System.out.println("Sending packet");

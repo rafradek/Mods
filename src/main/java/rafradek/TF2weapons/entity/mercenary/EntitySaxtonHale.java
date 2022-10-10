@@ -1,10 +1,11 @@
 package rafradek.TF2weapons.entity.mercenary;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Predicate;
-
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
@@ -32,6 +33,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.village.MerchantRecipe;
 import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.BossInfo;
@@ -42,6 +44,7 @@ import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
+import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.ai.EntityAINearestChecked;
 import rafradek.TF2weapons.entity.ai.EntityAISeek;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
@@ -64,7 +67,10 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	public int jumpCooldown;
 	public boolean endangered;
 	public int lastWeekCheck;
+	
+	private int targetAirborneTicks;
 
+	private int noPathTime = 0;
 	private final BossInfoServer bossInfo = (new BossInfoServer(this.getDisplayName(), BossInfo.Color.PURPLE,
 			BossInfo.Overlay.PROGRESS));
 
@@ -76,6 +82,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.tasks.addTask(7, new EntityAISeek(this));
 		this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, true));
 		this.experienceValue = 1500;
+		this.stepHeight=1f;
 	}
 
 	@Override
@@ -85,11 +92,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	@Override
 	public EntityPlayer getCustomer() {
+		// TODO Auto-generated method stub
 		return trader;
 	}
 
 	@Override
 	public MerchantRecipeList getRecipes(EntityPlayer player) {
+		// TODO Auto-generated method stub
 		if (this.tradeOffers == null || this.world.getTotalWorldTime() / 96000L != this.lastWeekCheck)
 			makeOffers();
 		MerchantRecipeList list = new MerchantRecipeList();
@@ -129,13 +138,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 			int cost = ItemFromData.getData(item).getInt(PropertyType.COST);
 			this.addTradeOffer(item, cost);
 		}
-
+		
 		for (MerchantRecipe toRemove : removeRecipes) {
 			this.tradeOffers.removeIf(recipe -> {
 				return recipe.getItemToBuy().isItemEqual(toRemove.getItemToBuy());
 			});
 		}
-
+		
 		/*ArrayList<TF2Attribute> list = new ArrayList<>(Arrays.asList(TF2Attribute.attributes));
 		list.removeIf(attr -> attr == null || attr.perKill == 0);
 		for (int i = 0; i < 3; i++) {
@@ -151,7 +160,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		}*/
 	}
 
-
+	
 	private void addTradeOffer(ItemStack toBuy, int cost) {
 		cost *= TF2ConfigVars.costMult;
 		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
@@ -159,13 +168,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.tradeOffers.add(new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
 				nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
 	}
-
+	
 	private void addTradeOffer(ItemStack toBuy, int cost, MerchantRecipeList list, int index) {
 		cost *= TF2ConfigVars.costMult;
 		ItemStack ingot = new ItemStack(TF2weapons.itemTF2, cost / 9, 2);
 		ItemStack nugget = new ItemStack(TF2weapons.itemTF2, cost % 9, 6);
 		list.add(index, new MerchantRecipe(ingot.getCount() > 0 ? ingot : nugget,
-				nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
+						nugget.getCount() > 0 ? nugget : ItemStack.EMPTY, toBuy, 0, 100));
 	}
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
@@ -194,12 +203,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.targetTasks.addTask(1, new EntityAINearestChecked(this, EntityLivingBase.class, true, false,
 				new Predicate<EntityLivingBase>() {
 
-			@Override
-			public boolean apply(EntityLivingBase input) {
-				return input instanceof EntityPlayer || input instanceof EntityTF2Character;
-			}
+					@Override
+					public boolean apply(EntityLivingBase input) {
+						// TODO Auto-generated method stub
+						return input instanceof EntityPlayer || input instanceof EntityTF2Character;
+					}
 
-		}, true, false));
+				}, true, false));
 		this.hostile = true;
 	}
 
@@ -209,7 +219,10 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	}
 
 	@Override
-	public void useRecipe(MerchantRecipe recipe) {}
+	public void useRecipe(MerchantRecipe recipe) {
+		// TODO Auto-generated method stub
+
+	}
 
 	@Override
 	public void verifySellingItem(ItemStack stack) {
@@ -221,50 +234,100 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	}
 
+	public void travel(float m1, float m2, float m3) {
+		float move = this.getAIMoveSpeed();
+		super.travel(m1 / move, m2, m3 / move);
+	}
+	
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 		if (!this.world.isRemote) {
 			this.jumpCooldown--;
 
-			if (this.getAttackTarget() == null)
-				this.heal(0.35f);
-
+			if (this.rand.nextInt(20) == 0) {
+				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12*TF2Util.lerp(1.5f, 1, this.getHealth()/this.getMaxHealth()));
+			}
 			this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
 			// System.out.println("Has path: "+this.getNavigator().noPath());
-			List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
-			boolean obscuredView = false;
-			for (AxisAlignedBB box : boxes)
-				if (box.calculateIntercept(this.getPositionVector().addVector(0, this.getEyeHeight(), 0),
-						this.getPositionVector().add(this.getVectorForRotation(0, this.rotationYawHead).addVector(0,
-								this.getEyeHeight(), 0))) != null) {
-					obscuredView = true;
-					break;
+			
+			if (this.getAttackTarget() == null)
+				this.heal(0.35f);
+			else if (this.getAttackTarget().isEntityAlive()) {
+				
+				if (!this.getAttackTarget().onGround) {
+					this.targetAirborneTicks++;
 				}
-
-			if (this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && obscuredView) {
-				this.superJump = true;
-				this.jump();
+				
+				if (!this.onGround) {
+					Vec3d forward = new Vec3d(this.getAttackTarget().posX-this.posX, 0., this.getAttackTarget().posZ-this.posZ).normalize().scale(this.getAIMoveSpeed() * 0.42);
+					this.motionX += forward.x;
+					this.motionZ += forward.z;
+				}
+				
+				List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this, getEntityBoundingBox().grow(1, 0, 1));
+				boolean obscuredView = false;
+				for (AxisAlignedBB box : boxes)
+					if (box.calculateIntercept(this.getPositionVector().addVector(0, this.getEyeHeight(), 0),
+							this.getPositionVector().add(this.getVectorForRotation(0, this.rotationYawHead).addVector(0,
+									this.getEyeHeight(), 0))) != null) {
+						obscuredView = true;
+						break;
+					}
+				
+				if (this.onGround && this.jumpCooldown <= 0) {
+					if (obscuredView)
+						this.superJump();
+					else if (this.targetAirborneTicks > 25) {
+						double height = TF2Util.getHeightAboveGround(this.getAttackTarget(), world, true) ;
+						if (height > 2. && height < 30.)
+							this.superJump();
+						else if (height >= 30.) 
+							this.heal(0.35f);
+					}
+				}
+			}
+			
+			
+			if (this.ticksExisted % 3 == 0) {
+				if(this.getAttackTarget() != null && this.getAttackTarget().isEntityAlive() && this.getNavigator().getPathToEntityLiving(this.getAttackTarget()) == null) {
+					this.noPathTime +=1;
+					Vec3d forward = this.getVectorForRotation(0, this.rotationYawHead);
+					if (this.noPathTime > 2) {
+						for(int x = (int) this.posX; x <= this.posX+forward.x; x++) {
+							for(int y = (int) Math.max(this.getAttackTarget().posY,this.posY-1); y <= this.posY+2; y++) {
+								for(int z = (int) this.posZ; z <= this.posZ+forward.z; z++) {
+									BlockPos pos = new BlockPos(x,y,z);
+									if (this.world.getBlockState(pos).getBlockHardness(world, pos) != -1)
+										this.world.destroyBlock(pos, true);
+								}
+							}
+						}
+						this.noPathTime = 1;
+					}
+				}
+				else
+					this.noPathTime = 0;
 			}
 			if (this.rage > 1) {
 				List<EntityLivingBase> list = this.world.getEntitiesWithinAABB(EntityLivingBase.class,
 						this.getEntityBoundingBox().grow(12, 12, 12), new Predicate<EntityLivingBase>() {
 
-					@Override
-					public boolean apply(EntityLivingBase input) {
-						return !(input instanceof EntitySaxtonHale)
-								&& !(input instanceof EntityPlayer && ((EntityPlayer) input).isCreative())
-								&& input.getDistanceSq(EntitySaxtonHale.this) < 144;
-					}
+							@Override
+							public boolean apply(EntityLivingBase input) {
+								// TODO Auto-generated method stub
+								return !(input instanceof EntitySaxtonHale)
+										&& !(input instanceof EntityPlayer && ((EntityPlayer) input).isCreative())
+										&& input.getDistanceSq(EntitySaxtonHale.this) < 144;
+							}
 
-				});
+						});
 				if (!list.isEmpty()) {
 					this.rage = 0;
 					this.playSound(TF2Sounds.MOB_SAXTON_RAGE, 2.5F, 1F);
 					for (EntityLivingBase living : list)
 						TF2Util.stun(living, 160, false);
-					this.superJump = true;
-					this.jump();
+					this.superJump();
 				}
 			}
 		}
@@ -316,29 +379,33 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	@Override
 	protected float getJumpUpwardsMotion() {
-		if (superJump && jumpCooldown <= 0)
+		if (superJump)
 			return 2.7F;
 		return 0.7F;
 	}
 
+	public void superJump() {
+		if (this.jumpCooldown > 0)
+			return;
+		
+		this.playSound(TF2Sounds.MOB_SAXTON_JUMP, 2F, 1F);
+		this.motionY = 0;
+		
+		this.jumpCooldown = 25;
+		
+		this.superJump = true;
+		super.jump();
+		this.superJump = false;
+	}
+	
 	@Override
 	public void jump() {
 		/*
 		 * if(this.getAttackTarget()!=null&&this.getAttackTarget().posY-this.
 		 * posY>=3){ this.superJump=true; }
 		 */
-		if (superJump && jumpCooldown <= 0)
-			this.playSound(TF2Sounds.MOB_SAXTON_JUMP, 2F, 1F);
+		
 
-		if (this.onGround || this.jumpCooldown <= 0) {
-			this.motionY = 0;
-			super.jump();
-		}
-
-		if (superJump)
-			this.superJump = false;
-
-		this.jumpCooldown = 20;
 	}
 
 	@Override
@@ -348,7 +415,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(50.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(1000.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.8D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.364D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.12D);
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(20D);
 	}
 
@@ -439,9 +506,10 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 				&& player.getHeldItemMainhand().getItem() instanceof ItemMonsterPlacerPlus)
 				&& this.getAttackTarget() == null && this.isEntityAlive() && !this.isTrading() && !this.isChild()
 				&& !player.isSneaking()) {
-			if (this.world.isRemote && player.getTeam() == null && !player.capabilities.isCreativeMode)
+			boolean canTrade = player.getTeam() != null || player.capabilities.isCreativeMode || !TF2ConfigVars.canJoin;
+			if (this.world.isRemote && !canTrade)
 				ClientProxy.displayScreenJoinTeam();
-			else if (!this.world.isRemote && (player.getTeam() != null || player.capabilities.isCreativeMode)
+			else if (!this.world.isRemote && (canTrade)
 					&& (this.tradeOffers == null || !this.tradeOffers.isEmpty())) {
 				this.setCustomer(player);
 				player.displayVillagerTradeGui(this);
@@ -454,6 +522,7 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 	}
 
 	public boolean isTrading() {
+		// TODO Auto-generated method stub
 		return this.trader != null;
 	}
 
@@ -472,11 +541,13 @@ public class EntitySaxtonHale extends EntityCreature implements INpc, IMerchant 
 
 	@Override
 	public World getWorld() {
+		// TODO Auto-generated method stub
 		return this.world;
 	}
 
 	@Override
 	public BlockPos getPos() {
+		// TODO Auto-generated method stub
 		return this.getPos();
 	}
 }

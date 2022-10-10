@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -27,7 +28,7 @@ public class GuiDispenser extends GuiContainer {
 
 	private static final ResourceLocation GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/container/building.png");
-
+	
 	public GuiDispenser(EntityDispenser dispenser) {
 		super(new ContainerDispenser(dispenser, Minecraft.getMinecraft().player.inventory));
 		this.dispenser = dispenser;
@@ -49,7 +50,7 @@ public class GuiDispenser extends GuiContainer {
 			if (button.id == 0) {
 				this.mc.displayGuiScreen(null);
 				TF2weapons.network
-				.sendToServer(new TF2Message.GuiConfigMessage(this.dispenser.getEntityId(), (byte) 127, 1));
+						.sendToServer(new TF2Message.BuildingConfigMessage(this.dispenser.getEntityId(), (byte) 127, 1));
 			}
 	}
 
@@ -59,12 +60,12 @@ public class GuiDispenser extends GuiContainer {
 		this.fontRenderer.drawString(I18n.format("container.dispenser", new Object[0]), 8, 5, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 25, 99, 4210752);
 	}
-
+	
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-
+		
 		this.drawDefaultBackground();
-
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		if(mouseX >= this.guiLeft+7 && mouseX < this.guiLeft+23 && mouseY >= this.guiTop+15 && mouseY < guiTop+75) {
 			if(ClientProxy.buildingsUseEnergy)

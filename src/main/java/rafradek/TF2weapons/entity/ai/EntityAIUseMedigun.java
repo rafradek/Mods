@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.entity.ai;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
@@ -60,6 +61,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		double lookX = this.attackTarget.posX;
 		double lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
 		double lookZ = this.attackTarget.posZ;
+		ItemStack stack = this.entityHost.getHeldItemMainhand();
 		/*boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget);
 		this.entityHost.setJumping(true);
 		if (stay) {
@@ -82,10 +84,10 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		// this.entityHost.getLookHelper().setLookPositionWithEntity(this.attackTarget,
 		// 1.0F, 90.0F);
-		double range = ItemFromData.getData(this.entityHost.getHeldItemMainhand()).getFloat(PropertyType.RANGE);
+		double range = ItemFromData.getData(stack).getFloat(PropertyType.RANGE);
 		if (d0 <= range * range) {
 
-			if (!pressed) {
+			if (!pressed || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() == -1) {
 				pressed = true;
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(this.attackTarget.getEntityId());
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
@@ -94,11 +96,11 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				// System.out.println("coœdo");
 			}
 			else {
-				if((this.attackTarget.getHealth()/this.attackTarget.getMaxHealth() < 0.35F && (this.attackTarget.ticksExisted - this.attackTarget.getRevengeTimer()) < 25)
+				if(((ItemMedigun)stack.getItem()).shouldActivateCharge(stack, this.entityHost, this.attackTarget) 
 						|| (this.attackTarget instanceof EntityPlayer && this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge)) {
-					Potion effect=Potion.getPotionFromResourceLocation(ItemFromData.getData(this.entityHost.getHeldItemMainhand()).getString(PropertyType.EFFECT_TYPE));
-					if (this.attackTarget.getActivePotionEffect(effect) == null)
-					((ItemMedigun)this.entityHost.getHeldItemMainhand().getItem()).startUse(this.entityHost.getHeldItemMainhand(), this.entityHost, this.entityHost.world, 0, 2);
+					Potion effect=((ItemMedigun)stack.getItem()).getPotion(stack, this.entityHost);
+					if (!((ItemMedigun)stack.getItem()).isAlreadyUbered(stack, this.entityHost))
+					((ItemMedigun)stack.getItem()).startUse(stack, this.entityHost, this.entityHost.world, 0, 2);
 				}
 			}
 

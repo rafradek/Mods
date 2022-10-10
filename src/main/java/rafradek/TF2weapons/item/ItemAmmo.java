@@ -14,7 +14,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.common.TF2Attribute;
+import rafradek.TF2weapons.entity.building.EntityDispenser;
+import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.util.PropertyType;
 
 public class ItemAmmo extends Item {
@@ -63,7 +68,7 @@ public class ItemAmmo extends Item {
 
 	@Override
 	public int getItemStackLimit(ItemStack stack) {
-		return AMMO_MAX_STACK[MathHelper.clamp(stack.getMetadata(),0,AMMO_MAX_STACK.length)];
+		return AMMO_MAX_STACK[MathHelper.clamp(stack.getMetadata(),0,AMMO_MAX_STACK.length-1)];
 	}
 
 	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
@@ -76,11 +81,11 @@ public class ItemAmmo extends Item {
 			return left;
 
 			/*if (stack.isEmpty() && living instanceof EntityPlayer) {
-
+				
 				if (living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3) != null){
 					IItemHandlerModifiable invAmmo = (IItemHandlerModifiable) living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
 							.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-
+					
 					for (int i = 0; i < invAmmo.getSlots(); i++) {
 						ItemStack stackInv = invAmmo.getStackInSlot(i);
 						if (stack == stackInv) {
@@ -95,14 +100,14 @@ public class ItemAmmo extends Item {
 		return 0;
 	}
 
-
+	
 	@Override
 	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)
 			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
-		return new ActionResult<>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}
-
+	
 	public int getAmount(ItemStack stack) {
 		return stack.getCount();
 	}

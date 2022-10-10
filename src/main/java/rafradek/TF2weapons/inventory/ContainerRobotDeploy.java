@@ -7,12 +7,19 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.SlotFurnaceFuel;
+import net.minecraft.inventory.SlotFurnaceOutput;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.SlotItemHandler;
 import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.item.ItemAmmo;
+import rafradek.TF2weapons.item.ItemMoney;
 import rafradek.TF2weapons.item.ItemRobotPart;
+import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -26,6 +33,7 @@ public class ContainerRobotDeploy extends Container {
 	public int maxprogress= 500;
 	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
+		// TODO Auto-generated method stub
 		return playerIn.world.getTileEntity(tileEntity.getPos()) != tileEntity ? false
 				: playerIn.getDistanceSq(tileEntity.getPos().getX() + 0.5D, tileEntity.getPos().getY() + 0.5D, tileEntity.getPos().getZ() + 0.5D) <= 64.0D;
 	}
@@ -44,7 +52,7 @@ public class ContainerRobotDeploy extends Container {
 				}
 			});
 		}
-
+		
 		for (int i = 0; i < 3; i++) {
 			this.addSlotToContainer(new SlotItemHandler(tileEntity.parts, i + 0,
 					9 + i * 18, 17) {
@@ -78,14 +86,27 @@ public class ContainerRobotDeploy extends Container {
 				}
 			});
 		}
+		
+		for (int i = 0; i < 3; i++) {
+			this.addSlotToContainer(new SlotItemHandler(tileEntity.money, i,
+					9 + i * 18, 80) {
+				@Override
+				@Nullable
+				@SideOnly(Side.CLIENT)
+				public String getSlotTexture() {
+					return ContainerWearables.CURRENCY_EMPTY[this.getSlotIndex()];
+				}
+			});
+		}
+		
 		for (int i = 0; i < 3; ++i)
 			for (int j = 0; j < 9; ++j)
-				this.addSlotToContainer(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 90 + i * 18));
+				this.addSlotToContainer(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 111 + i * 18));
 
 		for (int k = 0; k < 9; ++k)
-			this.addSlotToContainer(new Slot(playerInventory, k, 8 + k * 18, 148));
+			this.addSlotToContainer(new Slot(playerInventory, k, 8 + k * 18, 169));
 	}
-
+	
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
@@ -108,7 +129,7 @@ public class ContainerRobotDeploy extends Container {
 		if (id == 1)
 			maxprogress = data;
 	}
-
+	
 	@Override
 	@Nullable
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
@@ -119,14 +140,18 @@ public class ContainerRobotDeploy extends Container {
 			ItemStack itemstack1 = slot.getStack();
 			itemstack = itemstack1.copy();
 
-			if (index < 16) {
-				if (!this.mergeItemStack(itemstack1, 16, 52, true))
+			if (index < 19) {
+				if (!this.mergeItemStack(itemstack1, 19, 55, true))
 					return ItemStack.EMPTY;
 
 				slot.onSlotChange(itemstack1, itemstack);
 			} else {
 				if (itemstack1.getItem() instanceof ItemRobotPart) {
 					if (!this.getSlot(9+itemstack1.getItemDamage()).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, itemstack1.getItemDamage()+9, itemstack1.getItemDamage()+10, false))
+						return ItemStack.EMPTY;
+				} 
+				else if (itemstack1.getItem() instanceof ItemMoney) {
+					if (!this.getSlot(16+itemstack1.getItemDamage()).isItemValid(itemstack1) || !this.mergeItemStack(itemstack1, itemstack1.getItemDamage()+16, itemstack1.getItemDamage()+17, false))
 						return ItemStack.EMPTY;
 				} else if (TF2Util.getWeaponUsedByClass(itemstack1) != null) {
 					boolean merged =false;
@@ -138,10 +163,10 @@ public class ContainerRobotDeploy extends Container {
 					}
 					if (!merged)
 						return ItemStack.EMPTY;
-				} else if (index >= 16 && index < 43) {
-					if (!this.mergeItemStack(itemstack1, 43, 52, false))
+				} else if (index >= 19 && index < 46) {
+					if (!this.mergeItemStack(itemstack1, 46, 55, false))
 						return ItemStack.EMPTY;
-				} else if (index >= 43 && index < 52 && !this.mergeItemStack(itemstack1, 16, 43, false)) {
+				} else if (index >= 46 && index < 55 && !this.mergeItemStack(itemstack1, 19, 46, false)) {
 					return ItemStack.EMPTY;
 				}
 			}

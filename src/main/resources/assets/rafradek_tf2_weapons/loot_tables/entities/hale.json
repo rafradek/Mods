@@ -5,13 +5,17 @@
             "rolls": 1,
             "entries": [
                 {
-                    "type": "loot_table",
+                    "type": "item",
                     "name": "rafradek_tf2_weapons:itemTF2",
                     "weight": 1,
                     "functions": [
                         {
                             "function": "set_count",
-                            "count": 64
+                            "count": 32
+                        },
+                        {
+                            "function": "set_data",
+                            "data": 2
                         }
                     ]
                 }

@@ -30,25 +30,26 @@ import rafradek.TF2weapons.entity.boss.EntityHHH;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
 import rafradek.TF2weapons.entity.boss.EntityMonoculus;
 import rafradek.TF2weapons.entity.boss.EntityTF2Boss;
+import rafradek.TF2weapons.entity.mercenary.InvasionEvent;
 
 public class ItemBossSpawner extends Item {
 
 	public static final String[] NAMES = {"hhh","monoculus","merasmus"};
-
+	
 	public static BlockPattern patternHHH = FactoryBlockPattern.start().aisle("NAN","BCB", "NBN").where('A',BlockWorldState.hasState(BlockStateMatcher.forBlock(Blocks.LIT_PUMPKIN)))
 			.where('C',BlockWorldState.hasState(BlockStateMatcher.forBlock(Blocks.OBSIDIAN))).where('B',BlockWorldState.hasState(BlockStateMatcher.forBlock(Blocks.HAY_BLOCK)))
 			.where('N',BlockWorldState.hasState(BlockMaterialMatcher.forMaterial(Material.AIR))).build();
-
+	
 	public ItemBossSpawner() {
 		super();
 		this.setHasSubtypes(true);
 	}
-
+	
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
 		return "item."+NAMES[stack.getMetadata()%NAMES.length];
 	}
-
+	
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
 		// System.out.println(this.getCreativeTab());
@@ -57,16 +58,15 @@ public class ItemBossSpawner extends Item {
 		for (int i = 0; i < NAMES.length; i++)
 			par3List.add(new ItemStack(this,1,i));
 	}
-
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
 		tooltip.add(I18n.format("item."+NAMES[stack.getMetadata()%NAMES.length]+".desc"));
 	}
-	@Override
 	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-	{
+    {
 		if (world.isRemote || TF2ConfigVars.disableBossSpawnItems)
 			return EnumActionResult.SUCCESS;
 		EntityTF2Boss boss = null;
@@ -77,31 +77,22 @@ public class ItemBossSpawner extends Item {
 			player.sendMessage(new TextComponentTranslation("gui.boss.night"));
 			return EnumActionResult.SUCCESS;
 		}
-
+		
 		if (stack.getItemDamage() == 0 && cap.hhhSummonedDay < time / 24000) {
 			BlockPattern.PatternHelper pattern = patternHHH.match(world, pos);
-			if (pattern != null) {
-				for (int j = 0; j < patternHHH.getPalmLength(); ++j)
-				{
-					for (int k = 0; k < patternHHH.getThumbLength(); ++k)
-					{
-						world.setBlockState(pattern.translateOffset(j, k, 0).getPos(), Blocks.AIR.getDefaultState(), 2);
-					}
-				}
-				pos = pattern.translateOffset(1, 2, 0).getPos();
+			if (world.getBlockState(pos).getBlock() == Blocks.PORTAL) {
 				boss = new EntityHHH(world);
-
-				cap.hhhSummonedDay = (int) (time / 24000);
+                cap.hhhSummonedDay = (int) (time / 24000);
 			}
 			else {
-				player.sendMessage(new TextComponentTranslation("gui.boss.statue"));
+				player.sendMessage(new TextComponentTranslation("gui.boss.portal"));
 				return EnumActionResult.SUCCESS;
 			}
 		}
 		else if (stack.getItemDamage() == 1 && cap.monoculusSummonedDay < time / 24000) {
 			if (world.getBlockState(pos).getBlock() == Blocks.PORTAL) {
 				boss = new EntityMonoculus(world);
-				cap.monoculusSummonedDay = (int) (time / 24000);
+                cap.monoculusSummonedDay = (int) (time / 24000);
 			}
 			else {
 				player.sendMessage(new TextComponentTranslation("gui.boss.portal"));
@@ -111,7 +102,7 @@ public class ItemBossSpawner extends Item {
 		else if (stack.getItemDamage() == 2 && cap.merasmusSummonedDay < time / 24000) {
 			if (world.getBlockState(pos).getBlock() == Blocks.PORTAL) {
 				boss = new EntityMerasmus(world);
-				cap.merasmusSummonedDay = (int) (time / 24000);
+                cap.merasmusSummonedDay = (int) (time / 24000);
 			}
 			else {
 				player.sendMessage(new TextComponentTranslation("gui.boss.portal"));
@@ -123,11 +114,11 @@ public class ItemBossSpawner extends Item {
 		}
 		if (boss != null) {
 			boss.setLocationAndAngles((double)pos.getX() + 0.5D, (double)pos.getY() + 0.05D, (double)pos.getZ() + 0.5D, 0.0F, 0.0F);
-			boss.onInitialSpawn(world.getDifficultyForLocation(pos), null);
-			boss.summoned = true;
-			world.spawnEntity(boss);
-			stack.shrink(1);
+            boss.onInitialSpawn(world.getDifficultyForLocation(pos), null);
+            boss.summoned = true;
+            world.spawnEntity(boss);
+            stack.shrink(1);
 		}
 		return EnumActionResult.SUCCESS;
-	}
+    }
 }

@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
@@ -29,16 +30,16 @@ public class ItemChargingTarge extends ItemFromData {
 		//if (!living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.containsKey("Charging")) {
 		ItemStack stack=living.getHeldItem(hand);
 		if (ItemToken.allowUse(living, "demoman")) {
-
-
+			
+		
 			if (!world.isRemote)
 				living.addPotionEffect(new PotionEffect(TF2weapons.charging, (int) TF2Attribute.getModifier("Effect Duration", stack, 40, living),
 						(int) TF2Attribute.getModifier("Charge Step", stack, 0, living)));
 			living.getCooldownTracker().setCooldown(this, (int) (280f/TF2Attribute.getModifier("Charge", stack, 1, living)));
 		}
-		//living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put("Charging", 280);
+			//living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put("Charging", 280);
 		//}
-		return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
 	}
 
 	public static ItemStack getChargingShield(EntityLivingBase living) {
@@ -54,7 +55,7 @@ public class ItemChargingTarge extends ItemFromData {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean showDurabilityBar(ItemStack stack) {
-
+		
 		return super.showDurabilityBar(stack)||Minecraft.getMinecraft().player.getActivePotionEffect(TF2weapons.charging) != null;
 		/*Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get("Charging");
@@ -72,16 +73,14 @@ public class ItemChargingTarge extends ItemFromData {
 				.get("Charging");
 		return (double) (value != null ? value : 0) / (double) 280;*/
 	}
-
-	@Override
+	
 	public boolean getIsRepairable(ItemStack toRepair, ItemStack repair)
-	{
-		if (TF2Util.isOre("plankWood", repair)) return true;
-		return super.getIsRepairable(toRepair, repair);
-	}
-
-	@Override
+    {
+        if (TF2Util.isOre("plankWood", repair)) return true;
+        return super.getIsRepairable(toRepair, repair);
+    }
+	
 	public boolean isShield(ItemStack stack, @Nullable EntityLivingBase entity) {
-		return true;
-	}
+        return true;
+    }
 }

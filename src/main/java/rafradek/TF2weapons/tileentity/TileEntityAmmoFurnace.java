@@ -269,7 +269,7 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 			ItemStack base = this.furnaceItemStacks.get(i);
 			// System.out.println("Base: "+i+" "+base+"
 			// "+ItemAmmo.AMMO_RECIPES[base.getItemDamage()]);
-			if (base != null && base.getMetadata() < TF2CraftingManager.AMMO_RECIPES.length
+			if (base != null && base.getMetadata() < TF2CraftingManager.AMMO_RECIPES.length 
 					&& base.getItem() instanceof ItemAmmo && !(base.getItem() instanceof ItemFireAmmo)
 					&& TF2CraftingManager.AMMO_RECIPES[base.getItemDamage()] != null) {
 				/*
@@ -302,6 +302,7 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	 * Turn one item from the furnace source stack into the appropriate smelted
 	 * item in the furnace result stack
 	 */
+	@SuppressWarnings("unchecked")
 	public void smeltItem() {
 		int ammoToConsume = MathHelper.ceil(
 				TF2CraftingManager.AMMO_RECIPES[this.ammoSmeltType].getRecipeOutput().getCount() * 1.2f);
@@ -346,22 +347,22 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 		 * ItemStack itemstack =
 		 * FurnaceRecipes.instance().getSmeltingResult(this.furnaceItemStacks[0]
 		 * );
-		 *
+		 * 
 		 * if (this.furnaceItemStacks[2] == null) { this.furnaceItemStacks[2] =
 		 * itemstack.copy(); } else if (this.furnaceItemStacks[2].getItem() ==
 		 * itemstack.getItem()) { this.furnaceItemStacks[2].getCount() +=
 		 * itemstack.getCount(); // Forge BugFix: Results may have multiple items
 		 * }
-		 *
+		 * 
 		 * if (this.furnaceItemStacks[0].getItem() ==
 		 * Item.getItemFromBlock(Blocks.SPONGE) &&
 		 * this.furnaceItemStacks[0].getMetadata() == 1 &&
 		 * this.furnaceItemStacks[1] != null &&
 		 * this.furnaceItemStacks[1].getItem() == Items.BUCKET) {
 		 * this.furnaceItemStacks[1] = new ItemStack(Items.WATER_BUCKET); }
-		 *
+		 * 
 		 * --this.furnaceItemStacks[0].getCount();
-		 *
+		 * 
 		 * if (this.furnaceItemStacks[0].getCount() <= 0) {
 		 * this.furnaceItemStacks[0] = null; }
 		 */
@@ -371,7 +372,6 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	 * Returns the number of ticks that the supplied fuel item will keep the
 	 * furnace burning, or 0 if the item isn't fuel
 	 */
-	@SuppressWarnings("deprecation")
 	public static int getItemBurnTime(ItemStack stack) {
 		if (stack.isEmpty())
 			return 0;
@@ -562,13 +562,13 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	@Override
 	public boolean isEmpty() {
 		for (ItemStack itemstack : this.furnaceItemStacks)
-		{
-			if (!itemstack.isEmpty())
-			{
-				return false;
-			}
-		}
+        {
+            if (!itemstack.isEmpty())
+            {
+                return false;
+            }
+        }
 
-		return true;
+        return true;
 	}
 }

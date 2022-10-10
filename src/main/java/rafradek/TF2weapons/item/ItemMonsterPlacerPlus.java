@@ -1,5 +1,27 @@
 package rafradek.TF2weapons.item;
 
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import rafradek.TF2weapons.TF2weapons;
+import rafradek.TF2weapons.entity.boss.EntityHHH;
+import rafradek.TF2weapons.entity.boss.EntityMerasmus;
+import rafradek.TF2weapons.entity.boss.EntityMonoculus;
+import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.building.EntityDispenser;
+import rafradek.TF2weapons.entity.building.EntitySentry;
+import rafradek.TF2weapons.entity.building.EntityTeleporter;
+import rafradek.TF2weapons.entity.mercenary.EntityDemoman;
+import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
+import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
+import rafradek.TF2weapons.entity.mercenary.EntityMedic;
+import rafradek.TF2weapons.entity.mercenary.EntityPyro;
+import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
+import rafradek.TF2weapons.entity.mercenary.EntityScout;
+import rafradek.TF2weapons.entity.mercenary.EntitySniper;
+import rafradek.TF2weapons.entity.mercenary.EntitySoldier;
+import rafradek.TF2weapons.entity.mercenary.EntitySpy;
+import rafradek.TF2weapons.entity.mercenary.TF2CharacterAdditionalData;
+
 import java.util.List;
 
 import net.minecraft.block.BlockFence;
@@ -26,29 +48,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.entity.boss.EntityHHH;
-import rafradek.TF2weapons.entity.boss.EntityMerasmus;
-import rafradek.TF2weapons.entity.boss.EntityMonoculus;
-import rafradek.TF2weapons.entity.building.EntityBuilding;
-import rafradek.TF2weapons.entity.building.EntityDispenser;
-import rafradek.TF2weapons.entity.building.EntitySentry;
-import rafradek.TF2weapons.entity.building.EntityTeleporter;
-import rafradek.TF2weapons.entity.mercenary.EntityDemoman;
-import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
-import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
-import rafradek.TF2weapons.entity.mercenary.EntityMedic;
-import rafradek.TF2weapons.entity.mercenary.EntityPyro;
-import rafradek.TF2weapons.entity.mercenary.EntitySaxtonHale;
-import rafradek.TF2weapons.entity.mercenary.EntityScout;
-import rafradek.TF2weapons.entity.mercenary.EntitySniper;
-import rafradek.TF2weapons.entity.mercenary.EntitySoldier;
-import rafradek.TF2weapons.entity.mercenary.EntitySpy;
-import rafradek.TF2weapons.entity.mercenary.TF2CharacterAdditionalData;
 
-@SuppressWarnings("deprecation")
 public class ItemMonsterPlacerPlus extends Item {
 
 	public ItemMonsterPlacerPlus() {
@@ -80,10 +80,10 @@ public class ItemMonsterPlacerPlus extends Item {
 				d0 = 0.5D;
 
 			boolean hastag = stack.getTagCompound() != null && stack.getTagCompound().hasKey("SavedEntity");
-
+			
 			EntityLivingBase entity = spawnCreature(playerIn, worldIn, stack.getItemDamage(), pos.getX() + 0.5D, pos.getY() + d0,
-					pos.getZ() + 0.5D, hastag
-					? stack.getTagCompound().getCompoundTag("SavedEntity") : null);
+					pos.getZ() + 0.5D, hastag 
+							? stack.getTagCompound().getCompoundTag("SavedEntity") : null);
 
 			if (entity != null) {
 				if (entity instanceof EntityLivingBase && stack.hasDisplayName())
@@ -120,7 +120,7 @@ public class ItemMonsterPlacerPlus extends Item {
 			EnumHand hand) {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);
 		if (worldIn.isRemote)
-			return new ActionResult<>(EnumActionResult.PASS, itemStackIn);
+			return new ActionResult<ItemStack>(EnumActionResult.PASS, itemStackIn);
 		else {
 			RayTraceResult raytraceresult = this.rayTrace(worldIn, playerIn, true);
 
@@ -128,19 +128,19 @@ public class ItemMonsterPlacerPlus extends Item {
 				BlockPos blockpos = raytraceresult.getBlockPos();
 
 				if (!(worldIn.getBlockState(blockpos).getBlock() instanceof BlockLiquid))
-					return new ActionResult<>(EnumActionResult.PASS, itemStackIn);
+					return new ActionResult<ItemStack>(EnumActionResult.PASS, itemStackIn);
 				else if (worldIn.isBlockModifiable(playerIn, blockpos)
 						&& playerIn.canPlayerEdit(blockpos, raytraceresult.sideHit, itemStackIn)) {
-
+					
 					boolean hastag = itemStackIn.getTagCompound() != null && itemStackIn.getTagCompound().hasKey("SavedEntity");
-
+					
 					EntityLivingBase entity = spawnCreature(playerIn, worldIn, itemStackIn.getItemDamage(),
 							blockpos.getX() + 0.5D, blockpos.getY() + 0.5D, blockpos.getZ() + 0.5D,
 							hastag
-							? itemStackIn.getTagCompound().getCompoundTag("SavedEntity") : null);
+									? itemStackIn.getTagCompound().getCompoundTag("SavedEntity") : null);
 
 					if (entity == null)
-						return new ActionResult<>(EnumActionResult.PASS, itemStackIn);
+						return new ActionResult(EnumActionResult.PASS, itemStackIn);
 					else {
 						if (entity instanceof EntityLivingBase && itemStackIn.hasDisplayName())
 							entity.setCustomNameTag(itemStackIn.getDisplayName());
@@ -156,11 +156,11 @@ public class ItemMonsterPlacerPlus extends Item {
 							}
 							if (entity instanceof EntitySentry && itemStackIn.hasTagCompound() && itemStackIn.getTagCompound().getBoolean("Mini"))
 								((EntitySentry)entity).setMini(true);
-
+							
 							entity.rotationYaw = playerIn.rotationYawHead;
 							entity.renderYawOffset = playerIn.rotationYawHead;
 							entity.rotationYawHead = playerIn.rotationYawHead;
-
+							
 							/*
 							 * if(entity instanceof EntityTeleporter){
 							 * ((EntityTeleporter)
@@ -169,12 +169,12 @@ public class ItemMonsterPlacerPlus extends Item {
 							 */
 						}
 						playerIn.addStat(StatList.getObjectUseStats(this));
-						return new ActionResult<>(EnumActionResult.SUCCESS, itemStackIn);
+						return new ActionResult(EnumActionResult.SUCCESS, itemStackIn);
 					}
 				} else
-					return new ActionResult<>(EnumActionResult.FAIL, itemStackIn);
+					return new ActionResult(EnumActionResult.FAIL, itemStackIn);
 			} else
-				return new ActionResult<>(EnumActionResult.PASS, itemStackIn);
+				return new ActionResult(EnumActionResult.PASS, itemStackIn);
 		}
 	}
 
@@ -265,7 +265,7 @@ public class ItemMonsterPlacerPlus extends Item {
 		par3List.add(new ItemStack(this, 1, 28));
 		par3List.add(new ItemStack(this, 1, 29));
 		par3List.add(new ItemStack(this, 1, 30));
-
+		
 	}
 
 	@Override
@@ -291,7 +291,7 @@ public class ItemMonsterPlacerPlus extends Item {
 	public void addInformation(ItemStack stack, World world, List<String> tooltip,
 			ITooltipFlag advanced) {
 		if (stack.getMetadata() < 18)
-			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn with default equipment");
+		tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn with default equipment");
 		if (stack.getMetadata() >= 36 && stack.getMetadata() < 45)
 			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn a giant");
 	}

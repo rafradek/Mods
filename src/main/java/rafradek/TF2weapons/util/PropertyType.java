@@ -15,6 +15,7 @@ import com.google.gson.JsonParseException;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemCrate.CrateContent;
 
 public class PropertyType<T> implements JsonDeserializer<T>{
 
@@ -107,6 +108,11 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	public static final PropertyType<ItemCrate.CrateContent> CONTENT = new ItemCrate.PropertyContent(82, "Content", ItemCrate.CrateContent.class);
 	public static final PropertyType<Integer> COLOR = new PropertyType<>(83, "Color", Integer.class);
 	public static final PropertyType<Boolean> F2P = new PropertyType<>(84, "F2P", Boolean.class);
+	public static final PropertyType<Float> KNOCKBACK_Z = new PropertyType<>(85, "Knockback Z", Float.class);
+	public static final PropertyType<Float> MINIMAL_RANGE = new PropertyType<>(86, "Minimal range", Float.class);
+	public static final PropertyType<Float> COOLDOWN_LONG = new PropertyType<>(87, "Long cooldown", Float.class);
+	public static final PropertyType<Boolean> TEMPLATE = new PropertyType<>(88,"Template", Boolean.class);
+	public static final PropertyType<Float> UBER_TIME = new PropertyType<>(89,"Uber time", Float.class);
 	public Class<T> type;
 	public int id;
 	public String name;
@@ -124,7 +130,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 	}
 
 	public void serialize(DataOutput buf, WeaponData data, T value) throws IOException {
-
+		
 		if (this.type == Boolean.class)
 			buf.writeBoolean((Boolean) value);
 		else if (this.type == Integer.class)
@@ -167,7 +173,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 
 	@Override
 	public T deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-
+		
 		if (type == Boolean.class)
 			return type.cast(json.getAsBoolean());
 		else if (type == Integer.class)
@@ -178,7 +184,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 			return type.cast(json.getAsFloat());
 		return null;
 	}
-
+	
 	public static class PropertyTypeMap<T> extends PropertyType<Map<String, T>> {
 
 		public Class<T> mapType;
@@ -186,11 +192,11 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 		public PropertyTypeMap(int id, String name, Class<T> type) {
 			super(id, name, null);
 			this.mapType = type;
+			// TODO Auto-generated constructor stub
 		}
-
-		@Override
+		
 		public void serialize(DataOutput buf, WeaponData data, Map<String, T> value) throws IOException {
-
+			
 			buf.writeByte(value.size());
 			for (Entry<String, T> entry : value.entrySet()) {
 				buf.writeUTF(entry.getKey());
@@ -205,7 +211,6 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 			}
 		}
 
-		@Override
 		public Map<String, T> deserialize(DataInput buf, WeaponData data) throws IOException {
 			Map<String, T> prop = new HashMap<>();
 			int count = buf.readByte();
@@ -225,8 +230,7 @@ public class PropertyType<T> implements JsonDeserializer<T>{
 			return prop;
 			//data.properties.put(this, prop);
 		}
-
-		@Override
+		
 		@SuppressWarnings("unchecked")
 		public Map<String, T> getDefaultValue(){
 			return (Map<String, T>) defaultValue;

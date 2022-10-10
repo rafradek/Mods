@@ -1,8 +1,10 @@
 package rafradek.TF2weapons.item.crafting;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -17,7 +19,7 @@ import rafradek.TF2weapons.util.PropertyType;
 public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
 
 	public int token;
-
+	
 	public RecipeToScrap(int id) {
 		this.token = id;
 	}
@@ -25,11 +27,11 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 	public boolean matches(InventoryCrafting inv, World worldIn) {
 		ArrayList<ItemStack> stacks = new ArrayList<>();
 
-		HashSet<String> classnames = new HashSet<>();
+		HashSet<String> classnames = new HashSet<String>();
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
 			ItemStack stack = inv.getStackInSlot(x);
 			if (!stack.isEmpty())
-				if (stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6
+				if (stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6 
 				&& (token == -1 || ItemFromData.getData(stack).get(PropertyType.SLOT).containsKey(ItemToken.CLASS_NAMES[token]))) {
 					stacks.add(stack);
 				}
@@ -42,6 +44,7 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
+		// TODO Auto-generated method stub
 		if(token == -1)
 			return new ItemStack(TF2weapons.itemTF2, 1, 3);
 		else
@@ -50,28 +53,29 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 
 	@Override
 	public ItemStack getRecipeOutput() {
+		// TODO Auto-generated method stu
 		if(token == -1)
 			return new ItemStack(TF2weapons.itemTF2, 1, 3);
 		else
 			return new ItemStack(TF2weapons.itemToken, 1, token);
 	}
 
-	@Override
 	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)
-	{
-		NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+    {
+        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
-		for (int i = 0; i < nonnulllist.size(); ++i)
-		{
-			ItemStack itemstack = inv.getStackInSlot(i);
-			nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
-		}
+        for (int i = 0; i < nonnulllist.size(); ++i)
+        {
+            ItemStack itemstack = inv.getStackInSlot(i);
+            nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+        }
 
-		return nonnulllist;
-	}
+        return nonnulllist;
+    }
 
 	@Override
 	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
 		return width * height >= 2;
 	}
 

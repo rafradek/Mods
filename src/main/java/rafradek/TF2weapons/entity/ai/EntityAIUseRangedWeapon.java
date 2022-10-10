@@ -4,14 +4,19 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.WorldServer;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
+import rafradek.TF2weapons.item.IItemNoSwitch;
+import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.message.TF2Message;
@@ -31,7 +36,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	private float attackRange;
 	protected float attackRangeSquared;
 	protected float attackRangeSSquared;
-
+	
 	protected boolean pressed;
 	protected boolean dodging;
 	public boolean jump;
@@ -44,7 +49,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 	public Vec3d velTarget;
 	public Vec3d posTarget;
 	public int ticksUpdatePos;
-
+	
 	public float gravity;
 
 	public boolean explosive;
@@ -67,6 +72,13 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		this.attackRangeSSquared = (range+5) * (range+5);
 	}
 
+	public float getRange() {
+		return this.attackRange;
+	}
+	
+	public float getRangeSq() {
+		return this.attackRangeSquared;
+	}
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
@@ -84,7 +96,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 					&& (this.entityHost.getHeldItemMainhand().getItem() instanceof ItemUsable);
 		}
 	}
-
+	
 	/**
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
@@ -126,10 +138,10 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		}
 		if (this.attackTarget == null)
 			return;
-
+		
 		int updateTime = this.getPosUpdateTime();
 		if (--this.ticksUpdatePos <= 0 || this.posTarget == null) {
-
+			
 			if (this.posTarget != null)
 				this.velTarget = this.attackTarget.getPositionVector().subtract(this.posTarget).scale(1D/updateTime);
 			else
@@ -137,9 +149,9 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 			this.posTarget = this.attackTarget.getPositionVector();
 			this.ticksUpdatePos = updateTime;
 		}
-
+		
 		ItemStack item = this.entityHost.getHeldItem(EnumHand.MAIN_HAND);
-
+		
 		if (!(item.getItem() instanceof ItemWeapon))
 			return;
 		ItemWeapon weapon = ((ItemWeapon) item.getItem());
@@ -148,7 +160,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				this.attackTarget.posZ);
 
 		int moveTicks = updateTime - this.ticksUpdatePos;
-
+		
 		double lookX = this.posTarget.x + this.velTarget.x * moveTicks;
 		double lookY = this.posTarget.y + this.attackTarget.getEyeHeight() + this.velTarget.y * moveTicks;
 		double lookZ = this.posTarget.z + this.velTarget.z * moveTicks;
@@ -156,7 +168,7 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		float dist = this.entityHost.getDistance(this.attackTarget);
 		if (this.projSpeed > 0) {
 
-
+			
 			int ticksToReach = MathHelper.ceil(dist / this.projSpeed);
 			float overshoot = entityHost.scaleWithDifficulty(0.6f, 0f) * TF2ConfigVars.accurracyMult;
 			ticksToReach = Math.round(ticksToReach * (this.entityHost.getRNG().nextFloat()*overshoot*2+1-overshoot));
@@ -176,8 +188,8 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 					yFall += MathHelper.clamp(this.lastMotionY-this.attackTarget.motionY, 0, 0.1) * i;
 				/*for (int i = 1; i <= ticksToReach; i++) {
 					lookY += gravity * i;
-
-
+					
+						
 				}*/
 			}
 
@@ -187,13 +199,13 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 				yFall = this.attackTarget.posY - mop.hitVec.y;
 			shouldFireProj = mop != null || this.attackTarget.motionY <= 0f;
 			lookY -= yFall;
-
+			
 			if (this.fireAtFeet > 0 && this.entityHost.world.rayTraceBlocks(
 					new Vec3d(this.entityHost.posX, this.entityHost.posY + this.entityHost.getEyeHeight(),
 							this.entityHost.posZ),
 					new Vec3d(lookX, this.attackTarget.posY, lookZ), false, true, false) == null) {
 				lookY -= (this.attackTarget.height/2)*this.fireAtFeet;
-
+				
 			}
 			//System.out.println("look: "+(this.lastMotionY-this.attackTarget.motionY));
 
@@ -207,19 +219,18 @@ public class EntityAIUseRangedWeapon extends EntityAIBase {
 		//System.out.println("charge: "+weapon.getCharge(entityHost, item));
 		boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget)
 				|| (this.projSpeed > 0 && this.attackTarget.motionY > 0);
-
+		
 		boolean fire = stay && this.entityHost.getActivePotionEffect(TF2weapons.stun) == null && shouldFireProj && !charged && TF2Util.lookingAt(this.entityHost,
-				(this.explosive && d0 < 16 ? 30 : 0) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist) + MathHelper.atan2(weapon.getWeaponSpreadBase(item, this.entityHost),1)),
+				(this.explosive && d0 < 16 ? 30 : 0) + 2 + Math.toDegrees(MathHelper.atan2(this.attackTarget.width / 2, dist) ),
 				lookX, lookY, lookZ);
-
+		
 		if (!this.reloading && (this.entityHost.world.getDifficulty() != EnumDifficulty.HARD || !fire)
-				&& item.getItemDamage() == item.getMaxDamage() && weapon.hasClip(item))
+				&& weapon.getClip(item) == 0 && weapon.hasClip(item))
 			this.reloading = true;
-		else if (this.reloading && (item.getItemDamage() == 0 || this.entityHost.getAmmo() == 0 ))
+		else if (this.reloading && (weapon.getClip(item) == weapon.getWeaponClipSize(item, entityHost) || this.entityHost.getAmmo() == 0 ))
 			this.reloading = false;
-
+		
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
-
 		if ((!reloading) && fire && d0 <= (this.attackTarget instanceof EntityBuilding ? this.attackRangeSSquared : this.attackRangeSquared)
 				&& (((ItemUsable)item.getItem()).isAmmoSufficient(item, entityHost, true)) && (((ItemUsable)item.getItem()).shouldEntityFire(item, entityHost, attackTarget))) {
 			this.reloading = false;

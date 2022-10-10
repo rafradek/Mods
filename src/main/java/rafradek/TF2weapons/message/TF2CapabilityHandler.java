@@ -34,13 +34,14 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 							}
 							cap.dataManager.setEntryValues(message.entries);
 						}
-						if (prevHealTarget != cap.getHealTarget() && message.healTarget > 0) {
+						if (prevHealTarget != cap.getHealTarget() && cap.getHealTarget() > 0) {
 							SoundEvent sound = ItemFromData.getSound(
 									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
 									PropertyType.HEAL_START_SOUND);
 							ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
 									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
 						}
+						cap.ticksTotal = message.totalTime;
 						//cap.critTime = message.critTime;
 						//cap.collectedHeads = message.heads;
 					}
@@ -50,8 +51,8 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 		 * if(ent !=null){ ent.getEntityData().setTag("TF2", message.tag); }
 		 */
 		else {
-			ctx.getServerHandler().player.getCapability(TF2weapons.WEAPONS_CAP,
-					null).setHealTarget(message.healTarget);
+			/*ctx.getServerHandler().player.getCapability(TF2weapons.WEAPONS_CAP,
+					null).setHealTarget(message.healTarget);*/
 			/*message.entityID = ctx.getServerHandler().player.getEntityId();
 			TF2weapons.sendTracking(message, ctx.getServerHandler().player);*/
 		}

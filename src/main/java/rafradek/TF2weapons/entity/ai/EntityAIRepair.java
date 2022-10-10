@@ -1,11 +1,17 @@
 package rafradek.TF2weapons.entity.ai;
 
+import java.util.List;
+
 import com.google.common.base.Predicate;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
+import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
@@ -65,7 +71,7 @@ public class EntityAIRepair extends EntityAIBase {
 	 */
 	public boolean isValidTarget(EntityBuilding building) {
 		return building != null && building.isEntityAlive() && this.entityHost.isWithinHomeDistanceFromPosition(building.getPosition())
-				&& (building.getMaxHealth() > building.getHealth()
+				&& (building.canUseWrenchImportant()
 						|| ((this.entityHost.getAttackTarget() == null || this.entityHost.getAttackTarget().isDead) && this.entityHost.hasSentryAndDispenser()
 								&& building.canUseWrench()));
 	}
@@ -73,6 +79,10 @@ public class EntityAIRepair extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 		this.searchTimer--;
+		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 2)
+			return false;
+		if (this.entityHost.shouldUseWrangler())
+			return false;
 		if (this.entityHost.grabbed != null || this.entityHost.loadout.getStackInSlot(2).isEmpty())
 			return false;
 		if(this.entityHost.getWepCapability().getMetal() <= 0){
@@ -97,12 +107,12 @@ public class EntityAIRepair extends EntityAIBase {
 			for (EntityBuilding build : this.entityHost.world.getEntitiesWithinAABB(EntityBuilding.class,
 					this.entityHost.getEntityBoundingBox().grow(10, 3, 10), new Predicate<EntityBuilding>() {
 
-				@Override
-				public boolean apply(EntityBuilding input) {
-					return TF2Util.isOnSameTeam(input, entityHost) && isValidTarget(input);
-				}
+						@Override
+						public boolean apply(EntityBuilding input) {
+							return TF2Util.isOnSameTeam(input, entityHost) && isValidTarget(input);
+						}
 
-			})) {
+					})) {
 				this.attackTarget = build;
 				this.entityHost.switchSlot(2);
 				return true;
@@ -175,17 +185,19 @@ public class EntityAIRepair extends EntityAIBase {
 			this.dodging = false;
 			this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget, this.entityMoveSpeed);
 		}
-
+		
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 
 		if (d0 <= this.attackRangeSquared && !this.runMetal) {
-			if (!pressed) {
+			if (!pressed|| (this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) == 0) {
 				pressed = true;
+				
 				((ItemUsable) this.entityHost.getHeldItem(EnumHand.MAIN_HAND).getItem()).startUse(
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
+				
 			}
 
 		} else {

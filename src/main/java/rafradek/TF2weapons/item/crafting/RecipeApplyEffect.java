@@ -2,7 +2,10 @@ package rafradek.TF2weapons.item.crafting;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
@@ -10,7 +13,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemApplicableEffect;
+import rafradek.TF2weapons.item.ItemBackpack;
+import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemKillstreakKit;
+import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemStrangifier;
+import rafradek.TF2weapons.item.ItemUsable;
 
 public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 
@@ -19,7 +28,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 	public Item type;
 	public RecipeApplyEffect(Item type) {
 		this.type = type;
-
+		
 	}
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -42,6 +51,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
+		// TODO Auto-generated method stub
 		ItemStack effect = ItemStack.EMPTY;
 		ItemStack stack2 = ItemStack.EMPTY;
 
@@ -60,7 +70,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 				stack2.setTagCompound(new NBTTagCompound());
 			stack2.setCount( 1);
 			((ItemApplicableEffect)effect.getItem()).apply(effect, stack2);
-
+				
 			//stack2.getTagCompound().setBoolean("Australium", true);
 			//
 		}
@@ -76,6 +86,7 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 
 	@Override
 	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		// TODO Auto-generated method stub
 		NonNullList<ItemStack> aitemstack = NonNullList.withSize(inv.getSizeInventory(),ItemStack.EMPTY);
 
 		for (int i = 0; i < aitemstack.size(); ++i) {
@@ -88,21 +99,25 @@ public class RecipeApplyEffect implements IRecipe, IRecipeTF2{
 
 	@Override
 	public IRecipe setRegistryName(ResourceLocation name) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
+		// TODO Auto-generated method stub
 		return new ResourceLocation(TF2weapons.MOD_ID, this.type.toString());
 	}
 
 	@Override
 	public Class<IRecipe> getRegistryType() {
+		// TODO Auto-generated method stub
 		return IRecipe.class;
 	}
 
 	@Override
 	public boolean canFit(int width, int height) {
+		// TODO Auto-generated method stub
 		return width * height >= 2;
 	}
 	@Override

@@ -4,14 +4,19 @@ import java.util.List;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.building.EntityDispenser;
@@ -19,6 +24,7 @@ import rafradek.TF2weapons.entity.building.EntitySentry;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character.Order;
 import rafradek.TF2weapons.item.ItemPDA;
+import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class EntityAISetup extends EntityAIBase {
@@ -36,34 +42,37 @@ public class EntityAISetup extends EntityAIBase {
 	@Override
 	public boolean shouldExecute() {
 
+		if (this.engineer.getMainWeapon() != -1)
+			return false;
+		
 		if (this.engineer.getOwner() != null && this.engineer.getOrder() == Order.FOLLOW)
 			return false;
-
+		
 		if (this.engineer.grabbed != null) {
 			this.buildType = this.engineer.grabbedid + 1;
 			return true;
 		}
 		if (this.engineer.isInWater() || !(this.engineer.loadout.getStackInSlot(3).getItem() instanceof ItemPDA))
 			return false;
-
+		
 		boolean dispensernear = TF2Util.findAmmoSource(engineer, 16, false) != null;
 
 		boolean sentryalive = this.engineer.sentry != null && this.engineer.sentry.isEntityAlive();
 		boolean dispenseralive = this.engineer.dispenser != null && this.engineer.dispenser.isEntityAlive();
-
+		
 		boolean sentryhome = sentryalive && this.engineer.isWithinHomeDistanceFromPosition(this.engineer.sentry.getPosition());
 		boolean dispenserhome = dispenseralive && this.engineer.isWithinHomeDistanceFromPosition(this.engineer.dispenser.getPosition());
-
+		
 		int sentryCost = EntityBuilding.getCost(0, this.engineer.loadout.getStackInSlot(2));
 		if (sentryalive)
 			sentryCost /= 2;
 		int dispenserCost = EntityBuilding.getCost(1, this.engineer.loadout.getStackInSlot(2));
 		if (dispenseralive)
 			dispenserCost /= 2;
-
-		buildType = (this.engineer.getWepCapability().getMetal() >= sentryCost && !(sentryhome)
+		
+		buildType = (this.engineer.getWepCapability().getMetal() >= sentryCost && !(sentryhome) 
 				&& (dispensernear || this.engineer.getWepCapability().getMetal() >= sentryCost + dispenserCost)) ? 1
-						: (this.engineer.getWepCapability().getMetal() >= dispenserCost && !dispenserhome)
+				: (this.engineer.getWepCapability().getMetal() >= dispenserCost && !dispenserhome)
 						? 2 : 0;
 		if (buildType > 0) {
 			this.engineer.loadout.getStackInSlot(3).getTagCompound().setByte("Building", (byte) this.buildType);
@@ -73,13 +82,13 @@ public class EntityAISetup extends EntityAIBase {
 			this.engineer.getHeldItem(EnumHand.MAIN_HAND).setTagCompound(new NBTTagCompound());*/
 		}
 		// System.out.println("Promote: "+buildType);
-
+		
 		return buildType > 0;
 	}
 
 	@Override
 	public void startExecuting() {
-
+		
 	}
 	@Override
 	public void resetTask() {
@@ -97,8 +106,8 @@ public class EntityAISetup extends EntityAIBase {
 				EntityBuilding building = this.spawn();
 				if (this.engineer.grabbed == null)
 					this.engineer.getWepCapability().setMetal(this.engineer.getWepCapability().getMetal() - EntityBuilding.getCost(this.buildType-1, this.engineer.loadout.getStackInSlot(2)));
-
-				if (building instanceof EntitySentry)
+				
+				if (building instanceof EntitySentry) 
 					this.engineer.sentry = (EntitySentry) building;
 				else if (building instanceof EntityDispenser)
 					this.engineer.dispenser = (EntityDispenser) building;
@@ -142,7 +151,7 @@ public class EntityAISetup extends EntityAIBase {
 			}
 			building = new EntityDispenser(this.engineer.world);
 		}
-
+		
 		ItemStack pda = this.engineer.loadout.getStackInSlot(3);
 		if (building instanceof EntitySentry) {
 			TF2Util.addModifierSafe(building, SharedMonsterAttributes.FOLLOW_RANGE,
@@ -155,13 +164,13 @@ public class EntityAISetup extends EntityAIBase {
 		if (building instanceof EntityDispenser) {
 			((EntityDispenser)building).setRange(TF2Attribute.getModifier("Dispenser Range", pda, 1, engineer));
 		}
-
+		
 		if (this.engineer.grabbed != null) {
 			building.readFromNBT(this.engineer.grabbed);
 			building.setConstructing(true);
 			building.redeploy = true;
 		}
-
+		
 		IBlockState blockTarget = this.engineer.world.getBlockState(new BlockPos(target));
 		if (!blockTarget.getBlock().isPassable(this.engineer.world, new BlockPos(target)))
 			building.setPosition(target.x, target.y + 1.3, target.z);
@@ -171,7 +180,7 @@ public class EntityAISetup extends EntityAIBase {
 		building.setOwner(this.engineer);
 		if (building instanceof EntitySentry && TF2Attribute.getModifier("Weapon Mode", this.engineer.loadout.getStackInSlot(2), 0, this.engineer) == 2)
 			((EntitySentry)building).setMini(true);
-
+		
 		this.engineer.world.spawnEntity(building);
 		this.target = null;
 		this.buildType = 0;

@@ -7,9 +7,17 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.IEntityOwnable;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootContext.EntityTarget;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import rafradek.TF2weapons.TF2weapons;
@@ -23,7 +31,7 @@ public class EntityOrCondition implements LootCondition {
 		this.negate = negate;
 		this.conditions = conditions;
 	}
-
+	
 	@Override
 	public boolean testCondition(Random rand, LootContext context) {
 

@@ -329,5 +329,13 @@
 		{
 			"name": "frame",
 			"children": [5, 6, 7, 8, 9, 10, 11, 12]
-		}, 13, 14, 15, 16, 17, 18, 19, 20]
+		}, 13, 14, 15, 16, 17, 18, 19, 20],
+	"overrides": [
+        {
+            "predicate": {
+            	"team":1
+            },
+            "model": "rafradek_tf2_weapons:item/medigun_blu"
+		}
+	]
 }

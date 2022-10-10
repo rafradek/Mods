@@ -4,6 +4,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +34,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import rafradek.TF2weapons.NBTLiterals;
+import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
@@ -50,21 +53,21 @@ public class WeaponData implements ICapabilityProvider {
 		public WeaponData deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
 				JsonDeserializationContext context) throws JsonParseException {
 			WeaponData data = new WeaponData();
-
+			
 			for (Entry<String, JsonElement> property : json.getAsJsonObject().entrySet())
 				data.addProperty(property.getKey(), property.getValue(), context);
 			return data;
 		}
 
 	}
-
+	
 	public static abstract class SpecialProperty implements ICapabilityProvider {
-
+		
 		public abstract void serialize(DataOutput buf, WeaponData data) throws IOException;
 		public abstract void deserialize(DataInput buf, WeaponData data) throws IOException;
 	}
-
-
+	
+	
 	public HashMap<PropertyType<?>, Object> properties;
 
 	public CapabilityDispatcher capabilities;
@@ -74,9 +77,9 @@ public class WeaponData implements ICapabilityProvider {
 
 	public WeaponData() {
 		this.properties = new HashMap<>();
-
+		
 	}
-
+	
 	public WeaponData(String name) {
 		this();
 		this.name = name;
@@ -85,7 +88,7 @@ public class WeaponData implements ICapabilityProvider {
 	public void addCapabilities(Map<ResourceLocation, ICapabilityProvider> map) {
 		this.capabilities = new CapabilityDispatcher(map);
 	}
-
+	
 
 	public int getInt(PropertyType<Integer> propType) {
 		Integer property = (Integer) this.properties.get(propType);
@@ -122,7 +125,7 @@ public class WeaponData implements ICapabilityProvider {
 			return property;
 		return (A) propType.getDefaultValue();
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public <A> A get(PropertyType<A> propType, A def) {
 		A property = (A) (this.properties.get(propType));
@@ -130,11 +133,11 @@ public class WeaponData implements ICapabilityProvider {
 			return property;
 		return def;
 	}
-
+	
 	public boolean hasProperty(PropertyType<?> property) {
 		return this.properties.containsKey(property);
 	}
-
+	
 	public void addProperty(String name, JsonElement element, JsonDeserializationContext context) {
 
 		PropertyType<?> propType = MapList.propertyTypes.get(name);
@@ -153,11 +156,10 @@ public class WeaponData implements ICapabilityProvider {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public static ArrayList<WeaponData> parseFile(File file) {
+	public static ArrayList<WeaponData> parseFile(String fileData, String filename) {
 		ArrayList<WeaponData> list = new ArrayList<>();
 		try {
-			String s = Files.toString(file, Charsets.UTF_8);
+			String s = fileData;
 			JsonObject tree = new JsonParser().parse(s).getAsJsonObject();
 			for (Entry<String, JsonElement> entry : tree.getAsJsonObject().entrySet()) {
 				nameItemLoaded = entry.getKey();
@@ -166,7 +168,7 @@ public class WeaponData implements ICapabilityProvider {
 				list.add(data);
 			}
 		} catch (Exception e) {
-			TF2weapons.LOGGER.error("Skipped reading weapon data from file: {}", file.getName());
+			TF2weapons.LOGGER.error("Skipped reading weapon data from file: {}", filename);
 			TF2weapons.LOGGER.catching(Level.ERROR, e);
 		}
 		return list;
@@ -181,6 +183,7 @@ public class WeaponData implements ICapabilityProvider {
 		public int usedClass = -1;
 		public int fire1Cool = 0;
 		public int fire2Cool = 0;
+		public int clip = 0;
 
 		public float getAttributeValue(ItemStack stack,String nameattr, float initial) {
 			if(!cached) {
@@ -193,7 +196,7 @@ public class WeaponData implements ICapabilityProvider {
 						NBTBase tag = attributelist.getTag(name);
 						if (tag instanceof NBTTagFloat) {
 							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
-
+							
 							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
 								if (!cachedAttrAdd.containsKey(attribute.effect))
 									cachedAttrAdd.put(attribute.effect, 0f);
@@ -212,7 +215,7 @@ public class WeaponData implements ICapabilityProvider {
 						NBTBase tag = attributelist.getTag(name);
 						if (tag instanceof NBTTagFloat) {
 							TF2Attribute attribute = TF2Attribute.attributes[Integer.parseInt(name)];
-
+							
 							if (attribute.typeOfValue == TF2Attribute.Type.ADDITIVE) {
 								if (!cachedAttrAdd.containsKey(attribute.effect))
 									cachedAttrAdd.put(attribute.effect, 0f);
@@ -223,10 +226,10 @@ public class WeaponData implements ICapabilityProvider {
 									cachedAttrMult.put(attribute.effect, 1f);
 								cachedAttrMult.put(attribute.effect, cachedAttrMult.get(attribute.effect)*((NBTTagFloat) tag).getFloat());
 							}
-
+								
 						}
 					}
-					if (stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
+					if (TF2ConfigVars.killstreakDrop && stack.getTagCompound().hasKey(NBTLiterals.STREAK_ATTRIB)) {
 						TF2Attribute attribute = TF2Attribute.attributes[stack.getTagCompound().getShort(NBTLiterals.STREAK_ATTRIB)];
 						float value = ItemKillstreakKit.getKillstreakBonus(attribute, stack.getTagCompound().getByte(NBTLiterals.STREAK_LEVEL),
 								stack.getTagCompound().getInteger(NBTLiterals.STREAK_KILLS), this.inst);
@@ -255,9 +258,10 @@ public class WeaponData implements ICapabilityProvider {
 				valuemult=Float.valueOf(1f);
 			return (initial+valueadd)*valuemult;
 		}
-
+		
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+			// TODO Auto-generated method stub
 			//System.out.println("capinit: "+TF2weapons.WEAPONS_DATA_CAP);
 			return TF2weapons.WEAPONS_DATA_CAP != null && capability == TF2weapons.WEAPONS_DATA_CAP;
 		}
@@ -268,20 +272,22 @@ public class WeaponData implements ICapabilityProvider {
 				return TF2weapons.WEAPONS_DATA_CAP.cast(this);
 			return null;
 		}
-
+		
 	}
-
+	
 	public static WeaponDataCapability getCapability(ItemStack stack) {
 		return stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null);
 	}
 
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		// TODO Auto-generated method stub
 		return capabilities.hasCapability(capability, facing);
 	}
 
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+		// TODO Auto-generated method stub
 		return capabilities.getCapability(capability, facing);
 	}
 }

@@ -4,6 +4,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityDemoman;
@@ -56,6 +57,8 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
+		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 1)
+			return false;
 		if (this.entityHost.isRobot() || this.entityHost.getAttackTarget() != null || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
 			return false;
 		ItemStack stickybomb = this.entityHost.loadout.getStackInSlot(1);

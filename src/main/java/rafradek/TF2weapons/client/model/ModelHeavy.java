@@ -1,5 +1,7 @@
 package rafradek.TF2weapons.client.model;
 
+import net.minecraft.client.model.ModelBiped;
+
 public class ModelHeavy extends ModelTF2Character {
 
 	public ModelHeavy() {

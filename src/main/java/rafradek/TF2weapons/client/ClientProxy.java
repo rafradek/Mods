@@ -6,14 +6,17 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.BiMap;
@@ -42,6 +45,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -89,6 +93,7 @@ import rafradek.TF2weapons.client.particle.EntityMuzzleFlash;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.client.particle.ParticleBulletHole;
 import rafradek.TF2weapons.client.particle.ParticleExplosion;
+import rafradek.TF2weapons.client.particle.ParticleGasSmoke;
 import rafradek.TF2weapons.client.renderer.LayerWearables;
 import rafradek.TF2weapons.client.renderer.entity.RenderBall;
 import rafradek.TF2weapons.client.renderer.entity.RenderDispenser;
@@ -98,7 +103,9 @@ import rafradek.TF2weapons.client.renderer.entity.RenderHHH;
 import rafradek.TF2weapons.client.renderer.entity.RenderJar;
 import rafradek.TF2weapons.client.renderer.entity.RenderMerasmus;
 import rafradek.TF2weapons.client.renderer.entity.RenderMonoculus;
+import rafradek.TF2weapons.client.renderer.entity.RenderPickup;
 import rafradek.TF2weapons.client.renderer.entity.RenderPlayerDisguised;
+import rafradek.TF2weapons.client.renderer.entity.RenderPlayerForceTexture;
 import rafradek.TF2weapons.client.renderer.entity.RenderProjectile;
 import rafradek.TF2weapons.client.renderer.entity.RenderProjectileSimple;
 import rafradek.TF2weapons.client.renderer.entity.RenderRocket;
@@ -106,11 +113,14 @@ import rafradek.TF2weapons.client.renderer.entity.RenderSentry;
 import rafradek.TF2weapons.client.renderer.entity.RenderSprite;
 import rafradek.TF2weapons.client.renderer.entity.RenderStatue;
 import rafradek.TF2weapons.client.renderer.entity.RenderStickybomb;
+import rafradek.TF2weapons.client.renderer.entity.RenderSyringe;
 import rafradek.TF2weapons.client.renderer.entity.RenderTF2Character;
 import rafradek.TF2weapons.client.renderer.entity.RenderTeleporter;
 import rafradek.TF2weapons.client.renderer.tileentity.RenderDoor;
+import rafradek.TF2weapons.client.renderer.tileentity.RenderRobotDeploy;
 import rafradek.TF2weapons.common.CommonProxy;
 import rafradek.TF2weapons.common.MapList;
+import rafradek.TF2weapons.entity.EntityPickup;
 import rafradek.TF2weapons.entity.EntityStatue;
 import rafradek.TF2weapons.entity.boss.EntityHHH;
 import rafradek.TF2weapons.entity.boss.EntityMerasmus;
@@ -127,10 +137,13 @@ import rafradek.TF2weapons.entity.projectile.EntityFuryFireball;
 import rafradek.TF2weapons.entity.projectile.EntityGrenade;
 import rafradek.TF2weapons.entity.projectile.EntityJar;
 import rafradek.TF2weapons.entity.projectile.EntityOnyx;
+import rafradek.TF2weapons.entity.projectile.EntityProjectileEnergy;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
 import rafradek.TF2weapons.entity.projectile.EntityRocket;
 import rafradek.TF2weapons.entity.projectile.EntityRocketEffect;
+import rafradek.TF2weapons.entity.projectile.EntityStickProjectile;
 import rafradek.TF2weapons.entity.projectile.EntityStickybomb;
+import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAmmo;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemKillstreakFabricator;
@@ -138,20 +151,24 @@ import rafradek.TF2weapons.item.ItemKillstreakKit;
 import rafradek.TF2weapons.item.ItemRobotPart;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.message.TF2Message;
+import rafradek.TF2weapons.message.udp.TF2UdpClient;
 import rafradek.TF2weapons.tileentity.TileEntityOverheadDoor;
+import rafradek.TF2weapons.tileentity.TileEntityRobotDeploy;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.util.WeaponData;
 
 public class ClientProxy extends CommonProxy {
-
-	public static HashMap<String, ModelBase> entityModel = new HashMap<>();
-	public static HashMap<String, ResourceLocation> textureDisguise = new HashMap<>();
+	
+	public static HashMap<String, ModelBase> entityModel = new HashMap<String, ModelBase>();
+	public static HashMap<String, ResourceLocation> textureDisguise = new HashMap<String, ResourceLocation>();
 	public static RenderCustomModel disguiseRender;
-	public static RenderLivingBase<?> disguiseRenderPlayer;
-	public static RenderLivingBase<?> disguiseRenderPlayerSmall;
+	public static RenderLivingBase disguiseRenderPlayer;
+	public static RenderLivingBase disguiseRenderPlayerSmall;
+	public static RenderLivingBase forceTextureRenderPlayer;
 	public static TextureMap particleMap;
 	public static KeyBinding reload = new KeyBinding("key.reload", Keyboard.KEY_R, "TF2");
+	public static KeyBinding backpackitem = new KeyBinding("key.activatebackpack", Keyboard.KEY_0, "TF2");
 	public static ResourceLocation scopeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/scope.png");
 	// public static Map<MinigunLoopSound, EntityLivingBase > spinSounds;
 	public static BiMap<EntityLivingBase, WeaponSound> fireSounds;
@@ -159,12 +176,14 @@ public class ClientProxy extends CommonProxy {
 	public static Map<String, ModelResourceLocation> nameToModel;
 	public static ConcurrentMap<EntityLivingBase, ItemStack> soundsToStart;
 	public static ResourceLocation blackTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/black.png");
+	public static ResourceLocation circleTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/circle.png");
 	public static ResourceLocation healingTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/gui/healing.png");
 	public static ResourceLocation buildingTexture = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/buildings.png");
 	public static ResourceLocation blueprintTexture = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/gui/blueprints.png");
 	public static ResourceLocation chargeTexture = new ResourceLocation(TF2weapons.MOD_ID, "textures/misc/charge.png");
+	public static final ResourceLocation WIDGETS_TEXTURE_MC = new ResourceLocation("textures/gui/widgets.png");
 	public static final ResourceLocation VIGNETTE = new ResourceLocation("textures/misc/vignette.png");
 	public static List<WeaponSound> weaponSoundsToStart;
 	public static int renderCritGlow;
@@ -184,37 +203,36 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	public static void RegisterWeaponData(WeaponData weapon) {
-
+		
 		Item item = MapList.weaponClasses.get(weapon.getString(PropertyType.CLASS));
-
+		
 		if (item instanceof ItemFromData)
 			((ItemFromData)item).registerModels(weapon);
-
+		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void registerRenderInformation() {
 
-
+		
 		Minecraft.getMinecraft().getItemColors().registerItemColorHandler((stack, tintIndex) ->
-		{
-			if(stack.getItemDamage()<25){
-				return stack.getItemDamage() < 9 ? 16711680 : 255;
-			}
-			else if(stack.getItemDamage() / 2 == 13)
-				return 0xFFFFFF;
-			else if(stack.getItemDamage() == 28)
-				return 0x743501;
-			else if(stack.getItemDamage() == 29)
-				return 0x1B013A;
-			else if(stack.getItemDamage() == 30)
-				return 0x20582B;
-			else if(stack.getItemDamage() < 45)
-				return 0x2AAAFF;
-			return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
-		}, TF2weapons.itemPlacer);
-		Collection<Item> items = new ArrayList<>(ForgeRegistries.ITEMS.getValues());
+			{
+				if(stack.getItemDamage()<25){
+					return stack.getItemDamage() < 9 ? 16711680 : 255;
+				}
+				else if(stack.getItemDamage() / 2 == 13)
+					return 0xFFFFFF;
+				else if(stack.getItemDamage() == 28)
+					return 0x743501;
+				else if(stack.getItemDamage() == 29)
+					return 0x1B013A;
+				else if(stack.getItemDamage() == 30)
+					return 0x20582B;
+				else if(stack.getItemDamage() < 45)
+					return 0x2AAAFF;
+				return stack.getItemDamage() / 2 == 13 ? 0xFFFFFF : (stack.getItemDamage() % 2 == 0 ? 16711680 : 255);
+			}, TF2weapons.itemPlacer);
+		Collection<Item> items = new ArrayList<Item>(ForgeRegistries.ITEMS.getValues());
 		items.removeIf( item -> !(item instanceof ItemFromData || item instanceof ItemTool || item instanceof ItemSword
 				|| item instanceof ItemBow));
 
@@ -251,14 +269,16 @@ public class ClientProxy extends CommonProxy {
 		for (RenderPlayer render : Minecraft.getMinecraft().getRenderManager().getSkinMap().values()) {
 			render.addLayer(new LayerWearables(render));
 		}
-		reloadSounds = new HashMap<>();
-		soundsToStart = new ConcurrentHashMap<>();
-		weaponSoundsToStart = new ArrayList<>();
+		reloadSounds = new HashMap<EntityLivingBase, ReloadSound>();
+		soundsToStart = new ConcurrentHashMap<EntityLivingBase, ItemStack>();
+		weaponSoundsToStart = new ArrayList<WeaponSound>();
 		fireSounds = HashBiMap.create();
 		ClientRegistry.registerKeyBinding(ClientProxy.reload);
+		ClientRegistry.registerKeyBinding(ClientProxy.backpackitem);
 		//disguiseRender = new RenderCustomModel(Minecraft.getMinecraft().getRenderManager(), new ModelBiped(), 0);
 		disguiseRenderPlayer = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), false);
 		disguiseRenderPlayerSmall = new RenderPlayerDisguised(Minecraft.getMinecraft().getRenderManager(), true);
+		forceTextureRenderPlayer = new RenderPlayerForceTexture(Minecraft.getMinecraft().getRenderManager(), false);
 		interactingBlocks = new HashSet<>();
 		Method usemethod = null;
 		for (Method method : Block.class.getMethods()) {
@@ -268,21 +288,21 @@ public class ClientProxy extends CommonProxy {
 		}
 		for(Block block : ForgeRegistries.BLOCKS.getValuesCollection()) {
 			try {
-				if (!interactingBlocks.contains(block.getClass()))
-					for (Method method : block.getClass().getMethods()) {
-						if ((method.getName().equals("onBlockActivated") || method.getName().equals("func_180639_a"))&& !method.equals(usemethod)) {
-							interactingBlocks.add(block.getClass());
-							break;
-						}
+			if (!interactingBlocks.contains(block.getClass()))
+				for (Method method : block.getClass().getMethods()) {
+					if ((method.getName().equals("onBlockActivated") || method.getName().equals("func_180639_a"))&& !method.equals(usemethod)) {
+						interactingBlocks.add(block.getClass());
+						break;
 					}
+				}
 			}
 			catch (NoClassDefFoundError err) {
-
+				
 			}
 		}
 		try {
-			//System.out.println("Is Class: "+logger.getClass().getCanonicalName());
-			/*Filter filter= new AbstractFilter() {
+					//System.out.println("Is Class: "+logger.getClass().getCanonicalName());
+					/*Filter filter= new AbstractFilter() {
 						 @Override
 						    public Result filter(final LogEvent event) {
 							 	if(event.getLoggerName().equals("net.minecraft.client.multiplayer.GuiConnecting")) {
@@ -295,9 +315,9 @@ public class ClientProxy extends CommonProxy {
 					};
 					filter.start();
 					LOGGER.get().addFilter(filter);*/
-			//logger.get().addAppender(app, org.apache.logging.log4j.Level.ALL, null);
+					//logger.get().addAppender(app, org.apache.logging.log4j.Level.ALL, null);
 		} catch (Exception e) {
-
+			
 		}
 		particleFactories.put(EnumTF2Particles.EXPLOSION, new ParticleExplosion.Factory());
 		particleFactories.put(EnumTF2Particles.BULLET_TRACER, new EntityBulletTracer.Factory());
@@ -310,11 +330,12 @@ public class ClientProxy extends CommonProxy {
 
 	@Override
 	public void preInit() {
+		// TODO Auto-generated method stub
 		MinecraftForge.EVENT_BUS.register(new TF2EventsClient());
 		OBJLoader.INSTANCE.addDomain(TF2weapons.MOD_ID.toLowerCase());
-
+		
 		for (int i = 1; i < ItemAmmo.AMMO_TYPES.length; i++){
-
+			
 			if (i != 10 && i != 12)
 				ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmo, i,
 						new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_" + ItemAmmo.AMMO_TYPES[i], "inventory"));
@@ -324,15 +345,15 @@ public class ClientProxy extends CommonProxy {
 		// ModelResourceLocation(TF2weapons.MOD_ID+":copper_ingot",
 		// "inventory"),new
 		// ModelResourceLocation(TF2weapons.MOD_ID+":lead_ingot", "inventory"));
-		nameToModel = new HashMap<>();
+		nameToModel = new HashMap<String, ModelResourceLocation>();
 		for (WeaponData weapon : MapList.nameToData.values())
 			// System.out.println("Execut "+weapon.getName());
 			RegisterWeaponData(weapon);
-
+		
 		for (Item item : MapList.weaponClasses.values()) {
 			ModelLoader.setCustomMeshDefinition(item,((ItemFromData)item).getMeshDefinition());
 		}
-
+		
 		ModelResourceLocation spawnEgg = new ModelResourceLocation("spawn_egg", "inventory");
 
 		ModelBakery.registerItemVariants(TF2weapons.itemPlacer, spawnEgg);
@@ -370,44 +391,45 @@ public class ClientProxy extends CommonProxy {
 		final ModelResourceLocation killstreakPro = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_kit_professional",
 				"inventory");
 		final ModelResourceLocation ammoBox = new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box", "inventory");
-
+		final ModelResourceLocation ammoBoxSmall = new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_box_small", "inventory");
+		
 		ModelBakery.registerItemVariants(TF2weapons.itemBuildingBox, sentryRed, sentryBlu, dispenserRed, dispenserBlu,
 				teleporterRed, teleporterBlu);
 		ModelLoader.setCustomMeshDefinition(TF2weapons.itemBuildingBox,
 				new ItemMeshDefinition() {
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				if (stack.getItemDamage() == 18)
-					return sentryRed;
-				else if (stack.getItemDamage() == 19)
-					return sentryBlu;
-				else if (stack.getItemDamage() == 20)
-					return dispenserRed;
-				else if (stack.getItemDamage() == 21)
-					return dispenserBlu;
-				else if (stack.getItemDamage() == 22)
-					return teleporterRed;
-				else
-					return teleporterBlu;
-			}
-		});
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						if (stack.getItemDamage() == 18)
+							return sentryRed;
+						else if (stack.getItemDamage() == 19)
+							return sentryBlu;
+						else if (stack.getItemDamage() == 20)
+							return dispenserRed;
+						else if (stack.getItemDamage() == 21)
+							return dispenserBlu;
+						else if (stack.getItemDamage() == 22)
+							return teleporterRed;
+						else
+							return teleporterBlu;
+					}
+				});
 		ModelBakery.registerItemVariants(TF2weapons.itemKillstreak, killstreak, killstreakSpec, killstreakPro);
 		ModelLoader.setCustomMeshDefinition(TF2weapons.itemKillstreak,
 				new ItemMeshDefinition() {
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				switch (((ItemKillstreakKit)stack.getItem()).getLevel(stack)) {
-				case 1: return killstreak;
-				case 2: return killstreakSpec;
-				case 3: return killstreakPro;
-				default: return killstreak;
-				}
-			}
-		});
-
-		ModelBakery.registerItemVariants(TF2weapons.itemAmmoPackage, ammoBox);
-		ModelLoader.setCustomMeshDefinition(TF2weapons.itemAmmoPackage, stack -> ammoBox);
-
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						switch (((ItemKillstreakKit)stack.getItem()).getLevel(stack)) {
+						case 1: return killstreak;
+						case 2: return killstreakSpec;
+						case 3: return killstreakPro;
+						default: return killstreak;
+						}
+					}
+				});
+		
+		ModelBakery.registerItemVariants(TF2weapons.itemAmmoPackage, ammoBox, ammoBoxSmall);
+		ModelLoader.setCustomMeshDefinition(TF2weapons.itemAmmoPackage, stack -> stack.getMetadata() /16 == 0 ? ammoBoxSmall : ammoBox);
+		
 		final ModelResourceLocation killstreakFab = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator",
 				"inventory");
 		final ModelResourceLocation killstreakFabSpec = new ModelResourceLocation(TF2weapons.MOD_ID + ":killstreak_fabricator_spec",
@@ -417,20 +439,20 @@ public class ClientProxy extends CommonProxy {
 		ModelBakery.registerItemVariants(TF2weapons.itemKillstreakFabricator, killstreakFab, killstreakFabSpec, killstreakFabPro);
 		ModelLoader.setCustomMeshDefinition(TF2weapons.itemKillstreakFabricator,
 				new ItemMeshDefinition() {
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				switch (((ItemKillstreakFabricator)stack.getItem()).getLevel(stack)) {
-				case 1: return killstreakFab;
-				case 2: return killstreakFabSpec;
-				case 3: return killstreakFabPro;
-				default: return killstreakFab;
-				}
-			}
-		});
+					@Override
+					public ModelResourceLocation getModelLocation(ItemStack stack) {
+						switch (((ItemKillstreakFabricator)stack.getItem()).getLevel(stack)) {
+						case 1: return killstreakFab;
+						case 2: return killstreakFabSpec;
+						case 3: return killstreakFabPro;
+						default: return killstreakFab;
+						}
+					}
+				});
 		for (int i = 0; i < ItemRobotPart.LEVEL.length; i++)
 			ModelLoader.setCustomModelResourceLocation(TF2weapons.itemRobotPart, i,
 					new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_"+i, "inventory"));
-
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoFire, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_fire", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoPistol, 0,
@@ -460,7 +482,7 @@ public class ClientProxy extends CommonProxy {
 					new ModelResourceLocation(TF2weapons.MOD_ID + ":tour_ticket", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemAmmoMedigun, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":ammo_medigun", "inventory"));
-
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":copper_ingot", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 1,
@@ -485,7 +507,11 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":random_hat", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 11,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":logic_board", "inventory"));
-
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 12,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_pack", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemTF2, 13,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":robot_part_pack", "inventory"));
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_scout", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 1,
@@ -504,7 +530,7 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_sniper", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemToken, 8,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":token_spy", "inventory"));
-
+		
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 0,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":door_controller_player", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemDoorController, 1,
@@ -519,73 +545,90 @@ public class ClientProxy extends CommonProxy {
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_monoculus", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemBossSpawn, 2,
 				new ModelResourceLocation(TF2weapons.MOD_ID + ":boss_merasmus", "inventory"));
-
+		
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 0,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_small", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 1,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_normal", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(TF2weapons.itemMoney, 2,
+				new ModelResourceLocation(TF2weapons.MOD_ID + ":money_big", "inventory"));
+		
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityOverheadDoor.class, new RenderDoor());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRobotDeploy.class, new RenderRobotDeploy());
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityTF2Character.class,
 				new IRenderFactory<EntityTF2Character>() {
-			@Override
-			public Render<EntityTF2Character> createRenderFor(RenderManager manager) {
-				return new RenderTF2Character(manager);
-			}
-		});
+					@Override
+					public Render<EntityTF2Character> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderTF2Character(manager);
+					}
+				});
 		/*
 		 * RenderingRegistry.registerEntityRenderingHandler(EntityProjectileBase
 		 * .class, new IRenderFactory<Entity>(){
-		 *
+		 * 
 		 * @Override public Render<Entity> createRenderFor(RenderManager
-		 * manager) {  return new
+		 * manager) { // TODO Auto-generated method stub return new
 		 * RenderEntity(manager); } });
 		 */
 		RenderingRegistry.registerEntityRenderingHandler(EntityRocket.class, new IRenderFactory<EntityRocket>() {
 			@Override
 			public Render<EntityRocket> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderRocket(manager);
 			}
 		});
 		/*
 		 * RenderingRegistry.registerEntityRenderingHandler(EntityFlame.class,
 		 * new IRenderFactory<EntityFlame>(){
-		 *
+		 * 
 		 * @Override public Render<EntityFlame> createRenderFor(RenderManager
-		 * manager) {  return
+		 * manager) { // TODO Auto-generated method stub return
 		 * (Render<EntityFlame>) new RenderEntity(); } });
 		 */
 		RenderingRegistry.registerEntityRenderingHandler(EntityGrenade.class, new IRenderFactory<EntityGrenade>() {
 			@Override
 			public Render<EntityGrenade> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderGrenade(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityStickybomb.class,
 				new IRenderFactory<EntityStickybomb>() {
-			@Override
-			public Render<EntityStickybomb> createRenderFor(RenderManager manager) {
-				return new RenderStickybomb(manager);
-			}
-		});
+					@Override
+					public Render<EntityStickybomb> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderStickybomb(manager);
+					}
+				});
 		RenderingRegistry.registerEntityRenderingHandler(EntityProjectileSimple.class, new IRenderFactory<EntityProjectileSimple>() {
 			@Override
 			public Render<EntityProjectileSimple> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderProjectileSimple(manager);
 			}
 		});
-
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityBall.class, new IRenderFactory<EntityBall>() {
 			@Override
 			public Render<EntityBall> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderBall(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityFlare.class, new IRenderFactory<EntityFlare>() {
 			@Override
 			public Render<EntityFlare> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderFlare(manager);
 			}
 		});
-
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityJar.class, new IRenderFactory<EntityJar>() {
 			@Override
 			public Render<EntityJar> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderJar(manager);
 			}
 		});
@@ -593,77 +636,92 @@ public class ClientProxy extends CommonProxy {
 			ResourceLocation texture = new ResourceLocation(TF2weapons.MOD_ID, "textures/entity/projectile/onyx.png");
 			return new RenderProjectile(new ModelRocket(), texture, texture, manager);
 		});
-
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntitySentry.class, new IRenderFactory<EntitySentry>() {
 			@Override
 			public Render<EntitySentry> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderSentry(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityDispenser.class, new IRenderFactory<EntityDispenser>() {
 			@Override
 			public Render<EntityDispenser> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderDispenser(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityTeleporter.class,
 				new IRenderFactory<EntityTeleporter>() {
-			@Override
-			public Render<EntityTeleporter> createRenderFor(RenderManager manager) {
-				return new RenderTeleporter(manager);
-			}
-		});
+					@Override
+					public Render<EntityTeleporter> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderTeleporter(manager);
+					}
+				});
 		RenderingRegistry.registerEntityRenderingHandler(EntityStatue.class, new IRenderFactory<EntityStatue>() {
 			@Override
 			public Render<EntityStatue> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderStatue(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityHHH.class, new IRenderFactory<EntityHHH>() {
 			@Override
 			public Render<EntityHHH> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderHHH(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityMerasmus.class, new IRenderFactory<EntityMerasmus>() {
 			@Override
 			public Render<EntityMerasmus> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderMerasmus(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityMonoculus.class, new IRenderFactory<EntityMonoculus>() {
 			@Override
 			public Render<EntityMonoculus> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
 				return new RenderMonoculus(manager);
+			}
+		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityPickup.class, new IRenderFactory<EntityPickup>() {
+			@Override
+			public Render<EntityPickup> createRenderFor(RenderManager manager) {
+				// TODO Auto-generated method stub
+				return new RenderPickup(manager);
 			}
 		});
 		RenderingRegistry.registerEntityRenderingHandler(EntityFuryFireball.class,
 				new IRenderFactory<EntityFuryFireball>() {
-			@Override
-			public RenderSprite<EntityFuryFireball> createRenderFor(RenderManager manager) {
-				return new RenderSprite<EntityFuryFireball>(manager, 1f, null) {
 					@Override
-					protected TextureAtlasSprite getSprite(EntityFuryFireball entity) {
-						return Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(Items.FIRE_CHARGE);
+					public RenderSprite<EntityFuryFireball> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderSprite<EntityFuryFireball>(manager, 1f, null) {
+							protected TextureAtlasSprite getSprite(EntityFuryFireball entity) {
+								return Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getParticleIcon(Items.FIRE_CHARGE);
+							}
+						};
 					}
-				};
-			}
-		});
+				});
 		RenderingRegistry.registerEntityRenderingHandler(EntitySaxtonHale.class,
 				new IRenderFactory<EntitySaxtonHale>() {
-			@Override
-			public Render<EntitySaxtonHale> createRenderFor(RenderManager manager) {
-				return new RenderBiped<EntitySaxtonHale>(manager, new ModelBiped(), 0.5F) {
-					private final ResourceLocation TEXTURE = new ResourceLocation(TF2weapons.MOD_ID,
-							"textures/entity/tf2/SaxtonHale.png");
-
 					@Override
-					protected ResourceLocation getEntityTexture(EntitySaxtonHale entity) {
-						return TEXTURE;
+					public Render<EntitySaxtonHale> createRenderFor(RenderManager manager) {
+						// TODO Auto-generated method stub
+						return new RenderBiped<EntitySaxtonHale>(manager, new ModelBiped(), 0.5F) {
+							private final ResourceLocation TEXTURE = new ResourceLocation(TF2weapons.MOD_ID,
+									"textures/entity/tf2/SaxtonHale.png");
+
+							@Override
+							protected ResourceLocation getEntityTexture(EntitySaxtonHale entity) {
+								return TEXTURE;
+							}
+						};
 					}
-				};
-			}
-		});
+				});
 	}
 
 	public static void playBuildingSound(BuildingSound sound) {
@@ -689,12 +747,17 @@ public class ClientProxy extends CommonProxy {
 		Particle entity = new EntityCritEffect(world, pX, pY, pZ, teamForDisplay);
 		spawnParticle(world, entity);
 	}
-
+	
 	public static void spawnBisonParticle(World world, double pX, double pY, double pZ, int teamForDisplay) {
 		Particle entity = new EntityBisonEffect(world, pX, pY, pZ, teamForDisplay);
 		spawnParticle(world, entity);
 	}
-
+	
+	public static void spawnGasSmokeParticle(World world, double pX, double pY, double pZ, int teamForDisplay) {
+		Particle entity = new ParticleGasSmoke(world, pX, pY, pZ, teamForDisplay);
+		spawnParticle(world, entity);
+	}
+	
 	public static void spawnBulletHoleParticle(World world, RayTraceResult origin) {
 		Particle entity = new ParticleBulletHole(world, origin);
 		spawnParticle(world, entity);
@@ -741,7 +804,7 @@ public class ClientProxy extends CommonProxy {
 		// System.out.println(sound.type);\
 		if (playSound == null)
 			return null;
-
+		
 		WeaponSound sound;
 		if (loop) {
 			sound = new WeaponLoopSound(playSound, living, type < 2, ItemFromData.getData(stack), type == 1, type);
@@ -782,10 +845,12 @@ public class ClientProxy extends CommonProxy {
 
 		public RenderCustomModel(RenderManager renderManagerIn, ModelBase modelBaseIn, float shadowSizeIn) {
 			super(renderManagerIn, modelBaseIn, shadowSizeIn);
+			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		protected ResourceLocation getEntityTexture(EntityLivingBase entity) {
+			// TODO Auto-generated method stub
 			return texture;
 		}
 
@@ -836,7 +901,7 @@ public class ClientProxy extends CommonProxy {
 				Minecraft.getMinecraft().player.movementInput = new MovementInputCharging();
 				KeyBinding.setKeyBindState(Minecraft.getMinecraft().gameSettings.keyBindSprint.getKeyCode(), true);
 				Minecraft.getMinecraft().gameSettings.mouseSensitivity *= 0.1f;
-
+				
 			} else if (player.getActivePotionEffect(TF2weapons.charging) == null
 					&& player.getCapability(TF2weapons.PLAYER_CAP, null).lastMovementInput != null) {
 				Minecraft.getMinecraft().player.movementInput = player.getCapability(TF2weapons.PLAYER_CAP,
@@ -866,26 +931,28 @@ public class ClientProxy extends CommonProxy {
 	public static void removeSprint() {
 		KeyBinding.setKeyBindState(Minecraft.getMinecraft().gameSettings.keyBindSprint.getKeyCode(), false);
 	}
-
+	
 	public static void setColor(int color, float alpha, float darken, float min, float max) {
-		GlStateManager.color(MathHelper.clamp((color >> 16) / 255f + darken, min, max),
+		GlStateManager.color(MathHelper.clamp((color >> 16) / 255f + darken, min, max), 
 				MathHelper.clamp((color >> 8 & 255) / 255f + darken, min, max), MathHelper.clamp((color & 255) / 255f + darken, min, max), alpha);
 	}
-
-	@Override
+	
 	public void displayCorruptedFileError() {
 		throw new CorruptedFileException();
 	}
-
+	
 	public static class CorruptedFileException extends CustomModLoadingErrorDisplayException {
 
 		/**
-		 *
+		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {}
+		public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {
+			// TODO Auto-generated method stub
+			
+		}
 
 		@Override
 		public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRenderer, int mouseRelX, int mouseRelY,
@@ -894,6 +961,6 @@ public class ClientProxy extends CommonProxy {
 			errorScreen.drawCenteredString(fontRenderer, "Failed to copy weapon files. Restart the game and try again", errorScreen.width / 2, 90, 16777215);
 
 		}
-
+		
 	}
 }

@@ -11,6 +11,7 @@ import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemCleaver;
 import rafradek.TF2weapons.item.ItemFromData;
+import rafradek.TF2weapons.item.ItemWeapon;
 
 public class EntityScout extends EntityTF2Character {
 	public boolean doubleJumped;
@@ -52,17 +53,16 @@ public class EntityScout extends EntityTF2Character {
 			this.loadout.setStackInSlot(2, ItemFromData.getNewStack("sandman"));
 		}
 	}
-
+	
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootScout;
 	}
-
-	@Override
+	
 	public float[] getDropChance() {
 		return new float[] { 0.1f, 0.12f, 0.11f };
 	}
-
+	
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -76,7 +76,7 @@ public class EntityScout extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
-
+		
 		if (jumpDelay > 0 && --jumpDelay == 0 && (this.onGround || !this.doubleJumped))
 			this.jump();
 		if (this.onGround)
@@ -87,8 +87,8 @@ public class EntityScout extends EntityTF2Character {
 			if(this.getAttackTarget() == null || this.getAttackTarget().getActivePotionEffect(TF2weapons.stun) == null) {
 				this.switchSlot(2);
 				//if(this.getAttackTarget() != null && this.getWepCapability().getPrimaryCooldown()<=0 && this.getEntitySenses().canSee(this.getAttackTarget())) {
-				//((ItemWeapon)this.getHeldItemMainhand().getItem()).altUse(getHeldItemMainhand(), this, world);
-				//this.getWepCapability().setPrimaryCooldown(1000);
+					//((ItemWeapon)this.getHeldItemMainhand().getItem()).altUse(getHeldItemMainhand(), this, world);
+					//this.getWepCapability().setPrimaryCooldown(1000);
 				//}
 			}
 			else if (!this.isRobot()){
@@ -106,7 +106,7 @@ public class EntityScout extends EntityTF2Character {
 		/*
 		 * double speed=Math.sqrt(motionX*motionX+motionZ*motionZ);
 		 * if(speed!=0){
-		 *
+		 * 
 		 * double speedMultiply=this.getEntityAttribute(SharedMonsterAttributes.
 		 * MOVEMENT_SPEED).getAttributeValue()/speed;
 		 * this.motionX*=speedMultiply; this.motionZ*=speedMultiply; }
@@ -124,14 +124,13 @@ public class EntityScout extends EntityTF2Character {
 		}
 	}
 
-	@Override
 	public float getAttributeModifier(String attribute) {
 		if (this.loadout.getStackInSlot(1).getItem() instanceof ItemCleaver && shouldScaleAttributes())
 			if (attribute.equals("Fire Rate"))
 				return this.scaleWithDifficulty(1.8f, 1f);
 		return super.getAttributeModifier(attribute);
 	}
-
+	
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_SCOUT_SAY;
@@ -158,9 +157,9 @@ public class EntityScout extends EntityTF2Character {
 	 * this.getHeldItem(EnumHand.MAIN_HAND); float f =
 	 * (float)(this.getMaxHealth() - this.getHealth()) /
 	 * (float)this.getMaxHealth(); int i = 4 + MathHelper.floor_float(f * 4.0F);
-	 *
+	 * 
 	 * if (item!stack.isEmpty()) { i += itemstack.getDamageVsEntity(this); }
-	 *
+	 * 
 	 * return i; }
 	 */
 
@@ -181,19 +180,17 @@ public class EntityScout extends EntityTF2Character {
 	public float getMotionSensitivity() {
 		return this.scaleWithDifficulty(0.12f, 0.02f);
 	}
-
+	
 	@Override
 	public void onShot() {
 		if (ItemFromData.getData(this.loadout.getStackInSlot(2)).getName().equals("sandmanball"))
 			this.ballCooldown = this.getDiff() == 1 ? 340 : (this.getDiff() == 3 ? 160 : 240);
 	}
-
-	@Override
+	
 	public int getClassIndex() {
 		return 0;
 	}
-
-	@Override
+	
 	public int getState(boolean onTarget) {
 		if (onTarget && this.usedSlot == 2) {
 			return 3;
@@ -201,5 +198,5 @@ public class EntityScout extends EntityTF2Character {
 		else
 			return super.getState(onTarget);
 	}
-
+	
 }

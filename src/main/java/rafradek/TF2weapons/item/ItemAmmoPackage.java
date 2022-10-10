@@ -1,5 +1,6 @@
 package rafradek.TF2weapons.item;
 
+import io.netty.util.internal.MathUtil;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -8,6 +9,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import rafradek.TF2weapons.TF2weapons;
@@ -32,14 +34,13 @@ public class ItemAmmoPackage extends Item{
 	public int getMaxStackSize(ItemStack stack) {
 		return stack.getMetadata() % 16 == 0 ? 64 : 1;
 	}
-	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand hand)
-	{
+    {
 		ItemStack itemStackIn=playerIn.getHeldItem(hand);
 		if(!worldIn.isRemote){
 			int ammoType = itemStackIn.getMetadata() % 16;
 			for(ItemStack stack:playerIn.inventory.mainInventory){
-				if(!stack.isEmpty() && stack.getItem() instanceof ItemUsable && ((ItemUsable) stack.getItem()).getAmmoType(stack) !=0
+				if(!stack.isEmpty() && stack.getItem() instanceof ItemUsable && ((ItemUsable) stack.getItem()).getAmmoType(stack) !=0 
 						&& ((ItemUsable) stack.getItem()).getAmmoType(stack) < ItemAmmo.AMMO_TYPES.length){
 					ammoType = ((ItemUsable) stack.getItem()).getAmmoType(stack);
 					//itemStackIn.setItemDamage();
@@ -51,13 +52,10 @@ public class ItemAmmoPackage extends Item{
 			if(!playerIn.inventory.addItemStackToInventory(out))
 				playerIn.entityDropItem(out, 0);
 			itemStackIn.shrink(1);
-		}
-		return new ActionResult<>(EnumActionResult.SUCCESS, itemStackIn);
-	}
-	public static ItemStack convertPackage(ItemStack stack,EntityPlayer player, int ammoType){
-
-		if (ammoType == 0)
-			ammoType = player.getRNG().nextInt(13)+1;
+	    }
+        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
+    }
+	public static ItemStack getAmmoForType(int ammoType, int amount) {
 		Item item;
 		switch (ammoType) {
 		case 2: item = TF2weapons.itemAmmoMinigun; break;
@@ -68,8 +66,6 @@ public class ItemAmmoPackage extends Item{
 		case 12: item = TF2weapons.itemAmmoMedigun; break;
 		default: item = TF2weapons.itemAmmo;
 		}
-		int amount = AMMO_PACKAGE_MIN[ammoType]+player.getRNG().nextInt(AMMO_PACKAGE_MAX[ammoType]+1);
-		amount *= stack.getMetadata() / 16 + 1;
 		ItemStack ammo = new ItemStack(item);
 		if (item instanceof ItemFireAmmo) {
 			if (amount > ammo.getMaxDamage()+1) {
@@ -82,6 +78,16 @@ public class ItemAmmoPackage extends Item{
 			ammo.setItemDamage(ammoType);
 			ammo.setCount(amount);
 		}
+		return ammo;
+	}
+	public static ItemStack convertPackage(ItemStack stack,EntityPlayer player, int ammoType){
+		
+		if (ammoType == 0)
+			ammoType = player.getRNG().nextInt(13)+1;
+		
+		int amount = AMMO_PACKAGE_MIN[ammoType]+player.getRNG().nextInt(AMMO_PACKAGE_MAX[ammoType]+1);
+		amount *= stack.getMetadata() / 16 + 1;
+		ItemStack ammo = getAmmoForType(ammoType, amount);
 		WeaponsCapability.get(player).setMetal(WeaponsCapability.get(player).getMetal() + 40 * (stack.getMetadata() / 16 + 1));
 		return ammo;
 		/*if(stack.getMetadata()==10){
