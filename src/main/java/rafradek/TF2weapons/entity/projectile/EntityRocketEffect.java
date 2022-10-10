@@ -1,9 +1,9 @@
 package rafradek.TF2weapons.entity.projectile;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityRocketEffect extends Particle {
 	public EntityRocket rocket;
@@ -21,7 +21,6 @@ public class EntityRocketEffect extends Particle {
 		// this.setParticleIcon(TF2EventBusListener.pelletIcon);
 		// this.setParticleTextureIndex(81);
 		this.multipleParticleScaleBy(2);
-		// TODO Auto-generated constructor stub
 		this.setRBGColorF(1f, 0.5f, 0f);
 		this.particleTextureJitterX = this.rand.nextFloat();
 		this.particleTextureJitterY = this.rand.nextFloat();

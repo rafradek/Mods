@@ -13,21 +13,17 @@ public class TF2WearableChangeHandler implements IMessageHandler<TF2Message.Wear
 
 	@Override
 	public IMessage onMessage(final WearableChangeMessage message, MessageContext ctx) {
-		Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-
-			@Override
-			public void run() {
-				Entity entity = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
-				if (entity != null) {
-					if (message.slot < 20)
-						entity.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(message.slot,
-								message.stack);
-					else if (entity instanceof EntityTF2Character) {
-						((EntityTF2Character)entity).loadout.setStackInSlot(message.slot-20, message.stack);
-					}
+		Minecraft.getMinecraft().addScheduledTask(() -> {
+			Entity entity = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
+			if (entity != null) {
+				if (message.slot < 20)
+					entity.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(message.slot,
+							message.stack);
+				else if (entity instanceof EntityTF2Character) {
+					((EntityTF2Character) entity).loadout.setStackInSlot(message.slot - 20, message.stack);
 				}
-					
 			}
+
 		});
 		return null;
 	}

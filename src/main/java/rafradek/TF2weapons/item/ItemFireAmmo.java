@@ -7,22 +7,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.FluidTankProperties;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.item.ItemAmmoBelt.Provider;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemFireAmmo extends ItemAmmo {
@@ -44,18 +37,18 @@ public class ItemFireAmmo extends ItemAmmo {
 
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
-		if(!this.isInCreativeTab(par2CreativeTabs))
+		if (!this.isInCreativeTab(par2CreativeTabs))
 			return;
 		par3List.add(new ItemStack(this));
 	}
 
 	@Override
 	public int getMaxDamage(ItemStack stack) {
-		return uses-1;
+		return uses - 1;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
+	@SuppressWarnings("deprecation")
 	public int getItemStackLimit(ItemStack stack) {
 		return this.getItemStackLimit();
 	}
@@ -70,7 +63,7 @@ public class ItemFireAmmo extends ItemAmmo {
 		}
 		return 0;
 	}
-	
+
 	@Override
 	public int consumeAmmo(EntityLivingBase living, ItemStack stack, int amount) {
 		if (stack == STACK_FILL)
@@ -83,46 +76,45 @@ public class ItemFireAmmo extends ItemAmmo {
 				if (living instanceof EntityPlayer)
 					remain = TF2Util.pickAmmo(remain, (EntityPlayer) living, true);
 				if (!remain.isEmpty())
-				living.entityDropItem(remain,0).setPickupDelay(0);
-			}
-			else {
+					living.entityDropItem(remain, 0).setPickupDelay(0);
+			} else {
 				stack.setItemDamage(stack.getItemDamage() + amount);
 				if (stack.getItemDamage() > stack.getMaxDamage())
 					stack.shrink(1);
 			}
 
 			return left;
-			/*if (stack.getCount() <= 0 && living instanceof EntityPlayer) {
-				if (!living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3).isEmpty()){
-					IItemHandlerModifiable invAmmo = (IItemHandlerModifiable) living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(3)
-							.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-					for (int i = 0; i < invAmmo.getSlots(); i++) {
-						ItemStack stackInv = invAmmo.getStackInSlot(i);
-						if (stack == stackInv) {
-							invAmmo.setStackInSlot(i, ItemStack.EMPTY);
-							return;
-						}
-					}
-				}
-				((EntityPlayer) living).inventory.deleteStack(stack);
-
-			}*/
+			/*
+			 * if (stack.getCount() <= 0 && living instanceof EntityPlayer) { if
+			 * (!living.getCapability(TF2weapons.INVENTORY_CAP,
+			 * null).getStackInSlot(3).isEmpty()){ IItemHandlerModifiable invAmmo =
+			 * (IItemHandlerModifiable) living.getCapability(TF2weapons.INVENTORY_CAP,
+			 * null).getStackInSlot(3)
+			 * .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null); for (int
+			 * i = 0; i < invAmmo.getSlots(); i++) { ItemStack stackInv =
+			 * invAmmo.getStackInSlot(i); if (stack == stackInv) { invAmmo.setStackInSlot(i,
+			 * ItemStack.EMPTY); return; } } } ((EntityPlayer)
+			 * living).inventory.deleteStack(stack);
+			 * 
+			 * }
+			 */
 		}
 		return 0;
 	}
-	
+
+	@Override
 	public int getAmount(ItemStack stack) {
-		return (uses-stack.getItemDamage()) * stack.getCount();
+		return (uses - stack.getItemDamage()) * stack.getCount();
 	}
-	
-	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt)
-    {
-        if(this.getTypeInt(stack) == 10 && TF2weapons.refinedFuel != null) {
-        	Provider cap = new Provider(stack, 3, TF2weapons.refinedFuel);
-        	return cap;
-        }
-        return null;
-    }
+
+	@Override
+	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+		if (this.getTypeInt(stack) == 10 && TF2weapons.refinedFuel != null) {
+			Provider cap = new Provider(stack, 3, TF2weapons.refinedFuel);
+			return cap;
+		}
+		return null;
+	}
 
 	public static class Provider implements ICapabilityProvider, IFluidHandlerItem {
 
@@ -130,29 +122,33 @@ public class ItemFireAmmo extends ItemAmmo {
 		ItemStack stack;
 		int mult;
 		Fluid fluid;
+
 		public Provider(ItemStack stack, int mult, Fluid fluid) {
 			this.stack = stack;
 			this.mult = mult;
 			this.fluid = fluid;
 		}
+
 		@Override
 		public IFluidTankProperties[] getTankProperties() {
-			// TODO Auto-generated method stub
 			if (stack.isEmpty())
 				return new IFluidTankProperties[0];
-			return new IFluidTankProperties[] {new FluidTankProperties(new FluidStack(fluid, ((ItemFireAmmo)stack.getItem()).getAmount(stack)*mult), ((ItemFireAmmo)stack.getItem()).uses*mult)};
+			return new IFluidTankProperties[] { new FluidTankProperties(
+					new FluidStack(fluid, ((ItemFireAmmo) stack.getItem()).getAmount(stack) * mult),
+					((ItemFireAmmo) stack.getItem()).uses * mult) };
 		}
 
 		@Override
 		public int fill(FluidStack resource, boolean doFill) {
-			// TODO Auto-generated method stub
 			if (stack.isEmpty())
 				return 0;
 			if (resource.getFluid() != fluid)
 				return resource.amount;
-			int resourceUsed = Math.max(((ItemFireAmmo)stack.getItem()).uses - ((ItemFireAmmo)stack.getItem()).getAmount(stack),(resource.amount/mult))*mult;
+			int resourceUsed = Math.max(
+					((ItemFireAmmo) stack.getItem()).uses - ((ItemFireAmmo) stack.getItem()).getAmount(stack),
+					(resource.amount / mult)) * mult;
 			if (doFill) {
-				stack.setItemDamage(stack.getItemDamage() - resourceUsed/mult);
+				stack.setItemDamage(stack.getItemDamage() - resourceUsed / mult);
 			}
 			return resourceUsed;
 		}
@@ -163,39 +159,37 @@ public class ItemFireAmmo extends ItemAmmo {
 				return null;
 			if (resource.getFluid() != fluid)
 				return null;
-			int resourceUsed = Math.min(((ItemFireAmmo)stack.getItem()).getAmount(stack),(resource.amount/mult))*mult;
+			int resourceUsed = Math.min(((ItemFireAmmo) stack.getItem()).getAmount(stack), (resource.amount / mult))
+					* mult;
 			if (doDrain) {
-				stack.setItemDamage(stack.getItemDamage() + resourceUsed/mult);
+				stack.setItemDamage(stack.getItemDamage() + resourceUsed / mult);
 				if (stack.getItemDamage() > stack.getMaxDamage())
 					stack.shrink(1);
-				
+
 			}
 			return new FluidStack(fluid, resourceUsed);
 		}
 
 		@Override
 		public FluidStack drain(int maxDrain, boolean doDrain) {
-			return drain(new FluidStack(fluid,maxDrain), doDrain);
+			return drain(new FluidStack(fluid, maxDrain), doDrain);
 		}
 
 		@Override
 		public ItemStack getContainer() {
-			// TODO Auto-generated method stub
 			return this.stack;
 		}
 
 		@Override
 		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-			// TODO Auto-generated method stub
 			return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
 		}
 
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-			// TODO Auto-generated method stub
 			return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY ? (T) this : null;
 		}
-		
+
 	}
 }

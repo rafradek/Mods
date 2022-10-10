@@ -2,11 +2,11 @@ package rafradek.TF2weapons.client.renderer.entity;
 
 import org.lwjgl.opengl.GL11;
 
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -32,6 +32,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			"textures/entity/tf2/blu/box.png");
 	public ModelBase box;
 	public ModelBase main;
+
 	public RenderTeleporter(RenderManager renderManager) {
 		super(renderManager, new ModelTeleporter(), 0.6f);
 		main = this.mainModel;
@@ -41,12 +42,16 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityTeleporter par1EntityLiving) {
 		// System.out.println("class: "+clazz);
-		boolean constr=par1EntityLiving.isConstructing();
+		boolean constr = par1EntityLiving.isConstructing();
 		switch (par1EntityLiving.getEntTeam()) {
-		case 0: return constr ? BOX_RED : TELEPORTER_RED;
-		case 1: return constr ? BOX_BLU : TELEPORTER_BLU;
-		case 2: return constr ? BOX_BLU : TELEPORTER_ROBOT;
-		default: return constr ? BOX_BLU : TELEPORTER_BLU;
+		case 0:
+			return constr ? BOX_RED : TELEPORTER_RED;
+		case 1:
+			return constr ? BOX_BLU : TELEPORTER_BLU;
+		case 2:
+			return constr ? BOX_BLU : TELEPORTER_ROBOT;
+		default:
+			return constr ? BOX_BLU : TELEPORTER_BLU;
 		}
 	}
 
@@ -56,7 +61,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			this.mainModel = this.box;
 		else
 			this.mainModel = this.main;
-		
+
 		if (living.getSoundState() == 1)
 			living.spinRender = living.spin
 					+ ((float) Math.PI * (living.getLevel() == 1 ? 0.25f : (living.getLevel() == 2 ? 0.325f : 0.4f)))
@@ -83,9 +88,8 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 0.7F);
 			/*
-			 * if(TF2weapons.getTeamForDisplay(living)==0){ GlStateManager.color(1.0F,
-			 * 0.0F, 0.0F, 0.28F); } else{ GlStateManager.color(0.0F, 0.0F, 1.0F,
-			 * 0.28F); }
+			 * if(TF2weapons.getTeamForDisplay(living)==0){ GlStateManager.color(1.0F, 0.0F,
+			 * 0.0F, 0.28F); } else{ GlStateManager.color(0.0F, 0.0F, 1.0F, 0.28F); }
 			 */
 			renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 			renderer.pos(-0.5, 0.0D, 0.5).tex(0.75D, 0.5D).endVertex();
@@ -94,10 +98,10 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 			renderer.pos(-0.5, 0.0D, -0.5).tex(0.75D, 0.0D).endVertex();
 			tessellator.draw();
 
-			if(living.getColor() != -1) {
-				float[] color=EntitySheep.getDyeRgb(EnumDyeColor.byDyeDamage(living.getColor()));
+			if (living.getColor() != -1) {
+				float[] color = EntitySheep.getDyeRgb(EnumDyeColor.byDyeDamage(living.getColor()));
 				GlStateManager.color(color[0], color[1], color[2], 0.85F);
-			
+
 				renderer.begin(7, DefaultVertexFormats.POSITION_TEX);
 				renderer.pos(-0.5, 0.0D, 0.5).tex(0.75D, 1D).endVertex();
 				renderer.pos(0.5, 0.0D, 0.5).tex(1D, 1D).endVertex();
@@ -105,7 +109,7 @@ public class RenderTeleporter extends RenderLiving<EntityTeleporter> {
 				renderer.pos(-0.5, 0.0D, -0.5).tex(0.75D, 0.5D).endVertex();
 				tessellator.draw();
 			}
-			
+
 			GlStateManager.color(1F, 1F, 1F, 1.0F);
 			GL11.glDisable(GL11.GL_BLEND);
 			// GlStateManager.enableTexture2D();

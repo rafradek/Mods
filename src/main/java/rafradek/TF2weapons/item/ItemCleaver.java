@@ -21,27 +21,32 @@ public class ItemCleaver extends ItemProjectileWeapon {
 	public boolean doMuzzleFlash(ItemStack stack, EntityLivingBase attacker, EnumHand hand) {
 		return false;
 	}
-	
+
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
 		if (super.use(stack, living, world, hand, message) && !world.isRemote) {
-			if(living instanceof EntityPlayer)
-				((EntityPlayer)living).getCooldownTracker().setCooldown(this, (int) (this.getFiringSpeed(stack, living)/50 * 
-						(TF2ConfigVars.fastItemCooldown ? 1f: getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
-			if(living instanceof EntityPlayer && !((EntityPlayer)living).capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
+			if (living instanceof EntityPlayer)
+				((EntityPlayer) living).getCooldownTracker().setCooldown(this, (int) (this.getFiringSpeed(stack, living)
+						/ 50
+						* (TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
+			if (living instanceof EntityPlayer && !((EntityPlayer) living).capabilities.isCreativeMode
+					&& !TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
-			
+
 		}
 		return true;
 	}
+
 	@Override
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
-		return super.canFire(world, living, stack) && !(living instanceof EntityPlayer && ((EntityPlayer)living).getCooldownTracker().hasCooldown(this));
+		return super.canFire(world, living, stack)
+				&& !(living instanceof EntityPlayer && ((EntityPlayer) living).getCooldownTracker().hasCooldown(this));
 	}
-	
+
+	@Override
 	public boolean isProjectileInfinite(EntityLivingBase living, ItemStack stack) {
-		return !(living instanceof EntityDummy) 
-				&& (TF2ConfigVars.freeUseItems || !(living instanceof EntityPlayer) || ((EntityPlayer)living).capabilities.isCreativeMode);
+		return !(living instanceof EntityDummy) && (TF2ConfigVars.freeUseItems || !(living instanceof EntityPlayer)
+				|| ((EntityPlayer) living).capabilities.isCreativeMode);
 	}
 }

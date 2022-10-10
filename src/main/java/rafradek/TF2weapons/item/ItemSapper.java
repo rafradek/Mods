@@ -22,15 +22,17 @@ public class ItemSapper extends ItemBulletWeapon {
 	}
 
 	@Override
-	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical, boolean simulate) {
+	public boolean onHit(ItemStack stack, EntityLivingBase attacker, Entity target, float damage, int critical,
+			boolean simulate) {
 		// System.out.println("Can hit: " + TF2weapons.canHit(attacker,
 		// target));
 		if (target instanceof EntityBuilding && !((EntityBuilding) target).isSapped()
 				&& TF2Util.canHit(attacker, target)) {
 			((EntityBuilding) target).setSapped(attacker, stack);
-			if(attacker instanceof EntityPlayer){
-			attacker.getCapability(TF2weapons.PLAYER_CAP, null).sapperTime=100;
-			attacker.getCapability(TF2weapons.PLAYER_CAP, null).buildingOwnerKill=((EntityBuilding)target).getOwner();
+			if (attacker instanceof EntityPlayer) {
+				attacker.getCapability(TF2weapons.PLAYER_CAP, null).sapperTime = 100;
+				attacker.getCapability(TF2weapons.PLAYER_CAP, null).buildingOwnerKill = ((EntityBuilding) target)
+						.getOwner();
 			}
 			((EntityBuilding) target).playSound(TF2Sounds.MOB_SAPPER_PLANT, 1.3f, 1);
 			if (((EntityBuilding) target).getOwner() != null)
@@ -39,20 +41,20 @@ public class ItemSapper extends ItemBulletWeapon {
 				stack.shrink(1);
 			if (stack.getCount() <= 0 && attacker instanceof EntityPlayer)
 				((EntityPlayer) attacker).inventory.deleteStack(stack);
-		}
-		else if (target instanceof EntityTF2Character && !TF2Util.isOnSameTeam(attacker, target) && ((EntityTF2Character) target).isRobot() 
+		} else if (target instanceof EntityTF2Character && !TF2Util.isOnSameTeam(attacker, target)
+				&& ((EntityTF2Character) target).isRobot()
 				&& ((EntityTF2Character) target).getActivePotionEffect(TF2weapons.sapped) == null) {
-			
-			if (attacker instanceof EntityPlayer && ((EntityPlayer)attacker).getCooldownTracker().hasCooldown(this))
+
+			if (attacker instanceof EntityPlayer && ((EntityPlayer) attacker).getCooldownTracker().hasCooldown(this))
 				return false;
-			((EntityTF2Character)target).addPotionEffect(new PotionEffect(TF2weapons.stun,140,1));
-			((EntityTF2Character)target).addPotionEffect(new PotionEffect(TF2weapons.sapped,140,0));
+			((EntityTF2Character) target).addPotionEffect(new PotionEffect(TF2weapons.stun, 140, 1));
+			((EntityTF2Character) target).addPotionEffect(new PotionEffect(TF2weapons.sapped, 140, 0));
 			float range = TF2Attribute.getModifier("Sapper Strength", stack, 0f, attacker) * 3 + 2;
-			for (EntityTF2Character entity : attacker.world.getEntitiesWithinAABB(EntityTF2Character.class, target.getEntityBoundingBox().grow(range), entityl -> {
-				return !TF2Util.isOnSameTeam(attacker, entityl) && ((EntityTF2Character) entityl).isRobot() && entityl.getDistanceSq(target) < range * range;
-			})){
-				((EntityTF2Character)entity).addPotionEffect(new PotionEffect(TF2weapons.stun,140,1));
-				((EntityTF2Character)entity).addPotionEffect(new PotionEffect(TF2weapons.sapped,140,0));
+			for (EntityTF2Character entity : attacker.world.getEntitiesWithinAABB(EntityTF2Character.class,
+					target.getEntityBoundingBox().grow(range), entityl -> (!TF2Util.isOnSameTeam(attacker, entityl)
+							&& entityl.isRobot() && entityl.getDistanceSq(target) < range * range))) {
+				entity.addPotionEffect(new PotionEffect(TF2weapons.stun, 140, 1));
+				entity.addPotionEffect(new PotionEffect(TF2weapons.sapped, 140, 0));
 			}
 			if (!TF2ConfigVars.freeUseItems)
 				stack.shrink(1);
@@ -80,7 +82,6 @@ public class ItemSapper extends ItemBulletWeapon {
 
 	@Override
 	public boolean doMuzzleFlash(ItemStack stack, EntityLivingBase attacker, EnumHand hand) {
-
 		return false;
 	}
 }

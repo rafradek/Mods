@@ -6,7 +6,6 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -19,10 +18,8 @@ import rafradek.TF2weapons.entity.ai.EntityAIAirblast;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemFlameThrower;
 import rafradek.TF2weapons.item.ItemFromData;
-import rafradek.TF2weapons.item.ItemHorn;
 import rafradek.TF2weapons.item.ItemJetpack;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
-import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -38,7 +35,7 @@ public class EntityPyro extends EntityTF2Character {
 			this.attack.projSpeed = 1.2570f;
 		}
 		this.rotation = 16;
-		//this.ammoLeft = 250;
+		// this.ammoLeft = 250;
 		this.experienceValue = 15;
 		// ((PathNavigateGround)this.getNavigator()).set(true);
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
@@ -51,20 +48,25 @@ public class EntityPyro extends EntityTF2Character {
 		return TF2weapons.lootPyro;
 	}
 
+	@Override
 	public float[] getDropChance() {
 		return new float[] { 0.062f, 0.12f, 0.11f };
 	}
-	
+
+	@Override
 	protected void addWeapons() {
 		super.addWeapons();
-		
+
 		if (this.isGiant()) {
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1),MapList.nameToAttribute.get("FireRateBonus"),0.42f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("FireRateBonus"),
+					0.42f);
 		}
-		
-		if (ItemFromData.getData(this.getItemStackFromSlot(EntityEquipmentSlot.HEAD)).getName().equals("head_prize") && this.rand.nextInt(3) == 0)
+
+		if (ItemFromData.getData(this.getItemStackFromSlot(EntityEquipmentSlot.HEAD)).getName().equals("head_prize")
+				&& this.rand.nextInt(3) == 0)
 			this.setCustomNameTag("Pywwo OwO");
 	}
+
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		if (source == DamageSource.ON_FIRE)
@@ -85,41 +87,44 @@ public class EntityPyro extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 
-		if(!this.world.isRemote && this.getAttackTarget() != null){
-			if(this.getDiff()>1 ){
-				boolean isFlareGun=this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon;
-				if((isFlareGun && (this.isRobot() || (this.usedSlot==0 && this.getDistanceSq(this.getAttackTarget())>64))) || 
-						(!isFlareGun && this.getAttackTarget().isPotionActive(MobEffects.FIRE_RESISTANCE)) ){
-					//System.out.println("Shotgun switch");
+		if (!this.world.isRemote && this.getAttackTarget() != null) {
+			if (this.getDiff() > 1) {
+				boolean isFlareGun = this.loadout.getStackInSlot(1).getItem() instanceof ItemProjectileWeapon;
+				if ((isFlareGun
+						&& (this.isRobot() || (this.usedSlot == 0 && this.getDistanceSq(this.getAttackTarget()) > 64)))
+						|| (!isFlareGun && this.getAttackTarget().isPotionActive(MobEffects.FIRE_RESISTANCE))) {
+					// System.out.println("Shotgun switch");
 					this.switchSlot(1);
-					//this.ammoLeft++;
-				}
-				else if(this.usedSlot==1 && this.getDistanceSq(this.getAttackTarget())<44){
+					// this.ammoLeft++;
+				} else if (this.usedSlot == 1 && this.getDistanceSq(this.getAttackTarget()) < 44) {
 					this.switchSlot(0);
 				}
 			}
 			ItemStack weapon = this.getHeldItemMainhand();
-			if (weapon.getItem() instanceof ItemFlameThrower && ((ItemFromData) weapon.getItem()).getMaxRage(weapon, this) > 0 &&
-					((ItemFromData) weapon.getItem()).getRage(weapon,this) >= ((ItemFromData) weapon.getItem()).getMaxRage(weapon, this)) {
-				this.addPotionEffect(new PotionEffect(TF2weapons.stun,40,1));
-				this.addPotionEffect(new PotionEffect(TF2weapons.noKnockback,40,0));
-				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber,40,0));
+			if (weapon.getItem() instanceof ItemFlameThrower
+					&& ((ItemFromData) weapon.getItem()).getMaxRage(weapon, this) > 0
+					&& ((ItemFromData) weapon.getItem()).getRage(weapon, this) >= ((ItemFromData) weapon.getItem())
+							.getMaxRage(weapon, this)) {
+				this.addPotionEffect(new PotionEffect(TF2weapons.stun, 40, 1));
+				this.addPotionEffect(new PotionEffect(TF2weapons.noKnockback, 40, 0));
+				TF2Util.addAndSendEffect(this, new PotionEffect(TF2weapons.uber, 40, 0));
 				this.getWepCapability().setRageActive(RageType.PHLOG, true, 2f);
-				this.playSound(ItemFromData.getSound(weapon, PropertyType.CHARGE_SOUND), this.getSoundVolume(), this.getSoundPitch());
+				this.playSound(ItemFromData.getSound(weapon, PropertyType.CHARGE_SOUND), this.getSoundVolume(),
+						this.getSoundPitch());
 			}
-			
+
 			ItemStack backpack = ItemBackpack.getBackpack(this);
 			if (!this.world.isRemote && backpack.getItem() instanceof ItemJetpack) {
-				if (this.getDistanceSq(this.getAttackTarget()) > 120 && ((ItemJetpack)backpack.getItem()).canActivate(backpack, this)) {
-					((ItemJetpack)backpack.getItem()).activateJetpack(backpack, this, true);
-					
+				if (this.getDistanceSq(this.getAttackTarget()) > 120
+						&& ((ItemJetpack) backpack.getItem()).canActivate(backpack, this)) {
+					((ItemJetpack) backpack.getItem()).activateJetpack(backpack, this, true);
+
 				}
 			}
 		}
 		super.onLivingUpdate();
 	}
-	
-	
+
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -135,11 +140,11 @@ public class EntityPyro extends EntityTF2Character {
 	 * if(this.ammoLeft>0&&this.getAttackTarget()!=null&&this.
 	 * getDistanceSq(this.getAttackTarget())<=400&&(!TF2ActionHandler.
 	 * playerAction.get(this.world.isRemote).containsKey(this)||(
-	 * TF2ActionHandler.playerAction.get(this.world.isRemote).get(this)&3)==0
-	 * )){ TF2ActionHandler.playerAction.get(this.world.isRemote).put(this,
+	 * TF2ActionHandler.playerAction.get(this.world.isRemote).get(this)&3)==0 )){
+	 * TF2ActionHandler.playerAction.get(this.world.isRemote).put(this,
 	 * TF2ActionHandler.playerAction.get(this.world.isRemote).containsKey(
-	 * this)?TF2ActionHandler.playerAction.get(this.world.isRemote).get(this)
-	 * +2:2); } }
+	 * this)?TF2ActionHandler.playerAction.get(this.world.isRemote).get(this) +2:2);
+	 * } }
 	 */
 	@Override
 	protected SoundEvent getAmbientSound() {
@@ -172,6 +177,7 @@ public class EntityPyro extends EntityTF2Character {
 		if (this.rand.nextFloat() < 0.05f + p_70628_2_ * 0.025f)
 			this.entityDropItem(ItemFromData.getNewStack("flamethrower"), 0);
 	}
+
 	@Override
 	public float getAttributeModifier(String attribute) {
 		if (shouldScaleAttributes())
@@ -179,12 +185,14 @@ public class EntityPyro extends EntityTF2Character {
 				return 0.93f;
 		return super.getAttributeModifier(attribute);
 	}
+
 	/*
 	 * @Override public float getAttributeModifier(String attribute) {
 	 * if(attribute.equals("Minigun Spinup")){ return
 	 * super.getAttributeModifier(attribute)*1.5f; } return
 	 * super.getAttributeModifier(attribute); }
 	 */
+	@Override
 	public int getClassIndex() {
 		return 2;
 	}

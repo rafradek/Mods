@@ -20,18 +20,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.NBTLiterals;
-import rafradek.TF2weapons.inventory.ContainerUpgrades;
-import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
-import rafradek.TF2weapons.util.TF2Util;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.gui.GuiTooltip;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.common.TF2Attribute.Type;
+import rafradek.TF2weapons.inventory.ContainerUpgrades;
+import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
 
 public class GuiUpgradeStation extends GuiContainer {
 	public GuiUpgradeStation(Container inventorySlotsIn) {
 		super(inventorySlotsIn);
-		// TODO Auto-generated constructor stub
 	}
 
 	private static final ResourceLocation UPGRADES_GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
@@ -72,9 +70,10 @@ public class GuiUpgradeStation extends GuiContainer {
 				this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4 + 1,
 						this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-"));
 			}
-		this.tooltip.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 15, 100, 12, I18n.format("container.upgrades.info"), this));
-		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
-						this.guiTop + 121, 100, 20, I18n.format("container.upgrades.refund")));
+		this.tooltip.add(new GuiTooltip(this.guiLeft + 128, this.guiTop + 15, 100, 12,
+				I18n.format("container.upgrades.info"), this));
+		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123, this.guiTop + 121, 100, 20,
+				I18n.format("container.upgrades.refund")));
 		setButtons();
 	}
 
@@ -86,8 +85,8 @@ public class GuiUpgradeStation extends GuiContainer {
 		 * buttonsItem[i].stackToDraw=TF2CraftingManager.INSTANCE.getRecipeList(
 		 * ).get(i+firstIndex).getRecipeOutput();
 		 * buttonsItem[i].selected=i+firstIndex==((ContainerTF2Workbench)this.
-		 * inventorySlots).currentRecipe; } else{
-		 * buttonsItem[i].stackToDraw=null; buttonsItem[i].selected=false; } }
+		 * inventorySlots).currentRecipe; } else{ buttonsItem[i].stackToDraw=null;
+		 * buttonsItem[i].selected=false; } }
 		 */
 	}
 
@@ -111,7 +110,7 @@ public class GuiUpgradeStation extends GuiContainer {
 		this.wasClicking = flag;
 
 		if (this.isScrolling) {
-			int size = ((ContainerUpgrades)this.inventorySlots).applicable.size();
+			int size = ((ContainerUpgrades) this.inventorySlots).applicable.size();
 			if (size >= 6) {
 				this.scroll = (mouseY - l - 7.5F) / (j1 - l - 15.0F);
 				this.scroll = MathHelper.clamp(this.scroll, 0.0F, 1.0F);
@@ -120,7 +119,7 @@ public class GuiUpgradeStation extends GuiContainer {
 			}
 		}
 
-		this.refund.enabled = !this.inventorySlots.inventorySlots.get(0).getStack().isEmpty() 
+		this.refund.enabled = !this.inventorySlots.inventorySlots.get(0).getStack().isEmpty()
 				&& this.inventorySlots.inventorySlots.get(0).getStack().getTagCompound().getInteger("TotalSpent") > 0;
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		this.renderHoveredToolTip(mouseX, mouseY);
@@ -128,7 +127,7 @@ public class GuiUpgradeStation extends GuiContainer {
 			tooltip.drawButton(mc, mouseX, mouseY, partialTicks);
 		}
 		for (int m = 0; m < 6; m++) {
-			
+
 		}
 	}
 
@@ -146,70 +145,79 @@ public class GuiUpgradeStation extends GuiContainer {
 	}
 
 	/**
-	 * Draw the foreground layer for the GuiContainer (everything in front of
-	 * the items)
+	 * Draw the foreground layer for the GuiContainer (everything in front of the
+	 * items)
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		int expPoints = ((ContainerUpgrades)this.inventorySlots).playerCredits;
-		int size = ((ContainerUpgrades)this.inventorySlots).applicable.size();
+		int expPoints = ((ContainerUpgrades) this.inventorySlots).playerCredits;
+		int size = ((ContainerUpgrades) this.inventorySlots).applicable.size();
 		ItemStack stack = this.inventorySlots.inventorySlots.get(0).getStack();
 		for (int i = 0; i < 6; i++) {
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			this.mc.getTextureManager().bindTexture(UPGRADES_GUI_TEXTURES);
 			if (i + firstIndex < size) {
-				TF2Attribute attr = ((ContainerUpgrades)this.inventorySlots).applicable.get(i + firstIndex).getAttributeReplacement(stack);
-				TF2Attribute attrorig = ((ContainerUpgrades)this.inventorySlots).applicable.get(i + firstIndex);
-				if(attr == null) {
+				TF2Attribute attr = ((ContainerUpgrades) this.inventorySlots).applicable.get(i + firstIndex)
+						.getAttributeReplacement(stack);
+				TF2Attribute attrorig = ((ContainerUpgrades) this.inventorySlots).applicable.get(i + firstIndex);
+				if (attr == null) {
 					continue;
 				}
-				
+
 				int xOffset = 101 * (i % 2);
 				int yOffset = (i / 2) * 30;
 				int currLevel = attr.calculateCurrLevel(stack);
-				
-				int austrUpgrade = stack.getTagCompound().hasKey(NBTLiterals.AUSTR_UPGRADED) ? stack.getTagCompound().getShort(NBTLiterals.AUSTR_UPGRADED) : -1;
-				boolean austr = currLevel == attr.numLevels && attr.austrUpgrade != 0f && stack.getTagCompound().getBoolean("Australium") && austrUpgrade != attr.id;
+
+				int austrUpgrade = stack.getTagCompound().hasKey(NBTLiterals.AUSTR_UPGRADED)
+						? stack.getTagCompound().getShort(NBTLiterals.AUSTR_UPGRADED)
+						: -1;
+				boolean austr = currLevel == attr.numLevels && attr.austrUpgrade != 0f
+						&& stack.getTagCompound().getBoolean("Australium") && austrUpgrade != attr.id;
 				boolean hasAustr = austrUpgrade == attr.id;
-				
+
 				for (int j = 0; j < this.station.attributes.get(attrorig); j++) {
 					// System.out.println("render: "+currLevel+"
 					// "+this.inventorySlots.inventorySlots.get(0).getStack());
-					this.drawTexturedModalRect(9 + xOffset + j * 9, 50 + yOffset, currLevel > j ? 240 : 248, !hasAustr ? 24 : 32, 8, 8);
+					this.drawTexturedModalRect(9 + xOffset + j * 9, 50 + yOffset, currLevel > j ? 240 : 248,
+							!hasAustr ? 24 : 32, 8, 8);
 
 				}
 				int cost = austr ? 0 : attr.getUpgradeCost(stack);
-				
-				if(currLevel < this.station.attributes.get(attrorig))
-					this.fontRenderer.drawString(String.valueOf(cost), 56 + xOffset, 50 + yOffset,
-							16777215);
-				this.fontRenderer.drawSplitString(attr.getTranslatedString((attr.typeOfValue == Type.ADDITIVE ? 0 : 1) + attr.getPerLevel(stack) * (austr ? attr.austrUpgrade : 1f), false)
-						, 9 + xOffset, 32 + yOffset, 98, 16777215);
+
+				if (currLevel < this.station.attributes.get(attrorig))
+					this.fontRenderer.drawString(String.valueOf(cost), 56 + xOffset, 50 + yOffset, 16777215);
+				this.fontRenderer.drawSplitString(
+						attr.getTranslatedString((attr.typeOfValue == Type.ADDITIVE ? 0 : 1)
+								+ attr.getPerLevel(stack) * (austr ? attr.austrUpgrade : 1f), false),
+						9 + xOffset, 32 + yOffset, 98, 16777215);
 				this.buttons[i * 2].visible = true;
 				this.buttons[i * 2 + 1].visible = true;
-				
+
 				if (!attr.canApply(stack) || (currLevel >= this.station.attributes.get(attrorig) && !austr)
-						|| cost > expPoints || cost + stack.getTagCompound().getInteger("TotalSpent") > TF2Attribute.getMaxExperience(stack, mc.player)) {
+						|| cost > expPoints || cost + stack.getTagCompound().getInteger("TotalSpent") > TF2Attribute
+								.getMaxExperience(stack, mc.player)) {
 					// System.out.println("DrawingRect");
 					this.buttons[i * 2].enabled = false;
-					this.buttons[i * 2 + 1].enabled = currLevel>0;
-					this.drawGradientRect(8 + xOffset, 31 + yOffset, 107 + xOffset, 59 + yOffset, 0x77000000, 0x77000000);
+					this.buttons[i * 2 + 1].enabled = currLevel > 0;
+					this.drawGradientRect(8 + xOffset, 31 + yOffset, 107 + xOffset, 59 + yOffset, 0x77000000,
+							0x77000000);
 				} else {
 					this.buttons[i * 2].enabled = true;
-					this.buttons[i * 2 + 1].enabled = currLevel>0;
+					this.buttons[i * 2 + 1].enabled = currLevel > 0;
 				}
-			}
-			else {
+			} else {
 				this.buttons[i * 2].visible = false;
 				this.buttons[i * 2 + 1].visible = false;
 			}
 		}
 		this.fontRenderer.drawString(I18n.format("container.upgrades", new Object[0]), 8, 5, 4210752);
-		this.fontRenderer.drawString(I18n.format("container.currency", new Object[] { String.valueOf(expPoints) }),
-				128, 5, 4210752);
+		this.fontRenderer.drawString(I18n.format("container.currency", new Object[] { String.valueOf(expPoints) }), 128,
+				5, 4210752);
 		if (!stack.isEmpty())
-			this.fontRenderer.drawString(I18n.format("container.currencyLeft", new Object[] { String.valueOf(stack.getTagCompound().getInteger("TotalSpent")),
-					String.valueOf(TF2Attribute.getMaxExperience(stack, mc.player)) }),
+			this.fontRenderer.drawString(
+					I18n.format("container.currencyLeft",
+							new Object[] { String.valueOf(stack.getTagCompound().getInteger("TotalSpent")),
+									String.valueOf(TF2Attribute.getMaxExperience(stack, mc.player)) }),
 					128, 15, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 36, this.ySize - 96 + 3,
 				4210752);

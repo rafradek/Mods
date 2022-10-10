@@ -7,4 +7,5 @@ import net.minecraft.item.ItemStack;
 public interface IWeaponItem {
 
 	float getWeaponDamage(ItemStack stack, EntityLivingBase living, Entity target);
+
 }

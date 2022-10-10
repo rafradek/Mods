@@ -21,40 +21,41 @@ public class TF2CapabilityHandler implements IMessageHandler<TF2Message.Capabili
 	@Override
 	public IMessage onMessage(final CapabilityMessage message, MessageContext ctx) {
 		if (ctx.side.isClient())
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					Entity ent = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
-					if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
-						WeaponsCapability cap = ent.getCapability(TF2weapons.WEAPONS_CAP, null);
-						int prevHealTarget=cap.getHealTarget();
-						if(message.entries != null) {
-							for(DataEntry<?> param: message.entries) {
-								cap.onChangeValue(param.getKey(), param.getValue());
-							}
-							cap.dataManager.setEntryValues(message.entries);
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				Entity ent = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
+				if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+					WeaponsCapability cap = ent.getCapability(TF2weapons.WEAPONS_CAP, null);
+					int prevHealTarget = cap.getHealTarget();
+					if (message.entries != null) {
+						for (DataEntry<?> param : message.entries) {
+							cap.onChangeValue(param.getKey(), param.getValue());
 						}
-						if (prevHealTarget != cap.getHealTarget() && cap.getHealTarget() > 0) {
-							SoundEvent sound = ItemFromData.getSound(
-									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
-									PropertyType.HEAL_START_SOUND);
-							ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
-									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
-						}
-						cap.ticksTotal = message.totalTime;
-						//cap.critTime = message.critTime;
-						//cap.collectedHeads = message.heads;
+						cap.dataManager.setEntryValues(message.entries);
 					}
+					if (prevHealTarget != cap.getHealTarget() && cap.getHealTarget() > 0) {
+						SoundEvent sound = ItemFromData.getSound(
+								((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
+								PropertyType.HEAL_START_SOUND);
+						ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
+								((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
+					}
+					cap.ticksTotal = message.totalTime;
+					// cap.critTime = message.critTime;
+					// cap.collectedHeads = message.heads;
 				}
 			});
 		/*
 		 * if(ent !=null){ ent.getEntityData().setTag("TF2", message.tag); }
 		 */
 		else {
-			/*ctx.getServerHandler().player.getCapability(TF2weapons.WEAPONS_CAP,
-					null).setHealTarget(message.healTarget);*/
-			/*message.entityID = ctx.getServerHandler().player.getEntityId();
-			TF2weapons.sendTracking(message, ctx.getServerHandler().player);*/
+			/*
+			 * ctx.getServerHandler().player.getCapability(TF2weapons.WEAPONS_CAP,
+			 * null).setHealTarget(message.healTarget);
+			 */
+			/*
+			 * message.entityID = ctx.getServerHandler().player.getEntityId();
+			 * TF2weapons.sendTracking(message, ctx.getServerHandler().player);
+			 */
 		}
 		return null;
 	}

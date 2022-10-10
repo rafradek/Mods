@@ -20,20 +20,22 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.EntityStatue;
 
+@SuppressWarnings("deprecation")
 public class ItemStatue extends Item {
 
 	public ItemStatue() {
 		this.setUnlocalizedName("statue");
 	}
+
 	@Override
-	public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos,
-			EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand,
+			EnumFacing facing, float hitX, float hitY, float hitZ) {
 		ItemStack stack = playerIn.getHeldItem(hand);
 		if (!worldIn.isRemote && stack.hasTagCompound() && stack.getTagCompound().hasKey("Statue")) {
-			EntityStatue statue =new EntityStatue(worldIn);
+			EntityStatue statue = new EntityStatue(worldIn);
 			statue.readEntityFromNBT(stack.getTagCompound().getCompoundTag("Statue"));
 			BlockPos off = pos.offset(facing);
-			statue.setPosition(off.getX()+0.5, off.getY(), off.getZ()+0.5);
+			statue.setPosition(off.getX() + 0.5, off.getY(), off.getZ() + 0.5);
 			statue.rotationYaw = playerIn.rotationYawHead;
 			statue.renderYawOffset = playerIn.rotationYawHead;
 
@@ -45,6 +47,7 @@ public class ItemStatue extends Item {
 		}
 		return EnumActionResult.SUCCESS;
 	}
+
 	public static ItemStack getStatue(EntityStatue statue) {
 		ItemStack stack = new ItemStack(TF2weapons.itemStatue);
 		stack.setTagCompound(new NBTTagCompound());
@@ -54,27 +57,28 @@ public class ItemStatue extends Item {
 		return stack;
 	}
 
-	public String getItemStackDisplayName(ItemStack stack)
-    {
-		if(!stack.hasTagCompound())
+	@Override
+	public String getItemStackDisplayName(ItemStack stack) {
+		if (!stack.hasTagCompound())
 			return super.getItemStackDisplayName(stack);
-		if(!stack.getTagCompound().getCompoundTag("Statue").getBoolean("Player"))
-			return I18n.translateToLocal("entity." + EntityList.getTranslationName
-					(new ResourceLocation(stack.getTagCompound().getCompoundTag("Statue").getCompoundTag("Entity").getString("id")))+".name")+" "+
-					I18n.translateToLocal(this.getUnlocalizedName() + ".name");
+		if (!stack.getTagCompound().getCompoundTag("Statue").getBoolean("Player"))
+			return I18n.translateToLocal("entity."
+					+ EntityList.getTranslationName(new ResourceLocation(
+							stack.getTagCompound().getCompoundTag("Statue").getCompoundTag("Entity").getString("id")))
+					+ ".name") + " " + I18n.translateToLocal(this.getUnlocalizedName() + ".name");
 		else
 			return I18n.translateToLocal(this.getUnlocalizedName() + ".player.name");
-    }
-	
+	}
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, World world, List<String> tooltip,
-			ITooltipFlag advanced) {
-		if(stack.hasTagCompound()) {
-			if(stack.getTagCompound().getCompoundTag("Statue").getBoolean("Player")) {
-				tooltip.add(stack.getTagCompound().getCompoundTag("Statue").getCompoundTag("Profile").getString("Name"));
+	public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag advanced) {
+		if (stack.hasTagCompound()) {
+			if (stack.getTagCompound().getCompoundTag("Statue").getBoolean("Player")) {
+				tooltip.add(
+						stack.getTagCompound().getCompoundTag("Statue").getCompoundTag("Profile").getString("Name"));
 			}
 		}
 	}
-	
+
 }

@@ -7,8 +7,6 @@ public class BlockEventReceiver extends Block {
 
 	public BlockEventReceiver() {
 		super(Material.REDSTONE_LIGHT);
-		// TODO Auto-generated constructor stub
 	}
-	
 
 }

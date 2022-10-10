@@ -2,7 +2,6 @@ package rafradek.TF2weapons.util;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
@@ -12,6 +11,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
 import rafradek.TF2weapons.TF2weapons;
 
+@SuppressWarnings("deprecation")
 public class DamageSourceDirect extends EntityDamageSource implements TF2DamageSource {
 	public ItemStack weapon;
 	public int critical;
@@ -19,6 +19,7 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	private int attackFlags;
 
 	public float power = 1;
+
 	public DamageSourceDirect(ItemStack weapon, Entity shooter) {
 		super("bullet", shooter);
 		this.weapon = weapon;
@@ -31,7 +32,7 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see rafradek.TF2weapons.TF2DamageSource#getWeapon()
 	 */
 	@Override
@@ -41,7 +42,7 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see rafradek.TF2weapons.TF2DamageSource#getCritical()
 	 */
 	@Override
@@ -50,8 +51,8 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 	}
 
 	/*
-	 * public DamageSource bypassesArmor() { this.setDamageBypassesArmor();
-	 * return this; }
+	 * public DamageSource bypassesArmor() { this.setDamageBypassesArmor(); return
+	 * this; }
 	 */
 	/**
 	 * Returns the message to be displayed on player death.
@@ -86,26 +87,27 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 
 	@Override
 	public ItemStack getWeaponOrig() {
-		// TODO Auto-generated method stub
 		return this.getWeapon();
 	}
-	
-	public Entity getTrueSource(){
-		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
+
+	@Override
+	public Entity getTrueSource() {
+		return selfdmg ? TF2weapons.dummyEnt : super.getTrueSource();
 	}
-	public void setAttackSelf(){
-		this.selfdmg=true;
+
+	@Override
+	public void setAttackSelf() {
+		this.selfdmg = true;
 	}
-	
+
 	@Override
 	public int getAttackFlags() {
-		// TODO Auto-generated method stub
 		return this.attackFlags;
 	}
 
 	@Override
 	public void addAttackFlag(int flag) {
-		this.attackFlags+=flag;
+		this.attackFlags += flag;
 	}
 
 	@Override
@@ -123,11 +125,12 @@ public class DamageSourceDirect extends EntityDamageSource implements TF2DamageS
 		this.critical = crit;
 		return this;
 	}
-	
-	
-	/*@Override
-	public void onShieldBlock(EntityLivingBase living) {
-		if(!this.getWeapon().isEmpty() && this.getWeapon().getItem() instanceof ItemBulletWeapon && !(this.getWeapon().getItem() instanceof ItemMeleeWeapon))
-			
-	}*/
+
+	/*
+	 * @Override public void onShieldBlock(EntityLivingBase living) {
+	 * if(!this.getWeapon().isEmpty() && this.getWeapon().getItem() instanceof
+	 * ItemBulletWeapon && !(this.getWeapon().getItem() instanceof ItemMeleeWeapon))
+	 *
+	 * }
+	 */
 }

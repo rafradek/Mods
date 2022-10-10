@@ -19,14 +19,10 @@ public class ReloadSound extends PositionedSound implements ITickableSound {
 	}
 
 	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-
-	}
+	public void update() {}
 
 	@Override
 	public boolean isDonePlaying() {
-		// TODO Auto-generated method stub
 		return this.done;
 	}
 

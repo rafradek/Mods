@@ -17,50 +17,50 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockProp extends Block {
 
-	public static final PropertyEnum<EnumBlockType> TYPE = PropertyEnum.<EnumBlockType>create("type", EnumBlockType.class);
-	
+	public static final PropertyEnum<EnumBlockType> TYPE = PropertyEnum.<EnumBlockType>create("type",
+			EnumBlockType.class);
+
 	public BlockProp(Material materialIn) {
 		super(materialIn);
-		// TODO Auto-generated constructor stub
 	}
 
 	public BlockProp(Material blockMaterialIn, MapColor blockMapColorIn) {
 		super(blockMaterialIn, blockMapColorIn);
-		// TODO Auto-generated constructor stub
 	}
-	
+
 	@SideOnly(Side.CLIENT)
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> list)
-    {
-        
-    }
-	public IBlockState getStateFromMeta(int meta)
-    {
-        return this.getDefaultState().withProperty(TYPE, EnumBlockType.values()[meta]);
-    }
-	public int getMetaFromState(IBlockState state)
-    {
-        return (state.getValue(TYPE)).ordinal();
-    }
-	protected BlockStateContainer createBlockState()
-    {
-        return new BlockStateContainer(this, new IProperty[] {TYPE});
-    }
-	public enum EnumBlockType implements IStringSerializable{
-		DIAMOND("diamond"),
-		IRON("iron"),
-		GOLD("gold"),
-		OBSIDIAN("obsidian");
-		
+	public void getSubBlocks(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> list) {
+
+	}
+
+	@Override
+	public IBlockState getStateFromMeta(int meta) {
+		return this.getDefaultState().withProperty(TYPE, EnumBlockType.values()[meta]);
+	}
+
+	@Override
+	public int getMetaFromState(IBlockState state) {
+		return (state.getValue(TYPE)).ordinal();
+	}
+
+	@Override
+	protected BlockStateContainer createBlockState() {
+		return new BlockStateContainer(this, new IProperty[] { TYPE });
+	}
+
+	public enum EnumBlockType implements IStringSerializable {
+		DIAMOND("diamond"), IRON("iron"), GOLD("gold"), OBSIDIAN("obsidian");
+
 		private final String name;
-		private EnumBlockType(String name){
-			this.name=name;
+
+		private EnumBlockType(String name) {
+			this.name = name;
 		}
+
 		@Override
 		public String getName() {
-			// TODO Auto-generated method stub
 			return name;
 		}
-		
+
 	}
 }

@@ -7,7 +7,6 @@ public class ItemExtraArmor extends ItemArmor {
 
 	public ItemExtraArmor(ArmorMaterial materialIn, EntityEquipmentSlot equipmentSlotIn) {
 		super(materialIn, 0, equipmentSlotIn);
-		// TODO Auto-generated constructor stub
 	}
 
 }

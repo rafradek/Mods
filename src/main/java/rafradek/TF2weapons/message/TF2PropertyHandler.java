@@ -22,36 +22,33 @@ public class TF2PropertyHandler implements IMessageHandler<TF2Message.PropertyMe
 	public IMessage onMessage(final PropertyMessage message, MessageContext ctx) {
 
 		if (ctx.side.isClient())
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					if (Minecraft.getMinecraft().world == null)
-						return;
-					Entity ent = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
-					if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
-						if (ent instanceof EntityLivingBase
-								&& ((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND) != null
-								&& ((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND)
-										.getItem() instanceof ItemMedigun)
-							if (message.name.equals("HealTarget")
-									&& ent.getEntityData().getInteger("HealTarget") != message.intValue
-									&& message.intValue > 0) {
-								SoundEvent sound = ItemFromData.getSound(
-										((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
-										PropertyType.HEAL_START_SOUND);
-								ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
-										((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
-							}
+			Minecraft.getMinecraft().addScheduledTask(() -> {
+				if (Minecraft.getMinecraft().world == null)
+					return;
+				Entity ent = Minecraft.getMinecraft().world.getEntityByID(message.entityID);
+				if (ent != null && ent.hasCapability(TF2weapons.WEAPONS_CAP, null)) {
+					if (ent instanceof EntityLivingBase
+							&& ((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND) != null
+							&& ((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND)
+									.getItem() instanceof ItemMedigun)
+						if (message.name.equals("HealTarget")
+								&& ent.getEntityData().getInteger("HealTarget") != message.intValue
+								&& message.intValue > 0) {
+							SoundEvent sound = ItemFromData.getSound(
+									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND),
+									PropertyType.HEAL_START_SOUND);
+							ClientProxy.playWeaponSound((EntityLivingBase) ent, sound, false, 0,
+									((EntityLivingBase) ent).getHeldItem(EnumHand.MAIN_HAND));
+						}
 
-						if (message.type == 0)
-							ent.getEntityData().setInteger(message.name, message.intValue);
-						else if (message.type == 1)
-							ent.getEntityData().setFloat(message.name, message.floatValue);
-						else if (message.type == 2)
-							ent.getEntityData().setByte(message.name, message.byteValue);
-						else if (message.type == 3)
-							ent.getEntityData().setString(message.name, message.stringValue);
-					}
+					if (message.type == 0)
+						ent.getEntityData().setInteger(message.name, message.intValue);
+					else if (message.type == 1)
+						ent.getEntityData().setFloat(message.name, message.floatValue);
+					else if (message.type == 2)
+						ent.getEntityData().setByte(message.name, message.byteValue);
+					else if (message.type == 3)
+						ent.getEntityData().setString(message.name, message.stringValue);
 				}
 			});
 		else {

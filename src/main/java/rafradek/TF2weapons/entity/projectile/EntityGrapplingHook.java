@@ -8,20 +8,19 @@ import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
 
 public class EntityGrapplingHook extends EntityProjectileSimple {
-	
+
 	public boolean sticked;
 
 	public Entity stickedEntity;
-	
+
 	public double relativeX;
 	public double relativeY;
 	public double relativeZ;
-	
+
 	public EntityGrapplingHook(World world) {
 		super(world);
-		// TODO Auto-generated constructor stub
 	}
-	
+
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		if (!sticked && !this.world.isAirBlock(mop.getBlockPos())) {
@@ -32,7 +31,7 @@ public class EntityGrapplingHook extends EntityProjectileSimple {
 			this.stickedBlock = mop.getBlockPos();
 		}
 	}
-	
+
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
 		if (!sticked) {
@@ -47,36 +46,37 @@ public class EntityGrapplingHook extends EntityProjectileSimple {
 			this.stickedEntity = entityHit;
 		}
 	}
-	
+
 	@Override
 	public void onUpdate() {
-		if (this.ticksExisted > this.getMaxTime() || 
-				(!this.world.isRemote && this.sticked && (stickedBlock == null || this.world.isAirBlock(stickedBlock)) && (this.stickedEntity == null || !this.stickedEntity.isEntityAlive()))) {
+		if (this.ticksExisted > this.getMaxTime() || (!this.world.isRemote && this.sticked
+				&& (stickedBlock == null || this.world.isAirBlock(stickedBlock))
+				&& (this.stickedEntity == null || !this.stickedEntity.isEntityAlive()))) {
 			this.setDead();
 			return;
-		}
-		else if (this.stickedEntity != null) {
+		} else if (this.stickedEntity != null) {
 			if (!this.world.isRemote && this.stickedEntity instanceof EntityLivingBase && this.ticksExisted % 10 == 0) {
-				((EntityLivingBase)this.stickedEntity).addPotionEffect(new PotionEffect(TF2weapons.bleeding,10));
+				((EntityLivingBase) this.stickedEntity).addPotionEffect(new PotionEffect(TF2weapons.bleeding, 10));
 			}
-			this.setPosition(relativeX + this.stickedEntity.posX, relativeY + this.stickedEntity.posY, relativeZ + this.stickedEntity.posZ);
-		}
-		else if (!this.sticked)
+			this.setPosition(relativeX + this.stickedEntity.posX, relativeY + this.stickedEntity.posY,
+					relativeZ + this.stickedEntity.posZ);
+		} else if (!this.sticked)
 			super.onUpdate();
 	}
-	
+
+	@Override
 	public boolean canPenetrate() {
 		return true;
 	}
-	
+
+	@Override
 	public boolean isPushable() {
 		return false;
 	}
-	
-	
+
 	@Override
 	public double getGravity() {
 		return 0;
 	}
-	
+
 }

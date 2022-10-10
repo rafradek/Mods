@@ -27,9 +27,10 @@ public class KilledByTeam implements LootCondition {
 	public boolean testCondition(Random rand, LootContext context) {
 
 		Entity player = this.team ? context.getKiller() : context.getKillerPlayer();
-		if(player instanceof IEntityOwnable && ((IEntityOwnable)player).getOwner() instanceof EntityPlayer)
-			player = ((IEntityOwnable)player).getOwner();
-		return player != null && (player.getTeam() != null || TF2ConfigVars.neutralAttack) && !player.isOnSameTeam(context.getLootedEntity());
+		if (player instanceof IEntityOwnable && ((IEntityOwnable) player).getOwner() instanceof EntityPlayer)
+			player = ((IEntityOwnable) player).getOwner();
+		return player != null && (player.getTeam() != null || TF2ConfigVars.neutralAttack)
+				&& !player.isOnSameTeam(context.getLootedEntity());
 	}
 
 	public static class Serializer extends LootCondition.Serializer<KilledByTeam> {

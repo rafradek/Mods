@@ -13,15 +13,15 @@ public class TF2InitClientHandler implements IMessageHandler<TF2Message.InitClie
 	@Override
 	public IMessage onMessage(TF2Message.InitClientMessage message, MessageContext ctx) {
 		EntityPlayer player = ctx.getServerHandler().player;
-		((WorldServer)player.world).addScheduledTask(() -> {
+		((WorldServer) player.world).addScheduledTask(() -> {
 			TF2PlayerCapability.get(player).breakBlocks = message.breakBlocks;
 			WeaponsCapability.get(player).sentryTargets = message.sentryTargets;
 			WeaponsCapability.get(player).dispenserPlayer = message.dispenserPlayer;
 			WeaponsCapability.get(player).teleporterPlayer = message.teleporterPlayer;
 			WeaponsCapability.get(player).teleporterEntity = message.teleporterEntity;
 		});
-			// System.out.println("setting "+message.value);
-			// TF2weapons.proxy.playReloadSound(player,stack);
+		// System.out.println("setting "+message.value);
+		// TF2weapons.proxy.playReloadSound(player,stack);
 		return null;
 	}
 }

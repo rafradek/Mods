@@ -10,7 +10,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -21,14 +20,10 @@ import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.common.WeaponsCapability;
-import rafradek.TF2weapons.entity.building.EntityBuilding;
-import rafradek.TF2weapons.util.PlayerPersistStorage;
-import rafradek.TF2weapons.util.TF2Util;
 
-public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwitch{
+@SuppressWarnings("deprecation")
+public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwitch {
 	public ItemBuildingBox() {
 		this.setCreativeTab(TF2weapons.tabspawnertf2);
 		this.setUnlocalizedName("buildingbox");
@@ -36,41 +31,41 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwi
 		this.setMaxStackSize(1);
 	}
 
+	@Override
 	public int getItemStackLimit(ItemStack stack) {
-		return stack.hasTagCompound() && stack.getTagCompound().hasKey("MaxStack")? stack.getTagCompound().getInteger("MaxStack"): 1;
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("MaxStack")
+				? stack.getTagCompound().getInteger("MaxStack")
+				: 1;
 	}
+
 	@Override
 	public void getSubItems(CreativeTabs par2CreativeTabs, NonNullList<ItemStack> par3List) {
-		if(!this.isInCreativeTab(par2CreativeTabs))
+		if (!this.isInCreativeTab(par2CreativeTabs))
 			return;
 		for (int i = 18; i < 24; i++)
 			par3List.add(new ItemStack(this, 1, i));
 	}
 
 	@Override
-	public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos,
-			EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand,
+			EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if (ItemToken.allowUse(playerIn, "engineer")) {
 			return super.onItemUse(playerIn, worldIn, pos, hand, facing, hitX, hitY, hitZ);
-		}
-		else {
+		} else {
 			return EnumActionResult.FAIL;
 		}
 	}
-	
+
 	@Override
-	public ActionResult<ItemStack> onItemRightClick( World worldIn, EntityPlayer playerIn,
-			EnumHand hand) {
+	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand hand) {
 		if (ItemToken.allowUse(playerIn, "engineer")) {
 			return super.onItemRightClick(worldIn, playerIn, hand);
-		}
-		else {
-			return new ActionResult<ItemStack>(EnumActionResult.FAIL, playerIn.getHeldItem(hand));
+		} else {
+			return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(hand));
 		}
 	}
-	
+
 	@Override
-	@SuppressWarnings("deprecation")
 	public String getItemStackDisplayName(ItemStack stack) {
 		// (I18n.translateToLocal(this.getUnlocalizedName()+".name")).trim();
 		int i = stack.getItemDamage() / 2;
@@ -95,10 +90,9 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwi
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, World world, List<String> tooltip,
-			ITooltipFlag advanced) {
+	public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag advanced) {
 		if (Minecraft.getMinecraft().player != null && Minecraft.getMinecraft().player.isCreative()) {
-			tooltip.add("Hold "+KeyBinding.getDisplayString("key.sneak").get()+" to spawn natural building");
+			tooltip.add("Hold " + KeyBinding.getDisplayString("key.sneak").get() + " to spawn natural building");
 		}
 	}
 
@@ -106,10 +100,9 @@ public class ItemBuildingBox extends ItemMonsterPlacerPlus implements IItemNoSwi
 	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		this.forceItemSlot(stack, worldIn, entityIn, itemSlot, isSelected);
 	}
-	
+
 	@Override
 	public boolean stopSlotSwitch(ItemStack stack, EntityLivingBase living) {
-		// TODO Auto-generated method stub
 		return stack.hasTagCompound() && stack.getTagCompound().getCompoundTag("SavedEntity") != null;
 	}
 }

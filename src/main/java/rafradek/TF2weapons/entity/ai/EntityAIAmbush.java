@@ -7,7 +7,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.mercenary.EntitySpy;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemDisguiseKit;
@@ -30,12 +29,16 @@ public class EntityAIAmbush extends EntityAIBase {
 			this.host.isAmbushing = false;
 			return false;
 		}
-		
+
 		double dist = target.getDistanceSq(this.host);
-		boolean isAttacked = this.host.getRevengeTarget() != null && this.host.ticksExisted - this.host.getRevengeTimer() < 45;
-		boolean enemyLooking = !this.host.getWepCapability().isDisguised() && !this.host.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active") &&
-				this.host.getEntitySenses().canSee(target) && TF2Util.lookingAtFast(target, dist > 400 ? 50 : 105, this.host.posX, this.host.posY, this.host.posZ);
-		boolean isAtEnemy = dist < 9 && !TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ);
+		boolean isAttacked = this.host.getRevengeTarget() != null
+				&& this.host.ticksExisted - this.host.getRevengeTimer() < 45;
+		boolean enemyLooking = !this.host.getWepCapability().isDisguised()
+				&& !this.host.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active")
+				&& this.host.getEntitySenses().canSee(target)
+				&& TF2Util.lookingAtFast(target, dist > 400 ? 50 : 105, this.host.posX, this.host.posY, this.host.posZ);
+		boolean isAtEnemy = dist < 9
+				&& !TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ);
 		return host.isAmbushing = !isAttacked && !enemyLooking && !isAtEnemy;
 	}
 
@@ -44,14 +47,13 @@ public class EntityAIAmbush extends EntityAIBase {
 		// System.out.println("Stop");
 		this.host.getNavigator().clearPath();
 		if (this.host.loadout.getStackInSlot(3).getTagCompound().getBoolean("Active"))
-			((ItemCloak) this.host.loadout.getStackInSlot(3).getItem()).setCloak(
-					false, this.host.loadout.getStackInSlot(3), this.host,
-					this.host.world);
+			((ItemCloak) this.host.loadout.getStackInSlot(3).getItem()).setCloak(false,
+					this.host.loadout.getStackInSlot(3), this.host, this.host.world);
 		this.host.isAmbushing = false;
 		/*
 		 * if(this.host.cloak.getTagCompound().getBoolean("Active")){
-		 * ((ItemCloak)this.host.cloak.getItem()).altUse(this.host.cloak,
-		 * this.host, this.host.world); }
+		 * ((ItemCloak)this.host.cloak.getItem()).altUse(this.host.cloak, this.host,
+		 * this.host.world); }
 		 */
 	}
 
@@ -67,39 +69,42 @@ public class EntityAIAmbush extends EntityAIBase {
 			return;
 		/*
 		 * if(!this.host.cloak.getTagCompound().getBoolean("Active")){
-		 * 
-		 * ((ItemCloak)this.host.cloak.getItem()).setCloak(true,
-		 * this.host.cloak, this.host, this.host.world); }
+		 *
+		 * ((ItemCloak)this.host.cloak.getItem()).setCloak(true, this.host.cloak,
+		 * this.host, this.host.world); }
 		 */
 		ItemStack cloak = this.host.loadout.getStackInSlot(3);
 		double dist = target.getDistanceSq(this.host);
-		boolean enemyLooking = !cloak.getTagCompound().getBoolean("Active") &&
-				this.host.getEntitySenses().canSee(target) && TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ);
-		
-		if (cloak.getItemDamage() < cloak.getMaxDamage() - 72 && !cloak.getTagCompound().getBoolean("Active") && !enemyLooking)
+		boolean enemyLooking = !cloak.getTagCompound().getBoolean("Active")
+				&& this.host.getEntitySenses().canSee(target)
+				&& TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ);
+
+		if (cloak.getItemDamage() < cloak.getMaxDamage() - 72 && !cloak.getTagCompound().getBoolean("Active")
+				&& !enemyLooking)
 			((ItemCloak) cloak.getItem()).setCloak(true, cloak, this.host, this.host.world);
-		
+
 		if (!this.host.getWepCapability().isDisguised()) {
 			if (this.host.getAttackTarget() != null && this.host.getAttackTarget() instanceof EntityPlayer)
-				ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:"+TF2weapons.animalsDisguise.get(this.host.getRNG().nextInt(TF2weapons.animalsDisguise.size())));
+				ItemDisguiseKit.startDisguise(this.host, this.host.world, "M:" + TF2weapons.animalsDisguise
+						.get(this.host.getRNG().nextInt(TF2weapons.animalsDisguise.size())));
 			else
 				ItemDisguiseKit.startDisguise(this.host, this.host.world, "T:Engineer");
 		}
 		// this.host.getNavigator().tryMoveToEntityLiving(target, 1);
 		this.host.getLookHelper().setLookPosition(target.posX, target.posY + target.getEyeHeight(), target.posZ, 90,
 				90.0F);
-		
+
 		if (dist > 16 || !TF2Util.lookingAtFast(target, 105, this.host.posX, this.host.posY, this.host.posZ)) {
 			float x = -MathHelper.sin(target.rotationYaw / 180.0F * (float) Math.PI);
 			float z = MathHelper.cos(target.rotationYaw / 180.0F * (float) Math.PI);
 			Vec3d pos = new Vec3d(target.posX - x * 2, target.posY, target.posZ - z * 2);
 			host.getNavigator().tryMoveToXYZ(target.posX - x * 2, target.posY, target.posZ - z * 2, 1);
-		}
-		else {
+		} else {
 			float x = -MathHelper.sin(target.rotationYaw / 180.0F * (float) Math.PI);
 			float z = MathHelper.cos(target.rotationYaw / 180.0F * (float) Math.PI);
-			Vec3d pos = new Vec3d(x, 0, z).crossProduct(new Vec3d(0,1,0));
-			host.getNavigator().tryMoveToXYZ(target.posX + pos.x * 3 - x * 2, target.posY, target.posZ + pos.z * 3 - z * 2, 1f);
+			Vec3d pos = new Vec3d(x, 0, z).crossProduct(new Vec3d(0, 1, 0));
+			host.getNavigator().tryMoveToXYZ(target.posX + pos.x * 3 - x * 2, target.posY,
+					target.posZ + pos.z * 3 - z * 2, 1f);
 		}
 		// this.host.getLookHelper().setLookPosition(target.posX+x*2,target.posY+target.getEyeHeight(),target.posZ+z*2,
 		// 90f, 90.0F);

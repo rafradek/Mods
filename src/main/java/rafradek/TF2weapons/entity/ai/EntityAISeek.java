@@ -10,7 +10,6 @@ public class EntityAISeek extends EntityAILookIdle {
 	public EntityAISeek(EntityLiving entitylivingIn) {
 		super(entitylivingIn);
 		this.host = entitylivingIn;
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

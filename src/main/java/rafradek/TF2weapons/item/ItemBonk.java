@@ -46,34 +46,33 @@ public class ItemBonk extends ItemFromData {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get(getData(stack).getName());
-		return (double) (value != null ? value : 0)
-				/ (double) ((int) (getData(stack).getInt(PropertyType.COOLDOWN) * 
-						(TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
+		return (double) (value != null ? value : 0) / (double) ((int) (getData(stack).getInt(PropertyType.COOLDOWN)
+				* (TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick( World worldIn, EntityPlayer playerIn,
-			EnumHand hand) {
-		ItemStack itemStackIn=playerIn.getHeldItem(hand);
+	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand hand) {
+		ItemStack itemStackIn = playerIn.getHeldItem(hand);
 		Integer value = playerIn.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
 				.get(getData(itemStackIn).getName());
 		if (value == null || value <= 0) {
 			playerIn.setActiveHand(hand);
-			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
+			return new ActionResult<>(EnumActionResult.SUCCESS, itemStackIn);
 		}
-		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
+		return new ActionResult<>(EnumActionResult.FAIL, itemStackIn);
 	}
 
 	@Override
 	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
-		
+
 		entityLiving.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put(getData(stack).getName(),
-				(int)(getData(stack).getInt(PropertyType.COOLDOWN) * 
-						(TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
+				(int) (getData(stack).getInt(PropertyType.COOLDOWN)
+						* (TF2ConfigVars.fastItemCooldown ? 1f : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))));
 		entityLiving.addPotionEffect(new PotionEffect(
 				Potion.getPotionFromResourceLocation(getData(stack).getString(PropertyType.EFFECT_TYPE)),
 				TF2ConfigVars.longDurationBanner ? ItemFromData.getData(stack).getInt(PropertyType.DURATION) : 160));
-		if (!TF2ConfigVars.freeUseItems && !(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
+		if (!TF2ConfigVars.freeUseItems
+				&& !(entityLiving instanceof EntityPlayer && ((EntityPlayer) entityLiving).capabilities.isCreativeMode))
 			stack.shrink(1);
 		return stack;
 	}

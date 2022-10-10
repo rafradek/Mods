@@ -10,4 +10,5 @@ public class TF2CharacterAdditionalData implements IEntityLivingData {
 	public boolean noEquipment;
 	public boolean allowGiant = true;
 	public boolean isGiant;
+
 }

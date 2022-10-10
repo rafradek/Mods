@@ -2,12 +2,8 @@ package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -43,7 +39,7 @@ public class EntitySoldier extends EntityTF2Character {
 			attack.explosive = true;
 			moveAttack.setDodge(true, this.rocketJumper);
 		}
-		//this.ammoLeft = 20;
+		// this.ammoLeft = 20;
 		this.experienceValue = 15;
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 		// ItemUsable.getNewStack("Minigun"));
@@ -55,28 +51,37 @@ public class EntitySoldier extends EntityTF2Character {
 	 * this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 	 * ItemFromData.getNewStack("rocketlauncher")); }
 	 */
+	@Override
 	protected void addWeapons() {
 		super.addWeapons();
-		if(this.loadout.getStackInSlot(1).getItem() instanceof ItemBackpack) {
+		if (this.loadout.getStackInSlot(1).getItem() instanceof ItemBackpack) {
 			this.getWepCapability().setRage(RageType.BANNER, 1f);
 			if (this.isGiant())
-				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1), MapList.nameToAttribute.get("EffectDurationBonus"), 999f);
-			//this.getCapability(TF2weapons.INVENTORY_CAP, null).setInventorySlotContents(2, this.loadout.getStackInSlot(1));
-		
+				TF2Attribute.setAttribute(this.loadout.getStackInSlot(1),
+						MapList.nameToAttribute.get("EffectDurationBonus"), 999f);
+			// this.getCapability(TF2weapons.INVENTORY_CAP,
+			// null).setInventorySlotContents(2, this.loadout.getStackInSlot(1));
+
 		}
 		if (this.isGiant()) {
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"), 0.5f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("FireRateBonus"),
+					0.5f);
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ClipSizeBonus"), 3f);
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ReloadRateBonus"), 0.3f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("ReloadRateBonus"),
+					0.3f);
 		}
 	}
+
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootSoldier;
 	}
+
+	@Override
 	public float[] getDropChance() {
 		return new float[] { 0.05f, 0.12f, 0.11f };
 	}
+
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -87,63 +92,73 @@ public class EntitySoldier extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 
+	@Override
 	public void setRobot(int robot) {
 		super.setRobot(robot);
 	}
-	
+
+	@Override
 	public float getStockWeight(int slot) {
-		return this.isRobot() ? 5.5f - Math.min(3.5f, this.robotStrength/2f) : 2.7f;
+		return this.isRobot() ? 5.5f - Math.min(3.5f, this.robotStrength / 2f) : 2.7f;
 	}
-	
+
 	@Override
 	public void onLivingUpdate() {
 
-		if(!this.world.isRemote && this.getAttackTarget() != null){
-			
-			if(this.loadout.getStackInSlot(0).getItem() instanceof ItemWeapon){
-				if (this.usedSlot==0 && (this.rocketJumper || this.hasBaseJumper()) && this.getHealth() > 7f
-						&& !this.airborne && this.onGround && ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand()) == 0)
+		if (!this.world.isRemote && this.getAttackTarget() != null) {
+
+			if (this.loadout.getStackInSlot(0).getItem() instanceof ItemWeapon) {
+				if (this.usedSlot == 0 && (this.rocketJumper || this.hasBaseJumper()) && this.getHealth() > 7f
+						&& !this.airborne && this.onGround
+						&& ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand()) == 0)
 					this.rocketJump = true;
 			}
-			
-			if(!this.isRobot() && this.getDiff()>1 && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon){
-				
-				if(this.usedSlot==0 && ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand())==0 
-						&& ItemWeapon.getWeapon(this.loadout.getStackInSlot(1)).getClip(this.loadout.getStackInSlot(1))>0  && this.getDistanceSq(this.getAttackTarget())<36){
-					//System.out.println("Shotgun switch");
+
+			if (!this.isRobot() && this.getDiff() > 1
+					&& this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon) {
+
+				if (this.usedSlot == 0
+						&& ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand()) == 0
+						&& ItemWeapon.getWeapon(this.loadout.getStackInSlot(1))
+								.getClip(this.loadout.getStackInSlot(1)) > 0
+						&& this.getDistanceSq(this.getAttackTarget()) < 36) {
+					// System.out.println("Shotgun switch");
 					this.switchSlot(1);
-				}
-				else if(this.usedSlot==1 && (ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand())==0 || this.getDistanceSq(this.getAttackTarget())>40)){
+				} else if (this.usedSlot == 1
+						&& (ItemWeapon.getWeapon(this.getHeldItemMainhand()).getClip(this.getHeldItemMainhand()) == 0
+								|| this.getDistanceSq(this.getAttackTarget()) > 40)) {
 					this.switchSlot(0);
 				}
 			}
 		}
-		
+
 		if (!this.world.isRemote && this.getActiveItemStack().getItem() instanceof ItemHorn) {
 			ItemStack backpack = ItemBackpack.getBackpack(this);
-			if (backpack.getItem() instanceof ItemSoldierBackpack && (72000 - this.getItemInUseCount()) > ItemFromData.getData(backpack).getInt(PropertyType.FIRE_SPEED)) {
+			if (backpack.getItem() instanceof ItemSoldierBackpack && (72000 - this.getItemInUseCount()) > ItemFromData
+					.getData(backpack).getInt(PropertyType.FIRE_SPEED)) {
 				this.stopActiveHand();
 				this.setHeldItem(EnumHand.OFF_HAND, ItemStack.EMPTY);
 			}
 		}
-		
-		if (!this.world.isRemote && !this.onGround && (this.fallDistance > 2 || (this.getWepCapability().isExpJump() && this.motionY < 0)) && this.hasBaseJumper() )
+
+		if (!this.world.isRemote && !this.onGround
+				&& (this.fallDistance > 2 || (this.getWepCapability().isExpJump() && this.motionY < 0))
+				&& this.hasBaseJumper())
 			ItemBackpack.getBackpack(this).getTagCompound().setBoolean("Deployed", true);
-		//if (!this.world.isRemote)
-			//System.out.println(this.moveForward+ " "+this.moveStrafing);
-		
+		// if (!this.world.isRemote)
+		// System.out.println(this.moveForward+ " "+this.moveStrafing);
+
 		/*
 		 * if(this.rocketJump&&this.getEntityData().getCompoundTag("TF2").
 		 * getShort("reload")<=50){
-		 * TF2ActionHandler.playerAction.get(this.world.isRemote).put(this,
-		 * 1); this.jump=true; this.rotationYaw-= this.rotationPitch=8;
-		 * this.getLookHelper().setLookPosition(this.posX,this.posY-1,this.posZ,
-		 * 180, 90.0F); }
+		 * TF2ActionHandler.playerAction.get(this.world.isRemote).put(this, 1);
+		 * this.jump=true; this.rotationYaw-= this.rotationPitch=8;
+		 * this.getLookHelper().setLookPosition(this.posX,this.posY-1,this.posZ, 180,
+		 * 90.0F); }
 		 */
 		/*
 		 * if(this.rocketJump&&!this.onGround){ this.rocketJump=false;
-		 * TF2ActionHandler.playerAction.get(this.world.isRemote).put(this,
-		 * 0); }
+		 * TF2ActionHandler.playerAction.get(this.world.isRemote).put(this, 0); }
 		 */
 		if (this.airborne)
 			this.jump = false;
@@ -164,7 +179,7 @@ public class EntitySoldier extends EntityTF2Character {
 	public boolean hasBaseJumper() {
 		return ItemBackpack.getBackpack(this).getItem() instanceof ItemParachute;
 	}
-	
+
 	public void activateBackpack() {
 		ItemStack backpack = ItemBackpack.getBackpack(this);
 		if (this.getWepCapability().getRage(RageType.BANNER) >= 1f) {
@@ -176,7 +191,7 @@ public class EntitySoldier extends EntityTF2Character {
 				this.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_RED_SOUND), 0.8f, 1f);
 		}
 	}
-	
+
 	@Override
 	public void fall(float distance, float damageMultiplier) {
 		super.fall(distance, this.airborne ? damageMultiplier * 0.35f : damageMultiplier);
@@ -196,12 +211,14 @@ public class EntitySoldier extends EntityTF2Character {
 		}
 	}
 
+	@Override
 	public void onEquipItem(int slot, ItemStack stack) {
 		super.onEquipItem(slot, stack);
 		this.attack.fireAtFeet = slot == 0 ? TF2Attribute.getModifier("Explosion Radius", stack, 1, this) : 0;
-		this.rocketJumper = !this.isRobot() && (TF2Attribute.getModifier("Airborne Bonus", stack, 0, this) != 0 || this.rand.nextBoolean());
+		this.rocketJumper = !this.isRobot()
+				&& (TF2Attribute.getModifier("Airborne Bonus", stack, 0, this) != 0 || this.rand.nextBoolean());
 	}
-	
+
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return TF2Sounds.MOB_SOLDIER_SAY;
@@ -237,24 +254,28 @@ public class EntitySoldier extends EntityTF2Character {
 		if (this.rand.nextFloat() < 0.05f + p_70628_2_ * 0.025f)
 			this.entityDropItem(ItemFromData.getNewStack("rocketlauncher"), 0);
 	}
+
+	@Override
 	public int getClassIndex() {
 		return 1;
 	}
-	
+
 	public class UseBackpack extends EntityAIBase {
 
 		@Override
 		public boolean shouldExecute() {
 			// TODO Auto-generated method stub
-			
-			if (getOwner() == null && getDiff() > 1 && (getAttackTarget() != null || isGiant()) && activeItemStack.isEmpty()) {
+
+			if (getOwner() == null && getDiff() > 1 && (getAttackTarget() != null || isGiant())
+					&& activeItemStack.isEmpty()) {
 				ItemStack backpack = ItemBackpack.getBackpack(EntitySoldier.this);
-				return backpack.getItem() instanceof ItemSoldierBackpack &&
-						getWepCapability().getRage(RageType.BANNER) >= 1f ;
+				return backpack.getItem() instanceof ItemSoldierBackpack
+						&& getWepCapability().getRage(RageType.BANNER) >= 1f;
 			}
 			return false;
 		}
-		
+
+		@Override
 		public void updateTask() {
 			activateBackpack();
 		}

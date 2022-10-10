@@ -15,20 +15,20 @@ public class EntityAISentryIdle extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		// TODO Auto-generated method stub
 		return this.host.getAttackTarget() == null && !this.host.isDisabled();
 	}
 
 	@Override
 	public void updateTask() {
-		//System.out.println("Rotating "+this.host.rotationYaw+" "+this.host.rotationYawHead);
+		// System.out.println("Rotating "+this.host.rotationYaw+"
+		// "+this.host.rotationYawHead);
 		if (this.direction) {
 			this.host.rotationYawHead += 2.5f;
-			if (this.host.rotationYawHead >= this.host.rotationYaw+50)
+			if (this.host.rotationYawHead >= this.host.rotationYaw + 50)
 				this.direction = false;
 		} else {
 			this.host.rotationYawHead -= 2.5f;
-			if (this.host.rotationYawHead <= this.host.rotationYaw-50)
+			if (this.host.rotationYawHead <= this.host.rotationYaw - 50)
 				this.direction = true;
 		}
 	}

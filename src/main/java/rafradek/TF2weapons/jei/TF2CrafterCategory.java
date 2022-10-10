@@ -3,6 +3,8 @@ package rafradek.TF2weapons.jei;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.ICraftingGridHelper;
 import mezz.jei.api.gui.IDrawable;
@@ -27,8 +29,6 @@ import rafradek.TF2weapons.item.ItemApplicableEffect;
 import rafradek.TF2weapons.item.ItemTF2;
 import rafradek.TF2weapons.item.crafting.AustraliumRecipe;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
-
-import com.google.common.collect.Lists;
 
 public class TF2CrafterCategory implements IRecipeCategory<TF2CrafterRecipeWrapper> {
 
@@ -63,7 +63,7 @@ public class TF2CrafterCategory implements IRecipeCategory<TF2CrafterRecipeWrapp
 	}
 
 	public static List<TF2CrafterRecipeWrapper> getRecipes() {
-		List<TF2CrafterRecipeWrapper> recipes = new ArrayList<TF2CrafterRecipeWrapper>();
+		List<TF2CrafterRecipeWrapper> recipes = new ArrayList<>();
 		for (IRecipe recipe : TF2CraftingManager.INSTANCE.getRecipeList()) {
 			recipes.add(new TF2CrafterRecipeWrapper(recipe));
 			if (recipe instanceof AustraliumRecipe) {
@@ -86,16 +86,18 @@ public class TF2CrafterCategory implements IRecipeCategory<TF2CrafterRecipeWrapp
 				items.init(index, true, x * 18, y * 18);
 			}
 		}
-		if (wrapper.isShapeless()) layout.setShapeless();
+		if (wrapper.isShapeless())
+			layout.setShapeless();
 		if (wrapper.getUpgradeInputSlot() == -1) {
 			craftingGridHelper.setInputs(items, ingredients.getInputs(VanillaTypes.ITEM));
 			items.set(0, ingredients.getOutputs(VanillaTypes.ITEM).get(0));
-		}
-		else {
+		} else {
 			List<List<ItemStack>> inputs = ingredients.getInputs(VanillaTypes.ITEM);
 			List<ItemStack> output = Lists.newArrayList();
-			if (focus != null) if (focus.getMode() == IFocus.Mode.OUTPUT && isValidFocusForUpgrades(focus))
-				inputs.set(wrapper.getUpgradeInputSlot(), Lists.newArrayList(wrapper.downgradeStack((ItemStack) focus.getValue())));
+			if (focus != null)
+				if (focus.getMode() == IFocus.Mode.OUTPUT && isValidFocusForUpgrades(focus))
+					inputs.set(wrapper.getUpgradeInputSlot(),
+							Lists.newArrayList(wrapper.downgradeStack((ItemStack) focus.getValue())));
 			craftingGridHelper.setInputs(items, inputs);
 			if (focus != null && focus.getMode() == IFocus.Mode.INPUT && isValidFocusForUpgrades(focus))
 				output.add(wrapper.upgradeStack((ItemStack) focus.getValue()));
@@ -109,9 +111,11 @@ public class TF2CrafterCategory implements IRecipeCategory<TF2CrafterRecipeWrapp
 	}
 
 	private boolean isValidFocusForUpgrades(IFocus<?> focus) {
-		if (!(focus.getValue() instanceof ItemStack)) return false;
+		if (!(focus.getValue() instanceof ItemStack))
+			return false;
 		Item item = ((ItemStack) focus.getValue()).getItem();
-		return !(item instanceof ItemBlock || item instanceof ItemTF2 || item instanceof ItemTF2 || item instanceof ItemApplicableEffect);
+		return !(item instanceof ItemBlock || item instanceof ItemTF2 || item instanceof ItemTF2
+				|| item instanceof ItemApplicableEffect);
 	}
 
 }

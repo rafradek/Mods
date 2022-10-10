@@ -9,11 +9,10 @@ import net.minecraft.item.ItemStack;
 public class GuiButtonToggleItem extends GuiButton {
 
 	public boolean selected;
-	public ItemStack stackToDraw=ItemStack.EMPTY;
+	public ItemStack stackToDraw = ItemStack.EMPTY;
 
 	public GuiButtonToggleItem(int buttonId, int x, int y, int widthIn, int heightIn) {
 		super(buttonId, x, y, widthIn, heightIn, "");
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -30,7 +29,7 @@ public class GuiButtonToggleItem extends GuiButton {
 
 	@Override
 	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-		if (this.visible && this.stackToDraw !=null && !this.stackToDraw.isEmpty()) {
+		if (this.visible && this.stackToDraw != null && !this.stackToDraw.isEmpty()) {
 			super.drawButton(mc, mouseX, mouseY, partialTicks);
 			this.zLevel = 100.0F;
 			mc.getRenderItem().zLevel = 100.0F;
@@ -38,16 +37,16 @@ public class GuiButtonToggleItem extends GuiButton {
 			GlStateManager.enableLighting();
 			GlStateManager.enableRescaleNormal();
 			mc.getRenderItem().renderItemAndEffectIntoGUI(this.stackToDraw, this.x + 1, this.y + 1);
-			mc.getRenderItem().renderItemOverlays(mc.fontRenderer, this.stackToDraw, this.x + 1,
-					this.y + 1);
+			mc.getRenderItem().renderItemOverlays(mc.fontRenderer, this.stackToDraw, this.x + 1, this.y + 1);
 			GlStateManager.disableLighting();
 			RenderHelper.disableStandardItemLighting();
 			mc.getRenderItem().zLevel = 0.0F;
 			this.zLevel = 0.0F;
 		}
 	}
-	public boolean mousePressed(Minecraft mc, int mouseX, int mouseY)
-    {
-        return super.mousePressed(mc, mouseX, mouseY) && !this.stackToDraw.isEmpty();
-    }
+
+	@Override
+	public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+		return super.mousePressed(mc, mouseX, mouseY) && !this.stackToDraw.isEmpty();
+	}
 }

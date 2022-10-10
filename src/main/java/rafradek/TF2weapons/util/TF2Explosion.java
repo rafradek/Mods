@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -21,10 +20,8 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -33,9 +30,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 import rafradek.TF2weapons.TF2ConfigVars;
-import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.particle.EnumTF2Particles;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 
@@ -44,8 +39,8 @@ public class TF2Explosion extends Explosion {
 	private Random explosionRNG = new Random();
 	public World world;
 	/** A list of ChunkPositions of blocks affected by this explosion */
-	public List<BlockPos> affectedBlockPositions = new ArrayList<BlockPos>();
-	public HashMap<Entity, Float> affectedEntities = new HashMap<Entity, Float>();
+	public List<BlockPos> affectedBlockPositions = new ArrayList<>();
+	public HashMap<Entity, Float> affectedEntities = new HashMap<>();
 	private Entity directHit;
 	/** whether or not the explosion sets fire to blocks around it */
 	public boolean isFlaming;
@@ -61,9 +56,9 @@ public class TF2Explosion extends Explosion {
 	private float harvestDamage;
 	private float pushScale;
 	private SoundEvent sound;
-	
+
 	public TF2Explosion(World world, Entity exploder, double x, double y, double z, float size, Entity direct,
-			float harvestDamage,float pushScale, SoundEvent sound) {
+			float harvestDamage, float pushScale, SoundEvent sound) {
 		super(world, exploder, x, y, z, size, false, true);
 		this.explosionRNG = new Random();
 		this.affectedBlockPositions = Lists.newArrayList();
@@ -77,7 +72,7 @@ public class TF2Explosion extends Explosion {
 		this.world = world;
 		this.directHit = direct;
 		this.harvestDamage = harvestDamage;
-		this.pushScale=pushScale;
+		this.pushScale = pushScale;
 		this.sound = sound;
 	}
 
@@ -86,7 +81,7 @@ public class TF2Explosion extends Explosion {
 		HashSet<BlockPos> hashset = Sets.newHashSet();
 		int j;
 		int k;
-		if (TF2ConfigVars.destTerrain==2 || (TF2ConfigVars.destTerrain==1 && this.harvestDamage > 0))
+		if (TF2ConfigVars.destTerrain == 2 || (TF2ConfigVars.destTerrain == 1 && this.harvestDamage > 0))
 			for (int i = 0; i < 16; ++i)
 				for (j = 0; j < 16; ++j)
 					for (k = 0; k < 16; ++k)
@@ -119,8 +114,8 @@ public class TF2Explosion extends Explosion {
 										f -= (f2 + 0.3F) * 0.3F;
 									}
 
-									if (f > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this,
-											this.world, blockpos, iblockstate, f)))
+									if (f > 0.0F && (this.exploder == null || this.exploder
+											.canExplosionDestroyBlock(this, this.world, blockpos, iblockstate, f)))
 										hashset.add(blockpos);
 
 									d4 += d0 * 0.30000001192092896D;
@@ -133,8 +128,8 @@ public class TF2Explosion extends Explosion {
 									IBlockState iblockstate = this.world.getBlockState(blockpos);
 
 									if (iblockstate.getMaterial() != Material.AIR)
-										f = TF2Util.damageBlock(blockpos, (EntityLivingBase) null, world, ItemStack.EMPTY, 0,
-												f, null, this);
+										f = TF2Util.damageBlock(blockpos, (EntityLivingBase) null, world,
+												ItemStack.EMPTY, 0, f, null, this);
 
 									d4 += d0 * 0.30000001192092896D;
 									d6 += d1 * 0.30000001192092896D;
@@ -149,17 +144,10 @@ public class TF2Explosion extends Explosion {
 		int l = MathHelper.floor(this.explosionY + f3 + 1.0D);
 		int k1 = MathHelper.floor(this.explosionZ - f3 - 1.0D);
 		int i1 = MathHelper.floor(this.explosionZ + f3 + 1.0D);
-		List<Entity> list = this.world.getEntitiesWithinAABB(Entity.class,
-				new AxisAlignedBB(j, j1, k1, k, l, i1),new Predicate<Entity>(){
-
-					@Override
-					public boolean apply(Entity input) {
-						// TODO Auto-generated method stub
-						return input != exploder && !input.isImmuneToExplosions() && (input.canBeAttackedWithItem() || TF2ConfigVars.destTerrain == 2) 
-								&& TF2Util.canHit(getExplosivePlacedBy(), input);
-					}
-			
-		});
+		List<Entity> list = this.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(j, j1, k1, k, l, i1),
+				input -> input != exploder && !input.isImmuneToExplosions()
+						&& (input.canBeAttackedWithItem() || TF2ConfigVars.destTerrain == 2)
+						&& TF2Util.canHit(getExplosivePlacedBy(), input));
 		net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.world, this, list, f3);
 		Vec3d Vec3d = new Vec3d(this.explosionX, this.explosionY, this.explosionZ);
 		int livingEntities = 0;
@@ -168,7 +156,8 @@ public class TF2Explosion extends Explosion {
 				livingEntities++;
 		for (int l1 = 0; l1 < list.size(); ++l1) {
 			Entity entity = list.get(l1);
-			double d4 = TF2Util.getDistanceBox(entity, this.explosionX, explosionY, explosionZ, 0, 0)/ this.getExplosionSize(entity) * 0.5;
+			double d4 = TF2Util.getDistanceBox(entity, this.explosionX, explosionY, explosionZ, 0, 0)
+					/ this.getExplosionSize(entity) * 0.5;
 
 			if (d4 <= 0.5D) {
 				boolean isExploder = this.getExplosivePlacedBy() == entity;
@@ -179,7 +168,8 @@ public class TF2Explosion extends Explosion {
 				if (isExploder)
 					d6 = entity.posY + entity.getEyeHeight() - 0.185 - this.explosionY;
 				else
-					d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2 - this.explosionY;
+					d6 = entity.posY + (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2
+							- this.explosionY;
 				double d7 = entity.posZ - this.explosionZ;
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 
@@ -188,7 +178,7 @@ public class TF2Explosion extends Explosion {
 					d6 /= d9;
 					d7 /= d9;
 					// float explMod=(this.explosionSize/4);
-					Vec3d move = new Vec3d(d5,d6,d7).normalize();
+					Vec3d move = new Vec3d(d5, d6, d7).normalize();
 					double d10 = this.getBlockDensity(Vec3d,
 							entity.getEntityBoundingBox().grow(-0.05f, -0.05f, -0.05f));
 					double d11 = (1D - d4) * d10;
@@ -198,9 +188,9 @@ public class TF2Explosion extends Explosion {
 						d11 = 1;
 					if (d11 == 0)
 						continue;
-					/*if (expJump) {
-						move=move.addVector(d5*0.5, 0, d7*0.5);
-					}*/
+					/*
+					 * if (expJump) { move=move.addVector(d5*0.5, 0, d7*0.5); }
+					 */
 					this.affectedEntities.put(entity, (float) (d11 / (expJump ? 2 : 1)));
 
 					// double d8 =
@@ -210,20 +200,18 @@ public class TF2Explosion extends Explosion {
 					// * d8);
 					// entity.addVelocity(2, 2, 2);
 					d11 = d11 * 0.5 + 0.5;
-					
+
 					if (entity instanceof EntityPlayerMP) {
 						// TF2weapons.network.sendTo(new
 						// TF2Message.PropertyMessage("ExpJump",(byte)1,entity),
 						// (EntityPlayerMP) entity);
-						
-						
+
 						this.getKnockbackMap().put(entity, move.scale(d11));
 						// entity.getDataWatcher().updateObject(29,
 						// Byte.valueOf((byte) 1));
-					}
-					else if(!(entity instanceof EntityLivingBase && ((EntityLivingBase) entity).getAttributeMap()
+					} else if (!(entity instanceof EntityLivingBase && ((EntityLivingBase) entity).getAttributeMap()
 							.getAttributeInstance(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
-							.getAttributeValue() >= 1)){
+							.getAttributeValue() >= 1)) {
 						this.getKnockbackMap().put(entity, move);
 					}
 				}
@@ -237,13 +225,13 @@ public class TF2Explosion extends Explosion {
 	@Override
 	public void doExplosionB(boolean spawnParticles) {
 		if (sound != null) {
-			this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ,
-					sound, SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F,
-					1.0F);
+			this.world.playSound((EntityPlayer) null, this.explosionX, this.explosionY, this.explosionZ, sound,
+					SoundCategory.BLOCKS, this.getExplosivePlacedBy() instanceof EntityPlayer ? 4.0F : 1.0F, 1.0F);
 		}
 
 		if (this.isSmoking)
-			TF2Util.sendParticle(EnumTF2Particles.EXPLOSION, world, this.explosionX, this.explosionY, this.explosionZ, this.explosionSize, 0, 0, 1);
+			TF2Util.sendParticle(EnumTF2Particles.EXPLOSION, world, this.explosionX, this.explosionY, this.explosionZ,
+					this.explosionSize, 0, 0, 1);
 		else
 			this.world.spawnParticle(EnumParticleTypes.EXPLOSION_LARGE, this.explosionX, this.explosionY,
 					this.explosionZ, 1.0D, 0.0D, 0.0D, new int[0]);
@@ -292,33 +280,32 @@ public class TF2Explosion extends Explosion {
 	}
 
 	/*
-	 * public float getBlockDensity(Vec3d p_72842_1_, AxisAlignedBB p_72842_2_)
-	 * { double d0 = 1.0D / ((p_72842_2_.maxX - p_72842_2_.minX) * 2.0D + 1.0D);
+	 * public float getBlockDensity(Vec3d p_72842_1_, AxisAlignedBB p_72842_2_) {
+	 * double d0 = 1.0D / ((p_72842_2_.maxX - p_72842_2_.minX) * 2.0D + 1.0D);
 	 * double d1 = 1.0D / ((p_72842_2_.maxY - p_72842_2_.minY) * 2.0D + 1.0D);
 	 * double d2 = 1.0D / ((p_72842_2_.maxZ - p_72842_2_.minZ) * 2.0D + 1.0D);
-	 * 
+	 *
 	 * if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) { int i = 0; int j = 0;
-	 * 
-	 * for (float f = 0.0F; f <= 1.0F; f = (float)(f + d0)) { for (float f1 =
-	 * 0.0F; f1 <= 1.0F; f1 = (float)(f1 + d1)) { for (float f2 = 0.0F; f2 <=
-	 * 1.0F; f2 = (float)(f2 + d2)) { double d3 = p_72842_2_.minX +
-	 * (p_72842_2_.maxX - p_72842_2_.minX) * f; double d4 = p_72842_2_.minY +
-	 * (p_72842_2_.maxY - p_72842_2_.minY) * f1; double d5 = p_72842_2_.minZ +
-	 * (p_72842_2_.maxZ - p_72842_2_.minZ) * f2; RayTraceResult
-	 * mop=this.world.rayTraceBlocks(new Vec3d(d3, d4, d5), p_72842_1_,
-	 * false, true, false); IBlockState
+	 *
+	 * for (float f = 0.0F; f <= 1.0F; f = (float)(f + d0)) { for (float f1 = 0.0F;
+	 * f1 <= 1.0F; f1 = (float)(f1 + d1)) { for (float f2 = 0.0F; f2 <= 1.0F; f2 =
+	 * (float)(f2 + d2)) { double d3 = p_72842_2_.minX + (p_72842_2_.maxX -
+	 * p_72842_2_.minX) * f; double d4 = p_72842_2_.minY + (p_72842_2_.maxY -
+	 * p_72842_2_.minY) * f1; double d5 = p_72842_2_.minZ + (p_72842_2_.maxZ -
+	 * p_72842_2_.minZ) * f2; RayTraceResult mop=this.world.rayTraceBlocks(new
+	 * Vec3d(d3, d4, d5), p_72842_1_, false, true, false); IBlockState
 	 * state=this.world.getBlockState(mop.getBlockPos()); if (mop ==
 	 * null||state.getBlock()==Blocks.SNOW_LAYER) { ++i; }
-	 * 
+	 *
 	 * ++j; } } }
-	 * 
+	 *
 	 * return (float)i / (float)j; } else { return 0.0F; } }
 	 */
 	public float getBlockDensity(Vec3d origin, AxisAlignedBB p_72842_2_) {
 		double d0 = 1.0D / ((p_72842_2_.maxX - p_72842_2_.minX) * 2.0D + 1.0D);
 		double d1 = 1.0D / ((p_72842_2_.maxY - p_72842_2_.minY) * 2.0D + 1.0D);
 		double d2 = 1.0D / ((p_72842_2_.maxZ - p_72842_2_.minZ) * 2.0D + 1.0D);
-		List<AxisAlignedBB> collisionBoxes = this.world.getCollisionBoxes(null,p_72842_2_.grow(1, 1, 1));
+		List<AxisAlignedBB> collisionBoxes = this.world.getCollisionBoxes(null, p_72842_2_.grow(1, 1, 1));
 		if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) {
 			int i = 0;
 			int j = 0;
@@ -353,19 +340,22 @@ public class TF2Explosion extends Explosion {
 		return this.knockbackMap;
 	}
 
-	public float getExplosionSize(Entity target){
-		return target==getExplosivePlacedBy() && this.exploder instanceof EntityProjectileBase ?((EntityProjectileBase) this.exploder).getExplosionSize():this.explosionSize;
+	public float getExplosionSize(Entity target) {
+		return target == getExplosivePlacedBy() && this.exploder instanceof EntityProjectileBase
+				? ((EntityProjectileBase) this.exploder).getExplosionSize()
+				: this.explosionSize;
 	}
+
 	/**
-	 * Returns either the entity that placed the explosive block, the entity
-	 * that caused the explosion or null.
+	 * Returns either the entity that placed the explosive block, the entity that
+	 * caused the explosion or null.
 	 */
 	@Override
 	public EntityLivingBase getExplosivePlacedBy() {
-		if(this.exploder instanceof EntityProjectileBase){
+		if (this.exploder instanceof EntityProjectileBase) {
 			return ((EntityProjectileBase) this.exploder).shootingEntity;
 		}
-		return (EntityLivingBase)this.exploder;
+		return (EntityLivingBase) this.exploder;
 	}
 
 	public void func_180342_d() {
@@ -380,4 +370,5 @@ public class TF2Explosion extends Explosion {
 	public Vec3d getPosition() {
 		return this.position;
 	}
+
 }

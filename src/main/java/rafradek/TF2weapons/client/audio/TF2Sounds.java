@@ -12,7 +12,8 @@ public class TF2Sounds {
 	public static final SoundEvent MISC_PAIN = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.pain"));
 	public static final SoundEvent MISC_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit"));
 	public static final SoundEvent MISC_MINI_CRIT = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.crit.mini"));
-	public static final SoundEvent RAZORBACK_BREAK = register(new ResourceLocation(TF2weapons.MOD_ID, "weapon.razorback"));
+	public static final SoundEvent RAZORBACK_BREAK = register(
+			new ResourceLocation(TF2weapons.MOD_ID, "weapon.razorback"));
 	public static final SoundEvent MOB_ENGINEER_HURT = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.engineer.hurt"));
 	public static final SoundEvent MOB_ENGINEER_DEATH = register(
@@ -129,14 +130,12 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.hit.flamethrower"));
 	public static final SoundEvent JAR_EXPLODE = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.jar.explode"));
-	public static final SoundEvent MOB_HHH_START = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.start"));
+	public static final SoundEvent MOB_HHH_START = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.start"));
 	public static final SoundEvent MOB_MONOCULUS_START = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.monoculus.start"));
 	public static final SoundEvent MOB_MERASMUS_START = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.merasmus.starttalk"));
-	public static final SoundEvent MOB_HHH_DEFEAT = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.defeat"));
+	public static final SoundEvent MOB_HHH_DEFEAT = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.defeat"));
 	public static final SoundEvent MOB_MONOCULUS_DEFEAT = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.monoculus.defeat"));
 	public static final SoundEvent MOB_MERASMUS_DEFEAT = register(
@@ -153,16 +152,11 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.monoculus.shoot"));
 	public static final SoundEvent MOB_MONOCULUS_SHOOT_MAD = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.monoculus.shoot.mad"));
-	public static final SoundEvent MOB_HHH_ALERT = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.alert"));
-	public static final SoundEvent MOB_HHH_HIT = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.hit"));
-	public static final SoundEvent MOB_HHH_MISS = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.miss"));
-	public static final SoundEvent MOB_HHH_ATTACK = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.attack"));
-	public static final SoundEvent MOB_HHH_SAY = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.say"));
+	public static final SoundEvent MOB_HHH_ALERT = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.alert"));
+	public static final SoundEvent MOB_HHH_HIT = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.hit"));
+	public static final SoundEvent MOB_HHH_MISS = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.miss"));
+	public static final SoundEvent MOB_HHH_ATTACK = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.attack"));
+	public static final SoundEvent MOB_HHH_SAY = register(new ResourceLocation(TF2weapons.MOD_ID, "mob.hhh.say"));
 	public static final SoundEvent MOB_MERASMUS_APPEAR = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mob.merasmus.appear"));
 	public static final SoundEvent MOB_MERASMUS_DISAPPEAR = register(
@@ -187,54 +181,38 @@ public class TF2Sounds {
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.shield.hit.range"));
 	public static final SoundEvent DISCIPLINARY_SPEED = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.powerup.disciplinary"));
-	public static final SoundEvent DOUBLE_DONK = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
+	public static final SoundEvent DOUBLE_DONK = register(new ResourceLocation(TF2weapons.MOD_ID, "misc.doubledonk"));
 	public static final SoundEvent GRENADE_EXPLODESPECIAL = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "weapon.explosion.airstrike"));
-	public static final SoundEvent MVM_WAVE_START = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.start"));
-	public static final SoundEvent MVM_WAVE_END = register(
-			new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.end"));
+	public static final SoundEvent MVM_WAVE_START = register(new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.start"));
+	public static final SoundEvent MVM_WAVE_END = register(new ResourceLocation(TF2weapons.MOD_ID, "mvm.wave.end"));
 	public static final SoundEvent MVM_SENTRY_BUSTER = register(
 			new ResourceLocation(TF2weapons.MOD_ID, "mvm.sentrybuster"));
-	
+
 	public static void registerSounds() {
 		/*
 		 * IForgeRegistry<SoundEvent>
-		 * registry=GameRegistry.findRegistry(SoundEvent.class);
-		 * GameRegistry.register(, name) registry.register(MISC_CRIT);
-		 * registry.register(MISC_PAIN); registry.register(MOB_ENGINEER_HURT);
-		 * registry.register(MOB_ENGINEER_DEATH);
-		 * registry.register(MOB_ENGINEER_SAY);
-		 * registry.register(MOB_SNIPER_HURT);
-		 * registry.register(MOB_SNIPER_DEATH);
-		 * registry.register(MOB_SNIPER_SAY);
-		 * registry.register(MOB_DEMOMAN_HURT);
-		 * registry.register(MOB_DEMOMAN_DEATH);
-		 * registry.register(MOB_DEMOMAN_SAY);
-		 * registry.register(MOB_HEAVY_HURT);
+		 * registry=GameRegistry.findRegistry(SoundEvent.class); GameRegistry.register(,
+		 * name) registry.register(MISC_CRIT); registry.register(MISC_PAIN);
+		 * registry.register(MOB_ENGINEER_HURT); registry.register(MOB_ENGINEER_DEATH);
+		 * registry.register(MOB_ENGINEER_SAY); registry.register(MOB_SNIPER_HURT);
+		 * registry.register(MOB_SNIPER_DEATH); registry.register(MOB_SNIPER_SAY);
+		 * registry.register(MOB_DEMOMAN_HURT); registry.register(MOB_DEMOMAN_DEATH);
+		 * registry.register(MOB_DEMOMAN_SAY); registry.register(MOB_HEAVY_HURT);
 		 * registry.register(MOB_HEAVY_DEATH); registry.register(MOB_HEAVY_SAY);
-		 * registry.register(MOB_MEDIC_HURT);
-		 * registry.register(MOB_MEDIC_DEATH); registry.register(MOB_MEDIC_SAY);
-		 * registry.register(MOB_PYRO_HURT); registry.register(MOB_PYRO_DEATH);
-		 * registry.register(MOB_PYRO_SAY); registry.register(MOB_SPY_HURT);
-		 * registry.register(MOB_SPY_DEATH); registry.register(MOB_SPY_SAY);
-		 * registry.register(MOB_SOLDIER_HURT);
-		 * registry.register(MOB_SOLDIER_DEATH);
-		 * registry.register(MOB_SOLDIER_SAY);
-		 * registry.register(MOB_SCOUT_HURT);
-		 * registry.register(MOB_SCOUT_DEATH); registry.register(MOB_SCOUT_SAY);
-		 * registry.register(MOB_SENTRY_HURT);
-		 * registry.register(MOB_SENTRY_DEATH);
-		 * registry.register(MOB_SENTRY_SHOOT_1);
-		 * registry.register(MOB_SENTRY_SHOOT_2);
-		 * registry.register(MOB_SENTRY_SHOOT_3);
-		 * registry.register(MOB_SENTRY_SCAN_1);
-		 * registry.register(MOB_SENTRY_SCAN_2);
-		 * registry.register(MOB_SENTRY_SCAN_3);
-		 * registry.register(MOB_SENTRY_ROCKET);
-		 * registry.register(MOB_SENTRY_SPOT);
-		 * registry.register(MOB_SENTRY_EMPTY);
+		 * registry.register(MOB_MEDIC_HURT); registry.register(MOB_MEDIC_DEATH);
+		 * registry.register(MOB_MEDIC_SAY); registry.register(MOB_PYRO_HURT);
+		 * registry.register(MOB_PYRO_DEATH); registry.register(MOB_PYRO_SAY);
+		 * registry.register(MOB_SPY_HURT); registry.register(MOB_SPY_DEATH);
+		 * registry.register(MOB_SPY_SAY); registry.register(MOB_SOLDIER_HURT);
+		 * registry.register(MOB_SOLDIER_DEATH); registry.register(MOB_SOLDIER_SAY);
+		 * registry.register(MOB_SCOUT_HURT); registry.register(MOB_SCOUT_DEATH);
+		 * registry.register(MOB_SCOUT_SAY); registry.register(MOB_SENTRY_HURT);
+		 * registry.register(MOB_SENTRY_DEATH); registry.register(MOB_SENTRY_SHOOT_1);
+		 * registry.register(MOB_SENTRY_SHOOT_2); registry.register(MOB_SENTRY_SHOOT_3);
+		 * registry.register(MOB_SENTRY_SCAN_1); registry.register(MOB_SENTRY_SCAN_2);
+		 * registry.register(MOB_SENTRY_SCAN_3); registry.register(MOB_SENTRY_ROCKET);
+		 * registry.register(MOB_SENTRY_SPOT); registry.register(MOB_SENTRY_EMPTY);
 		 * registry.register(MOB_DISPENSER_IDLE);
 		 * registry.register(MOB_DISPENSER_DEATH);
 		 * registry.register(MOB_DISPENSER_HEAL);
@@ -249,12 +227,10 @@ public class TF2Sounds {
 		 */
 	}
 
-	
-	
 	public static SoundEvent register(ResourceLocation location) {
 		if (SOUND_EVENTS.containsKey(location))
 			return SOUND_EVENTS.get(location);
-		SoundEvent event=new SoundEvent(location).setRegistryName(location);
+		SoundEvent event = new SoundEvent(location).setRegistryName(location);
 		SOUND_EVENTS.put(location, event);
 		return event;
 	}

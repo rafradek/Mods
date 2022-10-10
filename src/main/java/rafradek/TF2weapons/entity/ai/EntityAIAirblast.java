@@ -33,19 +33,18 @@ public class EntityAIAirblast extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		// TODO Auto-generated method stub
 		// System.out.println("executing
 		// "+TF2ActionHandler.playerAction.server.get(host));
 		// System.out.println("should execute:
 		// "+(host.world.getDifficulty().getDifficultyId()>=2));
-		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower 
-				&& ((ItemFlameThrower)this.host.getHeldItemMainhand().getItem()).canAltFire(this.host.world, host, this.host.getHeldItemMainhand())
+		return this.host.getHeldItemMainhand().getItem() instanceof ItemFlameThrower
+				&& ((ItemFlameThrower) this.host.getHeldItemMainhand().getItem()).canAltFire(this.host.world, host,
+						this.host.getHeldItemMainhand())
 				&& host.world.getDifficulty().getDifficultyId() >= 2;
 
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void updateTask() {
 		// System.out.println("executing
 		// "+TF2ActionHandler.playerAction.server.get(host));
@@ -56,17 +55,18 @@ public class EntityAIAirblast extends EntityAIBase {
 			return;
 		}
 		Vec3d eyeVec = new Vec3d(host.posX, host.posY + host.getEyeHeight(), host.posZ);
-		List<Entity> list = host.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(eyeVec.x - 5,
-				eyeVec.y - 5, eyeVec.z - 5, eyeVec.x + 5, eyeVec.y + 5, eyeVec.z + 5));
+		List<Entity> list = host.world.getEntitiesWithinAABB(Entity.class,
+				new AxisAlignedBB(eyeVec.x - 5, eyeVec.y - 5, eyeVec.z - 5, eyeVec.x + 5, eyeVec.y + 5, eyeVec.z + 5));
 		boolean airblast = false;
 		for (Entity entity : list) {
 			// System.out.println(entity+"
 			// "+ItemFlameThrower.isPushable(host,entity));
 			boolean hasmelee = false;
 			if (entity instanceof EntityLivingBase) {
-				ItemStack stack = ((EntityLivingBase)entity).getHeldItemMainhand();
-				hasmelee = stack.getItem() instanceof ItemMeleeWeapon || (!(stack.getItem() instanceof ItemWeapon) && 
-						stack.getAttributeModifiers(EntityEquipmentSlot.MAINHAND).containsKey(SharedMonsterAttributes.ATTACK_DAMAGE.getName()));
+				ItemStack stack = ((EntityLivingBase) entity).getHeldItemMainhand();
+				hasmelee = stack.getItem() instanceof ItemMeleeWeapon || (!(stack.getItem() instanceof ItemWeapon)
+						&& stack.getAttributeModifiers(EntityEquipmentSlot.MAINHAND)
+								.containsKey(SharedMonsterAttributes.ATTACK_DAMAGE.getName()));
 			}
 			if (ItemAirblast.isPushable(host, entity)
 					&& (hasmelee || entity instanceof EntityThrowable || entity instanceof IProjectile)) {

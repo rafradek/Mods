@@ -15,14 +15,14 @@ public class EntityCritEffect extends Particle {
 		this.particleScale *= this.rand.nextFloat() * 0.5F + 0.5F;
 		this.setRBGColorF((color >> 16) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
 		this.motionY += 0.03;
-		//this.particleAlpha = Math.min(1 / this.particleScale * 3, 1);
+		// this.particleAlpha = Math.min(1 / this.particleScale * 3, 1);
 		this.particleMaxAge = 20;
 	}
 
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-		this.particleScale -=0.05F;
+		this.particleScale -= 0.05F;
 	}
 
 	@Override

@@ -27,16 +27,13 @@ public class Squad {
 	public String name;
 	public ArrayList<Unit> units = new ArrayList<>();
 	public int cost;
-	public enum Type {
-		NORMAL,
-		GIANT,
-		FINAL,
-		SUPPORT
+
+	public static enum Type {
+		NORMAL, GIANT, FINAL, SUPPORT
 	}
-	public Squad(Type type) {
-		// TODO Auto-generated constructor stub
-	}
-	
+
+	public Squad(Type type) {}
+
 	public static Multimap<Type, Squad> parseFile(File file) {
 		Multimap<Type, Squad> map = HashMultimap.create();
 		try {
@@ -45,10 +42,17 @@ public class Squad {
 			for (Entry<String, JsonElement> entry : tree.entrySet()) {
 				Type type;
 				switch (entry.getKey()) {
-				case "giant": type = Type.GIANT; break;
-				case "final": type = Type.FINAL; break;
-				case "support": type = Type.SUPPORT; break;
-				default: type = Type.NORMAL;
+				case "giant":
+					type = Type.GIANT;
+					break;
+				case "final":
+					type = Type.FINAL;
+					break;
+				case "support":
+					type = Type.SUPPORT;
+					break;
+				default:
+					type = Type.NORMAL;
 				}
 				for (JsonElement squadEl : entry.getValue().getAsJsonArray()) {
 					Squad squad = new Squad(type);
@@ -65,14 +69,15 @@ public class Squad {
 						if (unitObj.has("Weapon"))
 							unit.weapon = MapList.nameToData.get(unitObj.get("Weapon").getAsString());
 						if (unitObj.has("Attributes"))
-							for (Entry<String, JsonElement> attribute : unitObj.getAsJsonObject("Attributes").entrySet()) {
+							for (Entry<String, JsonElement> attribute : unitObj.getAsJsonObject("Attributes")
+									.entrySet()) {
 								String attributeName = attribute.getKey();
 								float attributeValue = attribute.getValue().getAsFloat();
 								Iterator<String> iterator2 = MapList.nameToAttribute.keySet().iterator();
 								// System.out.println("to je"+attributeName+"
 								// "+attributeValue);
 								boolean has = false;
-		
+
 								while (iterator2.hasNext())
 									if (iterator2.next().equals(attributeName)) {
 										unit.attributes.put(MapList.nameToAttribute.get(attributeName), attributeValue);
@@ -83,7 +88,7 @@ public class Squad {
 											attributeValue);
 							}
 					}
-							
+
 					map.put(type, squad);
 				}
 			}
@@ -93,7 +98,7 @@ public class Squad {
 		}
 		return map;
 	}
-	
+
 	public static class Unit {
 		HashMap<TF2Attribute, Float> attributes = new HashMap<>();
 		ResourceLocation entity;

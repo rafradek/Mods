@@ -7,17 +7,9 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.IEntityOwnable;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootContext.EntityTarget;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import rafradek.TF2weapons.TF2weapons;
@@ -31,7 +23,7 @@ public class EntityOrCondition implements LootCondition {
 		this.negate = negate;
 		this.conditions = conditions;
 	}
-	
+
 	@Override
 	public boolean testCondition(Random rand, LootContext context) {
 
@@ -44,7 +36,7 @@ public class EntityOrCondition implements LootCondition {
 
 	public static class Serializer extends LootCondition.Serializer<EntityOrCondition> {
 		public Serializer() {
-			super(new ResourceLocation(TF2weapons.MOD_ID,"or"), EntityOrCondition.class);
+			super(new ResourceLocation(TF2weapons.MOD_ID, "or"), EntityOrCondition.class);
 		}
 
 		@Override
@@ -56,8 +48,10 @@ public class EntityOrCondition implements LootCondition {
 		public EntityOrCondition deserialize(JsonObject json, JsonDeserializationContext context) {
 			JsonArray arr = JsonUtils.getJsonArray(json, "conditions");
 			LootCondition[] conditions = new LootCondition[arr.size()];
-			for (int i = 0; i < conditions.length; i ++) {
-				conditions[i] = LootConditionManager.getSerializerForName(new ResourceLocation(arr.get(i).getAsString())).deserialize(json, context);
+			for (int i = 0; i < conditions.length; i++) {
+				conditions[i] = LootConditionManager
+						.getSerializerForName(new ResourceLocation(arr.get(i).getAsString()))
+						.deserialize(json, context);
 			}
 			return new EntityOrCondition(conditions, JsonUtils.getBoolean(json, "negate"));
 		}

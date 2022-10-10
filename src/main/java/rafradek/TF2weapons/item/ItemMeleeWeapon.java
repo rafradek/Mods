@@ -38,27 +38,28 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 		if (TF2Attribute.getModifier("Ball Release", item, 0, player) > 0) {
 			if (player instanceof EntityTF2Character) {
 				return (short) this.getFiringSpeed(getNewStack("sandmanball"), player);
-			}
-			else
+			} else
 				return 2000;
 		}
 		return super.getAltFiringSpeed(item, player);
 	}
-	
+
+	@Override
 	public boolean canAltFire(World worldObj, EntityLivingBase player, ItemStack item) {
-		return super.canAltFire(worldObj, player, item) && !(player instanceof EntityPlayer && ((EntityPlayer)player).getCooldownTracker().hasCooldown(this));
+		return super.canAltFire(worldObj, player, item)
+				&& !(player instanceof EntityPlayer && ((EntityPlayer) player).getCooldownTracker().hasCooldown(this));
 	}
-	
+
 	@Override
 	public void altUse(ItemStack stack, EntityLivingBase living, World world) {
 		if (TF2Attribute.getModifier("Ball Release", stack, 0, living) > 0) {
 			ItemStack ballStack = getNewStack("sandmanball");
 			if (!this.searchForAmmo(living, ballStack).isEmpty()) {
-				int cooldown = this.getFiringSpeed(ballStack, living)/50;
+				int cooldown = this.getFiringSpeed(ballStack, living) / 50;
 				if (!TF2ConfigVars.fastItemCooldown)
 					cooldown *= getData(ballStack).getFloat(PropertyType.COOLDOWN_LONG);
 				if (living instanceof EntityPlayer)
-					((EntityPlayer)living).getCooldownTracker().setCooldown(this, cooldown);
+					((EntityPlayer) living).getCooldownTracker().setCooldown(this, cooldown);
 				ItemStack oldHeldItem = living.getHeldItemMainhand();
 				living.setHeldItem(EnumHand.MAIN_HAND, ballStack);
 				((ItemProjectileWeapon) ballStack.getItem()).use(ballStack, living, world, EnumHand.MAIN_HAND, null);
@@ -66,12 +67,17 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 			}
 		}
 	}
+
+	@Override
 	public void draw(WeaponsCapability weaponsCapability, ItemStack stack, EntityLivingBase living, World world) {
 		super.draw(weaponsCapability, stack, living, world);
-		if(living instanceof EntityPlayerMP)
-			TF2weapons.network.sendTo(new TF2Message.UseMessage(this.getClip(stack), 
-					false,this.getAmmoAmount(living, getNewStack("sandmanball")), EnumHand.MAIN_HAND),(EntityPlayerMP) living);
+		if (living instanceof EntityPlayerMP)
+			TF2weapons.network.sendTo(
+					new TF2Message.UseMessage(this.getClip(stack), false,
+							this.getAmmoAmount(living, getNewStack("sandmanball")), EnumHand.MAIN_HAND),
+					(EntityPlayerMP) living);
 	}
+
 	@Override
 	public boolean use(ItemStack stack, EntityLivingBase living, World world, EnumHand hand,
 			PredictionMessage message) {
@@ -93,22 +99,26 @@ public class ItemMeleeWeapon extends ItemBulletWeapon {
 	public boolean doMuzzleFlash(ItemStack stack, EntityLivingBase attacker, EnumHand hand) {
 		return false;
 	}
-	public boolean showInfoBox(ItemStack stack, EntityPlayer player){
-		return TF2Attribute.getModifier("Ball Release", stack, 0, player) > 0 || TF2Attribute.getModifier("Kill Count", stack, 0, player) > 0;
+
+	@Override
+	public boolean showInfoBox(ItemStack stack, EntityPlayer player) {
+		return TF2Attribute.getModifier("Ball Release", stack, 0, player) > 0
+				|| TF2Attribute.getModifier("Kill Count", stack, 0, player) > 0;
 	}
-	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player){
-		String[] result=new String[2];
-		if(TF2Attribute.getModifier("Kill Count", stack, 0, player) > 0){
-			result[0]="HEADS";
-			result[1]=Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getHeads());
+
+	@Override
+	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player) {
+		String[] result = new String[2];
+		if (TF2Attribute.getModifier("Kill Count", stack, 0, player) > 0) {
+			result[0] = "HEADS";
+			result[1] = Integer.toString(player.getCapability(TF2weapons.WEAPONS_CAP, null).getHeads());
+		} else {
+			result[0] = "BALLS";
+			// ItemStack ballStack = getNewStack("sandmanball");
+			int ammoLeft = player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[14];
+			result[1] = Integer.toString(ammoLeft);
 		}
-		else{
-			result[0]="BALLS";
-			//ItemStack ballStack = getNewStack("sandmanball");
-			int ammoLeft=player.getCapability(TF2weapons.PLAYER_CAP, null).cachedAmmoCount[14];
-			result[1]=Integer.toString(ammoLeft);
-		}
-		
+
 		return result;
 	}
 }

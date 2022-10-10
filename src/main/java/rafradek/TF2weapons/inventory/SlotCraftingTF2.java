@@ -32,25 +32,24 @@ public class SlotCraftingTF2 extends SlotCrafting {
 		if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 9) {
 			if (stack.hasTagCompound()) {
 				String className = ItemToken.CLASS_NAMES[stack.getTagCompound().getByte("Token")];
-				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), Predicates.<WeaponData>and(ItemFromData.VISIBLE_WEAPON, test -> {
-					return test.get(PropertyType.SLOT).containsKey(className);
-				}));
-			}
-			else
+				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), Predicates.<WeaponData>and(
+						ItemFromData.VISIBLE_WEAPON, test -> test.get(PropertyType.SLOT).containsKey(className)));
+			} else
 				stack = ItemFromData.getRandomWeapon(playerIn.getRNG(), ItemFromData.VISIBLE_WEAPON);
-			//playerIn.addStat(TF2Achievements.HOME_MADE);
+			// playerIn.addStat(TF2Achievements.HOME_MADE);
 			playerIn.inventory.setItemStack(stack);
 		} else if (stack.getItem() == TF2weapons.itemTF2 && stack.getMetadata() == 10) {
 			stack = ItemFromData.getRandomWeaponOfClass("cosmetic", playerIn.getRNG(), false);
 			playerIn.inventory.setItemStack(stack);
 		}
-		if(stack.hasTagCompound()&&stack.getTagCompound().getBoolean("Australium")){
-			//playerIn.addStat(TF2Achievements.SHINY);
+		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("Australium")) {
+			// playerIn.addStat(TF2Achievements.SHINY);
 		}
 		net.minecraftforge.fml.common.FMLCommonHandler.instance().firePlayerCraftingEvent(playerIn, stack, craftMatrix);
 		this.onCrafting(stack);
 		net.minecraftforge.common.ForgeHooks.setCraftingPlayer(playerIn);
-		NonNullList<ItemStack> aitemstack = TF2CraftingManager.INSTANCE.getRemainingItems(this.craftMatrix, playerIn.world);
+		NonNullList<ItemStack> aitemstack = TF2CraftingManager.INSTANCE.getRemainingItems(this.craftMatrix,
+				playerIn.world);
 		net.minecraftforge.common.ForgeHooks.setCraftingPlayer(null);
 
 		for (int i = 0; i < aitemstack.size(); ++i) {

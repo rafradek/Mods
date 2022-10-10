@@ -3,13 +3,8 @@ package rafradek.TF2weapons.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.JsonDeserializer;
-
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import rafradek.TF2weapons.entity.mercenary.EntityScout;
-import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityBall;
 import rafradek.TF2weapons.entity.projectile.EntityCleaver;
 import rafradek.TF2weapons.entity.projectile.EntityFlame;
@@ -33,7 +28,6 @@ import rafradek.TF2weapons.item.ItemCleaver;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemFlameThrower;
-import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemGas;
 import rafradek.TF2weapons.item.ItemGrapplingHook;
 import rafradek.TF2weapons.item.ItemHuntsman;
@@ -52,7 +46,6 @@ import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
 import rafradek.TF2weapons.item.ItemStickyLauncher;
 import rafradek.TF2weapons.item.ItemUsable;
-import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.item.ItemWearable;
 import rafradek.TF2weapons.item.ItemWrangler;
 import rafradek.TF2weapons.item.ItemWrench;
@@ -61,7 +54,7 @@ import rafradek.TF2weapons.util.WeaponData;
 
 public class MapList {
 
-	//public static Map<Class<? extends EntityTF2Character>, Integer> classNumbers;
+	// public static Map<Class<? extends EntityTF2Character>, Integer> classNumbers;
 	public static Map<String, Item> weaponClasses;
 	public static Map<String, PropertyType<?>> propertyTypes;
 	public static Map<String, Class<? extends EntityProjectileBase>> projectileClasses;
@@ -69,24 +62,29 @@ public class MapList {
 	public static Map<String, TF2Attribute> nameToAttribute;
 	public static Map<String, ItemUsable> specialWeapons;
 	public static Map<String, NBTTagCompound> buildInAttributes;
-	
+
 	// public static Map<MinigunLoopSound, EntityLivingBase > fireCritSounds;
 	// public static Map<List<SpawnListEntry>, SpawnListEntry> scoutSpawn;
 
 	public static void initMaps() {
-		weaponClasses = new HashMap<String, Item>();
-		projectileClasses = new HashMap<String, Class<? extends EntityProjectileBase>>();
-		nameToData = new HashMap<String, WeaponData>();
-		propertyTypes = new HashMap<String, PropertyType<?>>();
-		nameToAttribute = new HashMap<String, TF2Attribute>();
-		buildInAttributes = new HashMap<String, NBTTagCompound>();
-		specialWeapons = new HashMap<String, ItemUsable>();
-		/*WeaponData.propertyDeserializers = new HashMap<String, JsonDeserializer<ICapabilityProvider>>();
-		WeaponData.propertyDeserializers.put("Attributes", new ItemFromData.AttributeSerializer());
-		WeaponData.propertyDeserializers.put("Content", new ItemCrate.CrateSerializer());*/
-		//classNumbers = new HashMap<>();
-		
-		//classNumbers.put(EntityScout.class, 0);
+		weaponClasses = new HashMap<>();
+		projectileClasses = new HashMap<>();
+		nameToData = new HashMap<>();
+		propertyTypes = new HashMap<>();
+		nameToAttribute = new HashMap<>();
+		buildInAttributes = new HashMap<>();
+		specialWeapons = new HashMap<>();
+		/*
+		 * WeaponData.propertyDeserializers = new HashMap<String,
+		 * JsonDeserializer<ICapabilityProvider>>();
+		 * WeaponData.propertyDeserializers.put("Attributes", new
+		 * ItemFromData.AttributeSerializer());
+		 * WeaponData.propertyDeserializers.put("Content", new
+		 * ItemCrate.CrateSerializer());
+		 */
+		// classNumbers = new HashMap<>();
+
+		// classNumbers.put(EntityScout.class, 0);
 		// scoutSpawn=new HashMap<List<SpawnListEntry>, SpawnListEntry>();
 		weaponClasses.put("sniperrifle", new ItemSniperRifle());
 		weaponClasses.put("bullet", new ItemBulletWeapon());
@@ -122,10 +120,10 @@ public class MapList {
 		 * weaponDatas.put("sniperrifle", ); weaponDatas.put("bullet", new
 		 * ItemBulletWeapon()); weaponDatas.put("minigun", new ItemMinigun());
 		 * weaponDatas.put("projectile", new Itdew ItemFlameThrower());
-		 * weaponDatas.put("knife", new ItemKnife()); weaponDatas.put("medigun",
-		 * new ItemMedigun()); weaponDatas.put("cloak", new ItemCloak());
-		 * weaponDatas.put("wrench", new ItemWrench()); weaponDatas.put("bonk",
-		 * new ItemBonk()); weaponDatas.put("cosmetic", new ItemWearable());
+		 * weaponDatas.put("knife", new ItemKnife()); weaponDatas.put("medigun", new
+		 * ItemMedigun()); weaponDatas.put("cloak", new ItemCloak());
+		 * weaponDatas.put("wrench", new ItemWrench()); weaponDatas.put("bonk", new
+		 * ItemBonk()); weaponDatas.put("cosmetic", new ItemWearable());
 		 */
 
 		projectileClasses.put("rocket", EntityRocket.class);

@@ -46,17 +46,17 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 			for (int i = 0; i < 4; i++) {
 				ItemStack stack = inventory.getStackInSlot(i);
 				if (!stack.isEmpty())
-					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
-							headPitch, scale);
+					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks,
+							netHeadYaw, headPitch, scale);
 			}
 		}
 		if (entitylivingbaseIn instanceof EntityTF2Character) {
-			ItemStackHandler loadout = ((EntityTF2Character)entitylivingbaseIn).loadout;
+			ItemStackHandler loadout = ((EntityTF2Character) entitylivingbaseIn).loadout;
 			for (int i = 0; i < loadout.getSlots(); i++) {
 				ItemStack stack = loadout.getStackInSlot(i);
 				if (!stack.isEmpty())
-					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw,
-							headPitch, scale);
+					renderModel(entitylivingbaseIn, stack, limbSwing, limbSwingAmount, partialTicks, ageInTicks,
+							netHeadYaw, headPitch, scale);
 			}
 		}
 		for (ItemStack stack : entitylivingbaseIn.getArmorInventoryList())
@@ -65,13 +65,12 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 						headPitch, scale);
 	}
 
-	public void renderModel(EntityLivingBase living, ItemStack stack, float limbSwing,
-			float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch,
-			float scale) {
+	public void renderModel(EntityLivingBase living, ItemStack stack, float limbSwing, float limbSwingAmount,
+			float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
 		if (stack.getItem() instanceof ItemFromData) {
 
 			Minecraft minecraft = Minecraft.getMinecraft();
-			int visibility = ((ItemFromData)stack.getItem()).getVisibilityFlags(stack, living);
+			int visibility = ((ItemFromData) stack.getItem()).getVisibilityFlags(stack, living);
 			if ((visibility & 1) == 1) {
 				GlStateManager.pushMatrix();
 
@@ -85,8 +84,7 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 				GlStateManager.scale(0.65F, -0.65F, -0.65F);
 
 				ItemWearable.usedModel = 2;
-				minecraft.getItemRenderer().renderItem(living, stack,
-						ItemCameraTransforms.TransformType.HEAD);
+				minecraft.getItemRenderer().renderItem(living, stack, ItemCameraTransforms.TransformType.HEAD);
 				GlStateManager.popMatrix();
 			}
 
@@ -96,16 +94,14 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 				if (living.isSneaking())
 					GlStateManager.translate(0.0F, -0.2F, 0.0F);
 				this.getBody().postRender(0);
-				
+
 				ItemWearable.usedModel = 1;
-				minecraft.getItemRenderer().renderItem(living, stack,
-						ItemCameraTransforms.TransformType.HEAD);
+				minecraft.getItemRenderer().renderItem(living, stack, ItemCameraTransforms.TransformType.HEAD);
 				GlStateManager.popMatrix();
 			}
 
 			if (!ItemFromData.getData(stack).getString(PropertyType.ARMOR_IMAGE).isEmpty()) {
-				this.renderer
-						.bindTexture(this.getArmorResource(living, stack, EntityEquipmentSlot.CHEST, null));
+				this.renderer.bindTexture(this.getArmorResource(living, stack, EntityEquipmentSlot.CHEST, null));
 				ModelBase model = this.modelBig;
 				model.setModelAttributes(this.renderer.getMainModel());
 				model.setLivingAnimations(living, limbSwing, limbSwingAmount, partialTicks);
@@ -114,8 +110,7 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 			ItemWearable.usedModel = 0;
 		}
 		if (stack.getItem() instanceof ItemAmmoBelt) {
-			this.renderer
-					.bindTexture(this.getArmorResource(living, stack, EntityEquipmentSlot.CHEST, null));
+			this.renderer.bindTexture(this.getArmorResource(living, stack, EntityEquipmentSlot.CHEST, null));
 			ModelBase model = this.modelBig;
 			model.setModelAttributes(this.renderer.getMainModel());
 			model.setLivingAnimations(living, limbSwing, limbSwingAmount, partialTicks);
@@ -133,12 +128,12 @@ public class LayerWearables implements LayerRenderer<EntityLivingBase> {
 	public boolean shouldCombineTextures() {
 		return false;
 	}
-	
+
 	private ModelRenderer getHead() {
-		return ((ModelBiped)this.renderer.getMainModel()).bipedHead;
+		return ((ModelBiped) this.renderer.getMainModel()).bipedHead;
 	}
-	
+
 	private ModelRenderer getBody() {
-		return ((ModelBiped)this.renderer.getMainModel()).bipedBody;
+		return ((ModelBiped) this.renderer.getMainModel()).bipedBody;
 	}
 }

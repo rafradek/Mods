@@ -1,39 +1,22 @@
 package rafradek.TF2weapons.world.gen.structure;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Map.Entry;
 
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.BlockNewLog;
-import net.minecraft.block.BlockOldLog;
-import net.minecraft.block.BlockPlanks;
-import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.structure.ComponentScatteredFeaturePieces;
 import net.minecraft.world.gen.structure.MapGenStructure;
 import net.minecraft.world.gen.structure.MapGenVillage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureStart;
-import net.minecraft.world.gen.structure.StructureVillagePieces;
-import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
-import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
-import net.minecraft.world.gen.structure.StructureVillagePieces.Village;
 import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationHandler;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.block.BlockUpgradeStation;
@@ -43,13 +26,12 @@ public class MannCoBuilding extends StructureComponent {
 
 	private boolean haleSpawned;
 	protected int averageGroundLvl = -1;
-	
+
 	public MannCoBuilding() {
 
 	}
 
-	public MannCoBuilding( int p5, Random random, StructureBoundingBox structureboundingbox,
-			EnumFacing facing) {
+	public MannCoBuilding(int p5, Random random, StructureBoundingBox structureboundingbox, EnumFacing facing) {
 		super(p5);
 		this.setCoordBaseMode(facing);
 		this.boundingBox = structureboundingbox;
@@ -65,14 +47,15 @@ public class MannCoBuilding extends StructureComponent {
 	/**
 	 * (abstract) Helper method to read subclass data from NBT
 	 */
+	@Override
 	protected void readStructureFromNBT(NBTTagCompound tagCompound, TemplateManager p_143011_2_) {
 		this.averageGroundLvl = tagCompound.getInteger("HPos");
 		this.haleSpawned = tagCompound.getBoolean("HS");
 	}
 
 	/**
-	 * second Part of Structure generating, this for example places Spiderwebs,
-	 * Mob Spawners, it closes Mineshafts at the end, it adds Fences...
+	 * second Part of Structure generating, this for example places Spiderwebs, Mob
+	 * Spawners, it closes Mineshafts at the end, it adds Fences...
 	 */
 	@Override
 	public boolean addComponentParts(World worldIn, Random randomIn, StructureBoundingBox structureBoundingBoxIn) {
@@ -146,150 +129,128 @@ public class MannCoBuilding extends StructureComponent {
 		return true;
 	}
 
+	protected IBlockState getBiomeSpecificBlockState(IBlockState blockstateIn) {
 
-	protected IBlockState getBiomeSpecificBlockState(IBlockState blockstateIn)
-    {
+		return blockstateIn;
+	}
 
-        return blockstateIn;
-    }
-	
-	protected int getAverageGroundLevel(World worldIn, StructureBoundingBox structurebb)
-    {
-        int i = 0;
-        int j = 0;
-        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+	protected int getAverageGroundLevel(World worldIn, StructureBoundingBox structurebb) {
+		int i = 0;
+		int j = 0;
+		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
 
-        for (int k = this.boundingBox.minZ; k <= this.boundingBox.maxZ; ++k)
-        {
-            for (int l = this.boundingBox.minX; l <= this.boundingBox.maxX; ++l)
-            {
-                blockpos$mutableblockpos.setPos(l, 64, k);
+		for (int k = this.boundingBox.minZ; k <= this.boundingBox.maxZ; ++k) {
+			for (int l = this.boundingBox.minX; l <= this.boundingBox.maxX; ++l) {
+				blockpos$mutableblockpos.setPos(l, 64, k);
 
-                if (structurebb.isVecInside(blockpos$mutableblockpos))
-                {
-                    i += Math.max(worldIn.getTopSolidOrLiquidBlock(blockpos$mutableblockpos).getY(), worldIn.provider.getAverageGroundLevel() - 1);
-                    ++j;
-                }
-            }
-        }
+				if (structurebb.isVecInside(blockpos$mutableblockpos)) {
+					i += Math.max(worldIn.getTopSolidOrLiquidBlock(blockpos$mutableblockpos).getY(),
+							worldIn.provider.getAverageGroundLevel() - 1);
+					++j;
+				}
+			}
+		}
 
-        if (j == 0)
-        {
-            return -1;
-        }
-        else
-        {
-            return i / j;
-        }
-    }
-	
-	public static class Start extends StructureStart
-    {
-        public Start()
-        {
-        }
+		if (j == 0) {
+			return -1;
+		} else {
+			return i / j;
+		}
+	}
 
-        public Start(World worldIn, Random random, int chunkX, int chunkZ)
-        {
-            this(worldIn, random, chunkX, chunkZ, worldIn.getBiome(new BlockPos(chunkX * 16 + 8, 0, chunkZ * 16 + 8)));
-        }
+	public static class Start extends StructureStart {
+		public Start() {}
 
-        public Start(World worldIn, Random random, int chunkX, int chunkZ, Biome biomeIn)
-        {
-            super(chunkX, chunkZ);
-            EnumFacing facing = EnumFacing.Plane.HORIZONTAL.random(random);
-            StructureBoundingBox structureboundingbox = StructureBoundingBox.getComponentToAddBoundingBox(chunkX*16, 64, chunkZ*16, 0,
-					0, 0, 14, 16, 11, facing);
-            this.components.add(new MannCoBuilding(0, random, structureboundingbox, facing));
-            /*if (biomeIn != Biomes.JUNGLE && biomeIn != Biomes.JUNGLE_HILLS)
-            {
-                if (biomeIn == Biomes.SWAMPLAND)
-                {
-                    ComponentScatteredFeaturePieces.SwampHut componentscatteredfeaturepieces$swamphut = new ComponentScatteredFeaturePieces.SwampHut(random, chunkX * 16, chunkZ * 16);
-                    this.components.add(componentscatteredfeaturepieces$swamphut);
-                }
-                else if (biomeIn != Biomes.DESERT && biomeIn != Biomes.DESERT_HILLS)
-                {
-                    if (biomeIn == Biomes.ICE_PLAINS || biomeIn == Biomes.COLD_TAIGA)
-                    {
-                        ComponentScatteredFeaturePieces.Igloo componentscatteredfeaturepieces$igloo = new ComponentScatteredFeaturePieces.Igloo(random, chunkX * 16, chunkZ * 16);
-                        this.components.add(componentscatteredfeaturepieces$igloo);
-                    }
-                }
-                else
-                {
-                    ComponentScatteredFeaturePieces.DesertPyramid componentscatteredfeaturepieces$desertpyramid = new ComponentScatteredFeaturePieces.DesertPyramid(random, chunkX * 16, chunkZ * 16);
-                    this.components.add(componentscatteredfeaturepieces$desertpyramid);
-                }
-            }
-            else
-            {
-                ComponentScatteredFeaturePieces.JunglePyramid componentscatteredfeaturepieces$junglepyramid = new ComponentScatteredFeaturePieces.JunglePyramid(random, chunkX * 16, chunkZ * 16);
-                this.components.add(componentscatteredfeaturepieces$junglepyramid);
-            }*/
+		public Start(World worldIn, Random random, int chunkX, int chunkZ) {
+			this(worldIn, random, chunkX, chunkZ, worldIn.getBiome(new BlockPos(chunkX * 16 + 8, 0, chunkZ * 16 + 8)));
+		}
 
-            this.updateBoundingBox();
-        }
-    }
-	public static class MapGen extends MapGenStructure
-	{
-	    private int distance;
+		public Start(World worldIn, Random random, int chunkX, int chunkZ, Biome biomeIn) {
+			super(chunkX, chunkZ);
+			EnumFacing facing = EnumFacing.Plane.HORIZONTAL.random(random);
+			StructureBoundingBox structureboundingbox = StructureBoundingBox.getComponentToAddBoundingBox(chunkX * 16,
+					64, chunkZ * 16, 0, 0, 0, 14, 16, 11, facing);
+			this.components.add(new MannCoBuilding(0, random, structureboundingbox, facing));
+			/*
+			 * if (biomeIn != Biomes.JUNGLE && biomeIn != Biomes.JUNGLE_HILLS) { if (biomeIn
+			 * == Biomes.SWAMPLAND) { ComponentScatteredFeaturePieces.SwampHut
+			 * componentscatteredfeaturepieces$swamphut = new
+			 * ComponentScatteredFeaturePieces.SwampHut(random, chunkX * 16, chunkZ * 16);
+			 * this.components.add(componentscatteredfeaturepieces$swamphut); } else if
+			 * (biomeIn != Biomes.DESERT && biomeIn != Biomes.DESERT_HILLS) { if (biomeIn ==
+			 * Biomes.ICE_PLAINS || biomeIn == Biomes.COLD_TAIGA) {
+			 * ComponentScatteredFeaturePieces.Igloo componentscatteredfeaturepieces$igloo =
+			 * new ComponentScatteredFeaturePieces.Igloo(random, chunkX * 16, chunkZ * 16);
+			 * this.components.add(componentscatteredfeaturepieces$igloo); } } else {
+			 * ComponentScatteredFeaturePieces.DesertPyramid
+			 * componentscatteredfeaturepieces$desertpyramid = new
+			 * ComponentScatteredFeaturePieces.DesertPyramid(random, chunkX * 16, chunkZ *
+			 * 16); this.components.add(componentscatteredfeaturepieces$desertpyramid); } }
+			 * else { ComponentScatteredFeaturePieces.JunglePyramid
+			 * componentscatteredfeaturepieces$junglepyramid = new
+			 * ComponentScatteredFeaturePieces.JunglePyramid(random, chunkX * 16, chunkZ *
+			 * 16); this.components.add(componentscatteredfeaturepieces$junglepyramid); }
+			 */
 
-	    public MapGen()
-	    {
-	        this.distance = TF2ConfigVars.mannCoChance;
-	    }
+			this.updateBoundingBox();
+		}
+	}
 
-	    public String getStructureName()
-	    {
-	        return "MannCoBuild";
-	    }
+	public static class MapGen extends MapGenStructure {
+		private int distance;
 
-	    protected boolean canSpawnStructureAtCoords(int chunkX, int chunkZ)
-	    {
-	        int i = chunkX;
-	        int j = chunkZ;
+		public MapGen() {
+			this.distance = TF2ConfigVars.mannCoChance;
+		}
 
-	        if (chunkX < 0)
-	        {
-	            chunkX -= this.distance - 1;
-	        }
+		@Override
+		public String getStructureName() {
+			return "MannCoBuild";
+		}
 
-	        if (chunkZ < 0)
-	        {
-	            chunkZ -= this.distance - 1;
-	        }
+		@Override
+		protected boolean canSpawnStructureAtCoords(int chunkX, int chunkZ) {
+			int i = chunkX;
+			int j = chunkZ;
 
-	        int k = chunkX / this.distance;
-	        int l = chunkZ / this.distance;
-	        Random random = this.world.setRandomSeed(k, l, 4234124);
-	        k = k * this.distance;
-	        l = l * this.distance;
-	        k = k + random.nextInt(Math.max(1,this.distance - 8));
-	        l = l + random.nextInt(Math.max(1,this.distance - 8));
+			if (chunkX < 0) {
+				chunkX -= this.distance - 1;
+			}
 
-	        if (i == k && j == l)
-	        {
-	            boolean flag = this.world.getBiomeProvider().areBiomesViable(i * 16 + 8, j * 16 + 8, 0, MapGenVillage.VILLAGE_SPAWN_BIOMES);
+			if (chunkZ < 0) {
+				chunkZ -= this.distance - 1;
+			}
 
-	            if (flag)
-	            {
-	                return true;
-	            }
-	        }
+			int k = chunkX / this.distance;
+			int l = chunkZ / this.distance;
+			Random random = this.world.setRandomSeed(k, l, 4234124);
+			k = k * this.distance;
+			l = l * this.distance;
+			k = k + random.nextInt(Math.max(1, this.distance - 8));
+			l = l + random.nextInt(Math.max(1, this.distance - 8));
 
-	        return false;
-	    }
+			if (i == k && j == l) {
+				boolean flag = this.world.getBiomeProvider().areBiomesViable(i * 16 + 8, j * 16 + 8, 0,
+						MapGenVillage.VILLAGE_SPAWN_BIOMES);
 
-	    public BlockPos getNearestStructurePos(World worldIn, BlockPos pos, boolean findUnexplored)
-	    {
-	        this.world = worldIn;
-	        return findNearestStructurePosBySpacing(worldIn, this, pos, this.distance, 8, 10387312, false, 100, findUnexplored);
-	    }
+				if (flag) {
+					return true;
+				}
+			}
 
-	    protected StructureStart getStructureStart(int chunkX, int chunkZ)
-	    {
-	        return new Start(this.world, this.rand, chunkX, chunkZ);
-	    }
+			return false;
+		}
+
+		@Override
+		public BlockPos getNearestStructurePos(World worldIn, BlockPos pos, boolean findUnexplored) {
+			this.world = worldIn;
+			return findNearestStructurePosBySpacing(worldIn, this, pos, this.distance, 8, 10387312, false, 100,
+					findUnexplored);
+		}
+
+		@Override
+		protected StructureStart getStructureStart(int chunkX, int chunkZ) {
+			return new Start(this.world, this.rand, chunkX, chunkZ);
+		}
 	}
 }

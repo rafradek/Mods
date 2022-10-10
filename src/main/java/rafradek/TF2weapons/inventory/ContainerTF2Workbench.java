@@ -25,7 +25,7 @@ import rafradek.TF2weapons.item.ItemWrench;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
 import rafradek.TF2weapons.util.TF2Util;
 
-public class ContainerTF2Workbench extends Container implements IRecipeContainer{
+public class ContainerTF2Workbench extends Container implements IRecipeContainer {
 	/** The crafting matrix inventory (3x3). */
 	public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
 	public InventoryCraftResult craftResult = new InventoryCraftResult();
@@ -50,8 +50,8 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 
 		/*
 		 * for (int k = 0; k < 3; ++k) { for (int i1 = 0; i1 < 9; ++i1) {
-		 * this.addSlotToContainer(new Slot(cabinet, i1 + k * 9 + 9, 8 + i1 *
-		 * 18, 91 + k * 18)); } }
+		 * this.addSlotToContainer(new Slot(cabinet, i1 + k * 9 + 9, 8 + i1 * 18, 91 + k
+		 * * 18)); } }
 		 */
 
 		for (int k = 0; k < 3; ++k)
@@ -77,7 +77,8 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 		// ?TF2CraftingManager.INSTANCE.getRecipeList().get(currentRecipe)TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix,
 		// this.world);
 		else
-			stack = getReplacement(player, TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world, this.player));
+			stack = getReplacement(player,
+					TF2CraftingManager.INSTANCE.findMatchingRecipe(this.craftMatrix, this.world, this.player));
 		this.craftResult.setInventorySlotContents(0, stack);
 	}
 
@@ -85,36 +86,39 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox
 				&& player.getTeam() == player.world.getScoreboard().getTeam("BLU"))
 			stack.setItemDamage(stack.getItemDamage() + 1);
-		if (!stack.isEmpty() && stack.getItem() instanceof ItemBanner && stack.getItemDamage() == EnumDyeColor.RED.getDyeDamage()){
-			NBTTagCompound pattern=new NBTTagCompound();
-			if(player.getTeam() == player.world.getScoreboard().getTeam("BLU")){
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemBanner
+				&& stack.getItemDamage() == EnumDyeColor.RED.getDyeDamage()) {
+			NBTTagCompound pattern = new NBTTagCompound();
+			if (player.getTeam() == player.world.getScoreboard().getTeam("BLU")) {
 				stack.setItemDamage(EnumDyeColor.BLUE.getDyeDamage());
 				pattern.setString("Pattern", "bb");
 				pattern.setInteger("Color", 15);
-			}
-			else{
+			} else {
 				pattern.setString("Pattern", "rb");
 				pattern.setInteger("Color", 15);
 			}
-			
+
 			stack.getSubCompound("BlockEntityTag").getTagList("Patterns", 10).appendTag(pattern);
 		}
 		if (!stack.isEmpty() && stack.getItem() instanceof ItemBuildingBox) {
-			if (stack.getItemDamage()/2 == 11) {
-				ItemStack wrench = TF2Util.getFirstItem(player.inventory, stackL -> TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1);
+			if (stack.getItemDamage() / 2 == 11) {
+				ItemStack wrench = TF2Util.getFirstItem(player.inventory,
+						stackL -> TF2Attribute.getModifier("Teleporter Cost", stackL, 1, player) != 1);
 				if (!wrench.isEmpty()) {
 					stack.setCount((int) TF2Attribute.getModifier("Teleporter Cost", wrench, 1, player));
 				}
-			}
-			else if (stack.getItemDamage()/2 == 9) {
-				ItemStack gunslinger = TF2Util.getFirstItem(player.inventory, stackL -> stackL.getItem() instanceof ItemWrench && TF2Attribute.getModifier("Weapon Mode", stackL, 0, player) == 2);
-				ItemStack bonusSentry = TF2Util.getFirstItem(player.inventory, stackL -> TF2Attribute.getModifier("Sentry Bonus", stackL, 1, player) != 1);
+			} else if (stack.getItemDamage() / 2 == 9) {
+				ItemStack gunslinger = TF2Util.getFirstItem(player.inventory,
+						stackL -> stackL.getItem() instanceof ItemWrench
+								&& TF2Attribute.getModifier("Weapon Mode", stackL, 0, player) == 2);
+				ItemStack bonusSentry = TF2Util.getFirstItem(player.inventory,
+						stackL -> TF2Attribute.getModifier("Sentry Bonus", stackL, 1, player) != 1);
 				if (!gunslinger.isEmpty()) {
 					stack.setTagCompound(new NBTTagCompound());
 					stack.getTagCompound().setBoolean("Mini", true);
 					stack.setCount(2);
 				}
-				
+
 				if (!bonusSentry.isEmpty()) {
 					stack.setCount((int) TF2Attribute.getModifier("Sentry Bonus", bonusSentry, 1, player));
 				}
@@ -183,7 +187,7 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 			else
 				slot.onSlotChanged();
 
-			if (itemstack1.getCount() ==itemstack.getCount())
+			if (itemstack1.getCount() == itemstack.getCount())
 				return ItemStack.EMPTY;
 
 			slot.onTake(playerIn, itemstack1);
@@ -194,8 +198,8 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 
 	/**
 	 * Called to determine if the current slot is valid for the stack merging
-	 * (double-click) code. The stack passed in is null for the initial slot
-	 * that was double-clicked.
+	 * (double-click) code. The stack passed in is null for the initial slot that
+	 * was double-clicked.
 	 */
 	@Override
 	public boolean canMergeSlot(ItemStack stack, Slot slotIn) {
@@ -211,13 +215,11 @@ public class ContainerTF2Workbench extends Container implements IRecipeContainer
 
 	@Override
 	public InventoryCraftResult getCraftResult() {
-		// TODO Auto-generated method stub
 		return this.craftResult;
 	}
 
 	@Override
 	public InventoryCrafting getCraftMatrix() {
-		// TODO Auto-generated method stub
 		return this.craftMatrix;
 	}
 }

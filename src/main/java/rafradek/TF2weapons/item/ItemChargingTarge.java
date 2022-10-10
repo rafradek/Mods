@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
@@ -26,20 +25,23 @@ public class ItemChargingTarge extends ItemFromData {
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
-		//if (!living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.containsKey("Charging")) {
-		ItemStack stack=living.getHeldItem(hand);
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
+		// if (!living.getCapability(TF2weapons.WEAPONS_CAP,
+		// null).effectsCool.containsKey("Charging")) {
+		ItemStack stack = living.getHeldItem(hand);
 		if (ItemToken.allowUse(living, "demoman")) {
-			
-		
+
 			if (!world.isRemote)
-				living.addPotionEffect(new PotionEffect(TF2weapons.charging, (int) TF2Attribute.getModifier("Effect Duration", stack, 40, living),
+				living.addPotionEffect(new PotionEffect(TF2weapons.charging,
+						(int) TF2Attribute.getModifier("Effect Duration", stack, 40, living),
 						(int) TF2Attribute.getModifier("Charge Step", stack, 0, living)));
-			living.getCooldownTracker().setCooldown(this, (int) (280f/TF2Attribute.getModifier("Charge", stack, 1, living)));
+			living.getCooldownTracker().setCooldown(this,
+					(int) (280f / TF2Attribute.getModifier("Charge", stack, 1, living)));
 		}
-			//living.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool.put("Charging", 280);
-		//}
-		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
+		// living.getCapability(TF2weapons.WEAPONS_CAP,
+		// null).effectsCool.put("Charging", 280);
+		// }
+		return new ActionResult<>(EnumActionResult.SUCCESS, stack);
 	}
 
 	public static ItemStack getChargingShield(EntityLivingBase living) {
@@ -55,11 +57,14 @@ public class ItemChargingTarge extends ItemFromData {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean showDurabilityBar(ItemStack stack) {
-		
-		return super.showDurabilityBar(stack)||Minecraft.getMinecraft().player.getActivePotionEffect(TF2weapons.charging) != null;
-		/*Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
-				.get("Charging");
-		return value != null && value > 0;*/
+
+		return super.showDurabilityBar(stack)
+				|| Minecraft.getMinecraft().player.getActivePotionEffect(TF2weapons.charging) != null;
+		/*
+		 * Integer value =
+		 * Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP,
+		 * null).effectsCool .get("Charging"); return value != null && value > 0;
+		 */
 	}
 
 	@Override
@@ -69,18 +74,23 @@ public class ItemChargingTarge extends ItemFromData {
 			return 1 - ((double) Minecraft.getMinecraft().player.getActivePotionEffect(TF2weapons.charging)
 					.getDuration() / (double) 40);
 		return super.getDurabilityForDisplay(stack);
-		/*Integer value = Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP, null).effectsCool
-				.get("Charging");
-		return (double) (value != null ? value : 0) / (double) 280;*/
+		/*
+		 * Integer value =
+		 * Minecraft.getMinecraft().player.getCapability(TF2weapons.WEAPONS_CAP,
+		 * null).effectsCool .get("Charging"); return (double) (value != null ? value :
+		 * 0) / (double) 280;
+		 */
 	}
-	
-	public boolean getIsRepairable(ItemStack toRepair, ItemStack repair)
-    {
-        if (TF2Util.isOre("plankWood", repair)) return true;
-        return super.getIsRepairable(toRepair, repair);
-    }
-	
+
+	@Override
+	public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
+		if (TF2Util.isOre("plankWood", repair))
+			return true;
+		return super.getIsRepairable(toRepair, repair);
+	}
+
+	@Override
 	public boolean isShield(ItemStack stack, @Nullable EntityLivingBase entity) {
-        return true;
-    }
+		return true;
+	}
 }

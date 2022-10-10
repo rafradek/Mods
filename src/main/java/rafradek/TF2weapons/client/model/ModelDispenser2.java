@@ -2,8 +2,8 @@ package rafradek.TF2weapons.client.model;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.Entity;
 
 /**
  * ModelDispenser2 - Undefined Created using Tabula 5.1.0

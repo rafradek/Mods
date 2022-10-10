@@ -11,7 +11,6 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemCloak;
 import rafradek.TF2weapons.item.ItemFromData;
@@ -53,7 +52,6 @@ public class AustraliumRecipe implements IRecipe, IRecipeTF2 {
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
 		ItemStack stack2 = ItemStack.EMPTY;
 
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
@@ -67,27 +65,25 @@ public class AustraliumRecipe implements IRecipe, IRecipeTF2 {
 			stack2 = stack2.copy();
 			if (!stack2.hasTagCompound())
 				stack2.setTagCompound(new NBTTagCompound());
-			stack2.setCount( 1);
+			stack2.setCount(1);
 			stack2.getTagCompound().setBoolean("Australium", true);
-			//stack2.getTagCompound().setBoolean("Strange", true);
+			// stack2.getTagCompound().setBoolean("Strange", true);
 		}
 		return stack2;
 	}
 
 	@Override
 	public ItemStack getRecipeOutput() {
-		// TODO Auto-generated method stu
 		return ITEM;
 	}
 
 	@Override
 	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
-		NonNullList<ItemStack> aitemstack = NonNullList.withSize(inv.getSizeInventory(),ItemStack.EMPTY);
+		NonNullList<ItemStack> aitemstack = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
 		for (int i = 0; i < aitemstack.size(); ++i) {
 			ItemStack itemstack = inv.getStackInSlot(i);
-			aitemstack.set(i,net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+			aitemstack.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
 		}
 
 		return aitemstack;
@@ -95,31 +91,26 @@ public class AustraliumRecipe implements IRecipe, IRecipeTF2 {
 
 	@Override
 	public IRecipe setRegistryName(ResourceLocation name) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
-		// TODO Auto-generated method stub
 		return new ResourceLocation(TF2weapons.MOD_ID, "australium_recipe");
 	}
 
 	@Override
 	public Class<IRecipe> getRegistryType() {
-		// TODO Auto-generated method stub
 		return IRecipe.class;
 	}
 
 	@Override
 	public boolean canFit(int width, int height) {
-		// TODO Auto-generated method stub
-		return width >= 3 && height >=3;
+		return width >= 3 && height >= 3;
 	}
 
 	@Override
 	public ItemStack getSuggestion(int slot) {
-		// TODO Auto-generated method stub
 		return slot == 4 ? new ItemStack(TF2weapons.itemTF2, 1, 9) : new ItemStack(TF2weapons.itemTF2, 1, 2);
 	}
 

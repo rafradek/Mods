@@ -29,7 +29,6 @@ public class WeaponSound extends MovingSound {
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
 		if (this.endsnextTick)
 			this.setDone();
 		this.xPosF = (float) entity.posX;

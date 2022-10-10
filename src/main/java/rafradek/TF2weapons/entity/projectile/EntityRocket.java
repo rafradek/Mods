@@ -22,12 +22,14 @@ public class EntityRocket extends EntityProjectileBase {
 			this.makeLit();
 	}
 
+	@Override
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
 		String name = ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE);
 		if (name.equals("cowmangler"))
 			this.setType(1);
 		super.initProjectile(shooter, hand, weapon);
 	}
+
 	@Override
 	public void onHitGround(int x, int y, int z, RayTraceResult mop) {
 		this.explode(mop.hitVec.x + mop.sideHit.getFrontOffsetX() * 0.02,
@@ -53,8 +55,7 @@ public class EntityRocket extends EntityProjectileBase {
 	@Override
 	public void spawnParticles(double x, double y, double z) {
 		if (this.isInWater())
-			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, x, y, z, this.motionX, this.motionY,
-					this.motionZ);
+			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, x, y, z, this.motionX, this.motionY, this.motionZ);
 		else
 			this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0, 0, 0);
 	}

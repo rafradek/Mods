@@ -12,6 +12,7 @@ import net.minecraft.util.text.translation.I18n;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 
+@SuppressWarnings("deprecation")
 public class DamageSourceProjectile extends EntityDamageSourceIndirect implements TF2DamageSource {
 	public ItemStack weapon;
 	public int critical;
@@ -19,6 +20,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public boolean selfdmg;
 	private int attackFlags;
 	private float power = 1;
+
 	public DamageSourceProjectile(ItemStack weapon, Entity projectile, Entity shooter) {
 		super("bullet", projectile, shooter);
 		this.weapon = weapon;
@@ -31,7 +33,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see rafradek.TF2weapons.TF2DamageSource#getWeapon()
 	 */
 	@Override
@@ -41,7 +43,7 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see rafradek.TF2weapons.TF2DamageSource#getCritical()
 	 */
 	@Override
@@ -50,8 +52,8 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	}
 
 	/*
-	 * public DamageSource bypassesArmor() { this.setDamageBypassesArmor();
-	 * return this; }
+	 * public DamageSource bypassesArmor() { this.setDamageBypassesArmor(); return
+	 * this; }
 	 */
 	/**
 	 * Returns the message to be displayed on player death.
@@ -89,35 +91,38 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 	public void removeProjecileStatus() {
 		this.notProjectile = true;
 	}
-	
+
 	@Override
 	public boolean isProjectile() {
 		return super.isProjectile() && !this.notProjectile;
 	}
 
-	public Entity getTrueSource(){
-		return selfdmg?TF2weapons.dummyEnt:super.getTrueSource();
+	@Override
+	public Entity getTrueSource() {
+		return selfdmg ? TF2weapons.dummyEnt : super.getTrueSource();
 	}
-	
-	public void setAttackSelf(){
-		this.selfdmg=true;
+
+	@Override
+	public void setAttackSelf() {
+		this.selfdmg = true;
 	}
+
 	@Override
 	public ItemStack getWeaponOrig() {
-		// TODO Auto-generated method stub
-		return this.getImmediateSource() instanceof EntityProjectileBase && !((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig.isEmpty() ?
-				((EntityProjectileBase)this.getImmediateSource()).usedWeaponOrig:this.getWeapon();
+		return this.getImmediateSource() instanceof EntityProjectileBase
+				&& !((EntityProjectileBase) this.getImmediateSource()).usedWeaponOrig.isEmpty()
+						? ((EntityProjectileBase) this.getImmediateSource()).usedWeaponOrig
+						: this.getWeapon();
 	}
 
 	@Override
 	public int getAttackFlags() {
-		// TODO Auto-generated method stub
 		return this.attackFlags;
 	}
 
 	@Override
 	public void addAttackFlag(int flag) {
-		this.attackFlags+=flag;
+		this.attackFlags += flag;
 	}
 
 	@Override
@@ -135,12 +140,9 @@ public class DamageSourceProjectile extends EntityDamageSourceIndirect implement
 		this.critical = crit;
 		return this;
 	}
-	
-	
-	/*@Override
-	public void onShieldBlock(EntityLivingBase living) {
-		// TODO Auto-generated method stub
-		
-	}*/
+
+	/*
+	 * @Override public void onShieldBlock(EntityLivingBase living) {}
+	 */
 
 }

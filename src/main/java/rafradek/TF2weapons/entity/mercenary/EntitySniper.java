@@ -1,7 +1,6 @@
 package rafradek.TF2weapons.entity.mercenary;
 
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -11,21 +10,15 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
 import rafradek.TF2weapons.common.TF2Attribute;
-import rafradek.TF2weapons.entity.projectile.EntityProjectileBase;
 import rafradek.TF2weapons.item.ItemFromData;
-import rafradek.TF2weapons.item.ItemHuntsman;
-import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
-import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
-import rafradek.TF2weapons.util.PropertyType;
-import rafradek.TF2weapons.util.WeaponData;
 
 public class EntitySniper extends EntityTF2Character {
 
 	public EntitySniper(World par1World) {
 		super(par1World);
-		//this.ammoLeft = 18;
+		// this.ammoLeft = 18;
 		this.experienceValue = 15;
 		this.rotation = 3;
 		if (this.attack != null) {
@@ -44,11 +37,12 @@ public class EntitySniper extends EntityTF2Character {
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootSniper;
 	}
-	
+
+	@Override
 	public float[] getDropChance() {
-		return new float[] { 0.045f, 0.12f, 0.11f};
+		return new float[] { 0.045f, 0.12f, 0.11f };
 	}
-	
+
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -59,15 +53,17 @@ public class EntitySniper extends EntityTF2Character {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
 	}
 
+	@Override
 	protected void addWeapons() {
 		super.addWeapons();
 		if (this.isRobot())
 			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("NoHeadshot"), 1f);
 	}
-	
+
 	@Override
 	public void onLivingUpdate() {
-		if (!this.world.isRemote && this.getHeldItemMainhand().getItem() instanceof ItemSniperRifle && (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
+		if (!this.world.isRemote && this.getHeldItemMainhand().getItem() instanceof ItemSniperRifle
+				&& (this.getAttackTarget() == null || !this.getAttackTarget().isEntityAlive())
 				&& this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging())
 			((ItemSniperRifle) this.getHeldItem(EnumHand.MAIN_HAND).getItem())
 					.disableZoom(this.getHeldItem(EnumHand.MAIN_HAND), this);
@@ -79,23 +75,23 @@ public class EntitySniper extends EntityTF2Character {
 			this.ignoreFrustumCheck = true;
 			this.rotation = 3;
 		}
-		
-		if(world.isRemote && this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging() && 
-				this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getModifier(ItemSniperRifle.slowdownUUID) == null){
+
+		if (world.isRemote && this.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging()
+				&& this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED)
+						.getModifier(ItemSniperRifle.slowdownUUID) == null) {
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).chargeTicks = 0;
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).setCharging(false);
 		}
-		
+
 		if (this.getAttackTarget() != null && this.loadout.getStackInSlot(1).getItem() instanceof ItemWeapon) {
-			
+
 			if (this.usedSlot == 0 && this.getAttackTarget().getDistanceSq(this) < 42) {
 				this.switchSlot(1);
-			}
-			else if (this.usedSlot == 1 && this.getAttackTarget().getDistanceSq(this) > 42) {
+			} else if (this.usedSlot == 1 && this.getAttackTarget().getDistanceSq(this) > 42) {
 				this.switchSlot(0);
 			}
 		}
-		
+
 		// System.out.println("state:
 		// "+this.getHeldItem(EnumHand.MAIN_HAND).getTagCompound().getBoolean("Zoomed")+"
 		// "+this.world.isRemote);
@@ -111,8 +107,8 @@ public class EntitySniper extends EntityTF2Character {
 		 * altUse(getHeldItem(EnumHand.MAIN_HAND), this, worldObj); }
 		 */
 		super.onLivingUpdate();
-		if(this.getRevengeTimer() == this.ticksExisted - 1) {
-			this.lastRotation[0]+=4;
+		if (this.getRevengeTimer() == this.ticksExisted - 1) {
+			this.lastRotation[0] += 4;
 		}
 
 	}
@@ -162,11 +158,13 @@ public class EntitySniper extends EntityTF2Character {
 	public float getMotionSensitivity() {
 		return this.scaleWithDifficulty(0.75f, 0.28f);
 	}
-	
+
+	@Override
 	public int getClassIndex() {
 		return 7;
 	}
-	
+
+	@Override
 	public boolean canBecomeGiant() {
 		return false;
 	}

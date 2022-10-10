@@ -1,9 +1,7 @@
 package rafradek.TF2weapons.client.gui.inventory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.lwjgl.input.Mouse;
 
@@ -15,32 +13,20 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.NBTLiterals;
+import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.inventory.ContainerConfigurable;
-import rafradek.TF2weapons.inventory.ContainerUpgrades;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.tileentity.IEntityConfigurable;
-import rafradek.TF2weapons.tileentity.TileEntityUpgrades;
-import rafradek.TF2weapons.util.TF2Util;
-import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.client.gui.GuiTooltip;
-import rafradek.TF2weapons.client.gui.TF2GuiConfig;
-import rafradek.TF2weapons.common.TF2Attribute;
-import rafradek.TF2weapons.common.TF2Attribute.Type;
-import rafradek.TF2weapons.entity.building.EntityTeleporter;
 
 public class GuiConfigurable extends GuiContainer {
 	public GuiConfigurable(Container inventorySlotsIn) {
 		super(inventorySlotsIn);
-		// TODO Auto-generated constructor stub
 	}
 
 	private static final ResourceLocation UPGRADES_GUI_TEXTURES = new ResourceLocation(TF2weapons.MOD_ID,
@@ -70,7 +56,7 @@ public class GuiConfigurable extends GuiContainer {
 	@Override
 	public void initGui() {
 		super.initGui();
-		
+
 		int i = 0;
 		this.buttonList.clear();
 		if (tag != null) {
@@ -82,22 +68,23 @@ public class GuiConfigurable extends GuiContainer {
 				int type = tag.getTag(key).getId();
 				types[i] = type;
 				if (type == 8) {
-					fields[i] = new GuiTextField(5, fontRenderer, this.guiLeft + 10, this.guiTop + 10 + i * 20, 120, 20);
-					((GuiTextField)fields[i]).setText(tag.getString(key));
+					fields[i] = new GuiTextField(5, fontRenderer, this.guiLeft + 10, this.guiTop + 10 + i * 20, 120,
+							20);
+					((GuiTextField) fields[i]).setText(tag.getString(key));
 				}
-				
+
 				i++;
 			}
 		}
-		/*for (int x = 0; x < 2; x++)
-			for (int y = 0; y < 3; y++) {
-				this.buttonList.add(buttons[x * 2 + y * 4] = new GuiButton(x * 2 + y * 4, this.guiLeft + 81 + x * 101,
-						this.guiTop + 47 + y * 30, 12, 12, "+"));
-				this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4 + 1,
-						this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-"));
-			}
-		this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
-						this.guiTop + 121, 100, 20, I18n.format("container.upgrades.refund")));*/
+		/*
+		 * for (int x = 0; x < 2; x++) for (int y = 0; y < 3; y++) {
+		 * this.buttonList.add(buttons[x * 2 + y * 4] = new GuiButton(x * 2 + y * 4,
+		 * this.guiLeft + 81 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "+"));
+		 * this.buttonList.add(buttons[x * 2 + y * 4 + 1] = new GuiButton(x * 2 + y * 4
+		 * + 1, this.guiLeft + 94 + x * 101, this.guiTop + 47 + y * 30, 12, 12, "-")); }
+		 * this.buttonList.add(refund = new GuiButton(12, this.guiLeft + 123,
+		 * this.guiTop + 121, 100, 20, I18n.format("container.upgrades.refund")));
+		 */
 		setButtons();
 	}
 
@@ -109,8 +96,8 @@ public class GuiConfigurable extends GuiContainer {
 		 * buttonsItem[i].stackToDraw=TF2CraftingManager.INSTANCE.getRecipeList(
 		 * ).get(i+firstIndex).getRecipeOutput();
 		 * buttonsItem[i].selected=i+firstIndex==((ContainerTF2Workbench)this.
-		 * inventorySlots).currentRecipe; } else{
-		 * buttonsItem[i].stackToDraw=null; buttonsItem[i].selected=false; } }
+		 * inventorySlots).currentRecipe; } else{ buttonsItem[i].stackToDraw=null;
+		 * buttonsItem[i].selected=false; } }
 		 */
 	}
 
@@ -143,20 +130,22 @@ public class GuiConfigurable extends GuiContainer {
 			}
 		}
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		
+
 		if (this.tag != null)
-		for (int t = 0; t < this.keys.length; t ++) {
-			if (fields[t] instanceof GuiTextField) {
-				((GuiTextField)fields[t]).drawTextBox();
+			for (int t = 0; t < this.keys.length; t++) {
+				if (fields[t] instanceof GuiTextField) {
+					((GuiTextField) fields[t]).drawTextBox();
+				}
 			}
-		}
-		/*this.refund.enabled = !this.inventorySlots.inventorySlots.get(0).getStack().isEmpty() 
-				&& this.inventorySlots.inventorySlots.get(0).getStack().getTagCompound().getInteger("TotalSpent") > 0;
-		
-		this.renderHoveredToolTip(mouseX, mouseY);
-		for (GuiTooltip tooltip : this.tooltip) {
-			tooltip.drawButton(mc, mouseX, mouseY, partialTicks);
-		}*/
+		/*
+		 * this.refund.enabled =
+		 * !this.inventorySlots.inventorySlots.get(0).getStack().isEmpty() &&
+		 * this.inventorySlots.inventorySlots.get(0).getStack().getTagCompound().
+		 * getInteger("TotalSpent") > 0;
+		 *
+		 * this.renderHoveredToolTip(mouseX, mouseY); for (GuiTooltip tooltip :
+		 * this.tooltip) { tooltip.drawButton(mc, mouseX, mouseY, partialTicks); }
+		 */
 	}
 
 	@Override
@@ -171,61 +160,60 @@ public class GuiConfigurable extends GuiContainer {
 		else if (button.id == 12)
 			this.mc.playerController.sendEnchantPacket(this.inventorySlots.windowId, -1);
 	}
-	
+
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
-		for (int t = 0; t < this.keys.length; t ++) {
+		for (int t = 0; t < this.keys.length; t++) {
 			if (fields[t] instanceof GuiTextField) {
-				((GuiTextField)fields[t]).mouseClicked(mouseX, mouseY, mouseButton);
+				((GuiTextField) fields[t]).mouseClicked(mouseX, mouseY, mouseButton);
 			}
 		}
 	}
 
 	@Override
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
-		
+
 		boolean entered = false;
-		for (int t = 0; t < this.keys.length; t ++) {
+		for (int t = 0; t < this.keys.length; t++) {
 			if (fields[t] instanceof GuiTextField) {
-				entered |= ((GuiTextField)fields[t]).textboxKeyTyped(typedChar, keyCode);
+				entered |= ((GuiTextField) fields[t]).textboxKeyTyped(typedChar, keyCode);
 			}
 		}
 		if (!entered) {
-			if (keyCode == 1 || this.mc.gameSettings.keyBindInventory.isActiveAndMatches(keyCode))
-	        {
+			if (keyCode == 1 || this.mc.gameSettings.keyBindInventory.isActiveAndMatches(keyCode)) {
 				this.sendChanges();
-	        }
+			}
 			super.keyTyped(typedChar, keyCode);
 		}
-		
-		//this.teleportField.setText(Integer.toString(channel));
+
+		// this.teleportField.setText(Integer.toString(channel));
 	}
 
-	public void onGuiClosed()
-    {
+	@Override
+	public void onGuiClosed() {
 		super.onGuiClosed();
-		
-    }
-	
-	public void sendChanges()
-    {
+
+	}
+
+	public void sendChanges() {
 		NBTTagCompound newtag = new NBTTagCompound();
-		for (int t = 0; t < this.keys.length; t ++) {
+		for (int t = 0; t < this.keys.length; t++) {
 			if (types[t] == 8) {
-				newtag.setString(keys[t], ((GuiTextField)fields[t]).getText());
+				newtag.setString(keys[t], ((GuiTextField) fields[t]).getText());
 			}
 		}
 		TF2weapons.network.sendToServer(new TF2Message.GuiConfigMessage(newtag, this.pos));
-    }
+	}
+
 	/**
-	 * Draw the foreground layer for the GuiContainer (everything in front of
-	 * the items)
+	 * Draw the foreground layer for the GuiContainer (everything in front of the
+	 * items)
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		for (int i = 0; i < 6; i++) {
-			
+
 		}
 		this.fontRenderer.drawString(I18n.format("container.inventory", new Object[0]), 36, this.ySize - 96 + 3,
 				4210752);

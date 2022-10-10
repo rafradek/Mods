@@ -22,6 +22,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 	public boolean shouldExecute() {
 		return this.entityHost.getHeldItemMainhand().getItem() instanceof ItemMedigun && super.shouldExecute();
 	}
+
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
@@ -62,24 +63,17 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 		double lookY = this.attackTarget.posY + this.attackTarget.getEyeHeight();
 		double lookZ = this.attackTarget.posZ;
 		ItemStack stack = this.entityHost.getHeldItemMainhand();
-		/*boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget);
-		this.entityHost.setJumping(true);
-		if (stay) {
-			++this.comeCloser;
-			if (d0 <= (double) 12)
-				this.comeCloser = 20;
-		} else
-			this.comeCloser = 0;
-		//System.out.println(this.comeCloser+" "+this.attackRangeSquared+" "+d0);
-		if (d0 <= 52 && this.comeCloser >= 20) {
-			if (!this.dodging) {
-				this.entityHost.getNavigator().clearPath();
-				this.dodging = true;
-			}
-		} else {
-			this.dodging = false;
-			this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget, this.entityMoveSpeed);
-		}*/
+		/*
+		 * boolean stay = this.entityHost.getEntitySenses().canSee(this.attackTarget);
+		 * this.entityHost.setJumping(true); if (stay) { ++this.comeCloser; if (d0 <=
+		 * (double) 12) this.comeCloser = 20; } else this.comeCloser = 0;
+		 * //System.out.println(this.comeCloser+" "+this.attackRangeSquared+" "+d0); if
+		 * (d0 <= 52 && this.comeCloser >= 20) { if (!this.dodging) {
+		 * this.entityHost.getNavigator().clearPath(); this.dodging = true; } } else {
+		 * this.dodging = false;
+		 * this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget,
+		 * this.entityMoveSpeed); }
+		 */
 
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		// this.entityHost.getLookHelper().setLookPositionWithEntity(this.attackTarget,
@@ -89,18 +83,19 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 
 			if (!pressed || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).getHealTarget() == -1) {
 				pressed = true;
-				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).setHealTarget(this.attackTarget.getEntityId());
+				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null)
+						.setHealTarget(this.attackTarget.getEntityId());
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
 				TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
 				// System.out.println("coœdo");
-			}
-			else {
-				if(((ItemMedigun)stack.getItem()).shouldActivateCharge(stack, this.entityHost, this.attackTarget) 
-						|| (this.attackTarget instanceof EntityPlayer && this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge)) {
-					Potion effect=((ItemMedigun)stack.getItem()).getPotion(stack, this.entityHost);
-					if (!((ItemMedigun)stack.getItem()).isAlreadyUbered(stack, this.entityHost))
-					((ItemMedigun)stack.getItem()).startUse(stack, this.entityHost, this.entityHost.world, 0, 2);
+			} else {
+				if (((ItemMedigun) stack.getItem()).shouldActivateCharge(stack, this.entityHost, this.attackTarget)
+						|| (this.attackTarget instanceof EntityPlayer
+								&& this.attackTarget.getCapability(TF2weapons.PLAYER_CAP, null).medicCharge)) {
+					Potion effect = ((ItemMedigun) stack.getItem()).getPotion(stack, this.entityHost);
+					if (!((ItemMedigun) stack.getItem()).isAlreadyUbered(stack, this.entityHost))
+						((ItemMedigun) stack.getItem()).startUse(stack, this.entityHost, this.entityHost.world, 0, 2);
 				}
 			}
 
@@ -112,7 +107,7 @@ public class EntityAIUseMedigun extends EntityAIUseRangedWeapon {
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 0;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 				TF2Util.sendTracking(new TF2Message.CapabilityMessage(entityHost, false), entityHost);
-				//System.out.println("coœz");
+				// System.out.println("coœz");
 			}
 			pressed = false;
 		}

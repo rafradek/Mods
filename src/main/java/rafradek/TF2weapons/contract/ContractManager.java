@@ -1,10 +1,8 @@
 package rafradek.TF2weapons.contract;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,119 +36,98 @@ import net.minecraft.util.ResourceLocation;
 public class ContractManager extends AdvancementManager {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final AdvancementList ADVANCEMENT_LIST = new AdvancementList();
-	
+
 	public ContractManager(File advancementsDirIn) {
 		super(advancementsDirIn);
-		// TODO Auto-generated constructor stub
 	}
 
-	public void reload()
-    {
-        ADVANCEMENT_LIST.clear();
-        Map<ResourceLocation, Advancement.Builder> map = Maps.<ResourceLocation, Advancement.Builder>newHashMap();
-        this.loadBuiltInAdvancements(map);
-        ADVANCEMENT_LIST.loadAdvancements(map);
+	@Override
+	public void reload() {
+		ADVANCEMENT_LIST.clear();
+		Map<ResourceLocation, Advancement.Builder> map = Maps.<ResourceLocation, Advancement.Builder>newHashMap();
+		this.loadBuiltInAdvancements(map);
+		ADVANCEMENT_LIST.loadAdvancements(map);
 
-        for (Advancement advancement : ADVANCEMENT_LIST.getRoots())
-        {
-            if (advancement.getDisplay() != null)
-            {
-                AdvancementTreeNode.layout(advancement);
-            }
-        }
-    }
-	
-	private void loadBuiltInAdvancements(Map<ResourceLocation, Advancement.Builder> map)
-    {
-        FileSystem filesystem = null;
+		for (Advancement advancement : ADVANCEMENT_LIST.getRoots()) {
+			if (advancement.getDisplay() != null) {
+				AdvancementTreeNode.layout(advancement);
+			}
+		}
+	}
 
-        try
-        {
-            URL url = AdvancementManager.class.getResource("/assets/.mcassetsroot");
+	private void loadBuiltInAdvancements(Map<ResourceLocation, Advancement.Builder> map) {
+		FileSystem filesystem = null;
 
-            if (url != null)
-            {
-                URI uri = url.toURI();
-                Path path;
+		try {
+			URL url = AdvancementManager.class.getResource("/assets/.mcassetsroot");
 
-                if ("file".equals(uri.getScheme()))
-                {
-                    path = Paths.get(CraftingManager.class.getResource("/assets/minecraft/advancements").toURI());
-                }
-                else
-                {
-                    if (!"jar".equals(uri.getScheme()))
-                    {
-                        LOGGER.error("Unsupported scheme " + uri + " trying to list all built-in advancements (NYI?)");
-                        return;
-                    }
+			if (url != null) {
+				URI uri = url.toURI();
+				Path path;
 
-                    filesystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
-                    path = filesystem.getPath("/assets/minecraft/advancements");
-                }
+				if ("file".equals(uri.getScheme())) {
+					path = Paths.get(CraftingManager.class.getResource("/assets/minecraft/advancements").toURI());
+				} else {
+					if (!"jar".equals(uri.getScheme())) {
+						LOGGER.error("Unsupported scheme " + uri + " trying to list all built-in advancements (NYI?)");
+						return;
+					}
 
-                Iterator<Path> iterator = Files.walk(path).iterator();
+					filesystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+					path = filesystem.getPath("/assets/minecraft/advancements");
+				}
 
-                while (iterator.hasNext())
-                {
-                    Path path1 = iterator.next();
+				Iterator<Path> iterator = Files.walk(path).iterator();
 
-                    if ("json".equals(FilenameUtils.getExtension(path1.toString())))
-                    {
-                        Path path2 = path.relativize(path1);
-                        String s = FilenameUtils.removeExtension(path2.toString()).replaceAll("\\\\", "/");
-                        ResourceLocation resourcelocation = new ResourceLocation("minecraft", s);
+				while (iterator.hasNext()) {
+					Path path1 = iterator.next();
 
-                        if (!map.containsKey(resourcelocation))
-                        {
-                            BufferedReader bufferedreader = null;
+					if ("json".equals(FilenameUtils.getExtension(path1.toString()))) {
+						Path path2 = path.relativize(path1);
+						String s = FilenameUtils.removeExtension(path2.toString()).replaceAll("\\\\", "/");
+						ResourceLocation resourcelocation = new ResourceLocation("minecraft", s);
 
-                            try
-                            {
-                                bufferedreader = Files.newBufferedReader(path1);
-                                Advancement.Builder advancement$builder = (Advancement.Builder)JsonUtils.fromJson(GSON, bufferedreader, Advancement.Builder.class);
-                                map.put(resourcelocation, advancement$builder);
-                            }
-                            catch (JsonParseException jsonparseexception)
-                            {
-                                LOGGER.error("Parsing error loading built-in advancement " + resourcelocation, (Throwable)jsonparseexception);
-                            }
-                            catch (IOException ioexception)
-                            {
-                                LOGGER.error("Couldn't read advancement " + resourcelocation + " from " + path1, (Throwable)ioexception);
-                            }
-                            finally
-                            {
-                                IOUtils.closeQuietly((Reader)bufferedreader);
-                            }
-                        }
-                    }
-                }
+						if (!map.containsKey(resourcelocation)) {
+							BufferedReader bufferedreader = null;
 
-                return;
-            }
+							try {
+								bufferedreader = Files.newBufferedReader(path1);
+								Advancement.Builder advancement$builder = JsonUtils.fromJson(GSON, bufferedreader,
+										Advancement.Builder.class);
+								map.put(resourcelocation, advancement$builder);
+							} catch (JsonParseException jsonparseexception) {
+								LOGGER.error("Parsing error loading built-in advancement " + resourcelocation,
+										jsonparseexception);
+							} catch (IOException ioexception) {
+								LOGGER.error("Couldn't read advancement " + resourcelocation + " from " + path1,
+										ioexception);
+							} finally {
+								IOUtils.closeQuietly(bufferedreader);
+							}
+						}
+					}
+				}
 
-            LOGGER.error("Couldn't find .mcassetsroot");
-        }
-        catch (IOException | URISyntaxException urisyntaxexception)
-        {
-            LOGGER.error("Couldn't get a list of all built-in advancement files", (Throwable)urisyntaxexception);
-            return;
-        }
-        finally
-        {
-            IOUtils.closeQuietly((Closeable)filesystem);
-        }
-    }
-	
+				return;
+			}
+
+			LOGGER.error("Couldn't find .mcassetsroot");
+		} catch (IOException | URISyntaxException urisyntaxexception) {
+			LOGGER.error("Couldn't get a list of all built-in advancement files", urisyntaxexception);
+			return;
+		} finally {
+			IOUtils.closeQuietly(filesystem);
+		}
+	}
+
+	@Override
 	@Nullable
-    public Advancement getAdvancement(ResourceLocation id)
-    {
-        return ADVANCEMENT_LIST.getAdvancement(id);
-    }
+	public Advancement getAdvancement(ResourceLocation id) {
+		return ADVANCEMENT_LIST.getAdvancement(id);
+	}
 
-    public Iterable<Advancement> getAdvancements()
-    {
-        return ADVANCEMENT_LIST.getAdvancements();
-    }
+	@Override
+	public Iterable<Advancement> getAdvancements() {
+		return ADVANCEMENT_LIST.getAdvancements();
+	}
 }

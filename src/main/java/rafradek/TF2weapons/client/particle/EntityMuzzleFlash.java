@@ -1,13 +1,13 @@
 package rafradek.TF2weapons.client.particle;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityMuzzleFlash extends Particle {
 
@@ -15,11 +15,11 @@ public class EntityMuzzleFlash extends Particle {
 	private boolean nextDead;
 	private EntityLivingBase owner;
 	private EnumHand hand;
-	
-	public EntityMuzzleFlash(World par1World, EntityLivingBase shooter,EnumHand hand) {
+
+	public EntityMuzzleFlash(World par1World, EntityLivingBase shooter, EnumHand hand) {
 		super(par1World, 0, 0, 0);
 		this.particleMaxAge = 5;
-		this.hand=hand;
+		this.hand = hand;
 		this.setSize(0.025f, 0.025f);
 		// this.setParticleIcon(Item.itemsList[2498+256].getIconFromDamage(0));
 		this.setParticleTextureIndex(65);
@@ -27,7 +27,6 @@ public class EntityMuzzleFlash extends Particle {
 		this.multipleParticleScaleBy(1);
 		this.owner = shooter;
 		this.setPosition();
-		// TODO Auto-generated constructor stub
 		this.setRBGColorF(0.97f, 0.76f, 0.51f);
 		// S/ystem.out.println("Crits: "+crits);e
 	}
@@ -43,9 +42,11 @@ public class EntityMuzzleFlash extends Particle {
 
 	public void setPosition() {
 		float move = Minecraft.getMinecraft().player == this.owner ? 0.48f : 0.24f;
-		this.posX = owner.posX - MathHelper.cos(owner.rotationYawHead / 180.0F * (float) Math.PI) * move * (hand==EnumHand.MAIN_HAND?1:-1);
+		this.posX = owner.posX - MathHelper.cos(owner.rotationYawHead / 180.0F * (float) Math.PI) * move
+				* (hand == EnumHand.MAIN_HAND ? 1 : -1);
 		this.posY = owner.posY + owner.getEyeHeight() - move * 0.45f;
-		this.posZ = owner.posZ - MathHelper.sin(owner.rotationYawHead / 180.0F * (float) Math.PI) * move * (hand==EnumHand.MAIN_HAND?1:-1);
+		this.posZ = owner.posZ - MathHelper.sin(owner.rotationYawHead / 180.0F * (float) Math.PI) * move
+				* (hand == EnumHand.MAIN_HAND ? 1 : -1);
 
 		this.posX += -MathHelper.sin(owner.rotationYawHead / 180.0F * (float) Math.PI)
 				* MathHelper.cos(owner.rotationPitch / 180.0F * (float) Math.PI);

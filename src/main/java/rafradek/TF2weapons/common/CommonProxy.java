@@ -11,29 +11,18 @@ public class CommonProxy {
 		// unused server side. -- see ClientProxy for implementation
 	}
 
-	public void registerTicks() {
+	public void registerTicks() {}
 
-	}
+	public void playReloadSound(EntityLivingBase player, ItemStack stack) {}
 
-	public void playReloadSound(EntityLivingBase player, ItemStack stack) {
-
-	}
-
-	public void preInit() {
-		// TODO Auto-generated method stub
-
-	}
+	public void preInit() {}
 
 	public EntityPlayer getPlayerForSide(MessageContext ctx) {
 		return ctx.getServerHandler().player;
 	}
 
-	public void registerItemBlock(ItemBlock item) {
-		// TODO Auto-generated method stub
+	public void registerItemBlock(ItemBlock item) {}
 
-	}
-	
-	public void displayCorruptedFileError() {
-		
-	}
+	public void displayCorruptedFileError() {}
+
 }

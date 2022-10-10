@@ -4,13 +4,12 @@ import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
 import net.minecraft.client.renderer.entity.layers.LayerCustomHead;
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
@@ -33,14 +32,14 @@ import rafradek.TF2weapons.util.TF2Util;
 
 public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
-	private static final String TEXTURE_PATH_BASE = TF2weapons.MOD_ID+":textures/entity/tf2/";
-	
+	private static final String TEXTURE_PATH_BASE = TF2weapons.MOD_ID + ":textures/entity/tf2/";
+
 	public static final ResourceLocation[] RED_TEXTURES;
 	public static final ResourceLocation[] BLU_TEXTURES;
 	public static final ResourceLocation[] ROBOT_TEXTURES;
 	private static final ResourceLocation[] ROBOT_BLU_TEXTURES;
 	private static final ResourceLocation[] ROBOT_RED_TEXTURES;
-	
+
 	static {
 		RED_TEXTURES = putResourcesFor("red");
 		BLU_TEXTURES = putResourcesFor("blu");
@@ -48,13 +47,13 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 		ROBOT_RED_TEXTURES = putResourcesFor("robot_red");
 		ROBOT_BLU_TEXTURES = putResourcesFor("robot_blu");
 	}
-	
+
 	private static ResourceLocation[] putResourcesFor(String name) {
 		ResourceLocation[] location = new ResourceLocation[9];
 		for (int i = 0; i < 9; i++) {
-			location[i] = new ResourceLocation(TEXTURE_PATH_BASE+name+"/"+ItemToken.CLASS_NAMES[i]+".png");
+			location[i] = new ResourceLocation(TEXTURE_PATH_BASE + name + "/" + ItemToken.CLASS_NAMES[i] + ".png");
 		}
-		
+
 		return location;
 	}
 
@@ -63,34 +62,35 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 
 	public RenderTF2Character(RenderManager renderManager) {
 		super(renderManager, new ModelTF2Character(), 0.5F);
-		this.modelMain=(ModelBiped) this.mainModel;
+		this.modelMain = (ModelBiped) this.mainModel;
 		this.addLayer(new LayerHeldItem(this));
 		this.addLayer(new LayerArmorTint(this));
 		this.addLayer(new LayerWearables(this));
-		this.layerRenderers.removeIf(layer -> (LayerRenderer<?>)layer instanceof LayerCustomHead);
+		this.layerRenderers.removeIf(layer -> (LayerRenderer<?>) layer instanceof LayerCustomHead);
 	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityTF2Character par1EntityLiving) {
-		//String clazz = null;
+		// String clazz = null;
 		int clazz;
-		boolean sameTeam=Minecraft.getMinecraft().player != null && TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
-		if ( !sameTeam && WeaponsCapability.get(par1EntityLiving).isDisguised()
+		boolean sameTeam = Minecraft.getMinecraft().player != null
+				&& TF2Util.isOnSameTeam(Minecraft.getMinecraft().player, par1EntityLiving);
+		if (!sameTeam && WeaponsCapability.get(par1EntityLiving).isDisguised()
 				&& WeaponsCapability.get(par1EntityLiving).getDisguiseType().startsWith("T:"))
-			clazz= ItemToken.getClassID(WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2).toLowerCase());
+			clazz = ItemToken
+					.getClassID(WeaponsCapability.get(par1EntityLiving).getDisguiseType().substring(2).toLowerCase());
 		else
 			clazz = par1EntityLiving.getClassIndex();
 		// System.out.println("class: "+clazz);
 		if (par1EntityLiving.getEntTeam() == 2 && !WeaponsCapability.get(par1EntityLiving).isDisguised()) {
 			if (par1EntityLiving.getOwnerId() != null) {
 				if (par1EntityLiving.getTeam() == par1EntityLiving.getWorld().getScoreboard().getTeam("BLU"))
-					return  ROBOT_BLU_TEXTURES[clazz];
+					return ROBOT_BLU_TEXTURES[clazz];
 				else
-					return  ROBOT_RED_TEXTURES[clazz];
+					return ROBOT_RED_TEXTURES[clazz];
 			}
 			return ROBOT_TEXTURES[clazz];
-		}
-		else if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
+		} else if (par1EntityLiving.getEntTeam() == 0 || (!sameTeam && par1EntityLiving.getEntTeam() == 1
 				&& WeaponsCapability.get(par1EntityLiving).isDisguised()))
 			return RED_TEXTURES[clazz];
 		else
@@ -107,8 +107,8 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 			sniperZoomed = living.getCapability(TF2weapons.WEAPONS_CAP, null).isCharging();
 			// System.out.println("pos: "+p_76986_2_+" "+p_76986_4_+"
 			// "+p_76986_8_);
-			((ModelBiped)this.mainModel).rightArmPose = ((living.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) > 0)
-					|| sniperZoomed? ModelBiped.ArmPose.BOW_AND_ARROW : ModelBiped.ArmPose.EMPTY;
+			((ModelBiped) this.mainModel).rightArmPose = ((living.getCapability(TF2weapons.WEAPONS_CAP, null).state
+					& 3) > 0) || sniperZoomed ? ModelBiped.ArmPose.BOW_AND_ARROW : ModelBiped.ArmPose.EMPTY;
 		}
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
 		if (living.isEntityAlive()) {
@@ -162,27 +162,23 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
 				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64);
 				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64);
-				 * tessellator.draw();
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64); tessellator.draw();
 				 */
 				/*
 				 * renderer.startDrawingQuads(); renderer.addVertex(-0.03,
-				 * p_76986_1_.getEyeHeight()-0.03, -0.03);
-				 * renderer.addVertex(0.03, p_76986_1_.getEyeHeight()+0.03,
-				 * +0.03);
+				 * p_76986_1_.getEyeHeight()-0.03, -0.03); renderer.addVertex(0.03,
+				 * p_76986_1_.getEyeHeight()+0.03, +0.03);
 				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
 				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64+0.03);
 				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64-0.03);
-				 * tessellator.draw(); renderer.startDrawingQuads();
-				 * renderer.addVertex(0.03, p_76986_1_.getEyeHeight()-0.03,
-				 * 0.03); renderer.addVertex(-0.03,
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64-0.03); tessellator.draw();
+				 * renderer.startDrawingQuads(); renderer.addVertex(0.03,
+				 * p_76986_1_.getEyeHeight()-0.03, 0.03); renderer.addVertex(-0.03,
 				 * p_76986_1_.getEyeHeight()+0.03, -0.03);
 				 * renderer.addVertex(lookVec.x*50-0.03,lookVec.y*64+
 				 * p_76986_1_.getEyeHeight()+0.03, lookVec.z*64-0.03);
 				 * renderer.addVertex(lookVec.x*50+0.03,lookVec.y*64+
-				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64+0.03);
-				 * tessellator.draw();
+				 * p_76986_1_.getEyeHeight()-0.03, lookVec.z*64+0.03); tessellator.draw();
 				 */
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1F);
 				GL11.glDisable(GL11.GL_BLEND);
@@ -192,17 +188,19 @@ public class RenderTF2Character extends RenderBiped<EntityTF2Character> {
 			}
 		}
 	}
-	protected void preRenderCallback(EntityTF2Character entitylivingbaseIn, float partialTickTime)
-    {
+
+	@Override
+	protected void preRenderCallback(EntityTF2Character entitylivingbaseIn, float partialTickTime) {
 		float f = 0.9375F;
-		if(entitylivingbaseIn instanceof EntityHeavy)
+		if (entitylivingbaseIn instanceof EntityHeavy)
 			f = 1f;
-        if (entitylivingbaseIn.getRobotSize() == 2)
-        	f *= 1.75f;
-        else if (entitylivingbaseIn.getRobotSize() == 3)
-        	f *= 2f;
-        GlStateManager.scale(f, f, f);
-    }
+		if (entitylivingbaseIn.getRobotSize() == 2)
+			f *= 1.75f;
+		else if (entitylivingbaseIn.getRobotSize() == 3)
+			f *= 2f;
+		GlStateManager.scale(f, f, f);
+	}
+
 	private void setModel(EntityLivingBase living) {
 		if (living instanceof EntityHeavy) {
 			this.mainModel = this.modelHeavy;

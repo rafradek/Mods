@@ -9,7 +9,7 @@ public interface IEntityTF2 {
 	default boolean hasHead() {
 		return false;
 	}
-	
+
 	default AxisAlignedBB getHeadBox() {
 		return null;
 	};
@@ -17,15 +17,15 @@ public interface IEntityTF2 {
 	default boolean hasDamageFalloff() {
 		return true;
 	}
-	
+
 	default boolean isBuilding() {
 		return false;
 	}
-	
+
 	default boolean isBackStabbable(EntityLivingBase attacker, ItemStack knife) {
 		return true;
 	}
-	
+
 	default float getBackstabDamageReduction(EntityLivingBase attacker, ItemStack knife, float mult) {
 		return mult;
 	}

@@ -12,7 +12,6 @@ import rafradek.TF2weapons.client.ClientProxy;
 import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemSniperRifle;
-import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -25,22 +24,23 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 		super(world);
 		this.setSize(0.3F, 0.3F);
 	}
-	
+
+	@Override
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
 		String name = ItemFromData.getData(weapon).getString(PropertyType.PROJECTILE);
-		if(name.equals("repairclaw"))
+		if (name.equals("repairclaw"))
 			this.setType(0);
-		else if(name.equals("syringe"))
+		else if (name.equals("syringe"))
 			this.setType(1);
-		else if(name.equals("cleaver"))
+		else if (name.equals("cleaver"))
 			this.setType(2);
-		else if(name.equals("arrow"))
+		else if (name.equals("arrow"))
 			this.setType(3);
-		else if(name.equals("pomson"))
+		else if (name.equals("pomson"))
 			this.setType(4);
-		else if(name.equals("hhhaxe"))
+		else if (name.equals("hhhaxe"))
 			this.setType(8);
-		
+
 		super.initProjectile(shooter, hand, weapon);
 		this.setSize(0.3F, 0.3F);
 		if (this.usedWeapon.getTagCompound().getBoolean("ArrowLit")) {
@@ -72,8 +72,8 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 						damage *= 2.52f;
 					damage *= TF2Attribute.getModifier("Destroy Block", this.usedWeapon, 0, this.shootingEntity);
 				}
-				this.damage = TF2Util.damageBlock(mop.getBlockPos(), this.shootingEntity, this.world,
-						this.usedWeapon, this.getCritical(), damage, null, null);
+				this.damage = TF2Util.damageBlock(mop.getBlockPos(), this.shootingEntity, this.world, this.usedWeapon,
+						this.getCritical(), damage, null, null);
 				if (this.damage <= 0)
 					this.setDead();
 			} else
@@ -83,7 +83,7 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 
 	@Override
 	public void onHitMob(Entity entityHit, RayTraceResult mop) {
-		attackDirect(entityHit,1, mop.hitInfo instanceof Boolean ? (Boolean)mop.hitInfo : false, mop.hitVec);
+		attackDirect(entityHit, 1, mop.hitInfo instanceof Boolean ? (Boolean) mop.hitInfo : false, mop.hitVec);
 	}
 
 	@Override
@@ -93,10 +93,11 @@ public class EntityProjectileSimple extends EntityProjectileBase {
 		}
 	}
 
+	@Override
 	public boolean isPushable() {
-		return this.getType()!=1;
+		return this.getType() != 1;
 	}
-	
+
 	@Override
 	public double getGravity() {
 		return this.getType() == 4 ? 0 : super.getGravity();

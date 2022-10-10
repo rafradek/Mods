@@ -21,7 +21,6 @@ import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.entity.projectile.EntityProjectileSimple;
-import rafradek.TF2weapons.item.IItemNoSwitch;
 import rafradek.TF2weapons.item.ItemAirblast;
 import rafradek.TF2weapons.item.ItemBackpack;
 import rafradek.TF2weapons.item.ItemBulletWeapon;
@@ -34,7 +33,6 @@ import rafradek.TF2weapons.item.ItemKnife;
 import rafradek.TF2weapons.item.ItemMedigun;
 import rafradek.TF2weapons.item.ItemMinigun;
 import rafradek.TF2weapons.item.ItemPDA;
-import rafradek.TF2weapons.item.ItemParachute;
 import rafradek.TF2weapons.item.ItemProjectileWeapon;
 import rafradek.TF2weapons.item.ItemSniperRifle;
 import rafradek.TF2weapons.item.ItemSoldierBackpack;
@@ -50,7 +48,7 @@ public class TF2Attribute {
 	public static TF2Attribute[] attributes = new TF2Attribute[256];
 
 	public static List<TF2Attribute> listUpgrades;
-	
+
 	public int id;
 	public String name;
 	public Type typeOfValue;
@@ -63,59 +61,37 @@ public class TF2Attribute {
 	public int numLevels;
 
 	public float perLevel;
-	
+
 	public float perKill;
-	
+
 	public int cost;
 
 	public int weight;
-	
+
 	public float austrUpgrade;
 
 	private boolean fullCost;
 
-	public static final Predicate<ItemStack> ITEM_WEAPON = input -> {
-		
-			return input.getItem() instanceof ItemWeapon;
-	};
-	public static final Predicate<ItemStack> NOT_FLAMETHROWER = input -> {
-
-			return input.getItem() instanceof ItemWeapon && !(input.getItem() instanceof ItemFlameThrower);
-	};
-	public static final Predicate<ItemStack> FLAMETHROWER = input -> {
-
-			return input.getItem() instanceof ItemFlameThrower;
-	};
-	public static final Predicate<ItemStack> IGNITE = input -> {
-
-			return input.getItem() instanceof ItemAirblast || getModifier("BurnOnHit", input, 0, null) > 0;
-	};
-	public static final Predicate<ItemStack> WITH_CLIP = input -> {
-		
-			return input.getItem() instanceof ItemWeapon && ((ItemWeapon) input.getItem()).hasClip(input);
-	};
-	public static final Predicate<ItemStack> WITH_SPREAD = input -> {
-
-			return input.getItem() instanceof ItemWeapon
-					&& (((ItemWeapon) input.getItem()).getWeaponSpreadBase(input, null) != 0
-							|| ((ItemWeapon) input.getItem()).getWeaponMinDamage(input, null) != 1);
-	};
-	public static final Predicate<ItemStack> WITH_AMMO = input -> {
-
-			return input.getItem() instanceof ItemUsable
-					&& ItemFromData.getData(input).getInt(PropertyType.AMMO_TYPE) != 0;
-	};
-	public static final Predicate<ItemStack> CHARGE_RATE = input -> {
-
-		return input.getItem() instanceof ItemSniperRifle || input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemCloak;
-	};
-	public static final Predicate<ItemStack> DURATION = input -> {
-
-		return input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemSoldierBackpack || input.getItem() instanceof ItemCloak;
-	};
+	public static final Predicate<ItemStack> ITEM_WEAPON = input -> (input.getItem() instanceof ItemWeapon);
+	public static final Predicate<ItemStack> NOT_FLAMETHROWER = input -> (input.getItem() instanceof ItemWeapon
+			&& !(input.getItem() instanceof ItemFlameThrower));
+	public static final Predicate<ItemStack> FLAMETHROWER = input -> (input.getItem() instanceof ItemFlameThrower);
+	public static final Predicate<ItemStack> IGNITE = input -> (input.getItem() instanceof ItemAirblast
+			|| getModifier("BurnOnHit", input, 0, null) > 0);
+	public static final Predicate<ItemStack> WITH_CLIP = input -> (input.getItem() instanceof ItemWeapon
+			&& ((ItemWeapon) input.getItem()).hasClip(input));
+	public static final Predicate<ItemStack> WITH_SPREAD = input -> (input.getItem() instanceof ItemWeapon
+			&& (((ItemWeapon) input.getItem()).getWeaponSpreadBase(input, null) != 0
+					|| ((ItemWeapon) input.getItem()).getWeaponMinDamage(input, null) != 1));
+	public static final Predicate<ItemStack> WITH_AMMO = input -> (input.getItem() instanceof ItemUsable
+			&& ItemFromData.getData(input).getInt(PropertyType.AMMO_TYPE) != 0);
+	public static final Predicate<ItemStack> CHARGE_RATE = input -> (input.getItem() instanceof ItemSniperRifle
+			|| input.getItem() instanceof ItemChargingTarge || input.getItem() instanceof ItemCloak);
+	public static final Predicate<ItemStack> DURATION = input -> (input.getItem() instanceof ItemChargingTarge
+			|| input.getItem() instanceof ItemSoldierBackpack || input.getItem() instanceof ItemCloak);
 	public static final Predicate<ItemStack> ITEM_BULLET = input -> {
-		// TODO Auto-generated method stub
-		if (input.getItem() instanceof ItemBulletWeapon && !ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
+		if (input.getItem() instanceof ItemBulletWeapon
+				&& !ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
 			return true;
 		else {
 			Class<?> clazz = MapList.projectileClasses
@@ -123,12 +99,16 @@ public class TF2Attribute {
 			return clazz != null && EntityProjectileSimple.class.isAssignableFrom(clazz);
 		}
 	};
-	public static final Predicate<ItemStack> ITEM_PROJECTILE = input -> input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE);
+	public static final Predicate<ItemStack> ITEM_PROJECTILE = input -> input.getItem() instanceof ItemProjectileWeapon
+			|| ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE);
 	public static final Predicate<ItemStack> ITEM_MINIGUN = input -> input.getItem() instanceof ItemMinigun;
 	public static final Predicate<ItemStack> ITEM_SNIPER_RIFLE = input -> input.getItem() instanceof ItemSniperRifle;
-	public static final Predicate<ItemStack> EXPLOSIVE = input -> (input.getItem() instanceof ItemProjectileWeapon || ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE) )&& !(input.getItem() instanceof ItemFlameThrower
-			|| (MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null 
-			&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
+	public static final Predicate<ItemStack> EXPLOSIVE = input -> (input.getItem() instanceof ItemProjectileWeapon
+			|| ItemFromData.getData(input).hasProperty(PropertyType.PROJECTILE))
+			&& !(input.getItem() instanceof ItemFlameThrower || (MapList.projectileClasses
+					.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)) != null
+					&& EntityProjectileSimple.class.isAssignableFrom(MapList.projectileClasses
+							.get(ItemFromData.getData(input).getString(PropertyType.PROJECTILE)))));
 	public static final Predicate<ItemStack> MEDIGUN = input -> input.getItem() instanceof ItemMedigun;
 	public static final Predicate<ItemStack> BANNER = input -> input.getItem() instanceof ItemSoldierBackpack;
 	public static final Predicate<ItemStack> BACKPACK = input -> input.getItem() instanceof ItemBackpack;
@@ -141,7 +121,7 @@ public class TF2Attribute {
 	public static final Predicate<ItemStack> ROCKET = input -> ItemFromData.isSameType(input, "rocketlauncher");
 	public static final Predicate<ItemStack> GRENADE = input -> ItemFromData.isSameType(input, "grenadelauncher");
 	public static final Predicate<ItemStack> KNIFE = input -> input.getItem() instanceof ItemKnife;
-	
+
 	public static enum Type {
 		PERCENTAGE, INVERTED_PERCENTAGE, ADDITIVE;
 	}
@@ -149,6 +129,7 @@ public class TF2Attribute {
 	public static enum State {
 		POSITIVE, NEGATIVE, NEUTRAL, HIDDEN;
 	}
+
 	public TF2Attribute(int id, String name, String effect, Type typeOfValue, float defaultValue, State state) {
 		this.id = id;
 		attributes[id] = this;
@@ -158,9 +139,9 @@ public class TF2Attribute {
 		this.typeOfValue = typeOfValue;
 		this.defaultValue = defaultValue;
 		this.state = state;
-		
+
 	}
-	
+
 	public TF2Attribute setUpgrade(Predicate<ItemStack> canApply, float perLevel, int numLevels, int cost, int weight) {
 		this.canApply = canApply;
 		this.numLevels = numLevels;
@@ -169,81 +150,82 @@ public class TF2Attribute {
 		this.weight = weight;
 		return this;
 	}
-	
+
 	public TF2Attribute setKillstreak(float perKill) {
 		this.perKill = perKill;
 		return this;
 	}
-	
+
 	public TF2Attribute setAustralium(float austr) {
 		this.austrUpgrade = austr;
 		return this;
 	}
-	
+
 	public TF2Attribute setNoCostReduce() {
 		this.fullCost = true;
 		return this;
 	}
-	
+
 	public static void initAttributes() {
 		new TF2Attribute(0, "DamageBonus", "Damage", Type.PERCENTAGE, 1f, State.POSITIVE)
-			.setUpgrade(Predicates.and(ITEM_WEAPON, Predicates.not(KNIFE)), 0.20f, 5, 160,8).setKillstreak(0.04f).setAustralium(1f).setNoCostReduce();
+				.setUpgrade(Predicates.and(ITEM_WEAPON, Predicates.not(KNIFE)), 0.20f, 5, 160, 8).setKillstreak(0.04f)
+				.setAustralium(1f).setNoCostReduce();
 		new TF2Attribute(1, "DamagePenalty", "Damage", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(2, "ClipSizeBonus", "Clip Size", Type.PERCENTAGE, 1f, State.POSITIVE)
-			.setUpgrade(WITH_CLIP, 0.5f, 4, 120, 6).setKillstreak(0.09f).setAustralium( 1f);
+				.setUpgrade(WITH_CLIP, 0.5f, 4, 120, 6).setKillstreak(0.09f).setAustralium(1f);
 		new TF2Attribute(3, "ClipSizePenalty", "Clip Size", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(4, "MinigunSpinBonus", "Minigun Spinup", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(5, "MinigunSpinPenalty", "Minigun Spinup", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(6, "FireRateBonus", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(NOT_FLAMETHROWER, -0.08f, 5, 80, 8).setKillstreak(-0.043f).setAustralium(1.5f);
+				.setUpgrade(NOT_FLAMETHROWER, -0.08f, 5, 80, 8).setKillstreak(-0.043f).setAustralium(1.5f);
 		new TF2Attribute(7, "FireRatePenalty", "Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(8, "SpreadBonus", "Spread", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(9, "SpreadPenalty", "Spread", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(10, "PelletBonus", "Pellet Count", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(11, "PelletPenalty", "Pellet Count", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(Predicates.and(WITH_CLIP, stack -> {
-			return !ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_FULL_CLIP);
-			}), -0.2f, 3, 100, 5).setKillstreak(-0.05f).setAustralium(0.75f).setNoCostReduce();
+		new TF2Attribute(12, "ReloadRateBonus", "Reload Time", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE).setUpgrade(
+				Predicates.and(WITH_CLIP,
+						stack -> !ItemFromData.getData(stack).getBoolean(PropertyType.RELOADS_FULL_CLIP)),
+				-0.2f, 3, 100, 5).setKillstreak(-0.05f).setAustralium(0.75f).setNoCostReduce();
 		new TF2Attribute(13, "ReloadRatePenalty", "Reload Time", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(14, "KnockbackBonus", "Knockback", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(15, "KnockbackPenalty", "Knockback", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(16, "ChargeBonus", "Charge", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(CHARGE_RATE, 0.25f, 4, 100, 8).setKillstreak(0.055f).setAustralium(1.6f);
+				.setUpgrade(CHARGE_RATE, 0.25f, 4, 100, 8).setKillstreak(0.055f).setAustralium(1.6f);
 		new TF2Attribute(17, "ChargePenalty", "Charge", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(18, "SpreadAdd", "Spread", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(19, "ProjectileSpeedBonus", "Proj Speed", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(ITEM_PROJECTILE, 0.25f, 4, 80, 6).setAustralium(2f);
+				.setUpgrade(ITEM_PROJECTILE, 0.25f, 4, 80, 6).setAustralium(2f);
 		new TF2Attribute(20, "ProjectileSpeedPenalty", "Proj Speed", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(21, "ExplosionRadiusBonus", "Explosion Radius", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(EXPLOSIVE, 0.2f, 4, 80, 2).setAustralium(1.5f);
+				.setUpgrade(EXPLOSIVE, 0.2f, 4, 80, 2).setAustralium(1.5f);
 		new TF2Attribute(22, "ExplosionRadiusPenalty", "Explosion Radius", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(23, "DestroyOnImpact", "Coll Remove", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(24, "AmmoEfficiencyBonus", "Ammo Eff", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(WITH_AMMO,-0.2f, 3, 120, 6).setKillstreak(-0.04f).setAustralium(0.75f);
+				.setUpgrade(WITH_AMMO, -0.2f, 3, 120, 6).setKillstreak(-0.04f).setAustralium(0.75f);
 		new TF2Attribute(25, "AmmoEfficiencyPenalty", "Ammo Eff", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(26, "Penetration", "Penetration", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_BULLET, 1, 1, 200, 1);
+		new TF2Attribute(26, "Penetration", "Penetration", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_BULLET, 1,
+				1, 200, 1);
 		new TF2Attribute(27, "HealRateBonus", "Heal", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(MEDIGUN, 0.25f, 4, 100, 8).setAustralium(1f);
+				.setUpgrade(MEDIGUN, 0.25f, 4, 100, 8).setAustralium(1f);
 		new TF2Attribute(28, "HealRatePenalty", "Heal", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(29, "OverHealBonus", "Overheal", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(MEDIGUN, 0.25f, 4, 100, 4).setAustralium(1f);
+				.setUpgrade(MEDIGUN, 0.25f, 4, 100, 4).setAustralium(1f);
 		new TF2Attribute(30, "OverHealPenalty", "Overheal", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(31, "BurnTimeBonus", "Burn Time", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(IGNITE, 0.5f, 4, 140,3);
+		new TF2Attribute(31, "BurnTimeBonus", "Burn Time", Type.PERCENTAGE, 1f, State.POSITIVE).setUpgrade(IGNITE, 0.5f,
+				4, 140, 3);
 		new TF2Attribute(32, "BurnTimePenalty", "Burn Time", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_WEAPON, 2.0f, 4, 80,2);
+		new TF2Attribute(33, "HealthOnKill", "Health Kill", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON,
+				2.0f, 4, 80, 2);
 		new TF2Attribute(34, "AccuracyBonus", "Accuracy", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(WITH_SPREAD, 0.25f, 3, 160, 4).setKillstreak(0.05f).setAustralium(1f);
+				.setUpgrade(WITH_SPREAD, 0.25f, 3, 160, 4).setKillstreak(0.05f).setAustralium(1f);
 		new TF2Attribute(35, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(36, "FlameRangeBonus", "Flame Range", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(FLAMETHROWER, 0.25f, 4, 80, 5);
+				.setUpgrade(FLAMETHROWER, 0.25f, 4, 80, 5);
 		new TF2Attribute(37, "CritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(38, "BurnOnHit", "Burn Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(39, "DestroyBlock", "Destroy Block", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(Predicates.or(ITEM_BULLET, EXPLOSIVE), 1f, 2, 200, 1).setAustralium(0.75f);
+				.setUpgrade(Predicates.or(ITEM_BULLET, EXPLOSIVE), 1f, 2, 200, 1).setAustralium(0.75f);
 		new TF2Attribute(40, "NoRandomCrit", "Random Crit", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(41, "CritRocket", "Crit Rocket", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(42, "CritMini", "Crit Mini", Type.ADDITIVE, 0, State.POSITIVE);
@@ -261,15 +243,14 @@ public class TF2Attribute {
 		new TF2Attribute(54, "ExplodeDeath", "Explode Death", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(55, "RechargeBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE);
 		new TF2Attribute(56, "UberRateBonus", "Uber Rate", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(MEDIGUN, 0.25f, 4, 120, 1).setAustralium(1f);
+				.setUpgrade(MEDIGUN, 0.25f, 4, 120, 1).setAustralium(1f);
 		new TF2Attribute(57, "UberRatePenalty", "Uber Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(58, "RangeIncrease", "Range", Type.PERCENTAGE, 1f, State.NEUTRAL);
 		new TF2Attribute(59, "ExplosiveBullets", "Explode Bullet", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(60, "WeaponMode", "Weapon Mode", Type.ADDITIVE, 0, State.HIDDEN);
 		new TF2Attribute(61, "HealthOnHit", "Health Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(62, "Breakable", "Breakable", Type.ADDITIVE, 0, State.HIDDEN);
-		new TF2Attribute(63, "Focus", "Focus", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_WEAPON, 1, 2, 200, 1);
+		new TF2Attribute(63, "Focus", "Focus", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON, 1, 2, 200, 1);
 		new TF2Attribute(64, "KnockbackFAN", "KnockbackFAN", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(65, "MinicritAirborne", "Minicrit Airborne", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(66, "CannotAirblast", "Cannot Airblast", Type.ADDITIVE, 0, State.NEGATIVE);
@@ -294,7 +275,7 @@ public class TF2Attribute {
 		new TF2Attribute(85, "MetalAsAmmo", "Metal Ammo", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(86, "MetalOnHit", "Metal Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(87, "EffectDurationBonus", "Effect Duration", Type.PERCENTAGE, 1, State.POSITIVE)
-		.setUpgrade(DURATION, 0.25f, 3, 120, 4).setAustralium(1f);
+				.setUpgrade(DURATION, 0.25f, 3, 120, 4).setAustralium(1f);
 		new TF2Attribute(88, "CloakRegenBonus", "Charge", Type.PERCENTAGE, 1, State.POSITIVE);
 		new TF2Attribute(89, "CloakDrainActivate", "Cloak Drain", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(90, "NoExternalCloak", "No External Cloak", Type.ADDITIVE, 0, State.NEGATIVE);
@@ -306,9 +287,9 @@ public class TF2Attribute {
 		new TF2Attribute(96, "ClipOnKill", "Clip Kill", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(97, "AirborneBonus", "Airborne Bonus", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(98, "DestroyProjectiles", "Destroy Projectiles", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_BULLET, 1, 2, 180, 1);
+				.setUpgrade(ITEM_BULLET, 1, 2, 180, 1);
 		new TF2Attribute(99, "KnockbackRage", "Knockback Rage", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_MINIGUN, 1, 3, 120, 1);
+				.setUpgrade(ITEM_MINIGUN, 1, 3, 120, 1);
 		new TF2Attribute(100, "DeployTimeBonus", "Deploy Time", Type.INVERTED_PERCENTAGE, 0, State.POSITIVE);
 		new TF2Attribute(101, "FireRateHealthBonus", "Fire Rate Health", Type.PERCENTAGE, 0, State.POSITIVE);
 		new TF2Attribute(102, "SpreadHealthPenalty", "Spread Health", Type.PERCENTAGE, 0, State.NEGATIVE);
@@ -317,46 +298,46 @@ public class TF2Attribute {
 		new TF2Attribute(105, "Gravity", "Gravity", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(106, "FireRateHitBonus", "Fire Rate Hit", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(107, "ConstructionRateBonus", "Construction Rate", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(WRENCH, 0.4f, 3, 160, 4);
+				.setUpgrade(WRENCH, 0.4f, 3, 160, 4);
 		new TF2Attribute(108, "ConstructionRatePenalty", "Construction Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(109, "UpgradeRatePenalty", "Upgrade Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(110, "TeleportCost", "Teleporter Cost", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(111, "MetalUsedOnHitPenalty", "Metal Used", Type.INVERTED_PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(112, "Looting", "Looting", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(ITEM_WEAPON, 1, 3, 220, 3);
-		new TF2Attribute(113, "ArmorBonus", "Armor", Type.ADDITIVE, 0, State.HIDDEN)
-		.setUpgrade(BACKPACK, 1, 3, 240, 5);
+		new TF2Attribute(112, "Looting", "Looting", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON, 1, 3, 220,
+				3);
+		new TF2Attribute(113, "ArmorBonus", "Armor", Type.ADDITIVE, 0, State.HIDDEN).setUpgrade(BACKPACK, 1, 3, 240, 5);
 		new TF2Attribute(114, "MeleeResistPenalty", "Melee Resist", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(115, "RangedResistBonus", "Ranged Resist", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(116, "HolsterTimePenalty", "Holster Time", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(117, "Unblockable", "Unblockable", Type.ADDITIVE, 1f, State.POSITIVE);
 		new TF2Attribute(118, "SelfPushForceBonus", "Self Push Force", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(Predicates.or(JUMPER, JETPACK), 0.20f, 5, 160, 4).setAustralium(1.25f);
-		new TF2Attribute(119, "Jetpack", "Jetpack", Type.ADDITIVE, 0f, State.POSITIVE)
-		.setUpgrade(JETPACK, 1f, 1, 250, 4);
+				.setUpgrade(Predicates.or(JUMPER, JETPACK), 0.20f, 5, 160, 4).setAustralium(1.25f);
+		new TF2Attribute(119, "Jetpack", "Jetpack", Type.ADDITIVE, 0f, State.POSITIVE).setUpgrade(JETPACK, 1f, 1, 250,
+				4);
 		new TF2Attribute(120, "SentryBonus", "Sentry Bonus", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(121, "BuildingHealthBonus", "Building Health", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(PDA, 0.6f, 5, 240, 6).setAustralium(0.8f);
+				.setUpgrade(PDA, 0.6f, 5, 240, 6).setAustralium(0.8f);
 		new TF2Attribute(122, "SentryFireRateBonus", "Sentry Fire Rate", Type.INVERTED_PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(PDA, -0.1f, 3, 160, 6).setAustralium(1f);
+				.setUpgrade(PDA, -0.1f, 3, 160, 6).setAustralium(1f);
 		new TF2Attribute(123, "DispenserRangeBonus", "Dispenser Range", Type.PERCENTAGE, 1f, State.POSITIVE)
-		.setUpgrade(PDA, 1, 4, 120, 4);
+				.setUpgrade(PDA, 1, 4, 120, 4);
 		new TF2Attribute(124, "ExtraSentryBonus", "Extra Sentry", Type.ADDITIVE, 0f, State.POSITIVE)
-		.setUpgrade(PDA, 1, 3, 200, 3).setAustralium(1f);
+				.setUpgrade(PDA, 1, 3, 200, 3).setAustralium(1f);
 		new TF2Attribute(125, "OnyxProjectile", "Onyx Projectile", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(126, "AirblastRatePenalty", "Airblast Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(127, "NoHeadshot", "No Headshot", Type.ADDITIVE, 0, State.NEGATIVE);
 		new TF2Attribute(128, "JarateOnHit", "Jarate Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(129, "NoBackstab", "No Backstab", Type.ADDITIVE, 0, State.POSITIVE);
-		new TF2Attribute(130, "AfterburnReductionBonus", "Afterburn Reduction", Type.INVERTED_PERCENTAGE, 0, State.POSITIVE);
-		new TF2Attribute(131, "ChargesBonus", "Charges", Type.ADDITIVE, 0f, State.POSITIVE)
-		.setUpgrade(JETPACK, 1f, 3, 200, 6);
+		new TF2Attribute(130, "AfterburnReductionBonus", "Afterburn Reduction", Type.INVERTED_PERCENTAGE, 0,
+				State.POSITIVE);
+		new TF2Attribute(131, "ChargesBonus", "Charges", Type.ADDITIVE, 0f, State.POSITIVE).setUpgrade(JETPACK, 1f, 3,
+				200, 6);
 		new TF2Attribute(132, "DamageBuildingPenalty", "Damage Building", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(133, "HitCrit", "Hit Crit", Type.ADDITIVE, 0, State.POSITIVE);
-		new TF2Attribute(134, "PiercingShots", "Piercing", Type.ADDITIVE, 0, State.POSITIVE)
-		.setUpgrade(PDA, 1, 2, 180, 3);
-		new TF2Attribute(135, "JetpackNoItem", "Jetpack Item", Type.ADDITIVE, 0f, State.POSITIVE)
-		.setUpgrade(JETPACK, 1f, 1, 320, 3);
+		new TF2Attribute(134, "PiercingShots", "Piercing", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(PDA, 1, 2, 180,
+				3);
+		new TF2Attribute(135, "JetpackNoItem", "Jetpack Item", Type.ADDITIVE, 0f, State.POSITIVE).setUpgrade(JETPACK,
+				1f, 1, 320, 3);
 		new TF2Attribute(136, "SelfDamageIncreased", "Self Damage", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(137, "MiniCritBurning", "Crit Burn", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(138, "DetonateFlare", "Detonate", Type.ADDITIVE, 0, State.POSITIVE);
@@ -364,23 +345,29 @@ public class TF2Attribute {
 		new TF2Attribute(140, "SilentKill", "Silent Kill", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(141, "DisguiseBackstab", "Disguise Backstab", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(142, "NoDisguiseKit", "No Disguise Kit", Type.ADDITIVE, 0, State.NEGATIVE);
-		new TF2Attribute(143, "SentryRangeBonus", "Sentry Range", Type.PERCENTAGE, 1, State.POSITIVE)
-		.setUpgrade(PDA, 0.1f, 3, 160, 2);
-		new TF2Attribute(144, "MetalBonus", "Max Metal", Type.PERCENTAGE, 1, State.POSITIVE)
-		.setUpgrade(PDA, 0.5f, 4, 140, 5);
+		new TF2Attribute(143, "SentryRangeBonus", "Sentry Range", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(PDA,
+				0.1f, 3, 160, 2);
+		new TF2Attribute(144, "MetalBonus", "Max Metal", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(PDA, 0.5f, 4,
+				140, 5);
 		new TF2Attribute(145, "DamagePlayerPenalty", "Damage Player", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(146, "MinicritAirborneSelf", "Minicrit Airborne Self", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(147, "DeployTimePenalty", "Deploy Time", Type.PERCENTAGE, 1, State.NEGATIVE);
 		new TF2Attribute(148, "GrantsTripleJump", "Triple Jump", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(149, "DealDamageRage", "Build Rage Damage", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(150, "MinicritRage", "Minicrit Rage", Type.ADDITIVE, 0, State.POSITIVE);
-		new TF2Attribute(151, "RocketSpecialist", "Rocket Specialist", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ROCKET, 1f, 4, 80,3);
-		new TF2Attribute(152, "GrenadeSpecialist", "Grenade Specialist", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(GRENADE, 1f, 3, 160,3);
-		new TF2Attribute(153, "FireSpecialist", "Fire Specialist", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(FLAMETHROWER, 1f, 2, 120,2);
-		new TF2Attribute(154, "RegenOnHit", "Regen On Hit", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(ITEM_WEAPON, 1f, 4, 80,5).setAustralium(1.75f);
+		new TF2Attribute(151, "RocketSpecialist", "Rocket Specialist", Type.ADDITIVE, 0, State.POSITIVE)
+				.setUpgrade(ROCKET, 1f, 4, 80, 3);
+		new TF2Attribute(152, "GrenadeSpecialist", "Grenade Specialist", Type.ADDITIVE, 0, State.POSITIVE)
+				.setUpgrade(GRENADE, 1f, 3, 160, 3);
+		new TF2Attribute(153, "FireSpecialist", "Fire Specialist", Type.ADDITIVE, 0, State.POSITIVE)
+				.setUpgrade(FLAMETHROWER, 1f, 2, 120, 2);
+		new TF2Attribute(154, "RegenOnHit", "Regen On Hit", Type.ADDITIVE, 0, State.POSITIVE)
+				.setUpgrade(ITEM_WEAPON, 1f, 4, 80, 5).setAustralium(1.75f);
 		new TF2Attribute(155, "TraceRound", "Trace Round", Type.ADDITIVE, 0, State.NEGATIVE);
-		new TF2Attribute(156, "LifeSteal", "Life Steal", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(MEDIGUN, 1f, 3, 120,2);
-		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE).setUpgrade(KNIFE, 0.25f, 4, 240,6).setAustralium(1f).setNoCostReduce();
+		new TF2Attribute(156, "LifeSteal", "Life Steal", Type.ADDITIVE, 0, State.POSITIVE).setUpgrade(MEDIGUN, 1f, 3,
+				120, 2);
+		new TF2Attribute(157, "BackstabDamageBonus", "Backstab Damage", Type.PERCENTAGE, 1, State.POSITIVE)
+				.setUpgrade(KNIFE, 0.25f, 4, 240, 6).setAustralium(1f).setNoCostReduce();
 		new TF2Attribute(158, "StunOnHit", "Stun On Hit", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(159, "FuseTimeBonus", "Fuse Time", Type.ADDITIVE, 0, State.POSITIVE);
 		new TF2Attribute(160, "OverHealRatePenalty", "Overheal Rate", Type.PERCENTAGE, 1f, State.NEGATIVE);
@@ -436,7 +423,8 @@ public class TF2Attribute {
 		new TF2Attribute(210, "AmmoRechargeCharge", "Ammo Charge Recharge", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(211, "DetonateOnHit", "Detonate On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(212, "SlowOnHit", "Slow On Hit", Type.ADDITIVE, 0f, State.POSITIVE);
-		new TF2Attribute(213, "DamageResistHalfHealthSpinningBonus", "Damage Resist Half Health Spinning", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(213, "DamageResistHalfHealthSpinningBonus", "Damage Resist Half Health Spinning",
+				Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(214, "MovementSpinPenalty", "Speed Spin", Type.PERCENTAGE, 1f, State.NEGATIVE);
 		new TF2Attribute(215, "CritNoDamage", "Crit No Damage", Type.ADDITIVE, 0f, State.NEGATIVE);
 		new TF2Attribute(216, "CritMakesLaugh", "Crit Laugh", Type.ADDITIVE, 0f, State.POSITIVE);
@@ -447,8 +435,10 @@ public class TF2Attribute {
 		new TF2Attribute(221, "HealRadial", "Heal Radial", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(222, "MovementUberBonus", "Movement Uber", Type.PERCENTAGE, 1f, State.POSITIVE);
 		new TF2Attribute(223, "ChargeRateOnKill", "Charge Rate On Kill", Type.ADDITIVE, 0f, State.POSITIVE);
-		new TF2Attribute(224, "DamageAboveHalfHealthPenalty", "Damage Above Half Health", Type.PERCENTAGE, 1f, State.NEGATIVE);
-		new TF2Attribute(225, "DamageBelowHalfHealthBonus", "Damage Above Half Health", Type.PERCENTAGE, 1f, State.POSITIVE);
+		new TF2Attribute(224, "DamageAboveHalfHealthPenalty", "Damage Above Half Health", Type.PERCENTAGE, 1f,
+				State.NEGATIVE);
+		new TF2Attribute(225, "DamageBelowHalfHealthBonus", "Damage Above Half Health", Type.PERCENTAGE, 1f,
+				State.POSITIVE);
 		new TF2Attribute(226, "NoFlinchCharged", "No Flinch Charged", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(227, "KnockbackReductionAim", "Knockback Aim", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(228, "IndependentCharge", "Independent Charge", Type.ADDITIVE, 0f, State.POSITIVE);
@@ -467,14 +457,16 @@ public class TF2Attribute {
 		new TF2Attribute(241, "ProvideWhenActive", "Provide When Active", Type.ADDITIVE, 0f, State.NEUTRAL);
 		new TF2Attribute(242, "ReverseBuilding", "ReverseBuilding", Type.ADDITIVE, 0f, State.POSITIVE);
 		new TF2Attribute(243, "HealthDegen", "Health Regen", Type.ADDITIVE, 0f, State.NEGATIVE);
-		
-		/*new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0, State.POSITIVE,
-				SHIELD, 1f, 1, 250, 3);*/
+
+		/*
+		 * new TF2Attribute(139, "ChargeStep", "Charge Step", Type.ADDITIVE, 0,
+		 * State.POSITIVE, SHIELD, 1f, 1, 250, 3);
+		 */
 		// new TF2Attribute(23, "He", "Coll Remove", "Additive", 0f, -1);
 	}
 
 	public static float addValue(float value, NBTTagCompound attributelist, String effect) {
-		for(String name : attributelist.getKeySet()) {
+		for (String name : attributelist.getKeySet()) {
 			NBTBase tag = attributelist.getTag(name);
 			if (tag instanceof NBTTagFloat) {
 				TF2Attribute attribute = attributes[Integer.parseInt(name)];
@@ -487,10 +479,10 @@ public class TF2Attribute {
 		}
 		return value;
 	}
-	
+
 	private static float getModifierStack(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
 
-		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+		if (!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
 			return initial;
 		float value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, initial);
 
@@ -499,10 +491,10 @@ public class TF2Attribute {
 
 		return value;
 	}
-	
+
 	public static float getModifier(String effect, ItemStack stack, float initial, EntityLivingBase entity) {
 
-		if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+		if (!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
 			return initial;
 		float value = stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, initial);
 
@@ -514,11 +506,11 @@ public class TF2Attribute {
 
 	public static float getModifierGlobal(String effect, float initial, EntityLivingBase entity) {
 		float value = initial;
-		
+
 		IItemHandler itemHandler = TF2Util.getLoadoutItemHandler(entity);
 		for (int i = 0; i < itemHandler.getSlots(); i++) {
 			ItemStack stack = itemHandler.getStackInSlot(i);
-			if(!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
+			if (!stack.hasCapability(TF2weapons.WEAPONS_DATA_CAP, null))
 				continue;
 			stack.getCapability(TF2weapons.WEAPONS_DATA_CAP, null).getAttributeValue(stack, effect, value);
 		}
@@ -528,7 +520,7 @@ public class TF2Attribute {
 
 		return value;
 	}
-	
+
 	public String getTranslatedString(float value, boolean withColor) {
 		String valueStr = String.valueOf(value);
 		if (this.typeOfValue == Type.PERCENTAGE)
@@ -553,15 +545,15 @@ public class TF2Attribute {
 		List<TF2Attribute> list = new ArrayList<>();
 		for (TF2Attribute attr : attributes)
 			if (attr != null && attr.canApply != Predicates.<ItemStack>alwaysFalse() && (attr.state != State.NEGATIVE))
-				//for (int i = 0; i < attr.weight; i++)
-					list.add(attr);
+				// for (int i = 0; i < attr.weight; i++)
+				list.add(attr);
 		return list;
 	}
 
 	public static void setAttribute(ItemStack stack, TF2Attribute attr, float value) {
 		if (!stack.isEmpty() && stack.hasTagCompound() && WeaponData.getCapability(stack) != null) {
 			stack.getTagCompound().getCompoundTag("Attributes").setFloat(String.valueOf(attr.id), value);
-			WeaponData.getCapability(stack).cached =false;
+			WeaponData.getCapability(stack).cached = false;
 		}
 	}
 
@@ -594,7 +586,7 @@ public class TF2Attribute {
 				}
 			}
 		}
-		WeaponData.getCapability(stack).cached =false;
+		WeaponData.getCapability(stack).cached = false;
 	}
 
 	public float getPerLevel(ItemStack stack) {
@@ -609,22 +601,26 @@ public class TF2Attribute {
 			def *= 2.52f;
 		return def;
 	}
-	
+
 	public int calculateCurrLevel(ItemStack stack) {
 		if (stack.isEmpty())
 			return 0;
 		if (!stack.getTagCompound().getCompoundTag("Attributes").hasKey(String.valueOf(this.id)))
 			return 0;
 		float valueOfAttr = stack.getTagCompound().getCompoundTag("Attributes").getFloat(String.valueOf(this.id));
-		float floatVal=(valueOfAttr - this.defaultValue) / this.getPerLevel(stack);
-		return Math.round(floatVal-0.3f);
+		float floatVal = (valueOfAttr - this.defaultValue) / this.getPerLevel(stack);
+		return Math.round(floatVal - 0.3f);
 	}
 
 	public TF2Attribute getAttributeReplacement(ItemStack stack) {
-		/*if(this.name.equals("DamageBonus") && (getModifier("Self Damage", stack, 1, null) <= 0 || stack.getItem() instanceof ItemJetpack))
-			return MapList.nameToAttribute.get("SelfPushForceBonus");*/
+		/*
+		 * if(this.name.equals("DamageBonus") && (getModifier("Self Damage", stack, 1,
+		 * null) <= 0 || stack.getItem() instanceof ItemJetpack)) return
+		 * MapList.nameToAttribute.get("SelfPushForceBonus");
+		 */
 		return this;
 	}
+
 	public int getUpgradeCost(ItemStack stack) {
 		if (stack.isEmpty() || !(stack.getItem() instanceof ItemFromData))
 			return this.cost;
@@ -644,32 +640,34 @@ public class TF2Attribute {
 		if (this.effect.equals("Accuracy") && ItemFromData.getData(stack).getFloat(PropertyType.SPREAD) <= 0.025f)
 			baseCost /= 2;
 		if (stack.getMaxStackSize() > 1)
-			baseCost = (baseCost/3) * stack.getCount();
+			baseCost = (baseCost / 3) * stack.getCount();
 		if (stack.getItem() instanceof ItemCloak)
 			baseCost *= 2;
 		else if (stack.getItem() instanceof ItemJetpack && this.effect.equals("Self Push Force"))
 			baseCost *= 0.75;
-		//int additionalCost = 0;
+		// int additionalCost = 0;
 		int lastUpgradesCost = stack.getTagCompound().getInteger("TotalCost");
-		/*if (lastUpgradesCost > 0) {
-			additionalCost = lastUpgradesCost / 10;
-			baseCost += baseCost / 10;
-		}
-		baseCost += additionalCost;*/
+		/*
+		 * if (lastUpgradesCost > 0) { additionalCost = lastUpgradesCost / 10; baseCost
+		 * += baseCost / 10; } baseCost += additionalCost;
+		 */
 		int baseCostPre = baseCost;
-		baseCost*=1+((float)lastUpgradesCost/800f);
+		baseCost *= 1 + (lastUpgradesCost / 800f);
 		if (this.calculateCurrLevel(stack) == this.numLevels - 1 && this.numLevels > 1)
-			baseCost += baseCostPre * (this.numLevels > 2 ? 2 : 1.25f) * (1 + (stack.getTagCompound().getInteger("LastUpgradesCost") / 800f));
+			baseCost += baseCostPre * (this.numLevels > 2 ? 2 : 1.25f)
+					* (1 + (stack.getTagCompound().getInteger("LastUpgradesCost") / 800f));
 		return Math.min(1400, baseCost);
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}
+
 	public boolean canApply(ItemStack stack) {
 		return !stack.isEmpty() && this.canApply.apply(stack);
 	}
-	
+
 	public static int getMaxExperience(ItemStack stack, EntityPlayer playerIn) {
 		if (playerIn != null && playerIn.capabilities.isCreativeMode)
 			return 99999;

@@ -14,6 +14,7 @@ import rafradek.TF2weapons.message.TF2Message.NetworkedSoundMessage;
 public class TF2NetworkedSoundHandler implements IMessageHandler<TF2Message.NetworkedSoundMessage, IMessage> {
 
 	HashMap<Integer, ISound> sounds = new HashMap<>();
+
 	@Override
 	public IMessage onMessage(final NetworkedSoundMessage message, MessageContext ctx) {
 		Minecraft.getMinecraft().addScheduledTask(() -> {
@@ -21,10 +22,12 @@ public class TF2NetworkedSoundHandler implements IMessageHandler<TF2Message.Netw
 				sounds.remove(message.id);
 			NetworkedSound sound;
 			if (message.pos != null)
-				sound = new NetworkedSound(message.pos, message.event, message.category, message.volume, message.pitch, message.id, message.repeat);
+				sound = new NetworkedSound(message.pos, message.event, message.category, message.volume, message.pitch,
+						message.id, message.repeat);
 			else {
 				Entity entity = Minecraft.getMinecraft().world.getEntityByID(message.target);
-				sound = new NetworkedSound(entity, message.event, message.category, message.volume, message.pitch, message.id, message.repeat);
+				sound = new NetworkedSound(entity, message.event, message.category, message.volume, message.pitch,
+						message.id, message.repeat);
 			}
 			sounds.put(message.id, sound);
 			Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(sound);
@@ -32,5 +35,4 @@ public class TF2NetworkedSoundHandler implements IMessageHandler<TF2Message.Netw
 		return null;
 	}
 
-	
 }

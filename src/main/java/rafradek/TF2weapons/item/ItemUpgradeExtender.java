@@ -1,7 +1,6 @@
 package rafradek.TF2weapons.item;
 
 import java.util.Collections;
-import java.util.List;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,20 +14,20 @@ public class ItemUpgradeExtender extends Item {
 		this.setMaxStackSize(1);
 		this.setHasSubtypes(true);
 	}
-	
+
 	public static int getUpgradeId(NonNullList<ItemStack> stacks, int... count) {
 		int total = 0;
-		Collections.sort(stacks, (stack1, stack2)-> {
-			return stack1.getItemDamage() > stack2.getItemDamage() ? 1 : (stack1.getItemDamage() == stack2.getItemDamage() ? 0 : -1);
-		});
+		Collections.sort(stacks, (stack1, stack2) -> (stack1.getItemDamage() > stack2.getItemDamage() ? 1
+				: (stack1.getItemDamage() == stack2.getItemDamage() ? 0 : -1)));
 		int[] countused = new int[3];
-		for (ItemStack stack :stacks) {
+		for (ItemStack stack : stacks) {
 			if (stack.getItem() instanceof ItemRobotPart) {
 				int level = ItemRobotPart.getLevel(stack);
 				int variant = ItemRobotPart.getVariant(stack);
-				
+
 				variant = variant + (countused[level] * 3);
-				total += variant;;
+				total += variant;
+				;
 				countused[level]++;
 			}
 		}

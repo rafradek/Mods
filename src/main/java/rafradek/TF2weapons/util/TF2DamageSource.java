@@ -9,20 +9,28 @@ public interface TF2DamageSource {
 	public static int HEADSHOT = 2;
 	public static int SENTRY_PDA = 4;
 	public static int SENTRY = 8;
-	
+
 	ItemStack getWeapon();
+
 	ItemStack getWeaponOrig();
-	//void onShieldBlock(EntityLivingBase living);
+
+	// void onShieldBlock(EntityLivingBase living);
 	int getCritical();
+
 	DamageSource setCritical(int crit);
+
 	void setAttackSelf();
+
 	int getAttackFlags();
+
 	void addAttackFlag(int flag);
-	
+
 	default boolean hasAttackFlag(int flag) {
 		return (this.getAttackFlags() & flag) == flag;
 	}
-	
+
 	float getAttackPower();
+
 	void setAttackPower(float power);
+
 }

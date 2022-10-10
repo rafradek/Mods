@@ -6,14 +6,11 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.ResourceLocation;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.client.TF2EventsClient;
 import rafradek.TF2weapons.common.WeaponsCapability;
-import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.util.TF2Util;
 
@@ -21,24 +18,21 @@ public class RenderPlayerDisguised extends RenderPlayer {
 
 	public RenderPlayerDisguised(RenderManager renderManager) {
 		super(renderManager);
-		// TODO Auto-generated constructor stub
 	}
 
 	public RenderPlayerDisguised(RenderManager renderManager, boolean useSmallArms) {
 		super(renderManager, useSmallArms);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public ResourceLocation getEntityTexture(final AbstractClientPlayer entity) {
-
 		boolean isClass = WeaponsCapability.get(entity).getDisguiseType().startsWith("T:");
 		if (isClass) {
-			int clazz = ItemToken.getClassID(WeaponsCapability.get(entity).getDisguiseType().substring(2).toLowerCase());
+			int clazz = ItemToken
+					.getClassID(WeaponsCapability.get(entity).getDisguiseType().substring(2).toLowerCase());
 			if (TF2Util.getTeamForDisplay(entity) == 0) {
 				return RenderTF2Character.BLU_TEXTURES[clazz];
-			}
-			else if (TF2Util.getTeamForDisplay(entity) == 1) {
+			} else if (TF2Util.getTeamForDisplay(entity) == 1) {
 				return RenderTF2Character.RED_TEXTURES[clazz];
 			}
 		}
@@ -63,28 +57,29 @@ public class RenderPlayerDisguised extends RenderPlayer {
 		return i;
 	}
 
-	/*@Override
-	protected void renderEntityName(AbstractClientPlayer entityIn, double x, double y, double z, String name,
-			double p_188296_9_) {
-		String username = entityIn.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring(2);
-
-		if (p_188296_9_ < 100.0D) {
-			Scoreboard scoreboard = entityIn.getWorldScoreboard();
-			ScoreObjective scoreobjective = scoreboard.getObjectiveInDisplaySlot(2);
-
-			if (scoreobjective != null) {
-				Score score = scoreboard.getOrCreateScore(username, scoreobjective);
-				this.renderLivingLabel(entityIn, score.getScorePoints() + " " + scoreobjective.getDisplayName(), x, y,
-						z, 64);
-				y += this.getFontRendererFromRenderManager().FONT_HEIGHT * 1.15F * 0.025F;
-			}
-		}
-		if (TF2weapons.isOnSameTeam(entityIn, Minecraft.getMinecraft().player))
-			super.renderEntityName(entityIn, x, y, z, name + " [" + username + "]", p_188296_9_);
-		else
-			super.renderEntityName(entityIn, x, y, z, username, p_188296_9_);
-
-	}*/
+	/*
+	 * @Override protected void renderEntityName(AbstractClientPlayer entityIn,
+	 * double x, double y, double z, String name, double p_188296_9_) { String
+	 * username =
+	 * entityIn.getDataManager().get(TF2EventsCommon.ENTITY_DISGUISE_TYPE).substring
+	 * (2);
+	 *
+	 * if (p_188296_9_ < 100.0D) { Scoreboard scoreboard =
+	 * entityIn.getWorldScoreboard(); ScoreObjective scoreobjective =
+	 * scoreboard.getObjectiveInDisplaySlot(2);
+	 *
+	 * if (scoreobjective != null) { Score score =
+	 * scoreboard.getOrCreateScore(username, scoreobjective);
+	 * this.renderLivingLabel(entityIn, score.getScorePoints() + " " +
+	 * scoreobjective.getDisplayName(), x, y, z, 64); y +=
+	 * this.getFontRendererFromRenderManager().FONT_HEIGHT * 1.15F * 0.025F; } } if
+	 * (TF2weapons.isOnSameTeam(entityIn, Minecraft.getMinecraft().player))
+	 * super.renderEntityName(entityIn, x, y, z, name + " [" + username + "]",
+	 * p_188296_9_); else super.renderEntityName(entityIn, x, y, z, username,
+	 * p_188296_9_);
+	 *
+	 * }
+	 */
 
 	@Override
 	protected boolean canRenderName(AbstractClientPlayer entity) {
@@ -95,8 +90,8 @@ public class RenderPlayerDisguised extends RenderPlayer {
 			boolean flag = !entity.isInvisibleToPlayer(entityplayersp);
 
 			if (entity != entityplayersp) {
-				Team team = Minecraft.getMinecraft().world.getScoreboard().getPlayersTeam(
-						WeaponsCapability.get(entity).getDisguiseType().substring(2));
+				Team team = Minecraft.getMinecraft().world.getScoreboard()
+						.getPlayersTeam(WeaponsCapability.get(entity).getDisguiseType().substring(2));
 				Team team1 = entityplayersp.getTeam();
 
 				if (team != null) {

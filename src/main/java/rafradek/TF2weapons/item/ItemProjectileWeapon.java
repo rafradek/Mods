@@ -9,8 +9,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import rafradek.TF2weapons.client.audio.TF2Sounds;
 import rafradek.TF2weapons.common.MapList;
-import rafradek.TF2weapons.common.TF2Attribute;
-import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.entity.EntityDummy;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
 import rafradek.TF2weapons.entity.mercenary.EntityScout;
@@ -28,19 +26,16 @@ public class ItemProjectileWeapon extends ItemWeapon {
 			// System.out.println("Tick: "+living.ticksExisted);
 			EntityProjectileBase proj;
 			/*
-			 * double oldX=living.posX; double oldY=living.posY; double
-			 * oldZ=living.posZ; float oldPitch=living.rotationPitch; float
-			 * oldYaw=living.rotationYawHead; if(this.usePrediction()&&living
-			 * instanceof EntityPlayer){ PredictionMessage
-			 * message=TF2ProjectileHandler.nextShotPos.get(living);
-			 * living.posX=message.x; living.posY=message.y;
-			 * living.posZ=message.z; living.rotationYawHead=message.yaw;
-			 * living.rotationPitch=message.pitch; }
+			 * double oldX=living.posX; double oldY=living.posY; double oldZ=living.posZ;
+			 * float oldPitch=living.rotationPitch; float oldYaw=living.rotationYawHead;
+			 * if(this.usePrediction()&&living instanceof EntityPlayer){ PredictionMessage
+			 * message=TF2ProjectileHandler.nextShotPos.get(living); living.posX=message.x;
+			 * living.posY=message.y; living.posZ=message.z;
+			 * living.rotationYawHead=message.yaw; living.rotationPitch=message.pitch; }
 			 */
 			try {
 				proj = MapList.projectileClasses.get(ItemFromData.getData(stack).getString(PropertyType.PROJECTILE))
-						.getConstructor(World.class)
-						.newInstance(world);
+						.getConstructor(World.class).newInstance(world);
 				proj.initProjectile(living, hand, stack);
 				// proj.setIsCritical(thisCritical);
 				proj.setCritical(thisCritical);
@@ -48,8 +43,7 @@ public class ItemProjectileWeapon extends ItemWeapon {
 				world.spawnEntity(proj);
 				proj.infinite = this.isProjectileInfinite(living, stack);
 				proj.trace();
-				
-				
+
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
@@ -60,24 +54,25 @@ public class ItemProjectileWeapon extends ItemWeapon {
 		// living.rotationPitch=oldPitch;
 		// living.rotationYawHead=oldYaw;
 	}
-	
-	public void onProjectileShoot(ItemStack stack, EntityProjectileBase proj, EntityLivingBase living, World world, int thisCritical, EnumHand hand) {
-		
-	}
-	
+
+	public void onProjectileShoot(ItemStack stack, EntityProjectileBase proj, EntityLivingBase living, World world,
+			int thisCritical, EnumHand hand) {}
+
 	@Override
-	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source, float amount) {
+	public void onDealDamage(ItemStack stack, EntityLivingBase attacker, Entity target, DamageSource source,
+			float amount) {
 		super.onDealDamage(stack, attacker, target, source, amount);
 		if (target instanceof EntityLivingBase && !(target instanceof EntityBuilding)
 				&& getData(stack).getName().equals("sandmanball")) {
 			EntityBall ball = (EntityBall) source.getImmediateSource();
-			double reduce=Math.max(0.5, (25-((EntityLivingBase) target).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue())/25D);
+			double reduce = Math.max(0.5, (25
+					- ((EntityLivingBase) target).getEntityAttribute(SharedMonsterAttributes.ARMOR).getAttributeValue())
+					/ 25D);
 			if (attacker instanceof EntityTF2Character) {
-				reduce *= ((EntityTF2Character)attacker).scaleWithDifficulty(0.5f, 1);
+				reduce *= ((EntityTF2Character) attacker).scaleWithDifficulty(0.5f, 1);
 			}
 			if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 1100) {
-				TF2Util.stun((EntityLivingBase) target, 
-						(int) (160 * reduce), true);
+				TF2Util.stun((EntityLivingBase) target, (int) (160 * reduce), true);
 				target.playSound(TF2Sounds.WEAPON_STUN_MAX, 4f, 1f);
 			} else if (!ball.canBePickedUp && ball.throwPos.squareDistanceTo(target.getPositionVector()) > 12) {
 				TF2Util.stun((EntityLivingBase) target,
@@ -95,11 +90,12 @@ public class ItemProjectileWeapon extends ItemWeapon {
 	public boolean canFire(World world, EntityLivingBase living, ItemStack stack) {
 		return /*
 				 * (((!(living instanceof EntityPlayer) || ) ||
-				 * TF2ProjectileHandler.nextShotPos.containsKey(living))||world.
-				 * isRemote
-				 */super.canFire(world, living, stack) && !(living instanceof EntityScout && ((EntityScout)living).usedSlot == 2 && ((EntityScout)living).ballCooldown > 0);
+				 * TF2ProjectileHandler.nextShotPos.containsKey(living))||world. isRemote
+				 */super.canFire(world, living, stack) && !(living instanceof EntityScout
+				&& ((EntityScout) living).usedSlot == 2 && ((EntityScout) living).ballCooldown > 0);
 	}
-	
+
+	@Override
 	public void onOverload(ItemStack stack, EntityLivingBase owner, EnumHand hand) {
 		this.shoot(stack, owner, owner.world, -1, hand);
 	}

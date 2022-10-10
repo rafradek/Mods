@@ -17,7 +17,6 @@ import rafradek.TF2weapons.common.TF2Attribute;
 import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemWeapon;
 import rafradek.TF2weapons.util.PropertyType;
-import rafradek.TF2weapons.util.WeaponData;
 
 public class RandomWeaponFunction extends LootFunction {
 
@@ -28,25 +27,21 @@ public class RandomWeaponFunction extends LootFunction {
 
 	public RandomWeaponFunction(LootCondition[] conditionsIn, RandomValueRange range, float valve) {
 		super(conditionsIn);
-		this.upgradeRange=range;
-		this.valveWepChance=valve;
+		this.upgradeRange = range;
+		this.valveWepChance = valve;
 	}
 
 	@Override
 	public ItemStack apply(ItemStack stack, Random rand, LootContext context) {
-		if(this.valveWepChance*0.35f<rand.nextFloat()) {
-			stack= ItemFromData.getRandomWeapon(rand, input -> {
-				return !input.getBoolean(PropertyType.HIDDEN) && input.getInt(PropertyType.ROLL_HIDDEN) == 0
-						&& !input.getString(PropertyType.CLASS).equals("cosmetic")
-						&& !input.getString(PropertyType.CLASS).equals("crate");
-			});
+		if (this.valveWepChance * 0.35f < rand.nextFloat()) {
+			stack = ItemFromData.getRandomWeapon(rand,
+					input -> (!input.getBoolean(PropertyType.HIDDEN) && input.getInt(PropertyType.ROLL_HIDDEN) == 0
+							&& !input.getString(PropertyType.CLASS).equals("cosmetic")
+							&& !input.getString(PropertyType.CLASS).equals("crate")));
+		} else {
+			stack = ItemFromData.getRandomWeapon(rand, input -> (input.getInt(PropertyType.ROLL_HIDDEN) == 2));
 		}
-		else {
-			stack= ItemFromData.getRandomWeapon(rand, input -> {
-				return input.getInt(PropertyType.ROLL_HIDDEN) == 2;
-			});
-		}
-		if(!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && this.valveWepChance>=rand.nextFloat()){
+		if (!stack.isEmpty() && stack.getItem() instanceof ItemWeapon && this.valveWepChance >= rand.nextFloat()) {
 			stack.getTagCompound().setBoolean("Valve", true);
 			TF2Attribute.setAttribute(stack, TF2Attribute.attributes[0], 1.15f);
 			TF2Attribute.setAttribute(stack, TF2Attribute.attributes[2], 2.5f);
@@ -58,7 +53,7 @@ public class RandomWeaponFunction extends LootFunction {
 			TF2Attribute.setAttribute(stack, TF2Attribute.attributes[49], 0.85f);
 			TF2Attribute.setAttribute(stack, TF2Attribute.attributes[46], 1.15f);
 		}
-		if(upgradeRange.getMax()>0)
+		if (upgradeRange.getMax() > 0)
 			TF2Attribute.upgradeItemStack(stack, this.upgradeRange.generateInt(rand), rand);
 		return stack;
 	}
@@ -82,7 +77,8 @@ public class RandomWeaponFunction extends LootFunction {
 		@Override
 		public RandomWeaponFunction deserialize(JsonObject object, JsonDeserializationContext deserializationContext,
 				LootCondition[] conditionsIn) {
-			return new RandomWeaponFunction(conditionsIn, (RandomValueRange)JsonUtils.deserializeClass(object, "upgrade_range", deserializationContext, RandomValueRange.class),
+			return new RandomWeaponFunction(conditionsIn,
+					JsonUtils.deserializeClass(object, "upgrade_range", deserializationContext, RandomValueRange.class),
 					object.get("valve_chance").getAsFloat());
 		}
 	}

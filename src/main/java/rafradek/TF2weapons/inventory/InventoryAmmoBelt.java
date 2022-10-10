@@ -6,9 +6,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
-import rafradek.TF2weapons.TF2weapons;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
+import rafradek.TF2weapons.TF2weapons;
 
 public class InventoryAmmoBelt extends InventoryBasic implements ICapabilityProvider, INBTSerializable<NBTTagList> {
 
@@ -17,6 +17,7 @@ public class InventoryAmmoBelt extends InventoryBasic implements ICapabilityProv
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
 	public boolean isEmpty() {
 		for (int i = 0; i < this.getSizeInventory(); i++)
 			if (this.getStackInSlot(0) != null)

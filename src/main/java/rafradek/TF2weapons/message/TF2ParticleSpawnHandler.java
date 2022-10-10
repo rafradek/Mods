@@ -17,15 +17,15 @@ public class TF2ParticleSpawnHandler implements IMessageHandler<ParticleSpawnMes
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IMessage onMessage(final ParticleSpawnMessage message, MessageContext ctx) {
-		Minecraft.getMinecraft().addScheduledTask( () -> {
+		Minecraft.getMinecraft().addScheduledTask(() -> {
 			IParticleFactory factory = ClientProxy.particleFactories.get(EnumTF2Particles.values()[message.id]);
-			for(int i = 0; i < message.count; i++) {
+			for (int i = 0; i < message.count; i++) {
 				ParticleSpawnMessage message2 = message;
-				Particle particle = factory.createParticle(message.id, Minecraft.getMinecraft().world, message.x, message.y, message.z, message.offsetX, message.offsetY, message.offsetZ, message.params);
+				Particle particle = factory.createParticle(message.id, Minecraft.getMinecraft().world, message.x,
+						message.y, message.z, message.offsetX, message.offsetY, message.offsetZ, message.params);
 				ClientProxy.spawnParticle(Minecraft.getMinecraft().world, particle);
 			}
-		}
-		);
+		});
 		return null;
 	}
 

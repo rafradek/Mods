@@ -12,11 +12,13 @@ import rafradek.TF2weapons.message.TF2Message;
 public class PlayerContractsProxy extends NetHandlerPlayServer {
 
 	private NetHandlerPlayServer origin;
+
 	public PlayerContractsProxy(NetHandlerPlayServer origin, MinecraftServer server, EntityPlayerMP playerIn) {
 		super(server, new NetworkManager(EnumPacketDirection.SERVERBOUND), playerIn);
 		this.origin = origin;
 	}
 
+	@Override
 	public void sendPacket(Packet<?> packet) {
 		TF2weapons.network.sendTo(new TF2Message.ContractNewMessage(packet), player);
 		origin.sendPacket(packet);

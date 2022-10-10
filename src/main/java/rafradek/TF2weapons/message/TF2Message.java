@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
@@ -28,13 +28,11 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import io.netty.buffer.ByteBuf;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.config.Property.Type;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2PlayerCapability;
 import rafradek.TF2weapons.TF2weapons;
@@ -109,16 +107,14 @@ public abstract class TF2Message implements IMessage {
 		boolean reload;
 		EnumHand hand;
 
-		public UseMessage() {
-		}
+		public UseMessage() {}
 
-		public UseMessage(int value, boolean reload,int newAmmoValue, EnumHand hand) {
+		public UseMessage(int value, boolean reload, int newAmmoValue, EnumHand hand) {
 			this.value = value;
-			this.newAmmo=newAmmoValue;
+			this.newAmmo = newAmmoValue;
 			this.reload = reload;
 			this.hand = hand;
 		}
-
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
@@ -151,8 +147,7 @@ public abstract class TF2Message implements IMessage {
 		public List<Object[]> readData;
 		public int state;
 
-		public PredictionMessage() {
-		}
+		public PredictionMessage() {}
 
 		public PredictionMessage(double x, double y, double z, float pitch, float yaw, int state, EnumHand hand) {
 			this.x = x;
@@ -186,7 +181,7 @@ public abstract class TF2Message implements IMessage {
 			this.hand = buf.readBoolean() ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 			this.state = buf.readByte();
 			if (buf.readableBytes() > 0) {
-				this.readData = new ArrayList<Object[]>();
+				this.readData = new ArrayList<>();
 				while (buf.readableBytes() > 0) {
 					Object[] obj = new Object[9];
 					if (buf.readBoolean()) {
@@ -195,8 +190,7 @@ public abstract class TF2Message implements IMessage {
 						// obj[2]=buf.readFloat();
 						// obj[3]=buf.readFloat();
 						obj[1] = buf.readBoolean();
-						
-						
+
 					} else {
 						obj[1] = buf.readByte();
 						obj[3] = buf.readInt();
@@ -236,21 +230,21 @@ public abstract class TF2Message implements IMessage {
 						// }
 						// buf.writeInt(mop.entityHit.getEntityId());
 						buf.writeBoolean(((float[]) mop.hitInfo)[0] == 1);
-						buf.writeByte((byte) ((mop.hitVec.x-mop.entityHit.posX)*16));
-						buf.writeByte((byte) ((mop.hitVec.y-mop.entityHit.posY)*16));
-						buf.writeByte((byte) ((mop.hitVec.z-mop.entityHit.posZ)*16));
+						buf.writeByte((byte) ((mop.hitVec.x - mop.entityHit.posX) * 16));
+						buf.writeByte((byte) ((mop.hitVec.y - mop.entityHit.posY) * 16));
+						buf.writeByte((byte) ((mop.hitVec.z - mop.entityHit.posZ) * 16));
 					} else {
 						buf.writeBoolean(false);
 						buf.writeByte(mop.sideHit.getIndex());
 						buf.writeInt(mop.getBlockPos().getX());
 						buf.writeInt(mop.getBlockPos().getY());
 						buf.writeInt(mop.getBlockPos().getZ());
-						buf.writeByte((byte) ((mop.hitVec.x-mop.getBlockPos().getX())*16));
-						buf.writeByte((byte) ((mop.hitVec.y-mop.getBlockPos().getY())*16));
-						buf.writeByte((byte) ((mop.hitVec.z-mop.getBlockPos().getZ())*16));
+						buf.writeByte((byte) ((mop.hitVec.x - mop.getBlockPos().getX()) * 16));
+						buf.writeByte((byte) ((mop.hitVec.y - mop.getBlockPos().getY()) * 16));
+						buf.writeByte((byte) ((mop.hitVec.z - mop.getBlockPos().getZ()) * 16));
 					}
 					buf.writeFloat(((float[]) mop.hitInfo)[1]);
-					
+
 				}
 		}
 
@@ -266,8 +260,7 @@ public abstract class TF2Message implements IMessage {
 		int entityID;
 		byte type;
 
-		public PropertyMessage() {
-		}
+		public PropertyMessage() {}
 
 		public PropertyMessage(String name, Number value) {
 			this.name = name;
@@ -338,21 +331,19 @@ public abstract class TF2Message implements IMessage {
 	public static class CapabilityMessage extends TF2Message {
 		int entityID;
 		long totalTime;
-		List < EntityDataManager.DataEntry<? >> entries;
+		List<EntityDataManager.DataEntry<?>> entries;
 		boolean sendAll;
-		
-		public CapabilityMessage() {
-		}
-		
-		public CapabilityMessage(Entity entity,boolean sendAll) {
+
+		public CapabilityMessage() {}
+
+		public CapabilityMessage(Entity entity, boolean sendAll) {
 			WeaponsCapability cap = entity.getCapability(TF2weapons.WEAPONS_CAP, null);
 			this.entityID = entity.getEntityId();
 			this.totalTime = cap.ticksTotal;
-			if(sendAll) {
-				this.entries=cap.dataManager.getAll();
-			}
-			else {
-				this.entries=cap.dataManager.getDirty();
+			if (sendAll) {
+				this.entries = cap.dataManager.getAll();
+			} else {
+				this.entries = cap.dataManager.getDirty();
 			}
 		}
 
@@ -372,7 +363,7 @@ public abstract class TF2Message implements IMessage {
 			buf.writeInt(entityID);
 			buf.writeLong(totalTime);
 			try {
-				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
+				EntityDataManager.writeEntries(entries, new PacketBuffer(buf));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -381,26 +372,24 @@ public abstract class TF2Message implements IMessage {
 	}
 
 	public static class GameArenaMessage extends TF2Message {
-		Map<UUID,List<EntityDataManager.DataEntry<? >>> playerInfoUUID = new HashMap<>();
+		Map<UUID, List<EntityDataManager.DataEntry<?>>> playerInfoUUID = new HashMap<>();
 		int arenaId;
 		Type type;
+
 		enum Type {
-			ADD,
-			UPDATE,
-			REMOVE
+			ADD, UPDATE, REMOVE
 		}
-		public GameArenaMessage() {
-		}
+
+		public GameArenaMessage() {}
 
 		public GameArenaMessage(GameArena arena, Type type) {
 			this.type = type;
 			this.arenaId = arena.networkId;
 			if (type != Type.REMOVE) {
 				for (Entry<UUID, EntityDataManager> entry : arena.playerInfoUUID.entrySet()) {
-					if(type == Type.ADD) {
+					if (type == Type.ADD) {
 						playerInfoUUID.put(entry.getKey(), entry.getValue().getAll());
-					}
-					else {
+					} else {
 						playerInfoUUID.put(entry.getKey(), entry.getValue().getDirty());
 					}
 				}
@@ -411,7 +400,7 @@ public abstract class TF2Message implements IMessage {
 		public void fromBytes(ByteBuf buf) {
 			this.type = Type.values()[buf.readByte()];
 			this.arenaId = buf.readInt();
-			while(buf.readableBytes() > 0) {
+			while (buf.readableBytes() > 0) {
 				try {
 					UUID uuid = new PacketBuffer(buf).readUniqueId();
 					playerInfoUUID.put(uuid, EntityDataManager.readEntries(new PacketBuffer(buf)));
@@ -425,10 +414,10 @@ public abstract class TF2Message implements IMessage {
 		public void toBytes(ByteBuf buf) {
 			buf.writeByte(this.type.ordinal());
 			buf.writeInt(this.arenaId);
-			for (Entry<UUID,List<EntityDataManager.DataEntry<? >>> entry : playerInfoUUID.entrySet()) {
+			for (Entry<UUID, List<EntityDataManager.DataEntry<?>>> entry : playerInfoUUID.entrySet()) {
 				new PacketBuffer(buf).writeUniqueId(entry.getKey());
 				try {
-					EntityDataManager.writeEntries(entry.getValue(),new PacketBuffer(buf));
+					EntityDataManager.writeEntries(entry.getValue(), new PacketBuffer(buf));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -436,32 +425,29 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
-	
+
 	public static class PlayerCapabilityMessage extends TF2Message {
-		List < EntityDataManager.DataEntry<? >> entries;
+		List<EntityDataManager.DataEntry<?>> entries;
 		int entityID;
 		boolean global;
-		public PlayerCapabilityMessage() {
-		}
 
-		public PlayerCapabilityMessage(Entity entity,boolean sendAll, boolean global) {
+		public PlayerCapabilityMessage() {}
+
+		public PlayerCapabilityMessage(Entity entity, boolean sendAll, boolean global) {
 			TF2PlayerCapability cap = entity.getCapability(TF2weapons.PLAYER_CAP, null);
 			this.entityID = entity.getEntityId();
 			this.global = global;
 			if (global) {
-				if(sendAll) {
-					this.entries=cap.dataManagerGlobal.getAll();
+				if (sendAll) {
+					this.entries = cap.dataManagerGlobal.getAll();
+				} else {
+					this.entries = cap.dataManagerGlobal.getDirty();
 				}
-				else {
-					this.entries=cap.dataManagerGlobal.getDirty();
-				}
-			}
-			else {
-				if(sendAll) {
-					this.entries=cap.dataManager.getAll();
-				}
-				else {
-					this.entries=cap.dataManager.getDirty();
+			} else {
+				if (sendAll) {
+					this.entries = cap.dataManager.getAll();
+				} else {
+					this.entries = cap.dataManager.getDirty();
 				}
 			}
 		}
@@ -482,14 +468,14 @@ public abstract class TF2Message implements IMessage {
 			buf.writeInt(entityID);
 			buf.writeBoolean(global);
 			try {
-				EntityDataManager.writeEntries(entries,new PacketBuffer(buf));
+				EntityDataManager.writeEntries(entries, new PacketBuffer(buf));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 	}
-	
+
 	public static class BulletMessage extends TF2Message {
 		// public int shooter;
 		public ArrayList<RayTraceResult> target;
@@ -512,7 +498,7 @@ public abstract class TF2Message implements IMessage {
 		public void fromBytes(ByteBuf buf) {
 			slot = buf.readByte();
 			this.hand = buf.readBoolean() ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
-			this.readData = new ArrayList<Object[]>();
+			this.readData = new ArrayList<>();
 			while (buf.readableBytes() > 0) {
 				Object[] obj = new Object[3];
 				obj[0] = buf.readInt();
@@ -607,7 +593,6 @@ public abstract class TF2Message implements IMessage {
 			try {
 				this.tag = new PacketBuffer(buf).readCompoundTag();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -619,7 +604,7 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
-	
+
 	public static class ShowGuiMessage extends TF2Message {
 		// public int shooter;
 
@@ -634,7 +619,7 @@ public abstract class TF2Message implements IMessage {
 			// this.shooter=shooter.getEntityId();
 			this.id = id;
 		}
-		
+
 		public ShowGuiMessage(int id, NBTTagCompound data) {
 			// this.shooter=shooter.getEntityId();
 			this.id = id;
@@ -648,7 +633,6 @@ public abstract class TF2Message implements IMessage {
 				try {
 					data = new PacketBuffer(buf).readCompoundTag();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -668,8 +652,7 @@ public abstract class TF2Message implements IMessage {
 
 		byte[] bytes;
 
-		public WeaponDataMessage() {
-		}
+		public WeaponDataMessage() {}
 
 		public WeaponDataMessage(byte[] bytes) {
 			this.bytes = bytes;
@@ -677,14 +660,14 @@ public abstract class TF2Message implements IMessage {
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			//System.out.println("Read bytes: "+buf.readableBytes());
-			this.bytes=new byte[buf.readableBytes()];
+			// System.out.println("Read bytes: "+buf.readableBytes());
+			this.bytes = new byte[buf.readableBytes()];
 			buf.readBytes(this.bytes);
 		}
 
 		@Override
 		public void toBytes(ByteBuf buf) {
-			//System.out.println("Write bytes: "+bytes.length);
+			// System.out.println("Write bytes: "+bytes.length);
 			buf.writeBytes(bytes);
 		}
 
@@ -715,7 +698,6 @@ public abstract class TF2Message implements IMessage {
 			try {
 				stack = new PacketBuffer(buf).readItemStack();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -729,6 +711,7 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
+
 	public static class WeaponDroppedMessage extends TF2Message {
 		// public int shooter;
 
@@ -740,12 +723,12 @@ public abstract class TF2Message implements IMessage {
 
 		public WeaponDroppedMessage(String name) {
 			// this.shooter=shooter.getEntityId();
-			this.name=name;
+			this.name = name;
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.name=new PacketBuffer(buf).readString(256);
+			this.name = new PacketBuffer(buf).readString(256);
 		}
 
 		@Override
@@ -755,7 +738,7 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
-	
+
 	public static class EffectCooldownMessage extends TF2Message {
 		// public int shooter;
 
@@ -768,14 +751,14 @@ public abstract class TF2Message implements IMessage {
 
 		public EffectCooldownMessage(String name, int time) {
 			// this.shooter=shooter.getEntityId();
-			this.time=time;
-			this.name=name;
+			this.time = time;
+			this.name = name;
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.name=new PacketBuffer(buf).readString(256);
-			this.time=buf.readShort();
+			this.name = new PacketBuffer(buf).readString(256);
+			this.time = buf.readShort();
 		}
 
 		@Override
@@ -785,36 +768,37 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
+
 	public static class ContractMessage extends TF2Message {
 		// public int shooter;
 
 		public int id;
 		public Contract contract;
-		
+
 		public ContractMessage() {
 
 		}
 
-		public ContractMessage(int id,Contract contract) {
+		public ContractMessage(int id, Contract contract) {
 			// this.shooter=shooter.getEntityId();
-			this.id=id;
-			this.contract=contract;
+			this.id = id;
+			this.contract = contract;
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.id=buf.readByte();
-			String name=new PacketBuffer(buf).readString(256);
-			int expireDay=buf.readInt();
-			int progress=buf.readShort();
-			Objective[] objectives=new Objective[buf.readByte()];
-			for(int i=0;i<objectives.length;i++) {
-				objectives[i]=Objective.values()[buf.readByte()];
+			this.id = buf.readByte();
+			String name = new PacketBuffer(buf).readString(256);
+			int expireDay = buf.readInt();
+			int progress = buf.readShort();
+			Objective[] objectives = new Objective[buf.readByte()];
+			for (int i = 0; i < objectives.length; i++) {
+				objectives[i] = Objective.values()[buf.readByte()];
 			}
-			this.contract=new Contract(name,expireDay,objectives);
-			this.contract.progress=progress;
-			this.contract.active=buf.readBoolean();
-			this.contract.rewards=buf.readByte();
+			this.contract = new Contract(name, expireDay, objectives);
+			this.contract.progress = progress;
+			this.contract.active = buf.readBoolean();
+			this.contract.rewards = buf.readByte();
 		}
 
 		@Override
@@ -824,17 +808,16 @@ public abstract class TF2Message implements IMessage {
 			buf.writeInt(contract.expireDay);
 			buf.writeShort(contract.progress);
 			buf.writeByte(contract.objectives.length);
-			for(Objective obj:contract.objectives) {
+			for (Objective obj : contract.objectives) {
 				buf.writeByte(obj.ordinal());
 			}
 			buf.writeBoolean(contract.active);
 			buf.writeByte(contract.rewards);
-			
-				
+
 		}
 
 	}
-	
+
 	public static class ParticleSpawnMessage extends TF2Message {
 		// public int shooter;
 
@@ -852,7 +835,8 @@ public abstract class TF2Message implements IMessage {
 
 		}
 
-		public ParticleSpawnMessage(int id, double x, double y, double z, double offsetX, double offsetY, double offsetZ, int count, int[] params) {
+		public ParticleSpawnMessage(int id, double x, double y, double z, double offsetX, double offsetY,
+				double offsetZ, int count, int[] params) {
 			super();
 			this.id = id;
 			this.x = (float) x;
@@ -867,15 +851,15 @@ public abstract class TF2Message implements IMessage {
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.id=buf.readByte();
-			this.x=buf.readFloat();
-			this.y=buf.readFloat();
-			this.z=buf.readFloat();
-			this.offsetX=buf.readFloat();
-			this.offsetY=buf.readFloat();
-			this.offsetZ=buf.readFloat();
-			this.count=buf.readByte();
-			this.params = new int[buf.readableBytes()/4];
+			this.id = buf.readByte();
+			this.x = buf.readFloat();
+			this.y = buf.readFloat();
+			this.z = buf.readFloat();
+			this.offsetX = buf.readFloat();
+			this.offsetY = buf.readFloat();
+			this.offsetZ = buf.readFloat();
+			this.count = buf.readByte();
+			this.params = new int[buf.readableBytes() / 4];
 			for (int i = 0; i < this.params.length; i++)
 				this.params[i] = buf.readInt();
 		}
@@ -895,7 +879,7 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
-	
+
 	public static class VelocityAddMessage extends TF2Message {
 		// public int shooter;
 
@@ -910,18 +894,18 @@ public abstract class TF2Message implements IMessage {
 
 		public VelocityAddMessage(Vec3d vec, boolean airborne) {
 			// this.shooter=shooter.getEntityId();
-			this.x=(float) vec.x;
-			this.y=(float) vec.y;
-			this.z=(float) vec.z;
-			this.airborne=airborne;
+			this.x = (float) vec.x;
+			this.y = (float) vec.y;
+			this.z = (float) vec.z;
+			this.airborne = airborne;
 		}
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.x=buf.readFloat();
-			this.y=buf.readFloat();
-			this.z=buf.readFloat();
-			this.airborne=buf.readBoolean();
+			this.x = buf.readFloat();
+			this.y = buf.readFloat();
+			this.z = buf.readFloat();
+			this.airborne = buf.readBoolean();
 		}
 
 		@Override
@@ -933,7 +917,7 @@ public abstract class TF2Message implements IMessage {
 		}
 
 	}
-	
+
 	public static class AttackSyncMessage extends TF2Message {
 		long time;
 		int entity;
@@ -953,7 +937,7 @@ public abstract class TF2Message implements IMessage {
 
 		@Override
 		public void fromBytes(ByteBuf buf) {
-			this.time=buf.readLong();
+			this.time = buf.readLong();
 			if (buf.readableBytes() > 0)
 				this.entity = buf.readInt();
 		}
@@ -965,7 +949,7 @@ public abstract class TF2Message implements IMessage {
 				buf.writeInt(this.entity);
 		}
 	}
-	
+
 	public static class NetworkedSoundMessage extends TF2Message {
 		SoundEvent event;
 		int target;
@@ -975,12 +959,13 @@ public abstract class TF2Message implements IMessage {
 		SoundCategory category;
 		int id;
 		boolean repeat;
-		
+
 		public NetworkedSoundMessage() {
 
 		}
 
-		private NetworkedSoundMessage(SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+		private NetworkedSoundMessage(SoundEvent event, float volume, float pitch, SoundCategory category, int id,
+				boolean repeat) {
 			this.event = event;
 			this.volume = volume;
 			this.pitch = pitch;
@@ -988,17 +973,19 @@ public abstract class TF2Message implements IMessage {
 			this.id = id;
 			this.repeat = true;
 		}
-		
-		public NetworkedSoundMessage(Entity entity, SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+
+		public NetworkedSoundMessage(Entity entity, SoundEvent event, float volume, float pitch, SoundCategory category,
+				int id, boolean repeat) {
 			this(event, volume, pitch, category, id, repeat);
 			this.target = entity.getEntityId();
 		}
 
-		public NetworkedSoundMessage(Vec3d pos, SoundEvent event, float volume, float pitch, SoundCategory category, int id, boolean repeat) {
+		public NetworkedSoundMessage(Vec3d pos, SoundEvent event, float volume, float pitch, SoundCategory category,
+				int id, boolean repeat) {
 			this(event, volume, pitch, category, id, repeat);
 			this.pos = pos;
 		}
-		
+
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			this.event = SoundEvent.REGISTRY.getObjectById(buf.readInt());
@@ -1025,16 +1012,15 @@ public abstract class TF2Message implements IMessage {
 				buf.writeFloat((float) this.pos.x);
 				buf.writeFloat((float) this.pos.y);
 				buf.writeFloat((float) this.pos.z);
-			}
-			else
+			} else
 				buf.writeInt(this.target);
 		}
 	}
-	
+
 	public static class NetworkedSoundStopMessage extends TF2Message {
-		
+
 		int id;
-		
+
 		public NetworkedSoundStopMessage() {
 
 		}
@@ -1042,7 +1028,7 @@ public abstract class TF2Message implements IMessage {
 		public NetworkedSoundStopMessage(int id) {
 			this.id = id;
 		}
-		
+
 		@Override
 		public void fromBytes(ByteBuf buf) {
 			this.id = buf.readShort();
@@ -1053,17 +1039,17 @@ public abstract class TF2Message implements IMessage {
 			buf.writeShort(this.id);
 		}
 	}
-	
+
 	public static class InitMessage extends TF2Message {
-		
+
 		int port;
 
 		int id;
-		
+
 		boolean energyUse;
-		
+
 		Multimap<String, Property> property;
-		
+
 		public InitMessage() {
 
 		}
@@ -1082,7 +1068,8 @@ public abstract class TF2Message implements IMessage {
 			PacketBuffer packet = new PacketBuffer(buf);
 			property = HashMultimap.create();
 			while (packet.readableBytes() > 0) {
-				property.put(packet.readString(255), new Property(packet.readString(255), packet.readString(255), Type.STRING));
+				property.put(packet.readString(255),
+						new Property(packet.readString(255), packet.readString(255), Type.STRING));
 			}
 		}
 
@@ -1099,14 +1086,15 @@ public abstract class TF2Message implements IMessage {
 			}
 		}
 	}
-	
+
 	public static class InitClientMessage extends TF2Message {
-		
+
 		int sentryTargets;
 		boolean dispenserPlayer;
 		boolean teleporterPlayer;
 		boolean teleporterEntity;
 		boolean breakBlocks;
+
 		public InitClientMessage() {
 
 		}
@@ -1141,10 +1129,11 @@ public abstract class TF2Message implements IMessage {
 			buf.writeBoolean(this.breakBlocks);
 		}
 	}
-	
+
 	public static class ContractNewMessage extends TF2Message {
 		Packet<?> packet;
 		int type;
+
 		public ContractNewMessage() {
 
 		}
@@ -1167,7 +1156,6 @@ public abstract class TF2Message implements IMessage {
 			try {
 				this.packet.readPacketData(new PacketBuffer(buf));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -1178,7 +1166,6 @@ public abstract class TF2Message implements IMessage {
 			try {
 				this.packet.writePacketData(new PacketBuffer(buf));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

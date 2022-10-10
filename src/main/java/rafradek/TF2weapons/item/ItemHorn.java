@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,7 +13,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.common.WeaponsCapability.RageType;
 import rafradek.TF2weapons.util.PropertyType;
@@ -35,34 +33,36 @@ public class ItemHorn extends Item implements IBackpackItem {
 	public EnumAction getItemUseAction(ItemStack stack) {
 		return EnumAction.BOW;
 	}
-	
+
 	@Override
 	public void onUpdate(ItemStack par1ItemStack, World par2World, Entity par3Entity, int par4, boolean par5) {
 		this.checkItem(par1ItemStack, par2World, par3Entity, par4, par5);
 	}
+
 	@Override
 	public void onPlayerStoppedUsing(ItemStack stack, World worldIn, EntityLivingBase entityLiving, int timeLeft) {
 		ItemStack backpack = ItemBackpack.getBackpack(entityLiving);
-		if (backpack.getItem() instanceof ItemSoldierBackpack && this.getMaxItemUseDuration(stack) - timeLeft >= ItemFromData.getData(backpack)
-				.getInt(PropertyType.FIRE_SPEED) && WeaponsCapability.get(entityLiving).getRage(RageType.BANNER) >= 1f)
-			((ItemSoldierBackpack) backpack.getItem()).setActive(entityLiving,backpack);
+		if (backpack.getItem() instanceof ItemSoldierBackpack
+				&& this.getMaxItemUseDuration(stack) - timeLeft >= ItemFromData.getData(backpack)
+						.getInt(PropertyType.FIRE_SPEED)
+				&& WeaponsCapability.get(entityLiving).getRage(RageType.BANNER) >= 1f)
+			((ItemSoldierBackpack) backpack.getItem()).setActive(entityLiving, backpack);
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn,
-			EnumHand hand) {
+	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand hand) {
 		ItemStack itemStackIn = playerIn.getHeldItem(hand);
 		ItemStack backpack = ItemBackpack.getBackpack(playerIn);
-		if (ItemToken.allowUse(playerIn, "soldier") && backpack.getItem() instanceof ItemSoldierBackpack 
+		if (ItemToken.allowUse(playerIn, "soldier") && backpack.getItem() instanceof ItemSoldierBackpack
 				&& (WeaponsCapability.get(playerIn).getRage(RageType.BANNER) >= 1f)) {
 			playerIn.setActiveHand(hand);
 			if (TF2Util.getTeamForDisplay(playerIn) == 1)
 				playerIn.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_BLU_SOUND), 0.8f, 1f);
 			else
 				playerIn.playSound(ItemFromData.getSound(backpack, PropertyType.HORN_RED_SOUND), 0.8f, 1f);
-			return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
+			return new ActionResult<>(EnumActionResult.SUCCESS, itemStackIn);
 		}
-		return new ActionResult<ItemStack>(EnumActionResult.FAIL, itemStackIn);
+		return new ActionResult<>(EnumActionResult.FAIL, itemStackIn);
 	}
 
 	@Override
@@ -78,6 +78,6 @@ public class ItemHorn extends Item implements IBackpackItem {
 	public double getDurabilityForDisplay(ItemStack stack) {
 		if (!(ItemBackpack.getBackpack(Minecraft.getMinecraft().player).getItem() instanceof ItemSoldierBackpack))
 			return 0;
-		return 1-WeaponsCapability.get(Minecraft.getMinecraft().player).getRage(RageType.BANNER);
+		return 1 - WeaponsCapability.get(Minecraft.getMinecraft().player).getRage(RageType.BANNER);
 	}
 }

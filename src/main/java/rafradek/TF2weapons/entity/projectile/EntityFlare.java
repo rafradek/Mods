@@ -1,8 +1,6 @@
 package rafradek.TF2weapons.entity.projectile;
 
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
@@ -24,8 +22,7 @@ public class EntityFlare extends EntityProjectileSimple {
 	@Override
 	public void spawnParticles(double x, double y, double z) {
 		if (this.isInWater())
-			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, x, y, z, this.motionX, this.motionY,
-					this.motionZ);
+			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, x, y, z, this.motionX, this.motionY, this.motionZ);
 		else
 			this.world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x, y, z, 0, 0, 0);
 	}
@@ -35,23 +32,24 @@ public class EntityFlare extends EntityProjectileSimple {
 		return 15728880;
 	}
 
+	@Override
 	public void addDamageTypes(DamageSource source) {
 		source.setFireDamage();
 	}
-	
+
 	@Override
 	public boolean isBurning() {
 		return true;
 	}
 
+	@Override
 	public float getExplosionSize() {
 		return 2.1f;
 	}
-	
+
 	@Optional.Method(modid = "dynamiclights")
 	@Override
 	public int getLightLevel() {
-		// TODO Auto-generated method stub
 		return 11;
 	}
 }

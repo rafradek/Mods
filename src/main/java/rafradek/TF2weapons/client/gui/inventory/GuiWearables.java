@@ -1,6 +1,7 @@
 package rafradek.TF2weapons.client.gui.inventory;
 
 import java.io.IOException;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.achievement.GuiStats;
@@ -21,25 +22,25 @@ public class GuiWearables extends InventoryEffectRenderer {
 	/** The old y position of the mouse pointer */
 	private float oldMouseY;
 
-	public static final ResourceLocation WEARABLES_TEXTURE = new ResourceLocation(TF2weapons.MOD_ID, "textures/gui/container/wearables.png");
+	public static final ResourceLocation WEARABLES_TEXTURE = new ResourceLocation(TF2weapons.MOD_ID,
+			"textures/gui/container/wearables.png");
+
 	public GuiWearables(ContainerWearables container) {
 		super(container);
 		this.allowUserInput = true;
-		this.xSize=199;
+		this.xSize = 199;
 	}
 
 	/**
 	 * Called from the main game loop to update the screen.
 	 */
 	@Override
-	public void updateScreen() {
-
-	}
+	public void updateScreen() {}
 
 	/**
-	 * Adds the buttons (and other controls) to the screen in question. Called
-	 * when the GUI is displayed and when the window resizes, the buttonList is
-	 * cleared beforehand.
+	 * Adds the buttons (and other controls) to the screen in question. Called when
+	 * the GUI is displayed and when the window resizes, the buttonList is cleared
+	 * beforehand.
 	 */
 	@Override
 	public void initGui() {
@@ -48,8 +49,8 @@ public class GuiWearables extends InventoryEffectRenderer {
 	}
 
 	/**
-	 * Draw the foreground layer for the GuiContainer (everything in front of
-	 * the items)
+	 * Draw the foreground layer for the GuiContainer (everything in front of the
+	 * items)
 	 */
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
@@ -78,8 +79,7 @@ public class GuiWearables extends InventoryEffectRenderer {
 		int i = this.guiLeft;
 		int j = this.guiTop;
 		this.drawTexturedModalRect(i, j, 0, 0, this.xSize, this.ySize);
-		drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY,
-				this.mc.player);
+		drawEntityOnScreen(i + 51, j + 75, 30, i + 51 - this.oldMouseX, j + 75 - 50 - this.oldMouseY, this.mc.player);
 	}
 
 	/**
@@ -125,15 +125,16 @@ public class GuiWearables extends InventoryEffectRenderer {
 		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 	}
 
-	
 	/**
-	 * Called by the controls from the buttonList when activated. (Mouse pressed
-	 * for buttons)
+	 * Called by the controls from the buttonList when activated. (Mouse pressed for
+	 * buttons)
 	 */
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
-		/*if (button.id == 0)
-			this.mc.displayGuiScreen(new GuiAchievements(this, this.mc.player.getStatFileWriter()));*/
+		/*
+		 * if (button.id == 0) this.mc.displayGuiScreen(new GuiAchievements(this,
+		 * this.mc.player.getStatFileWriter()));
+		 */
 
 		if (button.id == 1)
 			this.mc.displayGuiScreen(new GuiStats(this, this.mc.player.getStatFileWriter()));

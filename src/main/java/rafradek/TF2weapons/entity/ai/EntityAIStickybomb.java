@@ -4,7 +4,6 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.mercenary.EntityDemoman;
@@ -26,8 +25,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 	protected float entityMoveSpeed;
 
 	/**
-	 * The maximum time the AI has to wait before peforming another ranged
-	 * attack.
+	 * The maximum time the AI has to wait before peforming another ranged attack.
 	 */
 	protected float attackRangeSquared;
 
@@ -59,10 +57,12 @@ public class EntityAIStickybomb extends EntityAIBase {
 	public boolean shouldExecute() {
 		if (this.entityHost.getMainWeapon() != -1 && this.entityHost.getMainWeapon() != 1)
 			return false;
-		if (this.entityHost.isRobot() || this.entityHost.getAttackTarget() != null || this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size()>7)
+		if (this.entityHost.isRobot() || this.entityHost.getAttackTarget() != null
+				|| this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).activeBomb.size() > 7)
 			return false;
 		ItemStack stickybomb = this.entityHost.loadout.getStackInSlot(1);
-		return stickybomb.getItem() instanceof ItemStickyLauncher && ((ItemUsable) stickybomb.getItem()).isAmmoSufficient(stickybomb, this.entityHost, true);
+		return stickybomb.getItem() instanceof ItemStickyLauncher
+				&& ((ItemUsable) stickybomb.getItem()).isAmmoSufficient(stickybomb, this.entityHost, true);
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class EntityAIStickybomb extends EntityAIBase {
 			TF2Util.sendTracking(new TF2Message.ActionMessage(0, entityHost), entityHost);
 		}
 		this.entityHost.getNavigator().clearPath();
-		this.attackTarget=null;
+		this.attackTarget = null;
 		this.entityHost.switchSlot(0);
 	}
 
@@ -98,15 +98,14 @@ public class EntityAIStickybomb extends EntityAIBase {
 
 	@Override
 	public void updateTask() {
-		if(this.attackTarget==null)
-			this.attackTarget=RandomPositionGenerator.findRandomTarget(this.entityHost, 10, 4);
-		if(this.attackTarget==null)
+		if (this.attackTarget == null)
+			this.attackTarget = RandomPositionGenerator.findRandomTarget(this.entityHost, 10, 4);
+		if (this.attackTarget == null)
 			return;
 		this.entityHost.switchSlot(1);
 		if (!(this.entityHost.getHeldItemMainhand().getItem() instanceof ItemStickyLauncher))
 			return;
-		double d0 = this.entityHost.getDistanceSq(this.attackTarget.x, this.attackTarget.y,
-				this.attackTarget.z);
+		double d0 = this.entityHost.getDistanceSq(this.attackTarget.x, this.attackTarget.y, this.attackTarget.z);
 
 		double lookX = this.attackTarget.x;
 		double lookY = this.attackTarget.y;
@@ -120,7 +119,8 @@ public class EntityAIStickybomb extends EntityAIBase {
 		} else {
 			this.dodging = false;
 
-			this.entityHost.getNavigator().tryMoveToXYZ(this.attackTarget.x,this.attackTarget.y,this.attackTarget.z, this.entityMoveSpeed);
+			this.entityHost.getNavigator().tryMoveToXYZ(this.attackTarget.x, this.attackTarget.y, this.attackTarget.z,
+					this.entityMoveSpeed);
 		}
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 		if (d0 <= this.attackRangeSquared) {

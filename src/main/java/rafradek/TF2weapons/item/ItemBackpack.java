@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.enchantment.EnumEnchantmentType;
@@ -16,8 +15,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -34,10 +31,11 @@ import rafradek.TF2weapons.util.PropertyType;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class ItemBackpack extends ItemFromData {
-	
+
 	private UUID ARMOR_MOD = UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E");
 	private UUID MAX_HEALTH_MOD = UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
 	private UUID ARMOR_TOUGHNESS_MOD = UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
+
 	public ItemBackpack() {
 		this.addPropertyOverride(new ResourceLocation("bodyModel"), new IItemPropertyGetter() {
 			@Override
@@ -66,23 +64,25 @@ public class ItemBackpack extends ItemFromData {
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
-		return (double) (stack.getTagCompound().getShort("Cooldown") > 0 ? stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack) : super.getDurabilityForDisplay(stack));
+		return stack.getTagCompound().getShort("Cooldown") > 0
+				? stack.getTagCompound().getShort("Cooldown") / this.getCooldown(stack)
+				: super.getDurabilityForDisplay(stack);
 	}
-	
+
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack) {
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
 
 		if (slot == EntityEquipmentSlot.CHEST) {
-			multimap.put(SharedMonsterAttributes.ARMOR.getName(),
-					new AttributeModifier(ARMOR_MOD, "Armor modifier",
-							TF2Attribute.getModifier("Armor", stack, getData(stack).getFloat(PropertyType.ARMOR), null), 0));
-			multimap.put(SharedMonsterAttributes.MAX_HEALTH.getName(),
-					new AttributeModifier(MAX_HEALTH_MOD, "Health modifier",
-							TF2Attribute.getModifier("Health", stack, 0, null), 0));
+			multimap.put(SharedMonsterAttributes.ARMOR.getName(), new AttributeModifier(ARMOR_MOD, "Armor modifier",
+					TF2Attribute.getModifier("Armor", stack, getData(stack).getFloat(PropertyType.ARMOR), null), 0));
+			multimap.put(SharedMonsterAttributes.MAX_HEALTH.getName(), new AttributeModifier(MAX_HEALTH_MOD,
+					"Health modifier", TF2Attribute.getModifier("Health", stack, 0, null), 0));
 			multimap.put(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(),
-					new AttributeModifier(ARMOR_TOUGHNESS_MOD,
-							"Armor toughness modifier", TF2Attribute.getModifier("Armor", stack, 0, null) * 0.5f + getData(stack).getFloat(PropertyType.ARMOR_TOUGHNESS), 0));
+					new AttributeModifier(ARMOR_TOUGHNESS_MOD, "Armor toughness modifier",
+							TF2Attribute.getModifier("Armor", stack, 0, null) * 0.5f
+									+ getData(stack).getFloat(PropertyType.ARMOR_TOUGHNESS),
+							0));
 		}
 
 		return multimap;
@@ -97,62 +97,68 @@ public class ItemBackpack extends ItemFromData {
 	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
 		this.onArmorTickAny(world, player, itemStack);
 	}
-	
-    public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
-        return EntityEquipmentSlot.CHEST;
-    }
-    
-    public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
-		return stack.getTagCompound().getShort("Cooldown") == 0 ? ItemFromData.getData(stack).getInt(PropertyType.WEAR) : 0;
-	}
-	
-    public int getCooldown(ItemStack stack) {
-    	return 1200;
-    }
 
-    public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
-    	return ItemStack.EMPTY;
-    }
-    
+	@Override
+	public EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
+		return EntityEquipmentSlot.CHEST;
+	}
+
+	@Override
+	public int getVisibilityFlags(ItemStack stack, EntityLivingBase living) {
+		return stack.getTagCompound().getShort("Cooldown") == 0 ? ItemFromData.getData(stack).getInt(PropertyType.WEAR)
+				: 0;
+	}
+
+	public int getCooldown(ItemStack stack) {
+		return 1200;
+	}
+
+	public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
+		return ItemStack.EMPTY;
+	}
+
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		if (!world.isRemote) {
 			if (player.ticksExisted % 20 == 0) {
 				float heal = TF2Attribute.getModifier("Health Regen", itemStack, 0, player);
-				if(heal > 0) {
+				if (heal > 0) {
 					int lastHitTime = player.ticksExisted - player.getEntityData().getInteger("lasthit");
 					if (lastHitTime >= 120)
 						player.heal(heal);
-					else if(lastHitTime >= 60)
-						player.heal(TF2Util.lerp(heal, heal/4f, (lastHitTime-60)/60f));
+					else if (lastHitTime >= 60)
+						player.heal(TF2Util.lerp(heal, heal / 4f, (lastHitTime - 60) / 60f));
 					else
-						player.heal(heal/4f);
+						player.heal(heal / 4f);
 				}
 			}
 			if (itemStack.getTagCompound().getShort("Cooldown") > 0) {
-				itemStack.getTagCompound().setShort("Cooldown", (short) (itemStack.getTagCompound().getShort("Cooldown") - 1));
+				itemStack.getTagCompound().setShort("Cooldown",
+						(short) (itemStack.getTagCompound().getShort("Cooldown") - 1));
 			}
 		}
 	}
-	
-	public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.enchantment.Enchantment enchantment)
-    {
-        return super.canApplyAtEnchantingTable(stack, enchantment) 
-        		|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR || enchantment.type == EnumEnchantmentType.WEARABLE;
-    }
-	
+
 	@Override
-	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
+	public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.enchantment.Enchantment enchantment) {
+		return super.canApplyAtEnchantingTable(stack, enchantment)
+				|| enchantment.type == EnumEnchantmentType.ARMOR_CHEST || enchantment.type == EnumEnchantmentType.ARMOR
+				|| enchantment.type == EnumEnchantmentType.WEARABLE;
+	}
+
+	@Override
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)
 			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
-		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+		return new ActionResult<>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}
-	
+
 	public static ItemStack getBackpack(EntityLivingBase living) {
-		if (living.hasCapability(TF2weapons.INVENTORY_CAP, null) && living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2).getItem() instanceof ItemBackpack) {
+		if (living.hasCapability(TF2weapons.INVENTORY_CAP, null) && living.getCapability(TF2weapons.INVENTORY_CAP, null)
+				.getStackInSlot(2).getItem() instanceof ItemBackpack) {
 			return living.getCapability(TF2weapons.INVENTORY_CAP, null).getStackInSlot(2);
 		}
 		if (living instanceof EntityTF2Character) {
-			ItemStackHandler loadout = ((EntityTF2Character)living).loadout;
+			ItemStackHandler loadout = ((EntityTF2Character) living).loadout;
 			for (int i = 0; i < loadout.getSlots(); i++) {
 				if (loadout.getStackInSlot(i).getItem() instanceof ItemBackpack)
 					return loadout.getStackInSlot(i);

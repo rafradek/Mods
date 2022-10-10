@@ -22,7 +22,6 @@ public class EntityAISentryAttack extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		// TODO Auto-generated method stub
 		return !this.host.isDisabled() && !this.host.isControlled() && (this.host.getAttackTarget()) != null
 				&& this.host.getEntitySenses().canSee(this.host.getAttackTarget());
 	}
@@ -33,7 +32,7 @@ public class EntityAISentryAttack extends EntityAIBase {
 		EntityLivingBase target = this.host.getAttackTarget();
 		if (target == null)
 			return;
-		
+
 		if ((target != null && target.deathTime > 0) || this.host.deathTime > 0) {
 			this.resetTask();
 			return;
@@ -47,7 +46,8 @@ public class EntityAISentryAttack extends EntityAIBase {
 		if (this.lockTarget)
 			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ, 30, 75);
 		else
-			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ, (5f + this.host.getLevel() * 2.25f) * (this.host.isMini() ? 1.35f : 1f), 50);
+			this.host.getLookHelper().setLookPosition(lookX, lookY, lookZ,
+					(5f + this.host.getLevel() * 2.25f) * (this.host.isMini() ? 1.35f : 1f), 50);
 		if (TF2Util.lookingAt(this.host, 24, lookX, lookY, lookZ)) {
 			this.lockTarget = true;
 			this.host.shootBullet(owner);

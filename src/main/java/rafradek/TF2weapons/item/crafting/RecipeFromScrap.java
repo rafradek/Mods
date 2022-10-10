@@ -12,13 +12,15 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemTF2;
 import rafradek.TF2weapons.item.ItemToken;
 
-public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
+public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe>
+		implements IRecipe, IRecipeTF2 {
 
 	public boolean withToken;
-	
+
 	public RecipeFromScrap(boolean withToken) {
 		this.withToken = withToken;
 	}
+
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
 		ArrayList<ItemStack> stacks = new ArrayList<>();
@@ -40,7 +42,6 @@ public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistr
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
 		ItemStack result = new ItemStack(TF2weapons.itemTF2, 1, 9);
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
 			ItemStack stack = inv.getStackInSlot(x);
@@ -54,37 +55,37 @@ public class RecipeFromScrap extends net.minecraftforge.registries.IForgeRegistr
 
 	@Override
 	public ItemStack getRecipeOutput() {
-		// TODO Auto-generated method stu
 		return new ItemStack(TF2weapons.itemTF2, 1, 9);
 	}
 
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)
-    {
-        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
-        for (int i = 0; i < nonnulllist.size(); ++i)
-        {
-            ItemStack itemstack = inv.getStackInSlot(i);
-            nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
-        }
+		for (int i = 0; i < nonnulllist.size(); ++i) {
+			ItemStack itemstack = inv.getStackInSlot(i);
+			nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+		}
 
-        return nonnulllist;
-    }
+		return nonnulllist;
+	}
 
 	@Override
 	public boolean canFit(int width, int height) {
-		// TODO Auto-generated method stub
 		return width * height >= 2;
 	}
 
 	@Override
 	public ItemStack getSuggestion(int slot) {
 		switch (slot) {
-		case 0: return new ItemStack(TF2weapons.itemTF2, 1, 3);
-		case 1: return new ItemStack(TF2weapons.itemTF2, 1, 3);
-		case 2: return new ItemStack(TF2weapons.itemToken, 1, 0);
-		default : return ItemStack.EMPTY;
+		case 0:
+			return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		case 1:
+			return new ItemStack(TF2weapons.itemTF2, 1, 3);
+		case 2:
+			return new ItemStack(TF2weapons.itemToken, 1, 0);
+		default:
+			return ItemStack.EMPTY;
 		}
 	}
 }

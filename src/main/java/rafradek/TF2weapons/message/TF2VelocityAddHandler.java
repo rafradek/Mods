@@ -11,8 +11,8 @@ public class TF2VelocityAddHandler implements IMessageHandler<TF2Message.Velocit
 	@Override
 	public IMessage onMessage(final VelocityAddMessage message, MessageContext ctx) {
 		Minecraft.getMinecraft().player.addVelocity(message.x, message.y, message.z);
-		Minecraft.getMinecraft().player.isAirBorne=message.airborne;
-		
+		Minecraft.getMinecraft().player.isAirBorne = message.airborne;
+
 		return null;
 	}
 

@@ -6,17 +6,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemFromData;
 
-public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
+public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe>
+		implements IRecipe, IRecipeTF2 {
 
 	String nameBefore;
 	String nameAfter;
-	
+
 	public JumperRecipe(String nameBefore, String nameAfter) {
-		this.nameAfter=nameAfter;
-		this.nameBefore=nameBefore;
+		this.nameAfter = nameAfter;
+		this.nameBefore = nameBefore;
 	}
 
 	@Override
@@ -43,7 +43,6 @@ public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEn
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
 		ItemStack stack2 = ItemStack.EMPTY;
 
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
@@ -54,26 +53,24 @@ public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEn
 		}
 		// System.out.println("OutPut: "+stack2);
 		if (!stack2.isEmpty()) {
-			if(ItemFromData.isSameType(stack2, nameBefore))
-				stack2=ItemFromData.getNewStack(nameAfter);
+			if (ItemFromData.isSameType(stack2, nameBefore))
+				stack2 = ItemFromData.getNewStack(nameAfter);
 		}
 		return stack2;
 	}
 
 	@Override
 	public ItemStack getRecipeOutput() {
-		// TODO Auto-generated method stu
 		return ItemFromData.getNewStack(nameAfter);
 	}
 
 	@Override
 	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
-		NonNullList<ItemStack> aitemstack = NonNullList.withSize(inv.getSizeInventory(),ItemStack.EMPTY);
+		NonNullList<ItemStack> aitemstack = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
 		for (int i = 0; i < aitemstack.size(); ++i) {
 			ItemStack itemstack = inv.getStackInSlot(i);
-			aitemstack.set(i,net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+			aitemstack.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
 		}
 
 		return aitemstack;
@@ -81,14 +78,12 @@ public class JumperRecipe extends net.minecraftforge.registries.IForgeRegistryEn
 
 	@Override
 	public boolean canFit(int width, int height) {
-		// TODO Auto-generated method stub
-		return width >= 3 && height >=3;
+		return width >= 3 && height >= 3;
 	}
 
 	@Override
 	public ItemStack getSuggestion(int slot) {
-		// TODO Auto-generated method stub
-		return slot == 4 ?  ItemFromData.getNewStack(this.nameBefore) : new ItemStack(Items.FEATHER);
+		return slot == 4 ? ItemFromData.getNewStack(this.nameBefore) : new ItemStack(Items.FEATHER);
 	}
 
 }

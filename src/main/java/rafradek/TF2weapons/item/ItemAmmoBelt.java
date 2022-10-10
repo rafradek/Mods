@@ -13,8 +13,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -23,23 +21,25 @@ import rafradek.TF2weapons.TF2weapons;
 public class ItemAmmoBelt extends Item {
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick( World world, EntityPlayer living, EnumHand hand) {
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer living, EnumHand hand) {
 		if (!world.isRemote)
 			FMLNetworkHandler.openGui(living, TF2weapons.instance, 0, world, 0, 0, 0);
-		return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
+		return new ActionResult<>(EnumActionResult.SUCCESS, living.getHeldItem(hand));
 	}
 
 	@Override
 	public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
 		return TF2weapons.MOD_ID + ":textures/models/tf2/ammo_belt.png";
 	}
-	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt)
-    {
-        return new Provider();
-    }
+
+	@Override
+	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+		return new Provider();
+	}
+
 	public static class Provider extends ItemStackHandler implements ICapabilityProvider {
-		
-		public Provider(){
+
+		public Provider() {
 			super(9);
 		}
 
@@ -55,6 +55,6 @@ public class ItemAmmoBelt extends Item {
 				return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(this);
 			return null;
 		}
-		
+
 	}
 }

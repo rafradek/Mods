@@ -3,7 +3,6 @@ package rafradek.TF2weapons.message;
 import java.util.Map.Entry;
 
 import io.netty.util.internal.SocketUtils;
-import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -19,22 +18,23 @@ public class TF2InitHandler implements IMessageHandler<TF2Message.InitMessage, I
 	public IMessage onMessage(TF2Message.InitMessage message, MessageContext ctx) {
 		try {
 			if (message.port != -1) {
-				TF2UdpClient.instance = new TF2UdpClient(SocketUtils.socketAddress(TF2UdpClient.addressToUse, message.port));
+				TF2UdpClient.instance = new TF2UdpClient(
+						SocketUtils.socketAddress(TF2UdpClient.addressToUse, message.port));
 				TF2UdpClient.playerId = message.id;
 				TF2weapons.network.useUdp = false;
 			}
 			for (Entry<String, Property> entry : message.property.entries()) {
-				TF2weapons.conf.getCategory(entry.getKey()).get(entry.getValue().getName()).set(entry.getValue().getString());
+				TF2weapons.conf.getCategory(entry.getKey()).get(entry.getValue().getName())
+						.set(entry.getValue().getString());
 				TF2ConfigVars.createConfig(false);
 			}
 			ClientProxy.buildingsUseEnergy = message.energyUse;
-			
+
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			// System.out.println("setting "+message.value);
-			// TF2weapons.proxy.playReloadSound(player,stack);
+		// System.out.println("setting "+message.value);
+		// TF2weapons.proxy.playReloadSound(player,stack);
 		return null;
 	}
 }

@@ -16,9 +16,9 @@ public class EntityAIHold extends EntityAIBase {
 
 	@Override
 	public boolean shouldExecute() {
-		// TODO Auto-generated method stub
-		return this.owner.getOwner() != null && this.owner.getDistanceSq(this.owner.getOwner()) > 100 && this.owner.isEntityAlive() && this.owner.getOrder() == Order.FOLLOW && 
-				!(this.owner.getAttackTarget() != null && this.owner.getOwner().getDistanceSq(this.owner) < 600);
+		return this.owner.getOwner() != null && this.owner.getDistanceSq(this.owner.getOwner()) > 100
+				&& this.owner.isEntityAlive() && this.owner.getOrder() == Order.FOLLOW
+				&& !(this.owner.getAttackTarget() != null && this.owner.getOwner().getDistanceSq(this.owner) < 600);
 	}
 
 	@Override
@@ -26,9 +26,11 @@ public class EntityAIHold extends EntityAIBase {
 		this.timeToRecalcPath = 0;
 	}
 
+	@Override
 	public void resetTask() {
 		this.owner.getNavigator().clearPath();
 	}
+
 	@Override
 	public boolean shouldContinueExecuting() {
 		return !this.owner.getNavigator().noPath() && this.owner.getDistanceSq(this.owner.getOwner()) > 100;
@@ -37,7 +39,8 @@ public class EntityAIHold extends EntityAIBase {
 	@Override
 	public void updateTask() {
 
-		if(this.owner.getAttackTarget() == null || (this.owner.getAttackTarget().getDistanceSq(this.owner) < this.owner.getAttackTarget().getDistanceSq(this.owner.getOwner())))
+		if (this.owner.getAttackTarget() == null || (this.owner.getAttackTarget().getDistanceSq(this.owner) < this.owner
+				.getAttackTarget().getDistanceSq(this.owner.getOwner())))
 			this.owner.getLookHelper().setLookPositionWithEntity(this.owner.getOwner(), 10.0F, 10F);
 
 		if (--this.timeToRecalcPath <= 0) {

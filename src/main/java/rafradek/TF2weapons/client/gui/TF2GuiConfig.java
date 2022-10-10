@@ -28,10 +28,13 @@ public class TF2GuiConfig extends GuiConfig {
 		configElements.add(new ConfigElement(TF2weapons.conf.getCategory("miscellaneous")));
 		configElements.addAll(new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements());
 		return configElements;
-		
-		
-		/*List<IConfigElement> list = new ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements();
-		list.addAll(new ConfigElement(TF2weapons.conf.getCategory("modcompatibility")).getChildElements());
-		return list;*/
+
+		/*
+		 * List<IConfigElement> list = new
+		 * ConfigElement(TF2weapons.conf.getCategory("gameplay")).getChildElements();
+		 * list.addAll(new
+		 * ConfigElement(TF2weapons.conf.getCategory("modcompatibility")).
+		 * getChildElements()); return list;
+		 */
 	}
 }

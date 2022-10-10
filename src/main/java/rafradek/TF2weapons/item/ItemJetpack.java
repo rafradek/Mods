@@ -1,6 +1,5 @@
 package rafradek.TF2weapons.item;
 
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,10 +20,7 @@ import rafradek.TF2weapons.util.TF2Util;
 public class ItemJetpack extends ItemBackpack {
 
 	public static ItemStack trigger = ItemStack.EMPTY;
-	public ItemJetpack() {
-		// TODO Auto-generated constructor stub
-	}
-	
+
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		return stack.getTagCompound().getShort("Charge") > 0;
@@ -32,25 +28,29 @@ public class ItemJetpack extends ItemBackpack {
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
-		return (double)( stack.getTagCompound().getShort("Charge"))/this.getCooldown(stack, null);
+		return (double) (stack.getTagCompound().getShort("Charge")) / this.getCooldown(stack, null);
 	}
-	
+
+	@Override
 	public ItemStack getBackpackItemToUse(ItemStack stack, EntityLivingBase player) {
 		if (trigger.isEmpty())
 			trigger = ItemFromData.getNewStack("trigger");
-    	return trigger;
-    }
-	
+		return trigger;
+	}
+
 	@Override
 	public void onArmorTickAny(World world, EntityLivingBase player, ItemStack itemStack) {
 		super.onArmorTickAny(world, player, itemStack);
 		if (!world.isRemote) {
-			if (player.ticksExisted % 4 == 0 && itemStack.getTagCompound().getShort("Charge") > 0 && this.getAmmoAmount(player, itemStack) >= this.getActualAmmoUse(itemStack, player, 1)) {
-				itemStack.getTagCompound().setShort("Charge", (short) (itemStack.getTagCompound().getInteger("Charge") - 4));
-				if (player.ticksExisted % (4 * Math.round(this.getCooldown(itemStack, player)/75f)) == 0)
+			if (player.ticksExisted % 4 == 0 && itemStack.getTagCompound().getShort("Charge") > 0
+					&& this.getAmmoAmount(player, itemStack) >= this.getActualAmmoUse(itemStack, player, 1)) {
+				itemStack.getTagCompound().setShort("Charge",
+						(short) (itemStack.getTagCompound().getInteger("Charge") - 4));
+				if (player.ticksExisted % (4 * Math.round(this.getCooldown(itemStack, player) / 75f)) == 0)
 					this.consumeAmmoGlobal(player, itemStack, this.getActualAmmoUse(itemStack, player, 1));
 				if (itemStack.getTagCompound().getShort("Charge") <= 0) {
-					itemStack.getTagCompound().setShort("Charges", (short) (itemStack.getTagCompound().getShort("Charges") + 1));
+					itemStack.getTagCompound().setShort("Charges",
+							(short) (itemStack.getTagCompound().getShort("Charges") + 1));
 				}
 			}
 			if (itemStack.getTagCompound().getBoolean("Active")) {
@@ -63,7 +63,8 @@ public class ItemJetpack extends ItemBackpack {
 			if (itemStack.getTagCompound().getByte("Load") > 0) {
 				itemStack.getTagCompound().setByte("Load", (byte) (itemStack.getTagCompound().getByte("Load") - 1));
 				if (itemStack.getTagCompound().getByte("Load") == 0) {
-					itemStack.getTagCompound().setByte("Charges", (byte) (itemStack.getTagCompound().getByte("Charges") - 1));
+					itemStack.getTagCompound().setByte("Charges",
+							(byte) (itemStack.getTagCompound().getByte("Charges") - 1));
 					Vec3d vel = player.getLook(1);
 					vel = vel.scale(TF2Attribute.getModifier("Self Push Force", itemStack, 1, player));
 					WeaponsCapability.get(player).setExpJump(true);
@@ -73,41 +74,46 @@ public class ItemJetpack extends ItemBackpack {
 					TF2Util.playSound(player, getSound(itemStack, PropertyType.FIRE_SOUND), 1f, 1f);
 					itemStack.getTagCompound().setBoolean("Active", true);
 					if (player instanceof EntityPlayerMP)
-						((EntityPlayerMP)player).connection.sendPacket(new SPacketEntityVelocity(player));
+						((EntityPlayerMP) player).connection.sendPacket(new SPacketEntityVelocity(player));
 				}
 			}
-			if (itemStack.getTagCompound().getShort("Charge") == 0 && itemStack.getTagCompound().getByte("Charges") < this.getMaxCharges(itemStack, player)) {
+			if (itemStack.getTagCompound().getShort("Charge") == 0
+					&& itemStack.getTagCompound().getByte("Charges") < this.getMaxCharges(itemStack, player)) {
 				itemStack.getTagCompound().setShort("Charge", (short) this.getCooldown(itemStack, player));
 			}
-		}
-		else if (itemStack.getTagCompound().getBoolean("Active") || itemStack.getTagCompound().getByte("Load") > 0){
+		} else if (itemStack.getTagCompound().getBoolean("Active") || itemStack.getTagCompound().getByte("Load") > 0) {
 			Vec3d vec = TF2Util.getRotationVector(0, player.renderYawOffset);
 			Vec3d vec2 = TF2Util.getRotationVector(0, player.renderYawOffset + 90);
-			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX-vec.x*0.4+vec2.x*0.3, player.posY+1, player.posZ-vec.z*0.4+vec2.z*0.3, 0, 0, 0);
-			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX-vec.x*0.4-vec2.x*0.3, player.posY+1, player.posZ-vec.z*0.4-vec2.z*0.3, 0, 0, 0);
+			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX - vec.x * 0.4 + vec2.x * 0.3,
+					player.posY + 1, player.posZ - vec.z * 0.4 + vec2.z * 0.3, 0, 0, 0);
+			world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, player.posX - vec.x * 0.4 - vec2.x * 0.3,
+					player.posY + 1, player.posZ - vec.z * 0.4 - vec2.z * 0.3, 0, 0, 0);
 		}
 	}
-	
+
 	public int getCooldown(ItemStack stack, EntityLivingBase living) {
-		return (int) (getData(stack).getInt(PropertyType.COOLDOWN) * (TF2ConfigVars.fastItemCooldown ? 1 : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))
-				/(TF2Attribute.getModifier("Charge", stack, 1, living)
-				+TF2Attribute.getModifier("Charges", stack, 0, living) * 0.12f));
+		return (int) (getData(stack).getInt(PropertyType.COOLDOWN)
+				* (TF2ConfigVars.fastItemCooldown ? 1 : getData(stack).getFloat(PropertyType.COOLDOWN_LONG))
+				/ (TF2Attribute.getModifier("Charge", stack, 1, living)
+						+ TF2Attribute.getModifier("Charges", stack, 0, living) * 0.12f));
 	}
-	
+
+	@Override
 	public int getAmmoType(ItemStack stack) {
 		return TF2ConfigVars.freeUseItems ? 0 : super.getAmmoType(stack);
 	}
-	
+
 	public boolean canActivate(ItemStack stack, EntityLivingBase player) {
 		return ItemToken.allowUse(player, "pyro")
-				&& (!stack.getTagCompound().getBoolean("Active") || TF2Attribute.getModifier("Jetpack", stack, 0f, player) > 0f) 
-				&& stack.getTagCompound().getByte("Load") <= 0 && stack.getTagCompound().getByte("Charges") > 0 ;
+				&& (!stack.getTagCompound().getBoolean("Active")
+						|| TF2Attribute.getModifier("Jetpack", stack, 0f, player) > 0f)
+				&& stack.getTagCompound().getByte("Load") <= 0 && stack.getTagCompound().getByte("Charges") > 0;
 	}
-	
+
 	public int getMaxCharges(ItemStack stack, EntityLivingBase player) {
 		return (int) TF2Attribute.getModifier("Charges", stack, 2, player);
 	}
-	
+
 	public void activateJetpack(ItemStack stack, EntityLivingBase player, boolean setTimer) {
 		player.motionY = Math.max(player.motionY, 0) + 0.5;
 		player.isAirBorne = true;
@@ -118,10 +124,9 @@ public class ItemJetpack extends ItemBackpack {
 			stack.getTagCompound().setByte("Load", (byte) 12);
 			if (player instanceof EntityPlayerMP)
 				TF2weapons.network.sendTo(new TF2Message.ActionMessage(30, player), (EntityPlayerMP) player);
-		}
-		else {
-			for(int i=0;i<50;i++)
-			ClientProxy.spawnFlameParticle(player.world, player, 0, true);
+		} else {
+			for (int i = 0; i < 50; i++)
+				ClientProxy.spawnFlameParticle(player.world, player, 0, true);
 		}
 		if (setTimer && !(player.getHeldItemMainhand().getItem() instanceof ItemJetpackTrigger)) {
 			WeaponsCapability.get(player).setPrimaryCooldown(1500);

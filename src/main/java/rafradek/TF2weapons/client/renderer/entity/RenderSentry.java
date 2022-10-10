@@ -3,9 +3,9 @@ package rafradek.TF2weapons.client.renderer.entity;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -21,8 +21,6 @@ import rafradek.TF2weapons.client.model.ModelSentry;
 import rafradek.TF2weapons.client.model.ModelSentry2;
 import rafradek.TF2weapons.client.model.ModelSentry3;
 import rafradek.TF2weapons.entity.building.EntitySentry;
-import rafradek.TF2weapons.entity.mercenary.EntityHeavy;
-import rafradek.TF2weapons.entity.mercenary.EntityTF2Character;
 import rafradek.TF2weapons.util.TF2Util;
 
 public class RenderSentry extends RenderLiving<EntitySentry> {
@@ -47,6 +45,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 	public ModelBase level2;
 	public ModelBase level3;
 	public ModelBase box;
+
 	public RenderSentry(RenderManager renderManager) {
 		super(renderManager, new ModelSentry(), 0.6f);
 		level1 = this.mainModel;
@@ -58,21 +57,25 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntitySentry par1EntityLiving) {
 		// System.out.println("class: "+clazz);
-		boolean constr=par1EntityLiving.isConstructing();
+		boolean constr = par1EntityLiving.isConstructing();
 		switch (par1EntityLiving.getEntTeam()) {
-		case 0: return constr ? BOX_RED : par1EntityLiving.isMini() ? SENTRY_MINI_RED : SENTRY_RED;
-		case 1: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
-		case 2: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_ROBOT : SENTRY_ROBOT;
-		default: return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
+		case 0:
+			return constr ? BOX_RED : par1EntityLiving.isMini() ? SENTRY_MINI_RED : SENTRY_RED;
+		case 1:
+			return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
+		case 2:
+			return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_ROBOT : SENTRY_ROBOT;
+		default:
+			return constr ? BOX_BLU : par1EntityLiving.isMini() ? SENTRY_MINI_BLU : SENTRY_BLU;
 		}
 	}
 
-	protected void preRenderCallback(EntitySentry entitylivingbaseIn, float partialTickTime)
-    {
+	@Override
+	protected void preRenderCallback(EntitySentry entitylivingbaseIn, float partialTickTime) {
 		if (entitylivingbaseIn.isMini())
 			GlStateManager.scale(0.65, 0.65, 0.65);
-    }
-	
+	}
+
 	@Override
 	public void doRender(EntitySentry living, double p_76986_2_, double p_76986_4_, double p_76986_6_, float p_76986_8_,
 			float p_76986_9_) {
@@ -87,7 +90,7 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 				this.mainModel = this.level3;
 		}
 		super.doRender(living, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
-		
+
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder BufferBuilder = tessellator.getBuffer();
 		if (living.isControlled()) {
@@ -112,10 +115,14 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, 0.0F, -1.0F)
 					.endVertex();
-			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
-			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 0.0F, 1.0F)
+					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
 			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(0.0F, -1.0F, 0.0F)
@@ -124,10 +131,14 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(0.0F, -1.0F, 0.0F)
 					.endVertex();
-			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(0.0F, 1.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).normal(0.0F, 1.0F, 0.0F)
+					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).normal(-1.0F, 0.0F, 0.0F)
@@ -136,18 +147,21 @@ public class RenderSentry extends RenderLiving<EntitySentry> {
 					.endVertex();
 			BufferBuilder.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).normal(-1.0F, 0.0F, 0.0F)
 					.endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
-			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F).endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).normal(1.0F, 0.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F)
+					.endVertex();
+			BufferBuilder.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).normal(1.0F, 0.0F, 0.0F)
+					.endVertex();
 			tessellator.draw();
 			GlStateManager.popMatrix();
 
 			Vec3d look = living.getLook(p_76986_9_).scale(200);
 			RayTraceResult target = TF2Util.pierce(living.world, living, living.posX,
 					living.posY + living.getEyeHeight(), living.posZ, look.x + living.posX,
-					look.y + living.posY + living.getEyeHeight(), look.z + living.posZ, false, 0.02f, false)
-					.get(0);
+					look.y + living.posY + living.getEyeHeight(), look.z + living.posZ, false, 0.02f, false).get(0);
 			if (target != null) {
 				GlStateManager.pushMatrix();
 

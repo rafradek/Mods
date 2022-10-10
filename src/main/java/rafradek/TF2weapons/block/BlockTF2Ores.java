@@ -26,7 +26,6 @@ public class BlockTF2Ores extends BlockOre {
 
 		@Override
 		public String getName() {
-			// TODO Auto-generated method stub
 			return name;
 		}
 
@@ -36,7 +35,6 @@ public class BlockTF2Ores extends BlockOre {
 
 	public BlockTF2Ores() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

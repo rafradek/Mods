@@ -46,8 +46,8 @@ public class EntityFlameEffect extends Particle {
 		return 15728880;
 	}
 
-	public static EntityFlameEffect createNewEffect(World world, EntityLivingBase living, float step,boolean heater) {
-		if(!heater) {
+	public static EntityFlameEffect createNewEffect(World world, EntityLivingBase living, float step, boolean heater) {
+		if (!heater) {
 			double posX = living.posX - MathHelper.cos(living.rotationYawHead / 180.0F * (float) Math.PI) * 0.16F;
 			double posY = living.posY + living.getEyeHeight() - 0.1;
 			double posZ = living.posZ - MathHelper.sin(living.rotationYawHead / 180.0F * (float) Math.PI) * 0.16F;
@@ -59,30 +59,30 @@ public class EntityFlameEffect extends Particle {
 			float f2 = MathHelper.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
 			float speed = ((ItemProjectileWeapon) living.getHeldItemMainhand().getItem())
 					.getProjectileSpeed(living.getHeldItemMainhand(), living);
-			motionX = (motionX / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionX;
-			motionY = (motionY / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionY;
-			motionZ = (motionZ / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed + living.motionZ;
-	
+			motionX = (motionX / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed
+					+ living.motionX;
+			motionY = (motionY / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed
+					+ living.motionY;
+			motionZ = (motionZ / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed
+					+ living.motionZ;
+
 			return new EntityFlameEffect(world, posX + motionX * step, posY + motionY * step, posZ + motionZ * step,
 					motionX, motionY, motionZ,
 					Math.round(3 + (TF2Attribute.getModifier("Flame Range", living.getHeldItemMainhand(), 2, null))));
-		}
-		else {
+		} else {
 			double posX = living.posX;
 			double posY = living.posY + 0.1;
 			double posZ = living.posZ;
-			float angle = living.getRNG().nextFloat()* 2 *(float) Math.PI;
-			double motionX = -MathHelper.sin(angle)
-					* MathHelper.cos(2 / 180.0F * (float) Math.PI);
-			double motionZ = MathHelper.cos(angle)
-					* MathHelper.cos(2 / 180.0F * (float) Math.PI);
+			float angle = living.getRNG().nextFloat() * 2 * (float) Math.PI;
+			double motionX = -MathHelper.sin(angle) * MathHelper.cos(2 / 180.0F * (float) Math.PI);
+			double motionZ = MathHelper.cos(angle) * MathHelper.cos(2 / 180.0F * (float) Math.PI);
 			double motionY = (-MathHelper.sin(2 / 180.0F * (float) Math.PI));
 			float f2 = MathHelper.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
 			float speed = 0.9f;
 			motionX = (motionX / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
 			motionY = (motionY / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
 			motionZ = (motionZ / f2 + world.rand.nextGaussian() * (world.rand.nextBoolean() ? -1 : 1) * 0.045D) * speed;
-	
+
 			return new EntityFlameEffect(world, posX + motionX * step, posY + motionY * step, posZ + motionZ * step,
 					motionX, motionY, motionZ, 5);
 		}

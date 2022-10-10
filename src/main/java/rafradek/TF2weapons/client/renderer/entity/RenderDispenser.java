@@ -3,10 +3,10 @@ package rafradek.TF2weapons.client.renderer.entity;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -34,12 +34,12 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 			"textures/entity/tf2/red/box.png");
 	private static final ResourceLocation BOX_BLU = new ResourceLocation(TF2weapons.MOD_ID,
 			"textures/entity/tf2/blu/box.png");
-	
+
 	public ModelBase level1;
 	public ModelBase level2;
 	public ModelBase level3;
 	public ModelBase box;
-	
+
 	public RenderDispenser(RenderManager renderManager) {
 		super(renderManager, new ModelDispenser(), 0.8f);
 		level1 = this.mainModel;
@@ -50,12 +50,16 @@ public class RenderDispenser extends RenderLiving<EntityDispenser> {
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityDispenser par1EntityLiving) {
-		boolean constr=par1EntityLiving.isConstructing();
+		boolean constr = par1EntityLiving.isConstructing();
 		switch (par1EntityLiving.getEntTeam()) {
-		case 0: return constr ? BOX_RED : DISPENSER_RED;
-		case 1: return constr ? BOX_BLU : DISPENSER_BLU;
-		case 2: return constr ? BOX_BLU : DISPENSER_ROBOT;
-		default: return constr ? BOX_BLU : DISPENSER_BLU;
+		case 0:
+			return constr ? BOX_RED : DISPENSER_RED;
+		case 1:
+			return constr ? BOX_BLU : DISPENSER_BLU;
+		case 2:
+			return constr ? BOX_BLU : DISPENSER_ROBOT;
+		default:
+			return constr ? BOX_BLU : DISPENSER_BLU;
 		}
 	}
 

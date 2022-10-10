@@ -8,8 +8,9 @@ import net.minecraft.item.ItemStack;
 
 public interface IItemOverlay {
 	public boolean showInfoBox(ItemStack stack, EntityPlayer player);
-	
+
 	public String[] getInfoBoxLines(ItemStack stack, EntityPlayer player);
-	
-	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer, ScaledResolution resolution);
+
+	public void drawOverlay(ItemStack stack, EntityPlayer player, Tessellator tessellator, BufferBuilder buffer,
+			ScaledResolution resolution);
 }

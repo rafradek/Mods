@@ -1,7 +1,6 @@
 package rafradek.TF2weapons.inventory;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,13 +8,13 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.INBTSerializable;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.common.WeaponsCapability;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.message.TF2Message;
 import rafradek.TF2weapons.util.TF2Util;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
 
 public class InventoryWearables extends InventoryBasic implements ICapabilityProvider, INBTSerializable<NBTTagList> {
 
@@ -23,13 +22,14 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 	public static final int USED_SLOTS = 8;
 	private final NonNullList<ItemStack> inventoryContentsOld;
 	public ItemStack origHead = ItemStack.EMPTY;
+
 	public InventoryWearables(EntityLivingBase ply) {
 		super("Wearables", false, 13);
 		this.inventoryContentsOld = NonNullList.withSize(13, ItemStack.EMPTY);
-		owner=ply;
-		// TODO Auto-generated constructor stub
+		owner = ply;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		for (int i = 0; i < USED_SLOTS; i++)
 			if (!this.getStackInSlot(i).isEmpty())
@@ -43,14 +43,13 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 			ItemStack old = inventoryContentsOld.get(i);
 			if (!ItemStack.areItemStacksEqual(stack, old)) {
 				inventoryContentsOld.set(i, old);
-				TF2Util.sendTracking(new TF2Message.WearableChangeMessage(owner, i, stack),owner);
+				TF2Util.sendTracking(new TF2Message.WearableChangeMessage(owner, i, stack), owner);
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		// TODO Auto-generated method stub
 		return TF2weapons.INVENTORY_CAP != null && capability == TF2weapons.INVENTORY_CAP;
 	}
 
@@ -77,6 +76,7 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 		// System.out.println("Saving ");
 		return list;
 	}
+
 	@Override
 	public void deserializeNBT(NBTTagList nbt) {
 
@@ -85,9 +85,9 @@ public class InventoryWearables extends InventoryBasic implements ICapabilityPro
 			int j = nbttagcompound.getByte("Slot");
 			this.setInventorySlotContents(j, new ItemStack(nbttagcompound));
 		}
-		if(!WeaponsCapability.get(owner).forcedClass) {
+		if (!WeaponsCapability.get(owner).forcedClass) {
 			ItemStack token = this.getStackInSlot(4);
-			((ItemToken)TF2weapons.itemToken).updateAttributes(token, owner);
+			((ItemToken) TF2weapons.itemToken).updateAttributes(token, owner);
 		}
 		// System.out.println("Reading ");
 	}

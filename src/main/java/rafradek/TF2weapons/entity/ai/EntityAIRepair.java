@@ -1,17 +1,9 @@
 package rafradek.TF2weapons.entity.ai;
 
-import java.util.List;
-
-import com.google.common.base.Predicate;
-
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.MathHelper;
 import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.entity.building.EntityBuilding;
-import rafradek.TF2weapons.entity.building.EntityDispenser;
 import rafradek.TF2weapons.entity.mercenary.EntityEngineer;
 import rafradek.TF2weapons.item.ItemUsable;
 import rafradek.TF2weapons.item.ItemWeapon;
@@ -32,8 +24,7 @@ public class EntityAIRepair extends EntityAIBase {
 	protected int field_75318_f;
 
 	/**
-	 * The maximum time the AI has to wait before peforming another ranged
-	 * attack.
+	 * The maximum time the AI has to wait before peforming another ranged attack.
 	 */
 	private float attackRange;
 	protected float attackRangeSquared;
@@ -70,10 +61,11 @@ public class EntityAIRepair extends EntityAIBase {
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
 	public boolean isValidTarget(EntityBuilding building) {
-		return building != null && building.isEntityAlive() && this.entityHost.isWithinHomeDistanceFromPosition(building.getPosition())
+		return building != null && building.isEntityAlive()
+				&& this.entityHost.isWithinHomeDistanceFromPosition(building.getPosition())
 				&& (building.canUseWrenchImportant()
-						|| ((this.entityHost.getAttackTarget() == null || this.entityHost.getAttackTarget().isDead) && this.entityHost.hasSentryAndDispenser()
-								&& building.canUseWrench()));
+						|| ((this.entityHost.getAttackTarget() == null || this.entityHost.getAttackTarget().isDead)
+								&& this.entityHost.hasSentryAndDispenser() && building.canUseWrench()));
 	}
 
 	@Override
@@ -85,18 +77,16 @@ public class EntityAIRepair extends EntityAIBase {
 			return false;
 		if (this.entityHost.grabbed != null || this.entityHost.loadout.getStackInSlot(2).isEmpty())
 			return false;
-		if(this.entityHost.getWepCapability().getMetal() <= 0){
-			/*Entity
-			if(!list.isEmpty()){
-				list.sort(new EntityAINearestAttackableTarget.Sorter(this.entityHost));
-				this.runMetal=true;
-				this.attackTarget = list.get(0);
-				this.entityHost.switchSlot(2);
-				return true;
-			}*/
+		if (this.entityHost.getWepCapability().getMetal() <= 0) {
+			/*
+			 * Entity if(!list.isEmpty()){ list.sort(new
+			 * EntityAINearestAttackableTarget.Sorter(this.entityHost)); this.runMetal=true;
+			 * this.attackTarget = list.get(0); this.entityHost.switchSlot(2); return true;
+			 * }
+			 */
 			return false;
 		}
-		this.runMetal=false;
+		this.runMetal = false;
 		EntityBuilding building = this.entityHost.sentry;
 		if (this.isValidTarget(building) || this.isValidTarget(building = this.entityHost.dispenser)) {
 			this.attackTarget = building;
@@ -105,14 +95,7 @@ public class EntityAIRepair extends EntityAIBase {
 		} else if (this.searchTimer <= 0) {
 			this.searchTimer = 4;
 			for (EntityBuilding build : this.entityHost.world.getEntitiesWithinAABB(EntityBuilding.class,
-					this.entityHost.getEntityBoundingBox().grow(10, 3, 10), new Predicate<EntityBuilding>() {
-
-						@Override
-						public boolean apply(EntityBuilding input) {
-							return TF2Util.isOnSameTeam(input, entityHost) && isValidTarget(input);
-						}
-
-					})) {
+					this.entityHost.getEntityBoundingBox().grow(10, 3, 10), input -> TF2Util.isOnSameTeam(input, entityHost) && isValidTarget(input))) {
 				this.attackTarget = build;
 				this.entityHost.switchSlot(2);
 				return true;
@@ -185,19 +168,19 @@ public class EntityAIRepair extends EntityAIBase {
 			this.dodging = false;
 			this.entityHost.getNavigator().tryMoveToEntityLiving(this.attackTarget, this.entityMoveSpeed);
 		}
-		
+
 		this.entityHost.getLookHelper().setLookPosition(lookX, lookY, lookZ, this.entityHost.rotation, 90.0F);
 
 		if (d0 <= this.attackRangeSquared && !this.runMetal) {
-			if (!pressed|| (this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) == 0) {
+			if (!pressed || (this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state & 3) == 0) {
 				pressed = true;
-				
+
 				((ItemUsable) this.entityHost.getHeldItem(EnumHand.MAIN_HAND).getItem()).startUse(
 						this.entityHost.getHeldItem(EnumHand.MAIN_HAND), this.entityHost, this.entityHost.world,
 						this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state, 1);
 				this.entityHost.getCapability(TF2weapons.WEAPONS_CAP, null).state = 1;
 				TF2Util.sendTracking(new TF2Message.ActionMessage(1, entityHost), entityHost);
-				
+
 			}
 
 		} else {

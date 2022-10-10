@@ -14,12 +14,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityShulkerBox;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -44,8 +42,8 @@ public class BlockUpgradeStation extends BlockContainer {
 	public BlockUpgradeStation() {
 		super(Material.IRON);
 		this.setSoundType(SoundType.METAL);
-		this.setDefaultState(
-				this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(HOLDER, true).withProperty(PLACED, false));
+		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
+				.withProperty(HOLDER, true).withProperty(PLACED, false));
 		this.setCreativeTab(TF2weapons.tabutilitytf2);
 	}
 
@@ -68,7 +66,7 @@ public class BlockUpgradeStation extends BlockContainer {
 	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn,
 			EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
 		if (!worldIn.isRemote)
-			
+
 			if (state.getValue(HOLDER))
 				FMLNetworkHandler.openGui(playerIn, TF2weapons.instance, 2, worldIn, pos.getX(), pos.getY(),
 						pos.getZ());
@@ -85,36 +83,35 @@ public class BlockUpgradeStation extends BlockContainer {
 		return true;
 	}
 
+	@Override
 	@Deprecated
-    public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos)
-    {
+	public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos) {
 		if (!blockState.getValue(PLACED))
 			return -1;
-        return this.blockHardness;
-    }
-	
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
-    {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
+		return this.blockHardness;
+	}
 
-        if (state.getValue(PLACED) && tileentity instanceof TileEntityUpgrades)
-        {
-            ItemStack itemstack = new ItemStack(Item.getItemFromBlock(this));
-            NBTTagCompound nbttagcompound = new NBTTagCompound();
-            NBTTagCompound nbttagcompound1 = new NBTTagCompound();
-            ((TileEntityUpgrades)tileentity).writeToNBT(nbttagcompound1);
-            nbttagcompound.removeTag("id");
-            nbttagcompound.setTag("BlockEntityTag", nbttagcompound1);
-            itemstack.setTagCompound(nbttagcompound);
-            spawnAsEntity(worldIn, pos, itemstack);
-        }
-
-        super.breakBlock(worldIn, pos, state);
-    }
-	
 	@Override
-	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ,
-			int meta, EntityLivingBase placer) {
+	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+		TileEntity tileentity = worldIn.getTileEntity(pos);
+
+		if (state.getValue(PLACED) && tileentity instanceof TileEntityUpgrades) {
+			ItemStack itemstack = new ItemStack(Item.getItemFromBlock(this));
+			NBTTagCompound nbttagcompound = new NBTTagCompound();
+			NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+			((TileEntityUpgrades) tileentity).writeToNBT(nbttagcompound1);
+			nbttagcompound.removeTag("id");
+			nbttagcompound.setTag("BlockEntityTag", nbttagcompound1);
+			itemstack.setTagCompound(nbttagcompound);
+			spawnAsEntity(worldIn, pos, itemstack);
+		}
+
+		super.breakBlock(worldIn, pos, state);
+	}
+
+	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY,
+			float hitZ, int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
 
@@ -129,8 +126,8 @@ public class BlockUpgradeStation extends BlockContainer {
 			worldIn.setBlockState(pos.offset(dirop), statehelp);
 		if (worldIn.isAirBlock(pos.offset(dirop, -1)))
 			worldIn.setBlockState(pos.offset(dirop, -1), statehelp);
-		if (worldIn.isAirBlock(pos.offset(dirop,-1).up()))
-			worldIn.setBlockState(pos.offset(dirop,-1).up(), statehelp);
+		if (worldIn.isAirBlock(pos.offset(dirop, -1).up()))
+			worldIn.setBlockState(pos.offset(dirop, -1).up(), statehelp);
 		if (worldIn.isAirBlock(pos.up()))
 			worldIn.setBlockState(pos.up(), statehelp);
 		if (worldIn.isAirBlock(pos.offset(dirop).up()))
@@ -152,7 +149,7 @@ public class BlockUpgradeStation extends BlockContainer {
 						return;
 					}
 	}
-	
+
 	public void breakBlockAround(World worldIn, BlockPos pos, IBlockState state) {
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
@@ -164,8 +161,9 @@ public class BlockUpgradeStation extends BlockContainer {
 				}
 			}
 		}
-		
+
 	}
+
 	/**
 	 * Returns the blockstate with the given mirror of the passed blockstate. If
 	 * inapplicable, returns the passed blockstate.
@@ -182,13 +180,14 @@ public class BlockUpgradeStation extends BlockContainer {
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront((meta & 3) + 2)).withProperty(HOLDER,
-				(meta & 8) == 8).withProperty(PLACED,(meta & 4) == 4);
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront((meta & 3) + 2))
+				.withProperty(HOLDER, (meta & 8) == 8).withProperty(PLACED, (meta & 4) == 4);
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex() - 2 + (state.getValue(HOLDER) ? 8 : 0) + (state.getValue(PLACED) ? 4 : 0);
+		return state.getValue(FACING).getIndex() - 2 + (state.getValue(HOLDER) ? 8 : 0)
+				+ (state.getValue(PLACED) ? 4 : 0);
 	}
 
 	@Override
@@ -201,7 +200,7 @@ public class BlockUpgradeStation extends BlockContainer {
 	public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
 		list.add(new ItemStack(this, 1, 8));
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public BlockRenderLayer getBlockLayer() {
@@ -218,8 +217,8 @@ public class BlockUpgradeStation extends BlockContainer {
 		return false;
 	}
 
-	public Item getItemDropped(IBlockState state, Random rand, int fortune)
-    {
+	@Override
+	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
 		return null;
-    }
+	}
 }

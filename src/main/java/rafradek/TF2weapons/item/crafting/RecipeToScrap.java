@@ -1,10 +1,8 @@
 package rafradek.TF2weapons.item.crafting;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
-import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -16,26 +14,28 @@ import rafradek.TF2weapons.item.ItemFromData;
 import rafradek.TF2weapons.item.ItemToken;
 import rafradek.TF2weapons.util.PropertyType;
 
-public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
+public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe>
+		implements IRecipe, IRecipeTF2 {
 
 	public int token;
-	
+
 	public RecipeToScrap(int id) {
 		this.token = id;
 	}
+
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
 		ArrayList<ItemStack> stacks = new ArrayList<>();
 
-		HashSet<String> classnames = new HashSet<String>();
+		HashSet<String> classnames = new HashSet<>();
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
 			ItemStack stack = inv.getStackInSlot(x);
 			if (!stack.isEmpty())
-				if (stack.getItem() instanceof ItemFromData && ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6 
-				&& (token == -1 || ItemFromData.getData(stack).get(PropertyType.SLOT).containsKey(ItemToken.CLASS_NAMES[token]))) {
+				if (stack.getItem() instanceof ItemFromData
+						&& ItemFromData.getData(stack).getInt(PropertyType.COST) >= 6 && (token == -1 || ItemFromData
+								.getData(stack).get(PropertyType.SLOT).containsKey(ItemToken.CLASS_NAMES[token]))) {
 					stacks.add(stack);
-				}
-				else
+				} else
 					return false;
 		}
 		// System.out.println("matches "+(australium&&stack2!=null));
@@ -44,8 +44,7 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
-		if(token == -1)
+		if (token == -1)
 			return new ItemStack(TF2weapons.itemTF2, 1, 3);
 		else
 			return new ItemStack(TF2weapons.itemToken, 1, token);
@@ -53,29 +52,26 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 
 	@Override
 	public ItemStack getRecipeOutput() {
-		// TODO Auto-generated method stu
-		if(token == -1)
+		if (token == -1)
 			return new ItemStack(TF2weapons.itemTF2, 1, 3);
 		else
 			return new ItemStack(TF2weapons.itemToken, 1, token);
 	}
 
-	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)
-    {
-        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+	@Override
+	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
-        for (int i = 0; i < nonnulllist.size(); ++i)
-        {
-            ItemStack itemstack = inv.getStackInSlot(i);
-            nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
-        }
+		for (int i = 0; i < nonnulllist.size(); ++i) {
+			ItemStack itemstack = inv.getStackInSlot(i);
+			nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+		}
 
-        return nonnulllist;
-    }
+		return nonnulllist;
+	}
 
 	@Override
 	public boolean canFit(int width, int height) {
-		// TODO Auto-generated method stub
 		return width * height >= 2;
 	}
 
@@ -83,8 +79,7 @@ public class RecipeToScrap extends net.minecraftforge.registries.IForgeRegistryE
 	public ItemStack getSuggestion(int slot) {
 		if (slot < 2 && this.token == -1) {
 			return new ItemStack(TF2weapons.itemTF2, 1, 9);
-		}
-		else if (slot < 3 && token != -1){
+		} else if (slot < 3 && token != -1) {
 			ItemStack stack = new ItemStack(TF2weapons.itemTF2, 1, 9);
 			stack.setTagCompound(new NBTTagCompound());
 			stack.getTagCompound().setByte("Token", (byte) this.token);

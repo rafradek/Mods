@@ -7,9 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import rafradek.TF2weapons.TF2ConfigVars;
 import rafradek.TF2weapons.TF2weapons;
-import rafradek.TF2weapons.common.TF2Attribute;
 
 public class EntityBall extends EntityProjectileSimple {
 
@@ -19,17 +17,17 @@ public class EntityBall extends EntityProjectileSimple {
 	public EntityBall(World world) {
 		super(world);
 		this.throwPos = new Vec3d(0, 0, 0);
-		// TODO Auto-generated constructor stub
 	}
 
+	@Override
 	public void initProjectile(EntityLivingBase shooter, EnumHand hand, ItemStack weapon) {
 		super.initProjectile(shooter, hand, weapon);
 		this.throwPos = this.getPositionVector();
 	}
-	
+
 	/*
-	 * @Override public void onHitGround(int x, int y, int z, RayTraceResult
-	 * mop) { if(!this.canBePickedUp){ super.onHitGround(x, y, z, mop); } }
+	 * @Override public void onHitGround(int x, int y, int z, RayTraceResult mop) {
+	 * if(!this.canBePickedUp){ super.onHitGround(x, y, z, mop); } }
 	 */
 	@Override
 	public boolean useCollisionBox() {
@@ -72,7 +70,7 @@ public class EntityBall extends EntityProjectileSimple {
 	/*
 	 * @Override public void onHitMob(Entity entityHit, RayTraceResult mop) {
 	 * super.onHitMob(entityHit, mop); if(!this.world.isRemote){
-	 * 
+	 *
 	 * } }
 	 */
 	@Override

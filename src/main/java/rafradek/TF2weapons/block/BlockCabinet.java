@@ -23,7 +23,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import rafradek.TF2weapons.TF2weapons;
 
-public class BlockCabinet extends Block{
+public class BlockCabinet extends Block {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
@@ -48,8 +48,8 @@ public class BlockCabinet extends Block{
 	}
 
 	@Override
-	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ,
-			int meta, EntityLivingBase placer) {
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY,
+			float hitZ, int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
 
@@ -76,12 +76,12 @@ public class BlockCabinet extends Block{
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2+ (meta & 3)));
+		return this.getDefaultState().withProperty(FACING, EnumFacing.getFront(2 + (meta & 3)));
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return state.getValue(FACING).getIndex()-2;
+		return state.getValue(FACING).getIndex() - 2;
 	}
 
 	@Override

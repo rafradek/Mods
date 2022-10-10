@@ -15,20 +15,15 @@ public class TF2DisguiseHandler implements IMessageHandler<TF2Message.DisguiseMe
 	@Override
 	public IMessage onMessage(final DisguiseMessage message, MessageContext ctx) {
 		final EntityPlayerMP player = ctx.getServerHandler().player;
-		((WorldServer) player.world).addScheduledTask(new Runnable() {
-
-			@Override
-			public void run() {
-				ItemStack stack;
-				if (((stack = player.getHeldItemMainhand()) != null && stack.getItem() instanceof ItemDisguiseKit)
-						|| ((stack = player.getHeldItemOffhand()) != null
-								&& stack.getItem() instanceof ItemDisguiseKit)) {
-					ItemDisguiseKit.startDisguise(player, player.world, message.value);
-					if (!player.capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
-						stack.damageItem(1, player);
-				}
+		((WorldServer) player.world).addScheduledTask(() -> {
+			ItemStack stack;
+			if (((stack = player.getHeldItemMainhand()) != null && stack.getItem() instanceof ItemDisguiseKit)
+					|| ((stack = player.getHeldItemOffhand()) != null
+							&& stack.getItem() instanceof ItemDisguiseKit)) {
+				ItemDisguiseKit.startDisguise(player, player.world, message.value);
+				if (!player.capabilities.isCreativeMode && !TF2ConfigVars.freeUseItems)
+					stack.damageItem(1, player);
 			}
-
 		});
 		return null;
 	}

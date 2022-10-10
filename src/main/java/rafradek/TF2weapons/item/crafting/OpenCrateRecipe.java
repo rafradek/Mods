@@ -9,7 +9,8 @@ import rafradek.TF2weapons.TF2weapons;
 import rafradek.TF2weapons.item.ItemCrate;
 import rafradek.TF2weapons.item.ItemFromData;
 
-public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe> implements IRecipe, IRecipeTF2 {
+public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistryEntry.Impl<IRecipe>
+		implements IRecipe, IRecipeTF2 {
 
 	@Override
 	public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -35,7 +36,6 @@ public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistr
 
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
-		// TODO Auto-generated method stub
 		ItemStack stack2 = ItemStack.EMPTY;
 
 		for (int x = 0; x < inv.getSizeInventory(); x++) {
@@ -48,41 +48,39 @@ public class OpenCrateRecipe extends net.minecraftforge.registries.IForgeRegistr
 		if (!stack2.isEmpty()) {
 			stack2 = stack2.copy();
 			stack2.getTagCompound().setBoolean("Open", true);
-			stack2.setCount( 1);
+			stack2.setCount(1);
 		}
 		return stack2;
 	}
 
 	@Override
 	public ItemStack getRecipeOutput() {
-		// TODO Auto-generated method stu
 		// ItemStack stack=ItemFromData.getNewStack("crate1");
 		// stack.getTagCompound().setBoolean("Open", true);
 		return new ItemStack(TF2weapons.itemTF2, 1, 8);
 	}
 
-	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv)
-    {
-        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+	@Override
+	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
-        for (int i = 0; i < nonnulllist.size(); ++i)
-        {
-            ItemStack itemstack = inv.getStackInSlot(i);
-            nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
-        }
+		for (int i = 0; i < nonnulllist.size(); ++i) {
+			ItemStack itemstack = inv.getStackInSlot(i);
+			nonnulllist.set(i, net.minecraftforge.common.ForgeHooks.getContainerItem(itemstack));
+		}
 
-        return nonnulllist;
-    }
+		return nonnulllist;
+	}
 
 	@Override
 	public boolean canFit(int width, int height) {
-		// TODO Auto-generated method stub
-		return width*height>=2;
+		return width * height >= 2;
 	}
 
 	@Override
 	public ItemStack getSuggestion(int slot) {
-		return slot == 0 ? new ItemStack(TF2weapons.itemTF2, 1, 7) : (slot == 1 ? ItemFromData.getNewStack("crate1") : ItemStack.EMPTY);
+		return slot == 0 ? new ItemStack(TF2weapons.itemTF2, 1, 7)
+				: (slot == 1 ? ItemFromData.getNewStack("crate1") : ItemStack.EMPTY);
 	}
 
 }

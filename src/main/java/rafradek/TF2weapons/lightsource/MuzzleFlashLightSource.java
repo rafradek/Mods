@@ -12,19 +12,16 @@ public class MuzzleFlashLightSource implements IDynamicLightSource {
 	public Entity shooter;
 
 	public MuzzleFlashLightSource(Entity entity) {
-		// TODO Auto-generated constructor stub
 		shooter = entity;
 	}
 
 	@Override
 	public Entity getAttachmentEntity() {
-		// TODO Auto-generated method stub
 		return shooter;
 	}
 
 	@Override
 	public int getLightLevel() {
-		// TODO Auto-generated method stub
 		return 13;
 	}
 

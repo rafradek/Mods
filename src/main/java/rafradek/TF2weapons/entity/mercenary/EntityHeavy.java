@@ -21,44 +21,49 @@ public class EntityHeavy extends EntityTF2Character {
 			this.attack.dodgeSpeed = 1.25f;
 		}
 		this.rotation = 10;
-		//this.ammoLeft = 133;
+		// this.ammoLeft = 133;
 		this.experienceValue = 15;
 		this.setSize(0.6F, 1.99F);
-		
+
 		// this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND,
 		// ItemUsable.getNewStack("Minigun"));
-
 	}
 
+	@Override
 	public float getWidth() {
 		return 0.6f;
 	}
-	
+
+	@Override
 	public float getHeight() {
 		return 1.99f;
 	}
-	
+
+	@Override
 	protected void addWeapons() {
 		super.addWeapons();
 		if (!this.noEquipment && !this.isRobot()) {
 			float chance = this.rand.nextFloat();
 			if (chance < 0.2f)
 				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemSandvich));
-			else if(chance < 0.3f)
+			else if (chance < 0.3f)
 				this.refill.setStackInSlot(0, new ItemStack(TF2weapons.itemChocolate));
 		}
 		if (this.isGiant())
-			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("DamageBonus"), 1.35f);
+			TF2Attribute.setAttribute(this.loadout.getStackInSlot(0), MapList.nameToAttribute.get("DamageBonus"),
+					1.35f);
 	}
+
 	@Override
 	protected ResourceLocation getLootTable() {
 		return TF2weapons.lootHeavy;
 	}
 
+	@Override
 	public float[] getDropChance() {
 		return new float[] { 0.045f, 0.12f, 0.11f };
 	}
-	
+
 	@Override
 	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
@@ -72,8 +77,7 @@ public class EntityHeavy extends EntityTF2Character {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
-		if (this.getAmmo() > 0 && this.getAttackTarget() != null
-				&& this.getDistanceSq(this.getAttackTarget()) <= 350
+		if (this.getAmmo() > 0 && this.getAttackTarget() != null && this.getDistanceSq(this.getAttackTarget()) <= 350
 				&& (this.getCapability(TF2weapons.WEAPONS_CAP, null).state & 2) == 0)
 			this.getCapability(TF2weapons.WEAPONS_CAP, null).state += 2;
 	}
@@ -99,11 +103,11 @@ public class EntityHeavy extends EntityTF2Character {
 		return TF2Sounds.MOB_HEAVY_DEATH;
 	}
 
-	public float getEyeHeight()
-    {
-        return 1.78F * (this.getRobotSize() > 1 ? 1.75f : this.getRobotSize() > 2 ? 2f : 1f);
-    }
-	
+	@Override
+	public float getEyeHeight() {
+		return 1.78F * (this.getRobotSize() > 1 ? 1.75f : this.getRobotSize() > 2 ? 2f : 1f);
+	}
+
 	/**
 	 * Get this Entity's EnumCreatureAttribute
 	 */
@@ -117,7 +121,7 @@ public class EntityHeavy extends EntityTF2Character {
 
 	@Override
 	public float getAttributeModifier(String attribute) {
-		if (shouldScaleAttributes()){
+		if (shouldScaleAttributes()) {
 			if (attribute.equals("Minigun Spinup"))
 				return this.scaleWithDifficulty(2f, 1f);
 			if (attribute.equals("Damage"))
@@ -125,11 +129,13 @@ public class EntityHeavy extends EntityTF2Character {
 		}
 		return super.getAttributeModifier(attribute);
 	}
-	
+
+	@Override
 	public int getClassIndex() {
 		return 4;
 	}
-	
+
+	@Override
 	public int getState(boolean onTarget) {
 		return onTarget ? 1 : 2;
 	}
