@@ -1350,7 +1350,8 @@ public class TF2Util {
 
 			int range = world.getDifficulty() == EnumDifficulty.HARD ? 60 : 38;
 			for (EntityCreature mob : world.getEntitiesWithinAABB(EntityCreature.class,
-					living.getEntityBoundingBox().grow(range, range, range), input -> input.getAttackTarget() == null && input.isNonBoss() && TF2Util.isHostile(input))) {
+					living.getEntityBoundingBox().grow(range, range, range),
+					input -> input.getAttackTarget() == null && input.isNonBoss() && TF2Util.isHostile(input))) {
 				mob.getLookHelper().setLookPositionWithEntity(living, 60, 30);
 				if (!TF2Util.isOnSameTeam(living, mob)) {
 					if (mob.getEntitySenses().canSee(living) || mob.getDistanceSq(living) < 150) {
@@ -1464,9 +1465,14 @@ public class TF2Util {
 	}
 
 	public static Entity findAmmoSource(EntityLivingBase living, double range, boolean immediate) {
-		return Iterables.getFirst(living.world.getEntitiesWithinAABB(EntityDispenser.class,
-				living.getEntityBoundingBox().grow(range, range / 4D, range), input -> TF2Util.isOnSameTeam(input, living)
-						&& (!immediate || (!input.isDisabled() && input.getMetal() > 0))), null);
+		return Iterables
+				.getFirst(
+						living.world
+								.getEntitiesWithinAABB(EntityDispenser.class,
+										living.getEntityBoundingBox().grow(range, range / 4D, range),
+										input -> TF2Util.isOnSameTeam(input, living)
+												&& (!immediate || (!input.isDisabled() && input.getMetal() > 0))),
+						null);
 	}
 
 	public static boolean isNaturalBlock(World world, BlockPos pos, IBlockState state) {
@@ -1494,7 +1500,8 @@ public class TF2Util {
 
 	public static void stomp(EntityLivingBase living) {
 		for (EntityLivingBase target : living.world.getEntitiesWithinAABB(EntityLivingBase.class,
-				living.getEntityBoundingBox().grow(0.25, -living.motionY, 0.25), input -> input != living && !TF2Util.isOnSameTeam(input, living))) {
+				living.getEntityBoundingBox().grow(0.25, -living.motionY, 0.25),
+				input -> input != living && !TF2Util.isOnSameTeam(input, living))) {
 
 			float damage = Math.max(0, living.fallDistance - 3) * 1.8f;
 			living.fallDistance = 0;
@@ -1520,19 +1527,19 @@ public class TF2Util {
 			 * entry.getSize()]; zin.read(bytes); FileOutputStream str = new
 			 * FileOutputStream(output); str.write(bytes); str.flush(); str.close();
 			 * zin.close();
-			 * 
+			 *
 			 * FileInputStream istr = new FileInputStream(output); byte[] bytesc = new
 			 * byte[istr.available()]; istr.read(bytesc); CRC32 crc2 = new CRC32();
 			 * crc2.update(bytesc); istr.close();
-			 * 
+			 *
 			 * if (crc2.getValue() != crc) { TF2weapons.corrupted = true; } } zip.close(); }
 			 * else { File inputFile = new File(source, input); FileInputStream istr = new
 			 * FileInputStream(inputFile);
-			 * 
+			 *
 			 * byte[] bytes = new byte[(int) inputFile.length()]; istr.read(bytes);
 			 * FileOutputStream str = new FileOutputStream(output); str.write(bytes);
 			 * str.flush(); str.close(); istr.close();
-			 * 
+			 *
 			 * FileInputStream istr2 = new FileInputStream(output); byte[] bytesc = new
 			 * byte[istr2.available()]; istr2.read(bytesc); CRC32 crc2 = new CRC32();
 			 * crc2.update(bytesc); TF2weapons.LOGGER.info("Value: "+crc2.getValue());
