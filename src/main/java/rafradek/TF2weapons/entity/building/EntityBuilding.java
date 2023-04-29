@@ -375,7 +375,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 				TF2Util.dealDamage(this, this.world, this.sapperOwner, this.sapper, 0,
 						this.sapper.isEmpty() ? 0.14f
 								: ((ItemSapper) this.sapper.getItem()).getWeaponDamage(sapper, this.sapperOwner, this),
-						TF2Util.causeDirectDamage(this.sapper, this.sapperOwner));
+								TF2Util.causeDirectDamage(this.sapper, this.sapperOwner));
 
 			if (this.charge.getStackInSlot(0).hasCapability(CapabilityEnergy.ENERGY, null)) {
 				this.energy.receiveEnergy(this.charge.getStackInSlot(0).getCapability(CapabilityEnergy.ENERGY, null)
@@ -530,7 +530,7 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 		this.setLevel(this.getLevel() + 1);
 		this.setProgress(0);
 		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH)
-				.setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * 1.2);
+		.setBaseValue(this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() * 1.2);
 		this.setHealth(this.getMaxHealth());
 		this.adjustSize();
 	}
@@ -618,8 +618,10 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 			this.dataManager.set(OWNER_UUID, Optional.of(ownerID));
 			this.ownerName = tag.getString("OwnerName");
 			this.getOwner();
-
 			this.enablePersistence();
+		}
+		if (owner != null) {
+			this.setEntTeam(TF2Util.getTeamForDisplay(owner));
 		}
 	}
 
@@ -768,4 +770,5 @@ public class EntityBuilding extends EntityLiving implements IEntityOwnable, IEnt
 	public void setDisposableID(int disposableID) {
 		this.disposableID = disposableID;
 	}
+
 }
