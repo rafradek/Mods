@@ -70,7 +70,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 	public int holdingMode(ItemStack stack, EntityLivingBase shooter) {
 		return (int) ((shooter instanceof EntityTF2Character
 				? ((EntityTF2Character) shooter).scaleWithDifficulty(60, 20)
-				: 20) * TF2Attribute.getModifier("Fire Rate", stack, 1f, shooter));
+						: 20) * TF2Attribute.getModifier("Fire Rate", stack, 1f, shooter));
 	}
 
 	@Override
@@ -87,13 +87,12 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 	public float getWeaponSpreadBase(ItemStack stack, EntityLivingBase living) {
 		float base = living != null && WeaponsCapability.get(living).chargeTicks >= this.holdingMode(stack, living) * 5
 				? super.getWeaponSpreadBase(stack, living)
-				: 0;
+						: 0;
 		return base + this.getClip(stack) * 0.06f;
 	}
 
 	@Override
 	public boolean canHeadshot(EntityLivingBase living, ItemStack stack) {
-		// TODO Auto-generated method stub
 		return this.getCharge(living, stack) > 0;
 	}
 
@@ -119,9 +118,11 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 		/*
 		 * if (living instanceof EntityTF2Character) return 1f;
 		 */
-		if (WeaponsCapability.get(living).lastHitCharge != 0)
-			return WeaponsCapability.get(living).lastHitCharge;
-		int chargeTicks = WeaponsCapability.get(living).chargeTicks;
+		WeaponsCapability cap = WeaponsCapability.get(living);
+		if (cap == null) return 0;
+		if (cap.lastHitCharge != 0)
+			return cap.lastHitCharge;
+		int chargeTicks = cap.chargeTicks;
 		int maxCharge = this.holdingMode(stack, living);
 
 		return chargeTicks <= maxCharge * 5 ? MathHelper.clamp((float) chargeTicks / (float) maxCharge, 0f, 1f) : 0f;
@@ -184,7 +185,7 @@ public class ItemHuntsman extends ItemProjectileWeapon {
 						this.getWeaponSpread(stack, living) * 66);
 				entityarrow.pickupStatus = living instanceof EntityPlayer
 						&& !((ItemArrow) arrow.getItem()).isInfinite(arrow, stack, (EntityPlayer) living)
-								? PickupStatus.ALLOWED
+						? PickupStatus.ALLOWED
 								: PickupStatus.DISALLOWED;
 				entityarrow.setDamage(
 						entityarrow.getDamage() - 2f + this.getWeaponDamage(stack, living, null) / motion * 0.975f);
