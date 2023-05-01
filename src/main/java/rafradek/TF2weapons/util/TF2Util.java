@@ -797,8 +797,7 @@ public class TF2Util {
 			}
 			cap.destroyProgress.remove(finalEntry);
 
-			boolean flag = (living == null || !(living instanceof EntityPlayer) && world.isAirBlock(pos))
-					|| block.removedByPlayer(state, world, pos, (EntityPlayer) living, true);
+			boolean flag = (living instanceof EntityPlayer) ? (world.isAirBlock(pos)) && block.removedByPlayer(state, world, pos, (EntityPlayer) living, true) : true;
 
 			if (flag) {
 				if (living != null) {
