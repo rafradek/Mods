@@ -1,6 +1,10 @@
 package rafradek.TF2weapons.tileentity;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
+
+import com.google.common.collect.Lists;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -22,12 +26,14 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import rafradek.TF2weapons.block.BlockAmmoFurnace;
 import rafradek.TF2weapons.inventory.ContainerAmmoFurnace;
-import rafradek.TF2weapons.item.ItemAmmo;
-import rafradek.TF2weapons.item.ItemFireAmmo;
 import rafradek.TF2weapons.item.crafting.TF2CraftingManager;
+import rafradek.TF2weapons.util.TF2Util;
 
 public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickable, ISidedInventory {
 	private static final int[] SLOTS_TOP = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
@@ -47,7 +53,9 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	private int cookTime;
 	private int totalCookTime;
 	private String furnaceCustomName;
-	private int ammoSmeltType;
+
+	private ShapelessOreRecipe cachedRecipe;
+	private int cachedSlot = -1;
 
 	/**
 	 * Returns the number of slots in the inventory.
@@ -99,9 +107,11 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 			stack.setCount(this.getInventoryStackLimit());
 
 		if (index < 9 && !flag) {
-			this.totalCookTime = this.getCookTime(stack);
-			this.cookTime = 0;
-			this.markDirty();
+			if (index == cachedSlot) {
+				this.totalCookTime = this.getCookTime(stack);
+				this.cookTime = 0;
+				this.markDirty();
+			}
 		}
 	}
 
@@ -259,35 +269,54 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	 * Returns true if the furnace can smelt an item, i.e. has a source item,
 	 * destination stack isn't full, etc.
 	 */
+
 	private boolean canSmelt() {
-		int[] ammoTypesCount = new int[ItemAmmo.AMMO_TYPES.length];
-		for (int i = 0; i < 9; i++) {
-			ItemStack base = this.furnaceItemStacks.get(i);
-			// System.out.println("Base: "+i+" "+base+"
-			// "+ItemAmmo.AMMO_RECIPES[base.getItemDamage()]);
-			if (base != null && base.getMetadata() < TF2CraftingManager.AMMO_RECIPES.length
-					&& base.getItem() instanceof ItemAmmo && !(base.getItem() instanceof ItemFireAmmo)
-					&& TF2CraftingManager.AMMO_RECIPES[base.getItemDamage()] != null) {
-				/*
-				 * && base.getCount()>=ItemAmmo.AMMO_RECIPES[base.getItemDamage()].
-				 * getRecipeOutput().getCount()){
-				 */
-				ammoTypesCount[base.getItemDamage()] += base.getCount();
-				if (ammoTypesCount[base.getItemDamage()] >= MathHelper.ceil(
-						TF2CraftingManager.AMMO_RECIPES[base.getItemDamage()].getRecipeOutput().getCount())) {
-					this.ammoSmeltType = base.getItemDamage();
+		if (cachedSlot == -1 || cachedRecipe == null |! TF2Util.matches(cachedRecipe.getRecipeOutput(), furnaceItemStacks.get(cachedSlot))) {
+			for (int i = 0; i < 9; i++) if (canFitRecipe(i)) return true;
+			if (cachedSlot != -1) cachedSlot = -1;
+			if (cachedRecipe != null) cachedRecipe = null;
+			return false;
+		}
+		return TF2Util.matches(cachedRecipe.getRecipeOutput(), furnaceItemStacks.get(cachedSlot));
+	}
+
+	private boolean canFitRecipe(int slot) {
+		ItemStack base = this.furnaceItemStacks.get(slot);
+		if (base != null &! base.isEmpty()) {
+			for (ShapelessOreRecipe recipe : TF2CraftingManager.AMMO_RECIPES) {
+				if (recipe == null || recipe.getRecipeOutput() == null) continue;
+				if (TF2Util.matches(recipe.getRecipeOutput(), base)) {
+					int[] sizes = new int[9];
+					List<ItemStack> items = Lists.newArrayList(furnaceItemStacks.subList(10, 19));
+					for (int i = 0; i < 9; i++) sizes[i] = items.get(i).getCount();
+					for (Ingredient output : recipe.getIngredients()) {
+						if (output.getMatchingStacks().length > 0) {
+							ItemStack stack1 = output.getMatchingStacks()[0];
+							int count = stack1.getCount();
+							for (int i = 0; i < 9; i++) {
+								ItemStack stack2 = items.get(i);
+								if (stack1.getItem() == stack2.getItem() && stack1.getMetadata() == stack2.getMetadata()) {
+									if (sizes[i] + count <= stack1.getMaxStackSize()) {
+										sizes[i] += count;
+										break;
+									} else {
+										count = sizes[i] + count - stack1.getMaxStackSize();
+										sizes[i] = stack1.getMaxStackSize();
+									}
+								} else if (stack2.isEmpty()) {
+									sizes[i] = count;
+									items.set(i, stack1.copy());
+									break;
+								}
+								if (i == 8) return false;
+							}
+						} else break;
+					}
+					cachedSlot = slot;
+					cachedRecipe = recipe;
 					return true;
 				}
 			}
-			/*
-			 * ItemStack itemstack = FurnaceRecipes.instance().getSmeltingResult(this.
-			 * furnaceItemStacks[0]); if (itemstack == null) return false; if
-			 * (this.furnaceItemStacks[2] == null) return true; if
-			 * (!this.furnaceItemStacks[2].isItemEqual(itemstack)) return false; int result
-			 * = furnaceItemStacks[2].getCount() + itemstack.getCount(); return result <=
-			 * getInventoryStackLimit() && result <=
-			 * this.furnaceItemStacks[2].getMaxStackSize();
-			 */// Forge BugFix: Make it respect stack sizes properly.
 		}
 		return false;
 	}
@@ -297,65 +326,39 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 	 * in the furnace result stack
 	 */
 	public void smeltItem() {
-		int ammoToConsume = MathHelper
-				.ceil(TF2CraftingManager.AMMO_RECIPES[this.ammoSmeltType].getRecipeOutput().getCount() * 1.2f);
-		for (int i = 0; i < 9; i++) {
-			ItemStack base = this.furnaceItemStacks.get(i);
-			if (base != null && base.getItem() instanceof ItemAmmo && base.getItemDamage() == this.ammoSmeltType) {
+		if (canSmelt()) {
+			int ammoToConsume = cachedRecipe.getRecipeOutput().getCount();
+			ItemStack base = furnaceItemStacks.get(cachedSlot);
+			int ammoConsumed = Math.min(base.getCount(), ammoToConsume);
+			base.shrink(ammoConsumed);
+			ammoToConsume -= ammoConsumed;
+			if (base.getCount() <= 0)
+				setInventorySlotContents(cachedSlot, ItemStack.EMPTY);
 
-				ShapelessOreRecipe recipe = TF2CraftingManager.AMMO_RECIPES[base.getItemDamage()];
-				int ammoConsumed = Math.min(base.getCount(), ammoToConsume);
-				base.shrink(ammoConsumed);
-				ammoToConsume -= ammoConsumed;
-				if (base.getCount() <= 0)
-					this.setInventorySlotContents(i, ItemStack.EMPTY);
+			if (ammoToConsume <= 0) {
+				for (Ingredient obj : cachedRecipe.getIngredients()) {
+					ItemStack out = obj.getMatchingStacks()[0];
+					for (int j = 10; j < 19; j++) {
+						boolean handled = false;
+						ItemStack inSlot = this.getStackInSlot(j);
+						if (inSlot.isEmpty()) {
+							this.setInventorySlotContents(j, out.copy());
+							handled = true;
+						} else if (out.isItemEqual(inSlot) && ItemStack.areItemStackTagsEqual(out, inSlot)) {
+							int size = out.getCount() + inSlot.getCount();
 
-				if (ammoToConsume <= 0) {
-					for (Ingredient obj : recipe.getIngredients()) {
-
-						ItemStack out = obj.getMatchingStacks()[0];
-						for (int j = 10; j < 19; j++) {
-							boolean handled = false;
-							ItemStack inSlot = this.getStackInSlot(j);
-							if (inSlot.isEmpty()) {
-								this.setInventorySlotContents(j, out.copy());
+							if (size <= out.getMaxStackSize()) {
+								inSlot.setCount(size);
 								handled = true;
-							} else if (out.isItemEqual(inSlot) && ItemStack.areItemStackTagsEqual(out, inSlot)) {
-								int size = out.getCount() + inSlot.getCount();
-
-								if (size <= out.getMaxStackSize()) {
-									inSlot.setCount(size);
-									handled = true;
-								}
 							}
-							if (handled)
-								break;
 						}
+						if (handled)
+							break;
 					}
-					return;
 				}
+				return;
 			}
 		}
-		/*
-		 * ItemStack itemstack =
-		 * FurnaceRecipes.instance().getSmeltingResult(this.furnaceItemStacks[0] );
-		 *
-		 * if (this.furnaceItemStacks[2] == null) { this.furnaceItemStacks[2] =
-		 * itemstack.copy(); } else if (this.furnaceItemStacks[2].getItem() ==
-		 * itemstack.getItem()) { this.furnaceItemStacks[2].getCount() +=
-		 * itemstack.getCount(); // Forge BugFix: Results may have multiple items }
-		 *
-		 * if (this.furnaceItemStacks[0].getItem() ==
-		 * Item.getItemFromBlock(Blocks.SPONGE) &&
-		 * this.furnaceItemStacks[0].getMetadata() == 1 && this.furnaceItemStacks[1] !=
-		 * null && this.furnaceItemStacks[1].getItem() == Items.BUCKET) {
-		 * this.furnaceItemStacks[1] = new ItemStack(Items.WATER_BUCKET); }
-		 *
-		 * --this.furnaceItemStacks[0].getCount();
-		 *
-		 * if (this.furnaceItemStacks[0].getCount() <= 0) { this.furnaceItemStacks[0] =
-		 * null; }
-		 */
 	}
 
 	/**
@@ -491,18 +494,18 @@ public class TileEntityAmmoFurnace extends TileEntityLockable implements ITickab
 			this.furnaceItemStacks.set(9, ItemStack.EMPTY);
 	}
 
-	net.minecraftforge.items.IItemHandler handlerTop = new net.minecraftforge.items.wrapper.SidedInvWrapper(this,
-			net.minecraft.util.EnumFacing.UP);
-	net.minecraftforge.items.IItemHandler handlerBottom = new net.minecraftforge.items.wrapper.SidedInvWrapper(this,
-			net.minecraft.util.EnumFacing.DOWN);
-	net.minecraftforge.items.IItemHandler handlerSide = new net.minecraftforge.items.wrapper.SidedInvWrapper(this,
-			net.minecraft.util.EnumFacing.WEST);
+	IItemHandler handlerTop = new SidedInvWrapper(this,
+			EnumFacing.UP);
+	IItemHandler handlerBottom = new SidedInvWrapper(this,
+			EnumFacing.DOWN);
+	IItemHandler handlerSide = new SidedInvWrapper(this,
+			EnumFacing.WEST);
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability,
-			net.minecraft.util.EnumFacing facing) {
-		if (facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+			EnumFacing facing) {
+		if (facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
 			if (facing == EnumFacing.DOWN)
 				return (T) handlerBottom;
 			else if (facing == EnumFacing.UP)

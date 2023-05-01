@@ -1850,4 +1850,8 @@ public class TF2Util {
 		}
 	}
 
+	public static boolean matches(ItemStack stack1, ItemStack stack2) {
+		return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2) && stack1.getCount() <= stack2.getCount();
+	}
+
 }
