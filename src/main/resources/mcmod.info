@@ -2,13 +2,13 @@
 [
 {
   "modid": "rafradek_tf2_weapons",
-  "name": "TF2 Stuff Mod",
+  "name": "TF2 Stuff Mod - Reloaded",
   "description": "Characters, weapons",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["rafradek"],
+  "authorList": ["rafradek", "smileycorp"],
   "logoFile": "",
   "screenshots": [],
   "dependencies": [],
