@@ -29,7 +29,7 @@ Fixed bug that caused turrets to lose their team when becoming unloaded
 
 Fix incompatability with certain mods when blocks are broken by explosions
 
-# credits
+# Credits
 
 All credit goes to rafradek, Grodax_ and Wolfkann, who worked on the original mod,
 
