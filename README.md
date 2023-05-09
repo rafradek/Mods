@@ -1,6 +1,7 @@
 # tf2-stuff-reloaded
 # this is a fork of the tf2 stuff mod by rafradek
 https://legacy.curseforge.com/minecraft/mc-mods/tf2-stuff-mod
+
 https://github.com/rafradek/Mods
 
 Which is offered under the GNU LESSER GENERAL PUBLIC LICENSE 2.1 of the original mod.
