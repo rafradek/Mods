@@ -28,3 +28,11 @@ Switched all translation keys to include the mod id to prevent lang conflicts wi
 Fixed bug that caused turrets to lose their team when becoming unloaded
 
 Fix incompatability with certain mods when blocks are broken by explosions
+
+# credits
+
+All credit goes to rafradek, Grodax_ and Wolfkann, who worked on the original mod,
+
+As well as the members of rafradek's community who submitted textures and models to the original mod
+
+Finally all credit for the sound effects used and the basis behind the mod content goes to valve and the team fortress 2 team.
