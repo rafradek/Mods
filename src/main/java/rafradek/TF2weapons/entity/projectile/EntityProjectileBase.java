@@ -19,6 +19,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -60,7 +61,7 @@ import rafradek.TF2weapons.util.TF2Util;
 
 @Optional.Interface(iface = "atomicstryker.dynamiclights.client.IDynamicLightSource", modid = "dynamiclights", striprefs = true)
 public abstract class EntityProjectileBase extends Entity
-		implements IProjectile, IThrowableEntity, IDynamicLightSource, IEntityAdditionalSpawnData {
+implements IProjectile, IThrowableEntity, IDynamicLightSource, IEntityAdditionalSpawnData {
 	public HashSet<Entity> hitEntities = new HashSet<>();
 	// private Block field_145790_g;
 	/** Seems to be some sort of timer for animating an arrow. */
@@ -140,7 +141,7 @@ public abstract class EntityProjectileBase extends Entity
 				((ItemWeapon) this.usedWeapon.getItem()).getProjectileSpeed(usedWeapon, shooter),
 				nospread ? 0
 						: ((ItemWeapon) this.usedWeapon.getItem()).getWeaponSpread(usedWeapon, shooter)
-								* (133.3333333f));
+						* (133.3333333f));
 		if (((ItemWeapon) this.usedWeapon.getItem()).canPenetrate(this.usedWeapon, this.shootingEntity)) {
 			this.setPenetrate();
 		}
@@ -242,8 +243,8 @@ public abstract class EntityProjectileBase extends Entity
 				 */
 				/*
 				 * for (int i = 1; i <= ticksToReach; i++) { lookY += gravity * i;
-				 * 
-				 * 
+				 *
+				 *
 				 * }
 				 */
 			}
@@ -255,13 +256,13 @@ public abstract class EntityProjectileBase extends Entity
 			 * != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) yFall =
 			 * this.attackTarget.posY - mop.hitVec.y; shouldFireProj = mop != null ||
 			 * this.attackTarget.motionY <= 0f; lookY -= yFall;
-			 * 
+			 *
 			 * if (this.fireAtFeet > 0 && this.entityHost.world.rayTraceBlocks( new
 			 * Vec3d(this.entityHost.posX, this.entityHost.posY +
 			 * this.entityHost.getEyeHeight(), this.entityHost.posZ), new Vec3d(lookX,
 			 * this.attackTarget.posY, lookZ), false, true, false) == null) { lookY -=
 			 * (this.attackTarget.height/2)*this.fireAtFeet;
-			 * 
+			 *
 			 * }
 			 */
 		}
@@ -321,14 +322,16 @@ public abstract class EntityProjectileBase extends Entity
 
 	public boolean attackDirect(Entity target, double pushForce, boolean headshot, Vec3d hitPos) {
 		if (!this.world.isRemote) {
-			if (!this.hitEntities.contains(target)) {
+			if (target != null && shootingEntity != null && target.getTeam() != null && target.getTeam().equals(shootingEntity.getTeam()) &!
+					(target == shootingEntity || (shootingEntity instanceof IEntityOwnable && ((IEntityOwnable) shootingEntity).getOwner() == target))) return false;
+			if(!this.hitEntities.contains(target)) {
 				this.hitEntities.add(target);
 				float distance = this.getDistanceToTarget(target, hitPos.x, hitPos.y, hitPos.z);
 				DamageSourceProjectile src = TF2Util.causeBulletDamage(this.usedWeapon, this.shootingEntity, this);
 				int critical = TF2Util.calculateCritPost(
 						target, shootingEntity, headshot ? ((ItemWeapon) this.usedWeapon.getItem())
 								.getHeadshotCrit(shootingEntity, this.usedWeapon) : this.getCritical(),
-						this.usedWeapon, src);
+								this.usedWeapon, src);
 				float dmg = TF2Util.calculateDamage(target, world, this.shootingEntity, usedWeapon, critical, distance)
 						* this.damageModifier;
 				src.setCritical(critical);
@@ -398,10 +401,10 @@ public abstract class EntityProjectileBase extends Entity
 				EntityPlayer entityplayer = (EntityPlayer) target.entityHit;
 
 				if (entityplayer.capabilities.disableDamage/*
-															 * || this.shootingEntity instanceof EntityPlayer &&
-															 * !((EntityPlayer)
-															 * this.shootingEntity).canAttackPlayer(entityplayer)
-															 */)
+				 * || this.shootingEntity instanceof EntityPlayer &&
+				 * !((EntityPlayer)
+				 * this.shootingEntity).canAttackPlayer(entityplayer)
+				 */)
 					continue;
 			}
 

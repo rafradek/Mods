@@ -117,15 +117,14 @@ public class TF2CraftingManager {
 				new Object[] { "SDT", "AGA", "BRB", 'G', "paneGlass", 'A', new ItemStack(TF2weapons.itemTF2, 1, 2), 'R',
 						new ItemStack(TF2weapons.itemTF2, 1, 3), 'B', new ItemStack(Blocks.STONE_BUTTON), 'S',
 						sentrybuilding, 'D', dispenserbuilding, 'T', teleporterbuilding }));
-		/*
-		 * addRecipe(new ShapedOreRecipe(null,new
-		 * ItemStack(TF2weapons.blockAmmoFurnace), new Object[] { "RIG", "SFr", "sIM",
-		 * 'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M', new
-		 * ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo,
-		 * 1, 8), 'R', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'r', new
-		 * ItemStack(TF2weapons.itemAmmo, 1, 6), 's', new ItemStack(TF2weapons.itemAmmo,
-		 * 1, 1), 'S', new ItemStack(TF2weapons.itemAmmo, 1, 11) }));
-		 */
+		addRecipe(new ShapedOreRecipe(null,new
+				ItemStack(TF2weapons.blockAmmoFurnace), new Object[] { "RIG", "SFr", "sIM",
+						'F', new ItemStack(Blocks.FURNACE), 'I', "ingotIron", 'M', new
+						ItemStack(TF2weapons.itemAmmo, 1, 2), 'G', new ItemStack(TF2weapons.itemAmmo,
+								1, 8), 'R', new ItemStack(TF2weapons.itemAmmo, 1, 7), 'r', new
+						ItemStack(TF2weapons.itemAmmo, 1, 6), 's', new ItemStack(TF2weapons.itemAmmo,
+								1, 1), 'S', new ItemStack(TF2weapons.itemAmmo, 1, 11) }));
+
 		addRecipe(new ShapedOreRecipe(null, new ItemStack(TF2weapons.itemAmmoBelt),
 				new Object[] { " IL", "IL ", "L  ", 'I', "ingotIron", 'L', "leather" }));
 		addRecipe(new ShapedOreRecipe(null, bonk,
